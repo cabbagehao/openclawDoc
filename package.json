@@ -1,0 +1,36 @@
+{
+  "name": "openclaw-docs",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone OpenClaw docs workspace",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "docs:bin": "node scripts/build-docs-list.mjs",
+    "docs:check-links": "node scripts/docs-link-audit.mjs",
+    "docs:dev": "cd docs && mint dev",
+    "docs:i18n": "go run ./scripts/docs-i18n",
+    "docs:i18n:ja": "go run ./scripts/docs-i18n -mode doc -lang ja-JP -parallel 2 docs",
+    "docs:i18n:ko": "go run ./scripts/docs-i18n -mode doc -lang ko-KR -parallel 2 docs",
+    "docs:list": "node scripts/docs-list.js",
+    "docs:spellcheck": "bash scripts/docs-spellcheck.sh",
+    "docs:spellcheck:fix": "bash scripts/docs-spellcheck.sh --write",
+    "docs:sync-ja-nav": "node scripts/sync-ja-navigation.mjs",
+    "docs:sync-ko-nav": "node scripts/sync-ko-navigation.mjs",
+    "docs:sync-moonshot": "tsx scripts/sync-moonshot-docs.ts",
+    "docs:check-ja": "node scripts/check-ja-coverage.mjs docs",
+    "docs:check-ko": "node scripts/check-ko-coverage.mjs docs",
+    "check:docs": "pnpm format:docs:check && pnpm lint:docs && pnpm docs:check-links",
+    "format:docs": "node scripts/docs-format-targets.mjs | xargs oxfmt --write",
+    "format:docs:check": "node scripts/docs-format-targets.mjs | xargs oxfmt --check",
+    "lint:docs": "pnpm dlx markdownlint-cli2",
+    "lint:docs:fix": "pnpm dlx markdownlint-cli2 --fix"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "^0.57.1",
+    "oxfmt": "0.36.0",
+    "tsx": "^4.21.0"
+  }
+}
