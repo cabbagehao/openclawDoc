@@ -1,61 +1,27 @@
 ---
+summary: "CLI オンボーディング ウィザード: Gateway、ワークスペース、チャンネル、およびスキルのガイド付きセットアップ"
 read_when:
-  - オンボーディングウィザードの実行または設定時
+  - オンボーディング ウィザードの実行または構成時
   - 新しいマシンのセットアップ時
-sidebarTitle: Wizard (CLI)
-summary: CLIオンボーディングウィザード：Gateway、ワークスペース、チャンネル、Skillsの対話式セットアップ
-title: オンボーディングウィザード（CLI）
-x-i18n:
-  generated_at: "2026-02-08T17:15:18Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: 9a650d46044a930aa4aaec30b35f1273ca3969bf676ab67bf4e1575b5c46db4c
-  source_path: start/wizard.md
-  workflow: 15
+title: "オンボーディング ウィザード (CLI)"
+sidebarTitle: "オンボーディング: CLI"
 ---
 
-# オンボーディングウィザード（CLI）
+# オンボーディング ウィザード (CLI)
 
-CLIオンボーディングウィザードは、macOS、Linux、Windows（WSL2経由）でOpenClawをセットアップする際の推奨パスです。ローカルGatewayまたはリモートGateway接続に加えて、ワークスペースのデフォルト設定、チャンネル、Skillsを構成します。
+オンボーディング ウィザードは、macOS、Linux、または Windows (WSL2 経由。強く推奨) で OpenClaw をセットアップするための**推奨**される方法です。
+1 つのガイド付きフローで、ローカル Gateway またはリモート Gateway 接続に加え、チャンネル、スキル、およびワークスペースのデフォルトを構成します。
 
 ```bash
 openclaw onboard
 ```
 
 <Info>
-最速で初回チャットを開始する方法：Control UI を開きます（チャンネル設定は不要）。`openclaw dashboard` を実行してブラウザでチャットできます。ドキュメント：[Dashboard](/web/dashboard)。
+最速の初回チャット: Control UI を開きます (チャンネルのセットアップは不要)。
+`openclaw dashboard` を実行してブラウザでチャットします。ドキュメント: [ダッシュボード](/web/dashboard)。
 </Info>
 
-## クイックスタート vs 詳細設定
-
-ウィザードは**クイックスタート**（デフォルト設定）と**詳細設定**（完全な制御）のどちらかを選択して開始します。
-
-<Tabs>
-  <Tab title="クイックスタート（デフォルト設定）">
-    - loopback上のローカルGateway
-    - 既存のワークスペースまたはデフォルトワークスペース
-    - Gatewayポート `18789`
-    - Gateway認証トークンは自動生成（loopback上でも生成されます）
-    - Tailscale公開はオフ
-    - TelegramとWhatsAppのDMはデフォルトで許可リスト（電話番号の入力を求められる場合があります）
-  </Tab>
-  <Tab title="詳細設定（完全な制御）">
-    - モード、ワークスペース、Gateway、チャンネル、デーモン、Skillsの完全なプロンプトフローを表示
-  </Tab>
-</Tabs>
-
-## CLIオンボーディングの詳細
-
-<Columns>
-  <Card title="CLIリファレンス" href="/start/wizard-cli-reference">
-    ローカルおよびリモートフローの完全な説明、認証とモデルマトリックス、設定出力、ウィザードRPC、signal-cliの動作。
-  </Card>
-  <Card title="自動化とスクリプト" href="/start/wizard-cli-automation">
-    非対話式オンボーディングのレシピと自動化された `agents add` の例。
-  </Card>
-</Columns>
-
-## よく使うフォローアップコマンド
+後で再構成する場合:
 
 ```bash
 openclaw configure
@@ -63,15 +29,86 @@ openclaw agents add <name>
 ```
 
 <Note>
-`--json` は非対話モードを意味しません。スクリプトでは `--non-interactive` を使用してください。
+`--json` は非対話モードを意味しません。スクリプトの場合は `--non-interactive` を使用してください。
 </Note>
 
 <Tip>
-推奨：エージェントが `web_search` を使用できるように、Brave Search APIキーを設定してください（`web_fetch` はキーなしで動作します）。最も簡単な方法：`openclaw configure --section web` を実行すると `tools.web.search.apiKey` が保存されます。ドキュメント：[Webツール](/tools/web)。
+オンボーディング ウィザードには、プロバイダー (Perplexity、Brave、Gemini、Grok、または Kimi) を選択し、API キーを貼り付けてエージェントが `web_search` を使用できるようにする Web 検索ステップが含まれています。これは後で `openclaw configure --section web` で構成することもできます。ドキュメント: [Web ツール](/tools/web)。
 </Tip>
+
+## クイックスタート vs 詳細設定
+
+ウィザードは、**クイックスタート** (デフォルト) か **詳細設定** (フルコントロール) の選択から始まります。
+
+<Tabs>
+  <Tab title="クイックスタート (デフォルト)">
+    - ローカル Gateway (ループバック)
+    - ワークスペースのデフォルト (または既存のワークスペース)
+    - Gateway ポート **18789**
+    - Gateway 認証 **トークン** (ループバックであっても自動生成)
+    - 新しいローカルセットアップのデフォルトツールポリシー: `tools.profile: "coding"` (既存の明示的なプロファイルは保持されます)
+    - DM 分離のデフォルト: 未設定の場合、ローカルオンボーディングは `session.dmScope: "per-channel-peer"` を書き込みます。詳細: [CLI オンボーディング リファレンス](/start/wizard-cli-reference#outputs-and-internals)
+    - Tailscale 公開 **オフ**
+    - Telegram + WhatsApp の DM はデフォルトで **許可リスト** (電話番号の入力を求められます)
+  </Tab>
+  <Tab title="詳細設定 (フルコントロール)">
+    - すべてのステップ (モード、ワークスペース、Gateway、チャンネル、デーモン、スキル) を表示します。
+  </Tab>
+</Tabs>
+
+## ウィザードが構成するもの
+
+**ローカルモード (デフォルト)** では、以下のステップを順に実行します。
+
+1. **モデル/認証** — サポートされている任意のプロバイダー/認証フロー (API キー、OAuth、またはセットアップトークン) を選択します。カスタムプロバイダー (OpenAI 互換、Anthropic 互換、または不明な自動検出) も含まれます。デフォルトのモデルを選択します。
+   セキュリティに関する注意: このエージェントがツールを実行したり、Webhook/フックのコンテンツを処理したりする場合は、利用可能な最新世代の最も強力なモデルを優先し、ツールポリシーを厳格に保ってください。より弱く古い層はプロンプトインジェクションを受けやすくなります。
+   非対話型の実行では、`--secret-input-mode ref` を使用すると、平文の API キー値の代わりに環境変数ベースの参照を認証プロファイルに保存します。
+   非対話型の `ref` モードでは、プロバイダーの環境変数を設定する必要があります。その環境変数なしでインラインキーフラグを渡すと、すぐに失敗します。
+   対話型の実行では、シークレット参照モードを選択すると、保存前に高速なプリフライト検証を行い、環境変数または構成済みのプロバイダー参照 (`file` または `exec`) のいずれかを指すことができます。
+2. **ワークスペース** — エージェントファイルの場所 (デフォルトは `~/.openclaw/workspace`)。ブートストラップファイルを生成します。
+3. **Gateway** — ポート、バインド アドレス、認証モード、Tailscale 公開。
+   対話型のトークンモードでは、デフォルトの平文トークンストレージを選択するか、SecretRef を選択します。
+   非対话型のトークン SecretRef パス: `--gateway-token-ref-env <ENV_VAR>`。
+4. **チャンネル** — WhatsApp、Telegram、Discord、Google Chat、Mattermost、Signal、BlueBubbles、または iMessage。
+5. **デーモン** — LaunchAgent (macOS) または systemd ユーザーユニット (Linux/WSL2) をインストールします。
+   トークン認証にトークンが必要で、`gateway.auth.token` が SecretRef で管理されている場合、デーモンのインストールはそれを検証しますが、解決されたトークンをスーパーバイザーサービスの環境メタデータに永続化しません。
+   トークン認証にトークンが必要で、構成されたトークン SecretRef が解決されない場合、実用的なガイダンスとともにデーモンのインストールがブロックされます。
+   `gateway.auth.token` と `gateway.auth.password` の両方が構成され、`gateway.auth.mode` が未設定の場合、モードが明示的に設定されるまでデーモンのインストールはブロックされます。
+6. **ヘルスチェック** — Gateway を起動し、実行されていることを確認します。
+7. **スキル** — 推奨されるスキルとオプションの依存関係をインストールします。
+
+<Note>
+明示的に **リセット** を選択する (または `--reset` を渡す) か、構成が最新でない場合を除き、ウィザードを再実行しても何も消去されません。
+CLI の `--reset` はデフォルトで構成、資格情報、およびセッションを対象とします。ワークスペースを含めるには `--reset-scope full` を使用してください。
+構成が無効であるか、レガシーキーが含まれている場合、ウィザードは最初に `openclaw doctor` を実行するように求めます。
+</Note>
+
+**リモートモード**は、他の場所にある Gateway に接続するようにローカルクライアントを構成するだけです。
+リモートホストには何もインストールも変更もしません。
+
+## 別のエージェントを追加する
+
+`openclaw agents add <name>` を使用して、独自のワークスペース、セッション、および認証プロファイルを持つ別のエージェントを作成します。`--workspace` なしで実行するとウィザードが起動します。
+
+設定されるもの:
+
+- `agents.list[].name`
+- `agents.list[].workspace`
+- `agents.list[].agentDir`
+
+注意:
+
+- デフォルトのワークスペースは `~/.openclaw/workspace-<agentId>` に従います。
+- インバウンドメッセージをルーティングするための `bindings` を追加します (ウィザードで実行可能)。
+- 非対話型フラグ: `--model`, `--agent-dir`, `--bind`, `--non-interactive`。
+
+## 完全なリファレンス
+
+ステップごとの詳細な内訳、非対話型スクリプト、Signal のセットアップ、RPC API、およびウィザードが書き込む構成フィールドの完全なリストについては、[ウィザードリファレンス](/reference/wizard)を参照してください。
 
 ## 関連ドキュメント
 
-- CLIコマンドリファレンス：[`openclaw onboard`](/cli/onboard)
-- macOSアプリのオンボーディング：[オンボーディング](/start/onboarding)
-- エージェント初回起動の手順：[エージェントブートストラップ](/start/bootstrapping)
+- CLI コマンドリファレンス: [`openclaw onboard`](/cli/onboard)
+- オンボーディングの概要: [オンボーディングの概要](/start/onboarding-overview)
+- macOS アプリのオンボーディング: [オンボーディング](/start/onboarding)
+- エージェントの初回実行手順: [エージェントブートストラップ](/start/bootstrapping)

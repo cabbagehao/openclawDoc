@@ -258,7 +258,7 @@ otherwise -> reply
 3. デフォルト (`"*"`) `toolsBySender` 一致
 4. デフォルト (`"*"`) `tools`
 
-例（電報）：
+例（Telegram）：
 
 ```json5
 {

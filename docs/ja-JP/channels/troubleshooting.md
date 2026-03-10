@@ -42,7 +42,7 @@ openclaw channels status --probe
 
 完全なトラブルシューティング: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
 
-## 電報
+## Telegram
 
 ### テレグラム失敗の署名|症状 |最速チェック |修正 |
 
@@ -92,7 +92,7 @@ openclaw channels status --probe
 
 ## 信号
 
-### 信号障害の署名|症状 |最速チェック |修正 |
+### Signal障害の署名|症状 |最速チェック |修正 |
 
 | ------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
 |デーモンは到達可能だがボットはサイレント | `openclaw channels status --probe` | `signal-cli` デーモンの URL/アカウントと受信モードを確認します。 |

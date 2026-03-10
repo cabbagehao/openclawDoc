@@ -2,7 +2,7 @@
 summary: "Windows (WSL2) サポート + コンパニオン アプリのステータス"
 read_when:
   - Windows への OpenClaw のインストール
-  - Windows コンパニオン アプリのステータスを探しています
+  - Windows コンパニオン アプリのステータスを確認する場合
 title: "Windows（WSL2）"
 x-i18n:
   source_hash: "0732bb1719830ea088a86d9f4e2662d693fd6b3e256dcd3034d5ccdf3413035c"
@@ -92,7 +92,9 @@ schtasks /create /tn "WSL Boot" /tr "wsl.exe -d Ubuntu --exec /bin/true" /sc ons
 wsl --list --verbose
 ```
 
-### スタートアップチェーンを確認する再起動後 (Windows サインイン前)、WSL から確認します
+### スタートアップ チェーンを確認する
+
+再起動後 (Windows サインイン前)、WSL から確認します:
 
 ```bash
 systemctl --user is-enabled openclaw-gateway
@@ -198,6 +200,5 @@ openclaw onboard
 
 ## Windows コンパニオン アプリ
 
-Windows コンパニオン アプリはまだありません。必要に応じて貢献を歓迎します
-それを実現するための貢献。
+Windows コンパニオン アプリはまだありません。実現のための貢献を歓迎します。
 ```

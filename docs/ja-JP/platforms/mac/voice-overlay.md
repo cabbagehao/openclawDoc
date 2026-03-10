@@ -57,5 +57,5 @@ x-i18n:
 1. `VoiceSessionCoordinator`、`VoiceSession`、および `VoiceSessionPublisher` を追加します。
 2. `VoiceWakeOverlayController` を直接操作するのではなく、`VoiceWakeRuntime` をリファクタリングしてセッションを作成/更新/終了します。
 3. `VoicePushToTalk` をリファクタリングして既存のセッションを採用し、リリース時に `endCapture` を呼び出します。ランタイムクールダウンを適用します。
-4. `VoiceWakeOverlayController` を発行者に電報します。ランタイム/PTT からの直接呼び出しを削除します。
+4. `VoiceWakeOverlayController` を発行者にTelegramします。ランタイム/PTT からの直接呼び出しを削除します。
 5. セッションの導入、クールダウン、および空のテキストの終了のための統合テストを追加します。

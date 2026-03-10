@@ -16,7 +16,7 @@ x-i18n:
 
 Docker を使用して、Hetzner VPS 上で永続的な OpenClaw ゲートウェイを実行します。永続的な状態、ベイクインされたバイナリ、安全な再起動動作を備えています。
 
-「OpenClaw を 24 時間年中無休で ~$5 で利用したい」場合は、これが最もシンプルで信頼性の高いセットアップです。
+「OpenClaw を 24 時間年中無休で ~\$5 で利用したい」場合は、これが最もシンプルで信頼性の高いセットアップです。
 Hetzner pricing changes;最小の Debian/Ubuntu VPS を選択し、OOM に達した場合はスケールアップします。
 
 Security model reminder:

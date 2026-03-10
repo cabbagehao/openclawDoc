@@ -102,7 +102,7 @@ x-i18n:
 - `/reset` または `/new [model]` (オプションのモデル ヒント。残りはパススルーされます)
 - `/think <off|minimal|low|medium|high|xhigh>` (モデル/プロバイダーによる動的選択、エイリアス: `/thinking`、`/t`)
 - `/verbose on|full|off` (別名: `/v`)
-- `/reasoning on|off|stream` (エイリアス: `/reason`; オンの場合、`Reasoning:` というプレフィックスが付いた別のメッセージを送信します。 `stream` = 電報ドラフトのみ)
+- `/reasoning on|off|stream` (エイリアス: `/reason`; オンの場合、`Reasoning:` というプレフィックスが付いた別のメッセージを送信します。 `stream` = Telegramドラフトのみ)
 - `/elevated on|off|ask|full` (エイリアス: `/elev`; `full` は幹部の承認をスキップします)
 - `/exec host=<sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>` (電流を表示するには `/exec` を送信)
 - `/model <name>` (エイリアス: `/models`、または `agents.defaults.models.*.alias` からの `/<alias>`)- `/queue <mode>` (さらに `debounce:2s cap:25 drop:summarize` のようなオプション。現在の設定を確認するには `/queue` を送信してください)

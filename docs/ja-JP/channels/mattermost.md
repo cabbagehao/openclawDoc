@@ -3,7 +3,7 @@ summary: "Mattermost ボットのセットアップと OpenClaw 構成"
 read_when:
   - Mattermost のセットアップ
   - Mattermost ルーティングのデバッグ
-title: "最重要"
+title: "Mattermost"
 x-i18n:
   source_hash: "c1d43218b97fdaa30e8739287056151feeb88aace9b1787769a890f9cc5eca59"
 ---
@@ -210,7 +210,7 @@ message action=send channel=mattermost target=channel:<channelId> buttons=[[{"te
 - Mattermost は API 応答 (セキュリティ機能) からコールバック データを削除するため、すべてのボタンが
   クリックすると削除されます。部分的な削除はできません。
 - ハイフンまたはアンダースコアを含むアクション ID は自動的にサニタイズされます。
-  (最重要ルーティングの制限)。
+  (Mattermostルーティングの制限)。
 
 構成:
 

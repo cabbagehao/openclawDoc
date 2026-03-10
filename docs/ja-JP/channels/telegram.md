@@ -2,7 +2,7 @@
 summary: "Telegram ボットのサポート ステータス、機能、および構成"
 read_when:
   - Telegram 機能または Webhook の作業
-title: "電報"
+title: "Telegram"
 x-i18n:
   source_hash: "bf7d861c40280b172e13ce6d1778e9ebe6a5441c0d7ad0f09506cbbc5b1afd7d"
 ---
@@ -74,7 +74,7 @@ openclaw pairing approve telegram <CODE>
 トークン解決順序はアカウントに応じて決まります。実際には、構成値は環境フォールバックよりも優先され、`TELEGRAM_BOT_TOKEN` はデフォルトのアカウントにのみ適用されます。
 </Note>
 
-## 電報側の設定
+## Telegram側の設定
 
 <AccordionGroup>
 
@@ -382,7 +382,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
   </Accordion>
 
-  <Accordion title="エージェントと自動化のための電報メッセージ アクション">
+  <Accordion title="エージェントと自動化のためのTelegramメッセージ アクション">
     Telegram ツールのアクションには次のものが含まれます。
 
     - `sendMessage` (`to`、`content`、オプションの `mediaUrl`、`replyToMessageId`、`messageThreadId`)
@@ -840,16 +840,16 @@ dig +short api.telegram.org AAAA
 - `channels.telegram.webhookPath`: ローカル Webhook パス (デフォルト `/telegram-webhook`)。
 - `channels.telegram.webhookHost`: ローカル Webhook バインド ホスト (デフォルト `127.0.0.1`)。
 - `channels.telegram.webhookPort`: ローカル Webhook バインド ポート (デフォルト `8787`)。
-- `channels.telegram.actions.reactions`: ゲート電報ツールの反応。
+- `channels.telegram.actions.reactions`: ゲートTelegramツールの反応。
 - `channels.telegram.actions.sendMessage`: ゲート テレグラム ツール メッセージの送信。
 - `channels.telegram.actions.deleteMessage`: ゲート テレグラム ツール メッセージが削除されます。
 - `channels.telegram.actions.sticker`: ゲート テレグラム ステッカー アクション — 送信および検索 (デフォルト: false)。
 - `channels.telegram.reactionNotifications`: `off | own | all` — どの反応がシステム イベントをトリガーするかを制御します (設定されていない場合、デフォルト: `own`)。
 - `channels.telegram.reactionLevel`: `off | ack | minimal | extensive` — 制御エージェントの反応能力 (設定されていない場合のデフォルト: `minimal`)。
 
-- [設定リファレンス - 電報](/gateway/configuration-reference#telegram)
+- [設定リファレンス - Telegram](/gateway/configuration-reference#telegram)
 
-電報特有の高信号フィールド:- 起動/認証: `enabled`、`botToken`、`tokenFile`、`accounts.*`
+Telegram特有の高信号フィールド:- 起動/認証: `enabled`、`botToken`、`tokenFile`、`accounts.*`
 
 - アクセス制御: `dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`groups.*.topics.*`、トップレベル `bindings[]` (`type: "acp"`)
 - コマンド/メニュー: `commands.native`、`commands.nativeSkills`、`customCommands`

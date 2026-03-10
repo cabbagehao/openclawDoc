@@ -128,7 +128,7 @@ ssh -N -L 18789:127.0.0.1:18789 user@host
 実稼働環境と同様の信頼性を得るには、監視付き実行を使用します。
 
 <Tabs>
-  <Tab title="macOS (起動)">
+  <Tab title="macOS (launchd)">
 
 ```bash
 openclaw gateway install
@@ -200,7 +200,9 @@ openclaw --dev status
 
 デフォルトには、分離状態/構成およびベース ゲートウェイ ポート `19001` が含まれます。
 
-## プロトコルのクイック リファレンス (オペレーター ビュー)- 最初のクライアント フレームは `connect` である必要があります
+## プロトコルのクイック リファレンス (オペレーター ビュー)
+
+- 最初のクライアント フレームは `connect` である必要があります
 
 - ゲートウェイは `hello-ok` スナップショット (`presence`、`health`、`stateVersion`、`uptimeMs`、制限/ポリシー) を返します。
 - リクエスト: `req(method, params)` → `res(ok/payload|error)`。
@@ -256,5 +258,5 @@ openclaw health
 - [バックグラウンドプロセス](/gateway/background-process)
 - [構成](/gateway/configuration)
 - [健康](/gateway/health)
-- [博士](/gateway/doctor)
+- [Doctor](/gateway/doctor)
 - [認証](/gateway/authentication)

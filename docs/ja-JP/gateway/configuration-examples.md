@@ -2,7 +2,7 @@
 summary: "一般的な OpenClaw セットアップのスキーマに正確な構成例"
 read_when:
   - OpenClaw の構成方法を学ぶ
-  - 構成例を探しています
+  - 構成例を確認する場合
   - OpenClaw を初めてセットアップする
 title: "構成例"
 x-i18n:

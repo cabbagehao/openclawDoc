@@ -7,7 +7,7 @@
 以下をマッピングする永続的な ACP バインディングを導入します。
 
 - Discord チャンネル (および必要に応じて既存のスレッド)
-- グループ/スーパーグループ内の電報フォーラムのトピック (`chatId:topic:topicId`)
+- グループ/スーパーグループ内のTelegramフォーラムのトピック (`chatId:topic:topicId`)
 
 明示的なバインディング タイプを使用して、バインディング状態が最上位の `bindings[]` エントリに保存されている、長期間存続する ACP セッションに適用されます。
 
@@ -53,7 +53,7 @@
 
 - 正規の会話 ID を使用します。
   - Discord: チャンネル/スレッド ID。
-  - 電報トピック: `chatId:topic:topicId`。
+  - Telegramトピック: `chatId:topic:topicId`。
 - 裸のトピック ID だけで Telegram バインディングをキー化しないでください。
 
 ## 構成モデル (提案)
@@ -264,7 +264,7 @@
 - `acp`: 一致した会話の永続的な ACP ハーネス バインディング。
 - `type: "acp"` の場合、`match.peer.id` は正規の会話キーです。
   - Discord チャンネル/スレッド: 生のチャンネル/スレッド ID。
-  - 電報トピック: `chatId:topic:topicId`。
+  - Telegramトピック: `chatId:topic:topicId`。
 - `bindings[].acp.backend` はオプションです。バックエンドのフォールバック順序:
   1. `bindings[].acp.backend`
   2. `agents.list[].runtime.acp.backend`

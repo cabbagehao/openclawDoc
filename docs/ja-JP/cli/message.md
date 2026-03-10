@@ -28,7 +28,7 @@ openclaw message <subcommand> [flags]
 ターゲット形式 (`--target`):
 
 - WhatsApp: E.164 またはグループ JID
-- 電報: チャット ID または `@username`
+- Telegram: チャット ID または `@username`
 - Discord: `channel:<id>` または `user:<id>` (または `<@id>` の言及。生の数値 ID はチャネルとして扱われます)
 - Google チャット: `spaces/<spaceId>` または `users/<userId>`
 - Slack: `channel:<id>` または `user:<id>` (生のチャネル ID が受け入れられます)
@@ -59,8 +59,8 @@ openclaw message <subcommand> [flags]
   - チャネル: WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (プラグイン)/Signal/iMessage/MS Teams
   - 必須: `--target`、プラス `--message` または `--media`
   - オプション: `--media`、`--reply-to`、`--thread-id`、`--gif-playback`
-  - 電報のみ: `--buttons` (許可するには `channels.telegram.capabilities.inlineButtons` が必要です)
-  - 電報のみ: `--thread-id` (フォーラムのトピック ID)
+  - Telegramのみ: `--buttons` (許可するには `channels.telegram.capabilities.inlineButtons` が必要です)
+  - Telegramのみ: `--thread-id` (フォーラムのトピック ID)
   - Slack のみ: `--thread-id` (スレッドのタイムスタンプ; `--reply-to` は同じフィールドを使用します)
   - WhatsApp のみ: `--gif-playback`
 
@@ -69,7 +69,7 @@ openclaw message <subcommand> [flags]
   - 必須: `--target`、`--poll-question`、`--poll-option` (繰り返し)
   - オプション: `--poll-multi`
   - Discord のみ: `--poll-duration-hours`、`--silent`、`--message`
-  - 電報のみ: `--poll-duration-seconds` (5-600)、`--silent`、`--poll-anonymous` / `--poll-public`、`--thread-id`- `react`
+  - Telegramのみ: `--poll-duration-seconds` (5-600)、`--silent`、`--poll-anonymous` / `--poll-public`、`--thread-id`- `react`
   - チャネル: Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
   - 必須: `--message-id`、`--target`
   - オプション: `--emoji`、`--remove`、`--participant`、`--from-me`、`--target-author`、`--target-author-uuid`

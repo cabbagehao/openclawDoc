@@ -40,7 +40,7 @@ openclaw pairing approve telegram <CODE>
 
 サポートされているチャネル: `telegram`、`whatsapp`、`signal`、`imessage`、`discord`、`slack`、`feishu`。
 
-### 国家が存在する場所
+### ステータスの保存場所
 
 `~/.openclaw/credentials/` に保存されます:
 
@@ -49,8 +49,9 @@ openclaw pairing approve telegram <CODE>
   - デフォルトのアカウント: `<channel>-allowFrom.json`
   - デフォルト以外のアカウント: `<channel>-<accountId>-allowFrom.json`
 
-アカウントのスコープ動作:- デフォルト以外のアカウントは、スコープ指定されたホワイトリスト ファイルの読み取り/書き込みのみを行います。
+アカウントのスコープ動作:
 
+- デフォルト以外のアカウントは、スコープ指定された許可リスト ファイルの読み取り/書き込みのみを行います。
 - デフォルト アカウントは、チャネル スコープのスコープ外の許可リスト ファイルを使用します。
 
 これらは機密情報として扱います (アシスタントへのアクセスをゲートします)。
@@ -99,12 +100,12 @@ openclaw devices reject <requestId>
 ## 関連ドキュメント
 
 - セキュリティ モデル + プロンプト インジェクション: [セキュリティ](/gateway/security)
-- 安全に更新中 (ドクターを実行): [更新中](/install/updating)
+- 安全に更新 (openclaw doctor を実行): [更新](/install/updating)
 - チャネル構成:
-  - 電報: [電報](/channels/telegram)
+  - Telegram: [Telegram](/channels/telegram)
   - WhatsApp: [WhatsApp](/channels/whatsapp)
-  - シグナル: [シグナル](/channels/signal)
+  - Signal: [Signal](/channels/signal)
   - BlueBubbles (iMessage): [BlueBubbles](/channels/bluebubbles)
   - iMessage (レガシー): [iMessage](/channels/imessage)
-  - ディスコード: [ディスコード](/channels/discord)
-  - スラック: [スラック](/channels/slack)
+  - Discord: [Discord](/channels/discord)
+  - Slack: [Slack](/channels/slack)

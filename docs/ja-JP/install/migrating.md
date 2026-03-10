@@ -12,7 +12,7 @@ title: "移行ガイド"
 
 移行のコンセプトは非常にシンプルです：
 
-- **状態ディレクトリ**（`$OPENCLAW_STATE_DIR`、デフォルト：`~/.openclaw/`）をコピーします — これには設定、認証、セッション、チャンネルの状態が含まれます。
+- **状態ディレクトリ**（``$OPENCLAW_STATE_DIR``、デフォルト：`~/.openclaw/`）をコピーします — これには設定、認証、セッション、チャンネルの状態が含まれます。
 - **ワークスペース**（デフォルト：`~/.openclaw/workspace/`）をコピーします — これにはエージェントのファイル（記憶、プロンプトなど）が含まれます。
 
 しかし、**プロファイル**、**権限**、および**部分的なコピー**に関するよくある落とし穴があります。
@@ -63,7 +63,7 @@ openclaw status
 - 資格情報
 - チャンネルのログイン
 
-これらは `$OPENCLAW_STATE_DIR` の下に保存されています。
+これらは ``$OPENCLAW_STATE_DIR`` の下に保存されています。
 
 ## 移行の手順（推奨）
 
@@ -99,7 +99,7 @@ tar -czf openclaw-workspace.tgz .openclaw/workspace
 
 以下の**両方**をコピーします：
 
-- `$OPENCLAW_STATE_DIR` (デフォルト `~/.openclaw/`)
+- ``$OPENCLAW_STATE_DIR`` (デフォルト `~/.openclaw/`)
 - ワークスペース (デフォルト `~/.openclaw/workspace/`)
 
 一般的な方法：
@@ -150,10 +150,10 @@ openclaw doctor
 
 `openclaw.json` だけでは不十分です。多くのプロバイダーは状態を以下の場所に保存します：
 
-- `$OPENCLAW_STATE_DIR/credentials/`
-- `$OPENCLAW_STATE_DIR/agents/<agentId>/...`
+- ``$OPENCLAW_STATE_DIR`/credentials/`
+- ``$OPENCLAW_STATE_DIR`/agents/<agentId>/...`
 
-必ず `$OPENCLAW_STATE_DIR` フォルダ全体を移行してください。
+必ず ``$OPENCLAW_STATE_DIR`` フォルダ全体を移行してください。
 
 ### 落とし穴：権限 / 所有権
 
@@ -170,7 +170,7 @@ root としてコピーしたり、ユーザーを変更したりした場合、
 
 ### 落とし穴：バックアップ内のシークレット
 
-`$OPENCLAW_STATE_DIR` にはシークレット（API キー、OAuth トークン、WhatsApp 資格情報）が含まれています。バックアップは本番環境のシークレットと同様に扱ってください：
+``$OPENCLAW_STATE_DIR`` にはシークレット（API キー、OAuth トークン、WhatsApp 資格情報）が含まれています。バックアップは本番環境のシークレットと同様に扱ってください：
 
 - 暗号化して保存する
 - 安全でないチャンネルでの共有を避ける

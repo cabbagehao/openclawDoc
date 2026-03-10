@@ -3,7 +3,7 @@ summary: "signal-cli (JSON-RPC + SSE)、セットアップ パス、および数
 read_when:
   - Signal サポートのセットアップ
   - デバッグ信号送受信
-title: "信号"
+title: "Signal"
 x-i18n:
   source_hash: "524d9868f138d46495bb9518b0cbb9c6ef6174248552377a8a659d616501a394"
 ---
