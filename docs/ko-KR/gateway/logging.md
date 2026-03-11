@@ -1,109 +1,97 @@
 ---
-summary: "로깅 표면, 파일 로그, WS 로그 스타일, 콘솔 포맷"
+summary: "로깅 인터페이스, 파일 로그 관리, WebSocket 로그 스타일 및 콘솔 포맷 가이드"
 read_when:
-  - 로깅 출력이나 포맷을 바꿀 때
-  - CLI 또는 gateway 출력을 디버깅할 때
-title: "로깅"
+  - 로깅 출력 방식이나 포맷을 변경하고자 할 때
+  - CLI 또는 Gateway의 실행 로그를 분석하고 디버깅할 때
+title: "로깅 (Logging)"
+x-i18n:
+  source_path: "gateway/logging.md"
 ---
 
-# 로깅
+# 로깅 (Logging)
 
-사용자 관점 개요(CLI + Control UI + config)는 [/logging](/logging) 을 참고하세요.
+사용자 관점의 로깅 개요(CLI, Control UI 및 설정 방법)는 [로깅 일반 가이드](/logging)를 참조함.
 
-OpenClaw에는 두 가지 로그 "표면"이 있습니다.
+OpenClaw는 두 가지 로깅 인터페이스(Surface)를 제공함:
 
-- **콘솔 출력** (터미널 / Debug UI에서 보는 것)
-- gateway logger가 기록하는 **파일 로그** (JSON lines)
+- **콘솔 출력 (Console output)**: 터미널 또는 디버그 UI에 실시간으로 표시되는 메시지.
+- **파일 로그 (File logs)**: Gateway 로거가 기록하는 구조화된 JSON 라인 데이터.
 
-## 파일 기반 logger
+## 파일 기반 로거 (File-based logger)
 
-- 기본 rolling log 파일은 `/tmp/openclaw/` 아래에 있으며 하루에 파일 하나씩 생성됩니다: `openclaw-YYYY-MM-DD.log`
-  - 날짜는 gateway 호스트의 로컬 시간대를 사용합니다.
-- 로그 파일 경로와 레벨은 `~/.openclaw/openclaw.json` 에서 설정할 수 있습니다.
-  - `logging.file`
-  - `logging.level`
-
-파일 포맷은 한 줄당 JSON 객체 하나입니다.
-
-Control UI의 Logs 탭은 gateway를 통해 이 파일을 tail 합니다(`logs.tail`).
-CLI도 같은 작업을 할 수 있습니다.
+- **로그 파일 생성**: `/tmp/openclaw/` 경로 하위에 날짜별로 롤링(Rolling)되는 로그 파일(`openclaw-YYYY-MM-DD.log`)이 생성됨. 날짜 기준은 Gateway 호스트의 로컬 타임존을 따름.
+- **상세 설정**: `~/.openclaw/openclaw.json` 파일 내 `logging.file` 및 `logging.level` 필드를 통해 경로와 로깅 레벨을 조정할 수 있음.
+- **데이터 형식**: 한 줄당 하나의 JSON 객체로 기록됨.
+- **로그 추적**: Control UI의 **Logs** 탭에서 실시간으로 확인할 수 있으며, CLI에서도 동일하게 추적 가능함:
 
 ```bash
 openclaw logs --follow
 ```
 
-**Verbose와 로그 레벨의 차이**
+**상세 출력(Verbose)과 로깅 레벨의 차이:**
+- **파일 로그**는 오직 `logging.level` 설정값에 의해서만 제어됨.
+- **`--verbose` 플래그**는 **콘솔의 출력 상세도**(및 WebSocket 로그 스타일)에만 영향을 주며, 파일 로그의 레벨을 강제로 높이지 않음.
+- 파일 로그에 상세한 디버깅 정보를 남기려면 `logging.level`을 `debug` 또는 `trace`로 직접 설정해야 함.
 
-- **파일 로그** 는 오직 `logging.level` 로만 제어됩니다.
-- `--verbose` 는 **콘솔 verbosity**(및 WS 로그 스타일)에만 영향을 주며, 파일 로그 레벨을 올리지는 않습니다.
-- verbose 전용 세부 정보를 파일 로그에 남기려면 `logging.level` 을 `debug` 또는 `trace` 로 설정하세요.
+## 콘솔 캡처 (Console capture)
 
-## 콘솔 캡처
+CLI는 `console.log/info/warn/error/debug/trace` 호출을 가로채어 파일 로그에 기록함과 동시에 표준 출력(stdout) 및 표준 에러(stderr)로 내보냄.
 
-CLI는 `console.log/info/warn/error/debug/trace` 를 캡처해 파일 로그에 기록하면서도 stdout/stderr 출력은 유지합니다.
+콘솔 출력 방식은 다음 설정을 통해 독립적으로 조정 가능함:
+- `logging.consoleLevel`: 콘솔 출력 레벨 (기본값 `info`).
+- `logging.consoleStyle`: 출력 스타일 (`pretty` | `compact` | `json`).
 
-콘솔 verbosity는 다음으로 별도로 조정할 수 있습니다.
+## 도구 실행 요약 마스킹 (Redaction)
 
-- `logging.consoleLevel` (기본값 `info`)
-- `logging.consoleStyle` (`pretty` | `compact` | `json`)
+상세 출력 모드에서 도구 실행 요약(예: `🛠️ Exec: ...`)이 콘솔에 표시될 때, 민감한 토큰 정보가 유출되지 않도록 자동으로 가림 처리를 수행함. 이 기능은 **콘솔 출력물에만 적용**되며 실제 파일 로그에는 원본 데이터가 기록됨.
 
-## 도구 요약 마스킹
-
-verbose tool summary(예: `🛠️ Exec: ...`)는 콘솔 스트림에 찍히기 전에 민감한 토큰을 가릴 수 있습니다. 이것은 **tools 전용**이며 파일 로그는 변경하지 않습니다.
-
-- `logging.redactSensitive`: `off` | `tools` (기본값: `tools`)
-- `logging.redactPatterns`: regex 문자열 배열(기본 패턴 override)
-  - raw regex 문자열(auto `gi`)을 쓰거나, 커스텀 flag가 필요하면 `/pattern/flags` 사용
-  - 매치된 값은 앞 6자 + 뒤 4자만 남기고 마스킹함(길이 18 이상), 그 외에는 `***`
-  - 기본값은 일반적인 key assignment, CLI flag, JSON field, bearer header, PEM block, 주요 token prefix를 포함
+- `logging.redactSensitive`: `off` | `tools` (기본값 `tools`).
+- `logging.redactPatterns`: 마스킹에 사용할 정규표현식 배열.
+  - 일반 정규표현식(자동으로 `gi` 플래그 적용) 또는 커스텀 플래그가 포함된 `/pattern/flags` 형식을 지원함.
+  - 매칭된 텍스트가 18자 이상인 경우 앞 6자 + 뒤 4자만 남기고 나머지는 마스킹하며, 그 미만인 경우 `***`로 전체 마스킹함.
+  - 기본 패턴은 일반적인 키 할당문, CLI 플래그, JSON 필드, Bearer 헤더, PEM 블록 및 주요 토큰 접두사를 포함함.
 
 ## Gateway WebSocket 로그
 
-gateway는 WebSocket 프로토콜 로그를 두 가지 모드로 출력합니다.
+Gateway는 WebSocket 프로토콜 로그를 다음 두 가지 모드로 제공함:
 
-- **일반 모드 (`--verbose` 없음)**: "흥미로운" RPC 결과만 출력
-  - 오류 (`ok=false`)
-  - 느린 호출(기본 임계값: `>= 50ms`)
-  - parse error
-- **Verbose 모드 (`--verbose`)**: 모든 WS request/response 트래픽 출력
+- **일반 모드 (`--verbose` 미사용)**: 주요 RPC 결과물(오류, 50ms 이상의 지연 호출, 파싱 오류 등)만 출력함.
+- **상세 모드 (`--verbose` 사용)**: 모든 WebSocket 요청 및 응답 트래픽을 출력함.
 
-### WS 로그 스타일
+### WebSocket 로그 스타일 (`--ws-log`)
 
-`openclaw gateway` 는 gateway별 스타일 전환을 지원합니다.
+Gateway별로 출력 스타일을 전환할 수 있음:
 
-- `--ws-log auto` (기본값): 일반 모드는 최적화, verbose 모드는 compact 출력
-- `--ws-log compact`: verbose일 때 compact 출력(요청/응답 페어)
-- `--ws-log full`: verbose일 때 프레임별 전체 출력
-- `--compact`: `--ws-log compact` 의 별칭
+- `auto` (기본값): 일반 모드는 최적화된 요약본을, 상세 모드는 압축된(Compact) 형식을 사용함.
+- `compact`: 상세 모드 실행 시 요청과 응답을 한 쌍으로 묶어 압축된 형태로 출력함.
+- `full`: 상세 모드 실행 시 각 프레임의 전체 메타데이터를 출력함.
+- `--compact`: `--ws-log compact`의 축약 플래그.
 
-예시:
+**실행 예시:**
 
 ```bash
-# optimized (only errors/slow)
+# 최적화 모드 (오류 및 지연 호출만 표시)
 openclaw gateway
 
-# show all WS traffic (paired)
+# 모든 트래픽을 한 쌍으로 묶어 표시
 openclaw gateway --verbose --ws-log compact
 
-# show all WS traffic (full meta)
+# 모든 트래픽의 전체 메타데이터 표시
 openclaw gateway --verbose --ws-log full
 ```
 
-## 콘솔 포맷(서브시스템 로깅)
+## 콘솔 포맷팅 (서브시스템 로깅)
 
-콘솔 formatter는 **TTY 인지**를 감지하고 일관된 prefix를 붙여 출력합니다.
-서브시스템 logger는 출력이 묶여 보이고 훑어보기 쉽게 유지합니다.
+콘솔 포맷터는 **TTY 상태를 인지**하여 일관된 접두사(Prefix)가 붙은 가독성 높은 출력을 제공함. 서브시스템별로 로그를 그룹화하여 빠르게 훑어볼 수 있도록 설계됨.
 
-동작:
+**주요 특징:**
+- **접두사 자동 부여**: 모든 출력 라인에 `[gateway]`, `[canvas]`, `[tailscale]` 등 서브시스템 이름이 붙음.
+- **서브시스템 색상화**: 서브시스템별 고유 색상 및 로그 레벨별 색상을 적용함.
+- **터미널 감지**: TTY 환경이나 풍부한 색상을 지원하는 터미널(`TERM`, `COLORTERM` 등)을 감지하여 색상을 적용하며, `NO_COLOR` 설정을 준수함.
+- **접두사 간소화**: `gateway/`, `channels/` 등 공통 경로는 생략하고 마지막 두 세그먼트만 유지함 (예: `whatsapp/outbound`).
+- **구조화된 로깅**: 서브시스템별 하부 로거(Sub-logger)가 구조화된 필드(`{ subsystem }`)를 포함하여 기록함.
+- **`logRaw()` 지원**: QR 코드나 특수한 UI 출력 등 접두사나 포맷팅이 필요 없는 경우에 사용함.
+- **별도의 레벨 관리**: 콘솔 출력 레벨은 파일 로깅 레벨과 독립적으로 작동함.
+- **상세 디버깅**: WhatsApp 메시지 본문 등은 `debug` 레벨로 기록되며, `--verbose` 실행 시에만 콘솔에 표시됨.
 
-- 모든 줄에 **서브시스템 prefix** 부여(예: `[gateway]`, `[canvas]`, `[tailscale]`)
-- **서브시스템 색상**(서브시스템별 고정) + 레벨 색상
-- 출력이 TTY이거나 환경이 풍부한 터미널처럼 보일 때 색상 사용 (`TERM`/`COLORTERM`/`TERM_PROGRAM`), `NO_COLOR` 존중
-- **짧아진 서브시스템 prefix**: 앞의 `gateway/`, `channels/` 제거 후 마지막 2개 세그먼트 유지(예: `whatsapp/outbound`)
-- **서브시스템별 sub-logger** 지원(auto prefix + 구조화 필드 `{ subsystem }`)
-- **`logRaw()`** 는 QR/UX 출력용(접두사/포맷 없음)
-- **콘솔 스타일** 지원(예: `pretty | compact | json`)
-- **콘솔 로그 레벨** 은 파일 로그 레벨과 별개(파일 로그는 `logging.level` 이 `debug`/`trace` 이면 상세 정보 유지)
-- **WhatsApp 메시지 본문** 은 `debug` 에 기록됨(`--verbose` 로 확인 가능)
-
-이 방식은 기존 파일 로그의 안정성을 유지하면서 interactive 출력은 더 읽기 쉽게 만듭니다.
+이러한 로깅 시스템을 통해 기존 파일 로그의 안정성을 유지하면서도, 터미널을 통한 상호작용 시에는 정보를 한눈에 파악하기 쉽게 제공함.

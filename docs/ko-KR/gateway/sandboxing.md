@@ -1,241 +1,112 @@
 ---
-summary: "OpenClaw sandboxing의 동작 방식: mode, scope, workspace access, image"
-title: Sandboxing
-read_when: "sandboxing에 대한 전용 설명이 필요하거나 agents.defaults.sandbox를 조정해야 합니다."
+summary: "OpenClaw 샌드박싱 동작 원리: 모드, 범위, 워크스페이스 접근 권한 및 Docker 이미지 관리 가이드"
+title: "샌드박싱 (Sandboxing)"
+read_when: "에이전트의 도구 실행 환경을 격리하거나 agents.defaults.sandbox 설정을 최적화하고자 할 때"
 status: active
+x-i18n:
+  source_path: "gateway/sandboxing.md"
 ---
 
-# Sandboxing
+# 샌드박싱 (Sandboxing)
 
-OpenClaw는 영향 범위를 줄이기 위해 **Docker container 안에서 tool을 실행**할 수 있습니다.
-이 기능은 **선택 사항**이며 설정(`agents.defaults.sandbox` 또는
-`agents.list[].sandbox`)으로 제어됩니다. sandboxing이 꺼져 있으면 tool은 host에서 실행됩니다.
-Gateway는 host에 남아 있고, 활성화된 경우 tool execution만 격리된 sandbox에서
-실행됩니다.
+OpenClaw는 보안 피해 범위를 최소화하기 위해 **Docker 컨테이너 내에서 도구를 실행**하는 기능을 지원함. 이 기능은 **선택 사항**이며 설정(`agents.defaults.sandbox` 또는 `agents.list[].sandbox`)을 통해 제어함. 샌드박싱이 비활성화된 경우 도구는 호스트 시스템에서 직접 실행됨. 샌드박싱 활성화 시에도 Gateway 프로세스는 호스트에 유지되지만, 실제 도구 실행은 격리된 샌드박스 환경에서 수행됨.
 
-이것이 완벽한 보안 경계는 아니지만, model이 어리석은 동작을 했을 때 filesystem
-및 process 접근을 실질적으로 제한합니다.
+샌드박싱이 완벽한 보안 경계를 보장하는 것은 아니나, 모델이 예기치 못한 동작을 할 때 파일 시스템 및 프로세스 접근을 실질적으로 제한하는 효과가 있음.
 
-## What gets sandboxed
+## 샌드박스 적용 대상
 
-- Tool execution (`exec`, `read`, `write`, `edit`, `apply_patch`, `process` 등).
-- 선택적 sandboxed browser (`agents.defaults.sandbox.browser`).
-  - 기본적으로 sandbox browser는 browser tool이 필요할 때 auto-start되어(CDP가 reachable한지 보장) 실행됩니다.
-    `agents.defaults.sandbox.browser.autoStart`와 `agents.defaults.sandbox.browser.autoStartTimeoutMs`로 구성합니다.
-  - 기본적으로 sandbox browser container는 전역 `bridge` network 대신 전용 Docker network(`openclaw-sandbox-browser`)를 사용합니다.
-    `agents.defaults.sandbox.browser.network`로 구성합니다.
-  - 선택적인 `agents.defaults.sandbox.browser.cdpSourceRange`는 CIDR allowlist(예: `172.21.0.1/32`)로 container-edge CDP ingress를 제한합니다.
-  - noVNC observer access는 기본적으로 password로 보호되며, OpenClaw는 로컬 bootstrap page를 제공하고 noVNC를 URL fragment 안의 password로 여는 단기 token URL을 출력합니다(query/header log에 남지 않음).
-  - `agents.defaults.sandbox.browser.allowHostControl`은 sandboxed session이 host browser를 명시적으로 대상으로 삼을 수 있게 합니다.
-  - 선택적 allowlist로 `target: "custom"`을 제어합니다: `allowedControlUrls`, `allowedControlHosts`, `allowedControlPorts`.
+- **도구 실행**: `exec`, `read`, `write`, `edit`, `apply_patch`, `process` 등 모든 표준 도구.
+- **격리된 브라우저** (선택 사항): `agents.defaults.sandbox.browser` 설정을 통해 활성화.
+  - 브라우저 도구가 호출될 때 샌드박스 브라우저가 자동으로 시작되도록 구성 가능 (`autoStart`, `autoStartTimeoutMs`).
+  - 기본적으로 전역 `bridge` 네트워크가 아닌 전용 Docker 네트워크(`openclaw-sandbox-browser`)를 사용함.
+  - `cdpSourceRange` 설정을 통해 컨테이너 외부에서의 CDP 접속을 CIDR 기반 허용 목록(예: `172.21.0.1/32`)으로 제한할 수 있음.
+  - noVNC 관찰자 접속은 비밀번호로 보호됨. OpenClaw는 쿼리 로그에 남지 않도록 URL 프래그먼트에 비밀번호를 포함한 단기 토큰 URL을 생성함.
+  - `allowHostControl` 옵션을 통해 샌드박스 세션이 호스트 브라우저를 명시적으로 제어하도록 허용할 수 있음.
 
-sandbox되지 않는 것:
+**샌드박스 제외 대상:**
+- **Gateway 프로세스 자체**: 항상 호스트에서 실행됨.
+- **호스트 실행 허용 도구**: `tools.elevated` 등 명시적으로 호스트 권한이 부여된 도구.
+  - **권한 상승(Elevated) 실행은 샌드박싱을 우회하여 호스트에서 직접 실행됨.**
+  - 샌드박싱이 꺼진 상태에서는 `tools.elevated` 설정 여부와 관계없이 호스트에서 실행됨 ([권한 상승 모드 가이드](/tools/elevated) 참조).
 
-- Gateway process 자체.
-- 명시적으로 host에서 실행되도록 허용된 모든 tool (예: `tools.elevated`).
-  - **Elevated exec는 host에서 실행되며 sandboxing을 우회합니다.**
-  - sandboxing이 꺼져 있으면 `tools.elevated`는 실행 동작을 바꾸지 않습니다(이미 host에서 실행 중). [Elevated Mode](/tools/elevated)를 참고하세요.
+## 실행 모드 (Modes)
 
-## Modes
+`agents.defaults.sandbox.mode` 필드를 통해 적용 시점을 제어함:
 
-`agents.defaults.sandbox.mode`는 sandboxing을 **언제** 사용할지 제어합니다:
+- **`"off"`**: 샌드박싱을 사용하지 않음.
+- **`"non-main"` (기본값)**: 메인 세션이 아닌 경우에만 샌드박스를 적용함. 호스트에서의 일반적인 대화는 유지하면서 그룹/채널 등 외부 세션을 격리하고 싶을 때 적합함.
+- **`"all"`**: 모든 세션을 샌드박스 내에서 실행함.
 
-- `"off"`: sandboxing 사용 안 함.
-- `"non-main"`: **non-main** session에만 sandbox 적용 (일반 chat은 host에서 실행하고 싶을 때 기본값).
-- `"all"`: 모든 session이 sandbox에서 실행됨.
-  참고: `"non-main"`은 agent id가 아니라 `session.mainKey`(기본값 `"main"`)를 기준으로 합니다.
-  group/channel session은 자체 key를 사용하므로 non-main으로 간주되어 sandbox됩니다.
+*참고: `"non-main"` 판정은 에이전트 ID가 아닌 `session.mainKey`(기본값 `"main"`)를 기준으로 수행됨.*
 
-## Scope
+## 실행 범위 (Scope)
 
-`agents.defaults.sandbox.scope`는 container를 **몇 개** 만들지 제어합니다:
+`agents.defaults.sandbox.scope` 필드를 통해 컨테이너 생성 단위를 제어함:
 
-- `"session"` (기본값): session당 하나의 container.
-- `"agent"`: agent당 하나의 container.
-- `"shared"`: 모든 sandboxed session이 하나의 container를 공유.
+- **`"session"` (기본값)**: 대화 세션별로 독립된 컨테이너를 생성함.
+- **`"agent"`**: 에이전트별로 하나의 컨테이너를 생성하여 공유함.
+- **`"shared"`**: 모든 샌드박스 세션이 단일 컨테이너를 공유함.
 
-## Workspace access
+## 워크스페이스 접근 권한
 
-`agents.defaults.sandbox.workspaceAccess`는 sandbox가 **무엇을 볼 수 있는지** 제어합니다:
+`agents.defaults.sandbox.workspaceAccess` 설정을 통해 샌드박스가 호스트 파일을 어느 정도 볼 수 있는지 결정함:
 
-- `"none"` (기본값): tool은 `~/.openclaw/sandboxes` 아래의 sandbox workspace를 봅니다.
-- `"ro"`: agent workspace를 `/agent`에 read-only로 mount합니다 (`write`/`edit`/`apply_patch` 비활성화).
-- `"rw"`: agent workspace를 `/workspace`에 read/write로 mount합니다.
+- **`"none"` (기본값)**: 호스트의 실제 워크스페이스를 보지 못하며, `~/.openclaw/sandboxes` 하위의 독립된 공간만 사용함.
+- **`"ro"`**: 에이전트 워크스페이스를 `/agent` 경로에 읽기 전용으로 마운트함. (`write`, `edit` 등 수정 도구 비활성화)
+- **`"rw"`**: 에이전트 워크스페이스를 `/workspace` 경로에 읽기/쓰기 가능 상태로 마운트함.
 
-인바운드 media는 활성 sandbox workspace(`media/inbound/*`)로 복사됩니다.
-Skills 참고: `read` tool은 sandbox root 기준입니다. `workspaceAccess: "none"`이면,
-OpenClaw는 읽을 수 있도록 적합한 skill을 sandbox workspace(`.../skills`)에 mirror합니다.
-`"rw"`일 때는 workspace skill을 `/workspace/skills`에서 읽을 수 있습니다.
+*참고: 인바운드 미디어 파일은 항상 활성 샌드박스 워크스페이스(`media/inbound/*`)로 복제됨.*
 
-## Custom bind mounts
+## 커스텀 바인드 마운트 (Bind Mounts)
 
-`agents.defaults.sandbox.docker.binds`는 추가 host 디렉터리를 container에 mount합니다.
-형식: `host:container:mode` (예: `"/home/user/source:/source:rw"`).
+`agents.defaults.sandbox.docker.binds` 설정을 통해 호스트의 특정 디렉터리를 컨테이너에 추가로 연결할 수 있음.
+형식: `호스트경로:컨테이너경로:모드` (예: `"/home/user/data:/data:ro"`).
 
-전역 bind와 agent별 bind는 **교체되지 않고 병합됩니다**. `scope: "shared"`에서는 agent별 bind가 무시됩니다.
+- 전역 설정과 에이전트별 설정은 서로 **병합**되어 적용됨.
+- `scope: "shared"` 모드에서는 에이전트별 바인드 설정이 무시됨.
+- `agents.defaults.sandbox.browser.binds`를 통해 브라우저 컨테이너 전용 마운트 설정을 별도로 구성할 수 있음.
 
-`agents.defaults.sandbox.browser.binds`는 추가 host 디렉터리를 **sandbox browser** container에만 mount합니다.
+**보안 주의 사항:**
+- 바인드 마운트는 샌드박스 보안을 우회하여 호스트 경로를 직접 노출함.
+- OpenClaw는 `/etc`, `/proc`, `docker.sock` 등 위험한 경로에 대한 마운트 시도를 자동으로 차단함.
+- 민감한 정보(SSH 키, 시크릿 등)를 마운트해야 한다면 반드시 `:ro` (읽기 전용) 모드를 사용해야 함.
 
-- 설정되면(`[]` 포함) browser container에 대해 `agents.defaults.sandbox.docker.binds`를 대체합니다.
-- 생략되면 browser container는 `agents.defaults.sandbox.docker.binds`를 fallback으로 사용합니다(하위 호환).
+## 이미지 빌드 및 설정
 
-예시 (read-only source + 추가 data 디렉터리 하나):
+**기본 이미지**: `openclaw-sandbox:bookworm-slim`
 
-```json5
-{
-  agents: {
-    defaults: {
-      sandbox: {
-        docker: {
-          binds: ["/home/user/source:/source:ro", "/var/data/myapp:/data:ro"],
-        },
-      },
-    },
-    list: [
-      {
-        id: "build",
-        sandbox: {
-          docker: {
-            binds: ["/mnt/cache:/cache:rw"],
-          },
-        },
-      },
-    ],
-  },
-}
-```
-
-보안 참고:
-
-- bind는 sandbox filesystem을 우회합니다. 설정한 mode(`:ro` 또는 `:rw`) 그대로 host path를 노출합니다.
-- OpenClaw는 위험한 bind source를 차단합니다(예: `docker.sock`, `/etc`, `/proc`, `/sys`, `/dev`, 그리고 이를 노출하는 상위 mount).
-- 민감한 mount(secret, SSH key, service credential)는 절대적으로 필요하지 않다면 `:ro`여야 합니다.
-- workspace에 read access만 필요하다면 `workspaceAccess: "ro"`와 함께 사용하세요. bind mode는 독립적으로 유지됩니다.
-- bind와 tool policy, elevated exec의 상호작용은 [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)를 참고하세요.
-
-## Images + setup
-
-기본 image: `openclaw-sandbox:bookworm-slim`
-
-한 번만 빌드하세요:
-
+최초 1회 빌드 필요:
 ```bash
 scripts/sandbox-setup.sh
 ```
 
-참고: 기본 image에는 **Node가 포함되지 않습니다**. skill에 Node(또는
-다른 runtime)가 필요하다면, custom image에 bake하거나
-`sandbox.docker.setupCommand`로 설치하세요(network egress + writable root +
-root user 필요).
+*참고: 기본 이미지에는 Node.js가 포함되어 있지 않음. 특정 언어 런타임이 필요하다면 커스텀 이미지를 제작하거나 `sandbox.docker.setupCommand`를 통해 설치해야 함.*
 
-더 기능이 많은 sandbox image가 필요하다면(예: `curl`, `jq`, `nodejs`, `python3`, `git`),
-다음을 빌드하세요:
-
+**도구가 포함된 이미지**: `curl`, `jq`, `nodejs`, `python3`, `git` 등이 포함된 이미지를 사용하려면 다음 스크립트로 빌드한 후 이미지 이름을 `openclaw-sandbox-common:bookworm-slim`으로 변경함:
 ```bash
 scripts/sandbox-common-setup.sh
 ```
 
-그런 다음 `agents.defaults.sandbox.docker.image`를
-`openclaw-sandbox-common:bookworm-slim`으로 설정하세요.
+**네트워크 설정**: 기본적으로 샌드박스 컨테이너는 **네트워크 접근이 차단**된 상태로 실행됨. 필요 시 `docker.network` 설정을 통해 네트워크를 허용할 수 있음.
 
-Sandboxed browser image:
+## 초기 설정 명령 (`setupCommand`)
 
-```bash
-scripts/sandbox-browser-setup.sh
-```
+`setupCommand`는 샌드박스 컨테이너가 생성된 직후 **단 한 번** 실행됨. 패키지 설치나 초기 환경 구성에 활용함.
 
-기본적으로 sandbox container는 **network 없이** 실행됩니다.
-`agents.defaults.sandbox.docker.network`로 재정의할 수 있습니다.
+**주의 사항:**
+- 네트워크가 `"none"`인 경우 외부 패키지 설치가 실패함.
+- `readOnlyRoot: true` 설정 시 쓰기 작업이 불가능함.
+- 패키지 설치를 위해서는 `user: "0:0"` (루트 권한) 설정이 필요함.
+- 샌드박스 환경은 호스트의 환경 변수를 상속받지 않으므로, API 키 등은 `docker.env` 설정을 통해 명시적으로 전달해야 함.
 
-번들된 sandbox browser image는 container workload를 위한 보수적인 Chromium startup default도 적용합니다.
-현재 container 기본값은 다음과 같습니다:
+## 도구 정책 및 탈출구 (Escape Hatches)
 
-- `--remote-debugging-address=127.0.0.1`
-- `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
-- `--user-data-dir=${HOME}/.chrome`
-- `--no-first-run`
-- `--no-default-browser-check`
-- `--disable-3d-apis`
-- `--disable-gpu`
-- `--disable-dev-shm-usage`
-- `--disable-background-networking`
-- `--disable-extensions`
-- `--disable-features=TranslateUI`
-- `--disable-breakpad`
-- `--disable-crash-reporter`
-- `--disable-software-rasterizer`
-- `--no-zygote`
-- `--metrics-recording-only`
-- `--renderer-process-limit=2`
-- `noSandbox`가 활성화되면 `--no-sandbox`와 `--disable-setuid-sandbox`.
-- 세 가지 graphics hardening flag(`--disable-3d-apis`,
-  `--disable-software-rasterizer`, `--disable-gpu`)는 선택 사항이며
-  container에 GPU 지원이 없을 때 유용합니다. workload에 WebGL 또는 기타 3D/browser 기능이 필요하다면
-  `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0`을 설정하세요.
-- `--disable-extensions`는 기본적으로 활성화되어 있으며
-  extension 의존 flow에서는 `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0`으로 비활성화할 수 있습니다.
-- `--renderer-process-limit=2`는
-  `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>`으로 제어하며, `0`이면 Chromium 기본값을 유지합니다.
+샌드박스 규칙보다 도구 허용/차단 정책이 우선 적용됨. 전역적으로 차단된 도구는 샌드박스 내에서도 사용할 수 없음.
 
-다른 runtime profile이 필요하면 custom browser image를 사용하고
-자체 entrypoint를 제공하세요. 로컬(non-container) Chromium profile에서는
-추가 startup flag를 붙이기 위해 `browser.extraArgs`를 사용하세요.
+- **권한 상승 (`/exec`)**: 승인된 사용자가 발신한 명령에 대해 호스트에서 직접 `exec`를 실행할 수 있는 유일한 탈출구임.
+- **진단 도구**: `openclaw sandbox explain` 명령을 사용하여 현재 적용된 샌드박스 모드와 도구 정책을 확인할 수 있음.
 
-보안 기본값:
-
-- `network: "host"`는 차단됩니다.
-- `network: "container:<id>"`는 기본적으로 차단됩니다(namespace join 우회 위험).
-- 긴급 override: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
-
-Docker 설치 및 containerized gateway 관련 내용은 여기 있습니다:
-[Docker](/install/docker)
-
-Docker gateway 배포에서는 `docker-setup.sh`가 sandbox config를 bootstrap할 수 있습니다.
-이 경로를 활성화하려면 `OPENCLAW_SANDBOX=1`(또는 `true`/`yes`/`on`)을 설정하세요.
-socket 위치는 `OPENCLAW_DOCKER_SOCKET`으로 재정의할 수 있습니다. 전체 setup 및 env
-참고: [Docker](/install/docker#enable-agent-sandbox-for-docker-gateway-opt-in).
-
-## setupCommand (one-time container setup)
-
-`setupCommand`는 sandbox container가 생성된 **후 한 번만** 실행됩니다(매 실행마다가 아님).
-container 내부에서 `sh -lc`를 통해 실행됩니다.
-
-경로:
-
-- 전역: `agents.defaults.sandbox.docker.setupCommand`
-- agent별: `agents.list[].sandbox.docker.setupCommand`
-
-흔한 문제:
-
-- 기본 `docker.network`는 `"none"`(egress 없음)이므로 package install이 실패합니다.
-- `docker.network: "container:<id>"`는 `dangerouslyAllowContainerNamespaceJoin: true`가 필요하며 break-glass 전용입니다.
-- `readOnlyRoot: true`면 쓰기가 막힙니다. `readOnlyRoot: false`로 설정하거나 custom image에 bake하세요.
-- package install을 하려면 `user`가 root여야 합니다(`user`를 생략하거나 `user: "0:0"` 설정).
-- Sandbox exec는 host `process.env`를 상속하지 **않습니다**.
-  skill API key는 `agents.defaults.sandbox.docker.env`(또는 custom image)를 사용하세요.
-
-## Tool policy + escape hatches
-
-tool allow/deny policy는 sandbox rule보다 먼저 계속 적용됩니다. tool이 전역 또는 agent별로
-deny되어 있다면 sandboxing이 그것을 되살리지는 않습니다.
-
-`tools.elevated`는 host에서 `exec`를 실행하는 명시적 escape hatch입니다.
-`/exec` directive는 승인된 sender에만 적용되고 session별로 유지됩니다. `exec`를 완전히 비활성화하려면
-tool policy deny를 사용하세요([Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) 참고).
-
-디버깅:
-
-- 유효한 sandbox mode, tool policy, fix-it config key를 확인하려면 `openclaw sandbox explain`을 사용하세요.
-- “왜 이게 차단되지?”를 이해하는 모델은 [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)를 참고하세요.
-  잠금을 유지하세요.
-
-## Multi-agent overrides
-
-각 agent는 sandbox + tool을 override할 수 있습니다:
-`agents.list[].sandbox` 및 `agents.list[].tools` (`sandbox tool policy`용 `agents.list[].tools.sandbox.tools` 포함).
-우선순위는 [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools)를 참고하세요.
-
-## Minimal enable example
+## 상세 설정 예시 (최소 구성)
 
 ```json5
 {
@@ -251,8 +122,8 @@ tool policy deny를 사용하세요([Sandbox vs Tool Policy vs Elevated](/gatewa
 }
 ```
 
-## Related docs
+## 관련 문서 목록
 
-- [Sandbox Configuration](/gateway/configuration#agentsdefaults-sandbox)
-- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools)
-- [Security](/gateway/security)
+- [샌드박스 상세 설정 레퍼런스](/gateway/configuration#agentsdefaults-sandbox)
+- [멀티 에이전트 환경에서의 샌드박스 및 도구 정책](/tools/multi-agent-sandbox-tools)
+- [시스템 보안 가이드](/gateway/security)

@@ -173,42 +173,42 @@
 - [x] `docs/gateway/configuration.md` -> `docs/ko-KR/gateway/configuration.md`
 - [x] `docs/gateway/configuration.md` -> `docs/ko-KR/gateway/configuration.md`
 - [x] `docs/gateway/discovery.md` -> `docs/ko-KR/gateway/discovery.md`
-- [ ] `docs/gateway/doctor.md` -> `docs/ko-KR/gateway/doctor.md`
-- [ ] `docs/gateway/gateway-lock.md` -> `docs/ko-KR/gateway/gateway-lock.md`
-- [ ] `docs/gateway/health.md` -> `docs/ko-KR/gateway/health.md`
-- [ ] `docs/gateway/heartbeat.md` -> `docs/ko-KR/gateway/heartbeat.md`
-- [ ] `docs/gateway/local-models.md` -> `docs/ko-KR/gateway/local-models.md`
-- [ ] `docs/gateway/logging.md` -> `docs/ko-KR/gateway/logging.md`
-- [ ] `docs/gateway/multiple-gateways.md` -> `docs/ko-KR/gateway/multiple-gateways.md`
-- [ ] `docs/gateway/network-model.md` -> `docs/ko-KR/gateway/network-model.md`
-- [ ] `docs/gateway/openai-http-api.md` -> `docs/ko-KR/gateway/openai-http-api.md`
-- [ ] `docs/gateway/openresponses-http-api.md` -> `docs/ko-KR/gateway/openresponses-http-api.md`
-- [ ] `docs/gateway/pairing.md` -> `docs/ko-KR/gateway/pairing.md`
-- [ ] `docs/gateway/protocol.md` -> `docs/ko-KR/gateway/protocol.md`
-- [ ] `docs/gateway/remote-gateway-readme.md` -> `docs/ko-KR/gateway/remote-gateway-readme.md`
-- [ ] `docs/gateway/remote.md` -> `docs/ko-KR/gateway/remote.md`
-- [ ] `docs/gateway/sandboxing.md` -> `docs/ko-KR/gateway/sandboxing.md`
-- [ ] `docs/gateway/sandbox-vs-tool-policy-vs-elevated.md` -> `docs/ko-KR/gateway/sandbox-vs-tool-policy-vs-elevated.md`
-- [ ] `docs/gateway/secrets.md` -> `docs/ko-KR/gateway/secrets.md`
-- [ ] `docs/gateway/secrets-plan-contract.md` -> `docs/ko-KR/gateway/secrets-plan-contract.md`
-- [ ] `docs/gateway/security/index.md` -> `docs/ko-KR/gateway/security/index.md`
-- [ ] `docs/gateway/tailscale.md` -> `docs/ko-KR/gateway/tailscale.md`
-- [ ] `docs/gateway/tools-invoke-http-api.md` -> `docs/ko-KR/gateway/tools-invoke-http-api.md`
-- [ ] `docs/gateway/troubleshooting.md` -> `docs/ko-KR/gateway/troubleshooting.md`
-- [ ] `docs/gateway/trusted-proxy-auth.md` -> `docs/ko-KR/gateway/trusted-proxy-auth.md`
+- [x] `docs/gateway/doctor.md` -> `docs/ko-KR/gateway/doctor.md`
+- [x] `docs/gateway/gateway-lock.md` -> `docs/ko-KR/gateway/gateway-lock.md`
+- [x] `docs/gateway/health.md` -> `docs/ko-KR/gateway/health.md`
+- [x] `docs/gateway/heartbeat.md` -> `docs/ko-KR/gateway/heartbeat.md`
+- [x] `docs/gateway/local-models.md` -> `docs/ko-KR/gateway/local-models.md`
+- [x] `docs/gateway/logging.md` -> `docs/ko-KR/gateway/logging.md`
+- [x] `docs/gateway/multiple-gateways.md` -> `docs/ko-KR/gateway/multiple-gateways.md`
+- [x] `docs/gateway/network-model.md` -> `docs/ko-KR/gateway/network-model.md`
+- [x] `docs/gateway/openai-http-api.md` -> `docs/ko-KR/gateway/openai-http-api.md`
+- [x] `docs/gateway/openresponses-http-api.md` -> `docs/ko-KR/gateway/openresponses-http-api.md`
+- [x] `docs/gateway/pairing.md` -> `docs/ko-KR/gateway/pairing.md`
+- [x] `docs/gateway/protocol.md` -> `docs/ko-KR/gateway/protocol.md`
+- [x] `docs/gateway/remote-gateway-readme.md` -> `docs/ko-KR/gateway/remote-gateway-readme.md`
+- [x] `docs/gateway/remote.md` -> `docs/ko-KR/gateway/remote.md`
+- [x] `docs/gateway/sandboxing.md` -> `docs/ko-KR/gateway/sandboxing.md`
+- [x] `docs/gateway/sandbox-vs-tool-policy-vs-elevated.md` -> `docs/ko-KR/gateway/sandbox-vs-tool-policy-vs-elevated.md`
+- [x] `docs/gateway/secrets.md` -> `docs/ko-KR/gateway/secrets.md`
+- [x] `docs/gateway/secrets-plan-contract.md` -> `docs/ko-KR/gateway/secrets-plan-contract.md`
+- [x] `docs/gateway/security/index.md` -> `docs/ko-KR/gateway/security/index.md`
+- [x] `docs/gateway/tailscale.md` -> `docs/ko-KR/gateway/tailscale.md`
+- [x] `docs/gateway/tools-invoke-http-api.md` -> `docs/ko-KR/gateway/tools-invoke-http-api.md`
+- [x] `docs/gateway/troubleshooting.md` -> `docs/ko-KR/gateway/troubleshooting.md`
+- [x] `docs/gateway/trusted-proxy-auth.md` -> `docs/ko-KR/gateway/trusted-proxy-auth.md`
 
 ### 설치 (Install)
-- [ ] `docs/install/index.md` -> `docs/ko-KR/install/index.md`
-- [ ] `docs/install/ansible.md` -> `docs/ko-KR/install/ansible.md`
-- [ ] `docs/install/bun.md` -> `docs/ko-KR/install/bun.md`
-- [ ] `docs/install/development-channels.md` -> `docs/ko-KR/install/development-channels.md`
-- [ ] `docs/install/docker.md` -> `docs/ko-KR/install/docker.md`
-- [ ] `docs/install/exe-dev.md` -> `docs/ko-KR/install/exe-dev.md`
-- [ ] `docs/install/fly.md` -> `docs/ko-KR/install/fly.md`
-- [ ] `docs/install/gcp.md` -> `docs/ko-KR/install/gcp.md`
-- [ ] `docs/install/hetzner.md` -> `docs/ko-KR/install/hetzner.md`
-- [ ] `docs/install/installer.md` -> `docs/ko-KR/install/installer.md`
-- [ ] `docs/install/macos-vm.md` -> `docs/ko-KR/install/macos-vm.md`
+- [x] `docs/install/index.md` -> `docs/ko-KR/install/index.md`
+- [x] `docs/install/ansible.md` -> `docs/ko-KR/install/ansible.md`
+- [x] `docs/install/bun.md` -> `docs/ko-KR/install/bun.md`
+- [x] `docs/install/development-channels.md` -> `docs/ko-KR/install/development-channels.md`
+- [x] `docs/install/docker.md` -> `docs/ko-KR/install/docker.md`
+- [x] `docs/install/exe-dev.md` -> `docs/ko-KR/install/exe-dev.md`
+- [x] `docs/install/fly.md` -> `docs/ko-KR/install/fly.md`
+- [x] `docs/install/gcp.md` -> `docs/ko-KR/install/gcp.md`
+- [x] `docs/install/hetzner.md` -> `docs/ko-KR/install/hetzner.md`
+- [x] `docs/install/installer.md` -> `docs/ko-KR/install/installer.md`
+- [x] `docs/install/macos-vm.md` -> `docs/ko-KR/install/macos-vm.md`
 - [ ] `docs/install/migrating.md` -> `docs/ko-KR/install/migrating.md`
 - [ ] `docs/install/nix.md` -> `docs/ko-KR/install/nix.md`
 - [ ] `docs/install/node.md` -> `docs/ko-KR/install/node.md`

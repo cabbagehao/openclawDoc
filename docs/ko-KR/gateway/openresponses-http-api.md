@@ -1,65 +1,64 @@
 ---
-summary: "Gateway에서 OpenResponses 호환 /v1/responses HTTP 엔드포인트를 노출합니다"
+summary: "Gateway를 통해 OpenResponses 규격의 /v1/responses HTTP 엔드포인트를 노출하는 방법 안내"
 read_when:
-  - OpenResponses API를 사용하는 클라이언트를 통합할 때
-  - item 기반 입력, client tool call, SSE 이벤트가 필요할 때
+  - OpenResponses API를 사용하는 클라이언트와 통합하고자 할 때
+  - 아이템 기반 입력, 클라이언트 측 도구 호출(Client tool call), 또는 SSE 이벤트 기능이 필요할 때
 title: "OpenResponses API"
+x-i18n:
+  source_path: "gateway/openresponses-http-api.md"
 ---
 
 # OpenResponses API (HTTP)
 
-OpenClaw Gateway는 OpenResponses 호환 `POST /v1/responses` 엔드포인트를 제공할 수 있습니다.
+OpenClaw Gateway는 OpenResponses 규격을 따르는 `POST /v1/responses` 엔드포인트를 제공함.
 
-이 엔드포인트는 기본적으로 **비활성화**되어 있습니다. 먼저 설정에서 활성화하세요.
+이 엔드포인트는 보안을 위해 **기본적으로 비활성화**되어 있으며, 사용 전 설정 파일에서 활성화해야 함.
 
-- `POST /v1/responses`
-- Gateway와 동일한 포트(WS + HTTP 멀티플렉스): `http://<gateway-host>:<port>/v1/responses`
+- **엔드포인트**: `POST /v1/responses`
+- **접속 주소**: `http://<gateway-host>:<port>/v1/responses` (Gateway WebSocket과 동일한 멀티플렉스 포트 사용)
 
-내부적으로 요청은 일반 Gateway agent 실행(`openclaw agent`와 동일한 코드 경로)으로 처리되므로, 라우팅, 권한, 설정이 현재 Gateway와 일치합니다.
+내부적으로 이 요청은 일반적인 Gateway 에이전트 실행(`openclaw agent`와 동일한 로직)으로 처리됨. 따라서 라우팅 정책, 도구 권한 및 모든 에이전트 설정이 현재 Gateway 구성과 동일하게 적용됨.
 
-## Authentication
+## 인증 (Authentication)
 
-Gateway 인증 설정을 사용합니다. bearer token을 전송하세요.
+Gateway에 설정된 인증 방식을 그대로 사용하며, HTTP Bearer 토큰을 헤더에 포함하여 전송함:
 
 - `Authorization: Bearer <token>`
 
-참고:
+**참고 사항:**
+- `gateway.auth.mode="token"`인 경우 `gateway.auth.token` (또는 `OPENCLAW_GATEWAY_TOKEN` 환경 변수) 값을 사용함.
+- `gateway.auth.mode="password"`인 경우 `gateway.auth.password` (또는 `OPENCLAW_GATEWAY_PASSWORD` 환경 변수) 값을 사용함.
+- `gateway.auth.rateLimit`이 설정되어 있고 인증 실패 횟수가 초과되면 `429` (Too Many Requests) 오류와 함께 `Retry-After` 헤더를 반환함.
 
-- `gateway.auth.mode="token"`이면 `gateway.auth.token` 또는 `OPENCLAW_GATEWAY_TOKEN`을 사용합니다.
-- `gateway.auth.mode="password"`이면 `gateway.auth.password` 또는 `OPENCLAW_GATEWAY_PASSWORD`를 사용합니다.
-- `gateway.auth.rateLimit`이 설정되어 있고 인증 실패가 너무 많으면, 이 엔드포인트는 `Retry-After`와 함께 `429`를 반환합니다.
+## 보안 경계 (중요)
 
-## Security boundary (important)
+이 엔드포인트는 해당 Gateway 인스턴스에 대한 **전체 운영자 권한(Full operator-access)**을 가진 인터페이스로 간주해야 함.
 
-이 엔드포인트는 해당 gateway 인스턴스에 대한 **완전한 운영자 접근** 표면으로 취급해야 합니다.
+- 여기서 사용하는 HTTP Bearer 인증은 일반 사용자를 위한 제한된 범위의 권한 모델이 아님.
+- 유효한 토큰이나 비밀번호를 가진 호출자는 시스템 소유자 또는 운영자와 동일한 수준의 권한을 가진 것으로 처리됨.
+- 모든 요청은 신뢰할 수 있는 운영자의 작업과 동일한 제어 플레인 에이전트 경로를 통해 실행됨.
+- 호출자가 인증을 통과하면 OpenClaw는 해당 호출자를 완전한 신뢰 주체로 간주하므로, 에이전트 정책에서 허용하는 모든 민감한 도구(Exec, File 등)를 사용할 수 있음.
+- **보안 권고**: 이 엔드포인트를 공용 인터넷에 직접 노출하지 말고, 루프백(Loopback), Tailnet 또는 신뢰할 수 있는 전용 인그레스(Ingress) 환경에서만 사용하기 바람.
 
-- 여기의 HTTP bearer auth는 사용자별로 좁게 제한된 범위 모델이 아닙니다.
-- 이 엔드포인트에 대한 유효한 Gateway token/password는 소유자/운영자 자격 증명처럼 취급해야 합니다.
-- 요청은 신뢰된 운영자 동작과 같은 control-plane agent 경로를 통해 실행됩니다.
-- 이 엔드포인트에는 별도의 비소유자/사용자별 tool 경계가 없습니다. 호출자가 Gateway 인증을 통과하면 OpenClaw는 그 호출자를 이 gateway의 신뢰된 운영자로 간주합니다.
-- 대상 agent policy가 민감한 tool을 허용하면, 이 엔드포인트도 해당 tool을 사용할 수 있습니다.
-- 이 엔드포인트는 loopback, tailnet, private ingress에서만 사용하세요. 공용 인터넷에 직접 노출하지 마세요.
+상세 내용은 [보안 가이드](/gateway/security) 및 [원격 액세스](/gateway/remote) 참조.
 
-[Security](/gateway/security) 및 [Remote access](/gateway/remote)를 참고하세요.
+## 에이전트 선택 방법
 
-## Choosing an agent
-
-커스텀 헤더는 필요 없습니다. OpenResponses `model` 필드에 agent id를 넣으면 됩니다.
+별도의 커스텀 헤더 없이 OpenResponses `model` 필드에 에이전트 ID를 포함하여 대상을 지정할 수 있음:
 
 - `model: "openclaw:<agentId>"` (예: `"openclaw:main"`, `"openclaw:beta"`)
-- `model: "agent:<agentId>"` (별칭)
+- `model: "agent:<agentId>"` (별칭 형식)
 
-또는 헤더로 특정 OpenClaw agent를 지정할 수 있습니다.
+또는 전용 헤더를 사용하여 에이전트를 명시적으로 지정할 수도 있음:
 
 - `x-openclaw-agent-id: <agentId>` (기본값: `main`)
 
-고급 설정:
+**심화 라우팅:**
+- 특정 대화 세션으로 직접 라우팅하려면 `x-openclaw-session-key: <sessionKey>` 헤더를 사용함.
 
-- 세션 라우팅을 완전히 제어하려면 `x-openclaw-session-key: <sessionKey>`를 사용합니다.
+## 엔드포인트 활성화 설정
 
-## Enabling the endpoint
-
-`gateway.http.endpoints.responses.enabled`를 `true`로 설정합니다.
+`gateway.http.endpoints.responses.enabled` 값을 `true`로 설정함:
 
 ```json5
 {
@@ -73,9 +72,9 @@ Gateway 인증 설정을 사용합니다. bearer token을 전송하세요.
 }
 ```
 
-## Disabling the endpoint
+## 엔드포인트 비활성화 설정
 
-`gateway.http.endpoints.responses.enabled`를 `false`로 설정합니다.
+기능을 끄려면 해당 값을 `false`로 설정함 (또는 해당 섹션 삭제):
 
 ```json5
 {
@@ -89,46 +88,36 @@ Gateway 인증 설정을 사용합니다. bearer token을 전송하세요.
 }
 ```
 
-## Session behavior
+## 세션 동작 정책
 
-기본적으로 이 엔드포인트는 **요청별 무상태(stateless)** 입니다. 매 호출마다 새로운 session key가 생성됩니다.
+기본적으로 이 엔드포인트는 **요청별 무상태(Stateless)** 방식으로 작동하며, 매 호출 시마다 새로운 세션 키가 생성됨.
 
-요청에 OpenResponses `user` 문자열이 포함되면, Gateway는 여기서 안정적인 session key를 파생하므로 반복 호출이 같은 agent 세션을 공유할 수 있습니다.
+만약 요청 본문에 OpenResponses 규격의 `user` 문자열이 포함되어 있다면, Gateway는 해당 값을 기반으로 고정된 세션 키를 생성함. 이를 통해 동일한 사용자의 반복 호출이 하나의 에이전트 세션(대화 맥락)을 공유하도록 구성할 수 있음.
 
-## Request shape (supported)
+## 요청 형식 (지원 범위)
 
-요청은 item 기반 입력을 사용하는 OpenResponses API 형식을 따릅니다. 현재 지원 항목:
+요청 본문은 아이템(Item) 기반 입력을 사용하는 OpenResponses API 규격을 따름. 현재 지원되는 항목은 다음과 같음:
 
-- `input`: 문자열 또는 item object 배열
-- `instructions`: system prompt에 병합
-- `tools`: client tool 정의(function tool)
-- `tool_choice`: client tool 필터 또는 강제
-- `stream`: SSE streaming 활성화
-- `max_output_tokens`: best-effort 출력 한도(provider별 차이 있음)
-- `user`: 안정적인 session routing
+- **`input`**: 문자열 또는 아이템 객체 배열.
+- **`instructions`**: 시스템 프롬프트에 병합됨.
+- **`tools`**: 클라이언트 측 함수 도구 정의.
+- **`tool_choice`**: 클라이언트 도구 호출 필터링 또는 강제.
+- **`stream`**: SSE 스트리밍 활성화.
+- **`max_output_tokens`**: 출력 토큰 제한 (공급자 사양에 의존).
+- **`user`**: 고정 세션 라우팅용 식별자.
 
-허용하지만 **현재 무시하는** 항목:
+**현재 무시되는 항목** (스키마 호환성만 유지): `max_tool_calls`, `reasoning`, `metadata`, `store`, `previous_response_id`, `truncation`.
 
-- `max_tool_calls`
-- `reasoning`
-- `metadata`
-- `store`
-- `previous_response_id`
-- `truncation`
-
-## Items (input)
+## 아이템 타입 (입력)
 
 ### `message`
+- **역할(Role)**: `system`, `developer`, `user`, `assistant`.
+- `system` 및 `developer` 메시지는 시스템 프롬프트에 추가됨.
+- 가장 최근의 `user` 또는 `function_call_output` 아이템이 "현재 메시지"가 됨.
+- 이전의 `user`/`assistant` 메시지들은 대화 이력(History) 컨텍스트로 포함됨.
 
-역할: `system`, `developer`, `user`, `assistant`
-
-- `system`과 `developer`는 system prompt에 추가됩니다.
-- 가장 최근의 `user` 또는 `function_call_output` item이 “현재 메시지”가 됩니다.
-- 그보다 앞선 user/assistant 메시지는 컨텍스트용 history에 포함됩니다.
-
-### `function_call_output` (turn-based tools)
-
-tool 결과를 모델에 다시 전달합니다.
+### `function_call_output` (턴 기반 도구 결과)
+외부에서 실행된 도구 결과값을 모델에 다시 전달함:
 
 ```json
 {
@@ -138,20 +127,13 @@ tool 결과를 모델에 다시 전달합니다.
 }
 ```
 
-### `reasoning` and `item_reference`
+## 도구 (클라이언트 측 함수 도구)
 
-스키마 호환성을 위해 허용하지만, 프롬프트를 구성할 때는 무시됩니다.
+`tools` 배열 내에 `type: "function"` 형식을 사용하여 도구를 정의함. 에이전트가 도구 호출을 결정하면 응답 본문에 `function_call` 타입의 아이템이 반환됨. 호출자는 해당 도구를 실행한 후 `function_call_output` 아이템을 포함한 후속 요청을 보내 대화를 이어가야 함.
 
-## Tools (client-side function tools)
+## 이미지 입력 (`input_image`)
 
-`tools: [{ type: "function", function: { name, description?, parameters? } }]` 형식으로 tool을 제공합니다.
-
-agent가 tool 호출을 결정하면, 응답은 `function_call` output item을 반환합니다.
-이후 `function_call_output`이 포함된 후속 요청을 보내면 턴을 계속 진행할 수 있습니다.
-
-## Images (`input_image`)
-
-base64와 URL source를 모두 지원합니다.
+Base64 데이터 또는 공개 URL 소스를 지원함:
 
 ```json
 {
@@ -160,50 +142,34 @@ base64와 URL source를 모두 지원합니다.
 }
 ```
 
-현재 허용 MIME type: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/heic`, `image/heif`
-현재 최대 크기: 10MB
+- **허용 MIME 타입**: `image/jpeg`, `png`, `gif`, `webp`, `heic`, `heif`.
+- **최대 용량**: 10MB.
+- **참고**: HEIC/HEIF 이미지는 공급자에게 전달되기 전 JPEG로 자동 변환됨.
 
-## Files (`input_file`)
+## 파일 입력 (`input_file`)
 
-base64와 URL source를 모두 지원합니다.
+문서나 텍스트 파일을 Base64 또는 URL 소스로 전달함:
 
 ```json
 {
   "type": "input_file",
   "source": {
     "type": "base64",
-    "media_type": "text/plain",
-    "data": "SGVsbG8gV29ybGQh",
-    "filename": "hello.txt"
+    "media_type": "application/pdf",
+    "data": "...",
+    "filename": "report.pdf"
   }
 }
 ```
 
-현재 허용 MIME type: `text/plain`, `text/markdown`, `text/html`, `text/csv`, `application/json`, `application/pdf`
+- **허용 MIME 타입**: `text/plain`, `markdown`, `html`, `csv`, `application/json`, `application/pdf`.
+- **최대 용량**: 5MB.
+- **동작 특징**: 파일 내용은 에이전트 메인 메시지가 아닌 **시스템 프롬프트**에 디코딩되어 추가됨. 따라서 세션 이력에 영구 저장되지 않는 일시적인 컨텍스트로 취급됨.
+- **PDF 처리**: 텍스트를 우선 파싱하며, 텍스트가 부족한 경우 앞부분 페이지를 이미지로 래스터화하여 모델에 전달함. (Node 환경에 최적화된 `pdfjs-dist` 라이브러리 사용)
 
-현재 최대 크기: 5MB
+## 파일 및 이미지 제한 설정
 
-현재 동작:
-
-- 파일 내용은 user message가 아니라 **system prompt**에 디코딩되어 추가됩니다.
-  따라서 session history에는 저장되지 않고 일시적으로만 사용됩니다.
-- PDF는 텍스트를 파싱합니다. 텍스트가 거의 없으면 첫 페이지들을 래스터 이미지로 변환해 모델에 전달합니다.
-
-PDF 파싱에는 worker가 필요 없는 Node 친화적 `pdfjs-dist` legacy build를 사용합니다. 최신 PDF.js build는 브라우저 worker/DOM global을 기대하므로 Gateway에서는 사용하지 않습니다.
-
-URL fetch 기본값:
-
-- `files.allowUrl`: `true`
-- `images.allowUrl`: `true`
-- `maxUrlParts`: `8` (요청당 URL 기반 `input_file` + `input_image` 총 개수)
-- 요청에는 DNS resolution, private IP 차단, redirect 제한, timeout 보호가 적용됩니다.
-- 입력 유형별 hostname allowlist도 선택적으로 지원합니다(`files.urlAllowlist`, `images.urlAllowlist`).
-  - 정확한 호스트: `"cdn.example.com"`
-  - 와일드카드 서브도메인: `"*.assets.example.com"` (apex는 매칭하지 않음)
-
-## File + image limits (config)
-
-기본값은 `gateway.http.endpoints.responses` 아래에서 조정할 수 있습니다.
+`gateway.http.endpoints.responses` 하위에서 세부 제한 수치를 조정할 수 있음:
 
 ```json5
 {
@@ -212,42 +178,21 @@ URL fetch 기본값:
       endpoints: {
         responses: {
           enabled: true,
-          maxBodyBytes: 20000000,
-          maxUrlParts: 8,
+          maxBodyBytes: 20000000, // 요청 전체 최대 크기 (20MB)
+          maxUrlParts: 8, // URL 기반 입력 최대 개수
           files: {
             allowUrl: true,
-            urlAllowlist: ["cdn.example.com", "*.assets.example.com"],
-            allowedMimes: [
-              "text/plain",
-              "text/markdown",
-              "text/html",
-              "text/csv",
-              "application/json",
-              "application/pdf",
-            ],
-            maxBytes: 5242880,
-            maxChars: 200000,
-            maxRedirects: 3,
+            maxBytes: 5242880, // 파일당 최대 크기 (5MB)
+            maxChars: 200000, // 텍스트 추출 최대 글자 수
             timeoutMs: 10000,
             pdf: {
-              maxPages: 4,
-              maxPixels: 4000000,
+              maxPages: 4, // PDF 최대 처리 페이지 수
               minTextChars: 200,
             },
           },
           images: {
             allowUrl: true,
-            urlAllowlist: ["images.example.com"],
-            allowedMimes: [
-              "image/jpeg",
-              "image/png",
-              "image/gif",
-              "image/webp",
-              "image/heic",
-              "image/heif",
-            ],
-            maxBytes: 10485760,
-            maxRedirects: 3,
+            maxBytes: 10485760, // 이미지당 최대 크기 (10MB)
             timeoutMs: 10000,
           },
         },
@@ -257,71 +202,38 @@ URL fetch 기본값:
 }
 ```
 
-생략 시 기본값:
+**보안 주의:**
+- URL 허용 목록(`urlAllowlist`)은 실제 호출 전과 리다이렉트 과정에서 모두 검증됨.
+- 호스트명을 허용 목록에 추가하더라도 내부/사설 IP 대역에 대한 접근은 자동으로 차단됨.
 
-- `maxBodyBytes`: 20MB
-- `maxUrlParts`: 8
-- `files.maxBytes`: 5MB
-- `files.maxChars`: 200k
-- `files.maxRedirects`: 3
-- `files.timeoutMs`: 10s
-- `files.pdf.maxPages`: 4
-- `files.pdf.maxPixels`: 4,000,000
-- `files.pdf.minTextChars`: 200
-- `images.maxBytes`: 10MB
-- `images.maxRedirects`: 3
-- `images.timeoutMs`: 10s
-- HEIC/HEIF `input_image` source는 허용되며 provider로 전달되기 전에 JPEG로 정규화됩니다.
+## 스트리밍 지원 (SSE)
 
-보안 참고:
+`stream: true` 설정 시 다음과 같은 이벤트 타입이 서버-전송 이벤트(SSE) 형식으로 방출됨:
 
-- URL allowlist는 fetch 전과 redirect hop마다 모두 강제됩니다.
-- hostname을 allowlist에 넣어도 private/internal IP 차단은 우회되지 않습니다.
-- 인터넷에 노출된 gateway에서는 앱 수준 보호 외에도 네트워크 egress 제어를 적용하세요.
-  자세한 내용은 [Security](/gateway/security)를 참고하세요.
-
-## Streaming (SSE)
-
-Server-Sent Events(SSE)를 받으려면 `stream: true`를 설정하세요.
-
-- `Content-Type: text/event-stream`
-- 각 이벤트 줄은 `event: <type>`, `data: <json>` 형식입니다.
-- 스트림은 `data: [DONE]`으로 종료됩니다.
-
-현재 방출되는 이벤트 타입:
-
-- `response.created`
-- `response.in_progress`
-- `response.output_item.added`
-- `response.content_part.added`
-- `response.output_text.delta`
-- `response.output_text.done`
-- `response.content_part.done`
-- `response.output_item.done`
+- `response.created` / `in_progress`
+- `response.output_item.added` / `done`
+- `response.content_part.added` / `done`
+- `response.output_text.delta` / `done`
 - `response.completed`
-- `response.failed` (오류 시)
+- `response.failed` (오류 발생 시)
 
-## Usage
+응답 스트림은 `data: [DONE]` 메시지로 종료됨.
 
-기반 provider가 token 수를 보고하면 `usage`가 채워집니다.
+## 오류 형식
 
-## Errors
-
-오류는 다음과 같은 JSON object를 사용합니다.
+오류 발생 시 다음과 같은 JSON 구조를 반환함:
 
 ```json
-{ "error": { "message": "...", "type": "invalid_request_error" } }
+{ "error": { "message": "오류 메시지", "type": "invalid_request_error" } }
 ```
 
-일반적인 경우:
+- **401**: 인증 정보 누락 또는 유효하지 않음.
+- **400**: 잘못된 요청 본문 형식.
+- **405**: 지원하지 않는 HTTP 메서드.
 
-- `401` 누락되었거나 잘못된 auth
-- `400` 잘못된 요청 body
-- `405` 잘못된 메서드
+## 사용 예시
 
-## Examples
-
-비스트리밍:
+### 일반 응답 (Non-streaming)
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/responses \
@@ -330,11 +242,11 @@ curl -sS http://127.0.0.1:18789/v1/responses \
   -H 'x-openclaw-agent-id: main' \
   -d '{
     "model": "openclaw",
-    "input": "hi"
+    "input": "반가워"
   }'
 ```
 
-스트리밍:
+### 스트리밍 응답 (Streaming)
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/responses \
@@ -344,6 +256,6 @@ curl -N http://127.0.0.1:18789/v1/responses \
   -d '{
     "model": "openclaw",
     "stream": true,
-    "input": "hi"
+    "input": "오늘의 주요 뉴스 요약해줘"
   }'
 ```

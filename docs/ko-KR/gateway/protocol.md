@@ -1,24 +1,26 @@
 ---
-summary: "Gateway WebSocket 프로토콜: 핸드셰이크, 프레임, 버저닝"
+summary: "Gateway WebSocket 프로토콜 명세: 핸드셰이크 절차, 프레임 구조 및 버전 관리 안내"
 read_when:
-  - gateway WS 클라이언트를 구현하거나 업데이트할 때
-  - 프로토콜 불일치나 connect 실패를 디버깅할 때
-  - 프로토콜 스키마/모델을 다시 생성할 때
+  - Gateway WebSocket 클라이언트를 구현하거나 업데이트할 때
+  - 프로토콜 버전 불일치 또는 접속 실패 문제를 디버깅할 때
+  - 프로토콜 스키마 및 모델을 재생성할 때
 title: "Gateway 프로토콜"
+x-i18n:
+  source_path: "gateway/protocol.md"
 ---
 
 # Gateway 프로토콜 (WebSocket)
 
-Gateway WS 프로토콜은 OpenClaw의 **단일 control plane + node transport** 입니다. 모든 클라이언트(CLI, web UI, macOS app, iOS/Android node, headless node)는 WebSocket으로 연결하고 핸드셰이크 시점에 자신의 **role** 과 **scope** 를 선언합니다.
+OpenClaw의 Gateway WebSocket 프로토콜은 시스템의 **통합 제어 플레인 및 노드 전송 계층** 역할을 수행함. 모든 클라이언트(CLI, 제어 UI, macOS 앱, iOS/Android 노드, 헤드리스 노드 등)는 WebSocket을 통해 연결하며, 핸드셰이크 시점에 자신의 **역할(Role)**과 **스코프(Scope)**를 선언함.
 
-## 전송
+## 전송 계층 (Transport)
 
-- WebSocket, JSON payload를 담는 text frame 사용
-- 첫 번째 frame은 **반드시** `connect` 요청이어야 함
+- **방식**: WebSocket 기반, JSON 페이로드를 담은 텍스트 프레임 사용.
+- **규칙**: 연결 후 첫 번째 프레임은 **반드시** `connect` 요청이어야 함.
 
-## 핸드셰이크 (`connect`)
+## 핸드셰이크 절차 (`connect`)
 
-Gateway → Client (pre-connect challenge):
+**Gateway → 클라이언트 (챌린지 전달):**
 
 ```json
 {
@@ -28,7 +30,7 @@ Gateway → Client (pre-connect challenge):
 }
 ```
 
-Client → Gateway:
+**클라이언트 → Gateway (연결 요청):**
 
 ```json
 {
@@ -50,7 +52,7 @@ Client → Gateway:
     "commands": [],
     "permissions": {},
     "auth": { "token": "…" },
-    "locale": "en-US",
+    "locale": "ko-KR",
     "userAgent": "openclaw-cli/1.2.3",
     "device": {
       "id": "device_fingerprint",
@@ -63,7 +65,7 @@ Client → Gateway:
 }
 ```
 
-Gateway → Client:
+**Gateway → 클라이언트 (응답):**
 
 ```json
 {
@@ -74,7 +76,7 @@ Gateway → Client:
 }
 ```
 
-device token이 발급되면 `hello-ok` 에는 다음도 포함됩니다.
+기기 토큰(Device token)이 발급된 경우, 응답에 다음 정보가 포함됨:
 
 ```json
 {
@@ -86,7 +88,7 @@ device token이 발급되면 `hello-ok` 에는 다음도 포함됩니다.
 }
 ```
 
-### Node 예시
+### 노드 기기 연결 예시
 
 ```json
 {
@@ -108,131 +110,81 @@ device token이 발급되면 `hello-ok` 에는 다음도 포함됩니다.
     "commands": ["camera.snap", "canvas.navigate", "screen.record", "location.get"],
     "permissions": { "camera.capture": true, "screen.record": false },
     "auth": { "token": "…" },
-    "locale": "en-US",
-    "userAgent": "openclaw-ios/1.2.3",
-    "device": {
-      "id": "device_fingerprint",
-      "publicKey": "…",
-      "signature": "…",
-      "signedAt": 1737264000000,
-      "nonce": "…"
-    }
+    "device": { "id": "device_fingerprint", "publicKey": "…", "signature": "…" }
   }
 }
 ```
 
-## 프레이밍
+## 프레이밍 구조 (Framing)
 
-- **Request**: `{type:"req", id, method, params}`
-- **Response**: `{type:"res", id, ok, payload|error}`
-- **Event**: `{type:"event", event, payload, seq?, stateVersion?}`
+- **요청 (Request)**: `{type: "req", id, method, params}`
+- **응답 (Response)**: `{type: "res", id, ok, payload|error}`
+- **이벤트 (Event)**: `{type: "event", event, payload, seq?, stateVersion?}`
 
-부수 효과가 있는 메서드는 **idempotency key** 가 필요합니다(스키마 참고).
+부수 효과(Side-effect)가 발생하는 메서드는 스키마에 정의된 **멱등성 키(Idempotency keys)**를 필요로 함.
 
-## 역할 + 스코프
+## 역할 및 스코프 (Roles & Scopes)
 
-### 역할
+### 역할 (Roles)
+- **`operator`**: 제어 플레인 클라이언트 (CLI, UI, 자동화 도구).
+- **`node`**: 기능 제공 호스트 (카메라, 화면 공유, 캔버스, 명령어 실행 등).
 
-- `operator` = control plane 클라이언트(CLI/UI/automation)
-- `node` = capability host(camera/screen/canvas/system.run)
+### 스코프 (Scopes: operator 전용)
+- `operator.read` / `operator.write`: 기본 읽기/쓰기 권한.
+- `operator.admin`: 관리자 권한.
+- `operator.approvals`: 실행 승인 권한.
+- `operator.pairing`: 기기 페어링 관리 권한.
 
-### 스코프(operator)
+메서드 스코프는 1차적인 검문소이며, `/config set`과 같이 민감한 슬래시 명령은 추가로 `operator.admin` 권한을 요구함.
 
-일반적인 스코프:
+### 기능 및 명령 (node 전용)
+노드는 연결 시 자신의 역량을 선언함:
+- **`caps`**: 상위 카테고리 (예: `camera`).
+- **`commands`**: 실행 허용 명령 목록 (Invoke 대상).
+- **`permissions`**: 세부 권한 토글 (예: `screen.record`).
 
-- `operator.read`
-- `operator.write`
-- `operator.admin`
-- `operator.approvals`
-- `operator.pairing`
+Gateway는 노드의 선언을 **클레임(Claims)**으로 취급하며, 서버 측 허용 목록을 기반으로 실제 권한을 강제함.
 
-메서드 스코프는 첫 번째 게이트일 뿐입니다. `chat.send` 를 통해 도달하는 일부 slash command는 그 위에 더 엄격한 명령 수준 검사를 적용합니다. 예를 들어 영구적인 `/config set` 과 `/config unset` 쓰기는 `operator.admin` 이 필요합니다.
+## 프레즌스 (Presence)
 
-### Caps/commands/permissions (node)
+- **`system-presence`**: 기기 식별자(`deviceId`)를 키로 하는 접속 상태 정보를 반환함.
+- 동일 기기가 **운영자**와 **노드** 역할을 동시에 수행하더라도 UI에서는 단일 행으로 표시될 수 있도록 메타데이터를 포함함.
 
-node는 connect 시 capability claim을 선언합니다.
+## 실행 승인 (Exec approvals)
 
-- `caps`: 상위 수준 capability 분류
-- `commands`: invoke용 command allowlist
-- `permissions`: 세부 토글(예: `screen.record`, `camera.capture`)
+- 승인이 필요한 실행 요청이 발생하면 Gateway는 `exec.approval.requested` 이벤트를 브로드캐스트함.
+- `operator.approvals` 스코프를 가진 클라이언트가 `exec.approval.resolve` 메서드를 호출하여 승인 여부를 결정함.
+- 노드에서 실행되는 경우(`host=node`), 요청에는 반드시 정규화된 실행 계획(`systemRunPlan`)이 포함되어야 함.
 
-Gateway는 이것을 **claim** 으로 취급하고 서버 측 allowlist를 강제합니다.
+## 버전 관리 (Versioning)
 
-## Presence
+- **`PROTOCOL_VERSION`**: `src/gateway/protocol/schema.ts`에서 관리됨.
+- 클라이언트는 `minProtocol` 및 `maxProtocol` 범위를 전송하며, 서버 사양과 맞지 않을 경우 접속이 거부됨.
+- 모든 스키마와 모델은 TypeBox 정의를 기반으로 자동 생성됨 (`pnpm protocol:gen`).
 
-- `system-presence` 는 device identity를 키로 하는 항목을 반환합니다.
-- presence 항목에는 `deviceId`, `roles`, `scopes` 가 포함되어, UI가 한 디바이스가 **operator** 와 **node** 로 모두 연결되더라도 한 줄로 보여줄 수 있습니다.
+## 인증 및 보안 (Auth)
 
-### Node helper 메서드
+- **Gateway 토큰**: `OPENCLAW_GATEWAY_TOKEN` 설정 시 클라이언트의 연결 토큰이 일치해야 함.
+- **기기 토큰**: 페어링 완료 후 역할과 스코프가 할당된 전용 토큰이 발급됨. 클라이언트는 이후 재접속을 위해 이 토큰을 영구 저장해야 함.
+- **기기 식별**: 노드는 키 쌍 지문을 기반으로 한 안정적인 `device.id`를 제공해야 함.
+- **챌린지 서명**: 모든 연결은 서버가 제공한 `connect.challenge` 논스(Nonce)에 대해 기기 키로 서명해야 함.
 
-- node는 자동 허용 검사에 사용할 현재 skill executable 목록을 가져오기 위해 `skills.bins` 를 호출할 수 있습니다.
+### 인증 마이그레이션 진단
 
-### Operator helper 메서드
+챌린지 서명 방식을 따르지 않는 레거시 클라이언트를 위해 다음과 같은 상세 오류 코드를 제공함:
 
-- operator는 에이전트의 런타임 tool catalog를 가져오기 위해 `tools.catalog` (`operator.read`) 를 호출할 수 있습니다. 응답에는 그룹화된 도구와 provenance metadata가 포함됩니다.
-  - `source`: `core` 또는 `plugin`
-  - `pluginId`: `source="plugin"` 일 때 plugin owner
-  - `optional`: plugin tool이 선택 사항인지 여부
+| 메시지 | 상세 코드 (code) | 사유 (reason) | 의미 |
+| :--- | :--- | :--- | :--- |
+| `device nonce required` | `DEVICE_AUTH_NONCE_REQUIRED` | `device-nonce-missing` | 논스 값이 누락됨. |
+| `device nonce mismatch` | `DEVICE_AUTH_NONCE_MISMATCH` | `device-nonce-mismatch` | 잘못된 논스로 서명됨. |
+| `device signature invalid` | `DEVICE_AUTH_SIGNATURE_INVALID` | `device-signature` | 서명 페이로드가 규격(v2/v3)에 맞지 않음. |
+| `device signature expired` | `DEVICE_AUTH_SIGNATURE_EXPIRED` | `device-signature-stale` | 서명 타임스탬프 허용 오차 초과. |
+| `device identity mismatch` | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch` | ID가 공개 키 지문과 일치하지 않음. |
 
-## Exec 승인
+**권장 마이그레이션 방향:**
+- 반드시 `connect.challenge` 이벤트를 대기한 후 서명을 생성함.
+- 서버 논스가 포함된 `v3` 페이로드 서명을 권장함 (플랫폼 및 기기군 정보 포함).
 
-- exec 요청에 승인이 필요하면 gateway는 `exec.approval.requested` 를 브로드캐스트합니다.
-- operator 클라이언트는 `exec.approval.resolve` 호출로 이를 처리합니다(`operator.approvals` scope 필요).
-- `host=node` 인 경우 `exec.approval.request` 에는 `systemRunPlan`(정규 `argv`/`cwd`/`rawCommand`/session metadata)이 포함되어야 합니다. `systemRunPlan` 이 없는 요청은 거부됩니다.
+## 프로토콜 노출 범위
 
-## 버저닝
-
-- `PROTOCOL_VERSION` 은 `src/gateway/protocol/schema.ts` 에 있습니다.
-- 클라이언트는 `minProtocol` + `maxProtocol` 을 보내며, 서버는 불일치를 거부합니다.
-- 스키마 + 모델은 TypeBox 정의에서 생성됩니다.
-  - `pnpm protocol:gen`
-  - `pnpm protocol:gen:swift`
-  - `pnpm protocol:check`
-
-## 인증
-
-- `OPENCLAW_GATEWAY_TOKEN` (또는 `--token`) 이 설정되어 있으면 `connect.params.auth.token` 이 일치해야 하며, 그렇지 않으면 소켓이 닫힙니다.
-- 페어링 후 Gateway는 연결의 role + scope에 바인딩된 **device token** 을 발급합니다. 이 값은 `hello-ok.auth.deviceToken` 으로 반환되며, 이후 연결을 위해 클라이언트가 저장해야 합니다.
-- device token은 `device.token.rotate`, `device.token.revoke` 로 회전/폐기할 수 있습니다(`operator.pairing` scope 필요).
-
-## Device identity + pairing
-
-- node는 keypair fingerprint에서 파생한 안정적인 device identity(`device.id`)를 포함해야 합니다.
-- gateway는 device + role별로 token을 발급합니다.
-- local auto-approval이 켜져 있지 않으면, 새로운 device ID는 페어링 승인이 필요합니다.
-- **로컬** 연결에는 loopback과 gateway 호스트 자신의 tailnet 주소가 포함됩니다(같은 호스트의 tailnet bind도 auto-approve 가능).
-- 모든 WS 클라이언트는 `connect` 중 `device` identity를 포함해야 합니다(operator + node).
-  Control UI만 `gateway.controlUi.dangerouslyDisableDeviceAuth` 가 break-glass 용도로 켜져 있을 때 생략할 수 있습니다.
-- 모든 연결은 서버가 제공한 `connect.challenge` nonce에 서명해야 합니다.
-
-### Device auth 마이그레이션 진단
-
-예전처럼 pre-challenge 서명을 사용하는 레거시 클라이언트의 경우, 이제 `connect` 는 `error.details.code` 아래에 `DEVICE_AUTH_*` detail code를, `error.details.reason` 아래에 안정적인 reason을 반환합니다.
-
-일반적인 마이그레이션 실패:
-
-| 메시지 | details.code | details.reason | 의미 |
-| --- | --- | --- | --- |
-| `device nonce required` | `DEVICE_AUTH_NONCE_REQUIRED` | `device-nonce-missing` | 클라이언트가 `device.nonce` 를 생략했거나 비워 보냄 |
-| `device nonce mismatch` | `DEVICE_AUTH_NONCE_MISMATCH` | `device-nonce-mismatch` | 오래되었거나 잘못된 nonce로 서명함 |
-| `device signature invalid` | `DEVICE_AUTH_SIGNATURE_INVALID` | `device-signature` | 서명 payload가 v2 payload와 일치하지 않음 |
-| `device signature expired` | `DEVICE_AUTH_SIGNATURE_EXPIRED` | `device-signature-stale` | 서명 타임스탬프가 허용 skew 범위를 벗어남 |
-| `device identity mismatch` | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch` | `device.id` 가 public key fingerprint와 일치하지 않음 |
-| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key` | public key 포맷/정규화 실패 |
-
-마이그레이션 목표:
-
-- 항상 `connect.challenge` 를 기다릴 것
-- 서버 nonce가 포함된 v2 payload에 서명할 것
-- 동일한 nonce를 `connect.params.device.nonce` 로 보낼 것
-- 권장 서명 payload는 `v3` 이며, device/client/role/scopes/token/nonce 외에 `platform` 과 `deviceFamily` 도 바인딩함
-- 호환성을 위해 레거시 `v2` 서명도 계속 허용되지만, paired-device metadata pinning이 재연결 시 명령 정책을 계속 제어함
-
-## TLS + pinning
-
-- WS 연결에 TLS를 사용할 수 있습니다.
-- 클라이언트는 필요하면 gateway cert fingerprint를 pin할 수 있습니다(`gateway.tls` 설정, `gateway.remote.tlsFingerprint` 또는 CLI `--tls-fingerprint` 참고).
-
-## 범위
-
-이 프로토콜은 **전체 gateway API**(status, channels, models, chat, agent, sessions, nodes, approvals 등)를 노출합니다. 정확한 표면은 `src/gateway/protocol/schema.ts` 의 TypeBox 스키마에 정의되어 있습니다.
+본 프로토콜은 상태 조회, 채널 관리, 모델 제어, 채팅, 에이전트 실행, 세션 관리, 노드 및 승인 관리 등 **Gateway의 모든 API**를 노출함. 구체적인 명세는 `src/gateway/protocol/schema.ts` 파일의 TypeBox 스키마를 참조함.

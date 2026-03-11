@@ -1,58 +1,59 @@
 ---
-summary: "Bun 워크플로(실험적): 설치 방법과 pnpm 대비 주의점"
+summary: "Bun 워크플로(실험적): 설치 절차 및 pnpm 대비 주요 주의 사항 안내"
 read_when:
-  - 가장 빠른 로컬 개발 루프(bun + watch)를 원합니다
-  - Bun 설치/패치/라이프사이클 스크립트 문제를 겪고 있습니다
-title: "Bun (실험적)"
+  - 가장 빠른 로컬 개발 루프(Bun + Watch)를 활용하고자 할 때
+  - Bun 설치, 패치 또는 라이프사이클 스크립트 실행 관련 문제를 겪고 있을 때
+title: "Bun 설치 (실험적)"
+x-i18n:
+  source_path: "install/bun.md"
 ---
 
-# Bun (실험적)
+# Bun (실험적 기능)
 
-목표: **Bun**으로 이 저장소를 실행하되(선택 사항, WhatsApp/Telegram에는 비권장), pnpm 워크플로와 갈라지지 않게 유지합니다.
+목표: **Bun** 런타임을 사용하여 본 저장소의 코드를 실행함(선택 사항). 기존의 pnpm 워크플로를 해치지 않으면서 빠른 개발 환경을 구축하는 것을 지향함.
 
-⚠️ **Gateway 런타임에는 권장하지 않습니다**(WhatsApp/Telegram 버그). 프로덕션에서는 Node를 사용하세요.
+⚠️ **주의**: WhatsApp 및 Telegram 채널과의 호환성 이슈(버그)가 보고되었으므로, **Gateway 운영 런타임용으로는 권장하지 않음.** 프로덕션 환경에서는 반드시 Node.js를 사용하기 바람.
 
-## 상태
+## 현재 상태
 
-- Bun은 TypeScript를 직접 실행하기 위한 선택적 로컬 런타임입니다(`bun run …`, `bun --watch …`).
-- 빌드 기본값은 `pnpm`이며 여전히 완전히 지원되고 있습니다(일부 문서 도구도 사용).
-- Bun은 `pnpm-lock.yaml`을 사용할 수 없으며 무시합니다.
+- Bun은 TypeScript 코드를 즉시 실행하기 위한 선택적 로컬 런타임으로 활용 가능함 (`bun run …`, `bun --watch …`).
+- 프로젝트 빌드의 기본 도구는 `pnpm`이며, 일부 문서화 도구 역시 pnpm에 의존하므로 pnpm은 계속 지원됨.
+- Bun은 `pnpm-lock.yaml` 파일을 인식하지 못하며 이를 무시함.
 
-## 설치
+## 설치 방법
 
-기본:
+기본 설치 명령어:
 
 ```sh
 bun install
 ```
 
-참고: `bun.lock`/`bun.lockb`는 gitignore에 들어 있으므로 어느 쪽이든 저장소 변경이 생기지 않습니다. _락파일을 아예 쓰지 않으려면_:
+참고: `bun.lock` 또는 `bun.lockb` 파일은 `.gitignore`에 등록되어 있으므로 저장소 상태에 영향을 주지 않음. 만약 **락파일 생성을 완전히 차단**하고 싶다면 다음 명령어를 사용함:
 
 ```sh
 bun install --no-save
 ```
 
-## 빌드 / 테스트 (Bun)
+## 빌드 및 테스트 (Bun 활용)
 
 ```sh
 bun run build
 bun run vitest run
 ```
 
-## Bun 라이프사이클 스크립트(기본 차단)
+## Bun 라이프사이클 스크립트 (기본 차단됨)
 
-Bun은 의존성 라이프사이클 스크립트를 명시적으로 신뢰하지 않으면 차단할 수 있습니다(`bun pm untrusted` / `bun pm trust`).
-이 저장소에서 흔히 차단되는 스크립트는 필수는 아닙니다.
+Bun은 의존성 패키지의 라이프사이클 스크립트를 기본적으로 차단할 수 있음. 명시적으로 신뢰를 부여하려면 `bun pm trust` 명령어를 사용함. 현재 이 프로젝트에서 차단되는 주요 스크립트들은 필수가 아님:
 
-- `@whiskeysockets/baileys` `preinstall`: Node 메이저 버전이 20 이상인지 확인합니다(우리는 Node 22+ 사용).
-- `protobufjs` `postinstall`: 호환되지 않는 버전 체계에 대한 경고를 출력합니다(빌드 산출물 없음).
+- **`@whiskeysockets/baileys` (preinstall)**: Node.js 버전(20 이상)을 체크하는 용도임 (OpenClaw는 Node 22 이상을 요구함).
+- **`protobufjs` (postinstall)**: 버전 호환성 관련 경고를 출력하는 용도이며 실제 빌드 산출물을 생성하지 않음.
 
-이 스크립트들이 실제 런타임 문제 해결에 필요하다면 명시적으로 신뢰하세요:
+만약 실행 중 관련 스크립트 부재로 인한 문제가 발생한다면 다음과 같이 신뢰 설정을 추가함:
 
 ```sh
 bun pm trust @whiskeysockets/baileys protobufjs
 ```
 
-## 주의점
+## 제약 사항 및 주의점
 
-- 일부 스크립트는 여전히 pnpm을 하드코딩합니다(예: `docs:build`, `ui:*`, `protocol:check`). 지금은 이런 작업을 pnpm으로 실행하세요.
+- 일부 내부 스크립트(예: `docs:build`, `ui:*`, `protocol:check`)에는 여전히 pnpm 명령어가 하드코딩되어 있음. 해당 작업들은 당분간 pnpm을 통해 실행할 것을 권장함.

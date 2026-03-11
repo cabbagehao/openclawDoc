@@ -1,184 +1,158 @@
 ---
-summary: "Doctor 명령: health check, config migration, repair step"
+summary: "Doctor 명령어: 시스템 헬스 체크, 설정 마기그레이션 및 자동 복구 절차 안내"
 read_when:
-  - doctor migration을 추가하거나 수정할 때
-  - breaking config change를 도입할 때
-title: "Doctor"
+  - Doctor 마이그레이션 로직을 추가하거나 수정할 때
+  - 하위 호환성을 깨트리는 설정 변경(Breaking changes)을 도입할 때
+title: "Doctor (진단 및 복구)"
+x-i18n:
+  source_path: "gateway/doctor.md"
 ---
 
 # Doctor
 
-`openclaw doctor`는 OpenClaw의 repair + migration 도구입니다. 오래된 config/state를 수정하고, health를 점검하며, 실행 가능한 repair step을 제시합니다.
+`openclaw doctor`는 OpenClaw의 통합 진단, 복구 및 마이그레이션 도구임. 오래된 설정 및 상태 값을 최신 규격에 맞게 수정하고, 시스템 헬스 체크를 통해 즉시 실행 가능한 복구 단계를 제시함.
 
-## Quick start
+## 빠른 시작
 
 ```bash
 openclaw doctor
 ```
 
-### Headless / automation
+### 헤드리스 / 자동화 모드
 
 ```bash
 openclaw doctor --yes
 ```
 
-프롬프트 없이 기본값을 수락합니다. 적용 가능한 경우 restart/service/sandbox repair step도 포함됩니다.
+사용자 프롬프트 없이 모든 기본값을 수락함 (해당하는 경우 재시작, 서비스 복구, 샌드박스 수정 단계 포함).
 
 ```bash
 openclaw doctor --repair
 ```
 
-권장 repair를 프롬프트 없이 적용합니다. 안전한 범위의 repair + restart를 포함합니다.
+사용자 확인 없이 권장 복구 조치를 적용함 (안전한 범위 내의 복구 및 재시작 포함).
 
 ```bash
 openclaw doctor --repair --force
 ```
 
-더 공격적인 repair도 적용합니다. 커스텀 supervisor config를 덮어쓸 수 있습니다.
+커스텀 서비스 설정(Supervisor config)을 덮어쓰는 등 보다 공격적인 복구 조치를 강제로 적용함.
 
 ```bash
 openclaw doctor --non-interactive
 ```
 
-프롬프트 없이 실행하고, 안전한 migration(config normalization + 디스크 상태 이동)만 적용합니다. 사람 확인이 필요한 restart/service/sandbox action은 건너뜁니다.
-레거시 state migration은 감지되면 자동 실행됩니다.
+사용자 상호작용 없이 실행하며, 안전한 마이그레이션(설정 정규화 및 디스크 상태 이동)만 적용함. 사용자 확인이 필수적인 재시작, 서비스 관리, 샌드박스 관련 조치는 건너뜀. 레거시 상태 마이그레이션은 감지 시 자동으로 수행됨.
 
 ```bash
 openclaw doctor --deep
 ```
 
-시스템 서비스에서 추가 gateway install(launchd/systemd/schtasks)을 스캔합니다.
+시스템 서비스(launchd, systemd, schtasks)를 전체 스캔하여 추가적인 Gateway 설치 여부를 확인함.
 
-쓰기 전에 변경 내용을 검토하고 싶다면 먼저 config 파일을 여세요.
+변경 사항을 적용하기 전 내용을 검토하려면 설정 파일을 먼저 확인하기 바람:
 
 ```bash
 cat ~/.openclaw/openclaw.json
 ```
 
-## What it does (summary)
+## 주요 기능 요약
 
-- git install에 대한 선택적 pre-flight update(대화형일 때만)
-- UI protocol freshness check(protocol schema가 더 새로우면 Control UI 재빌드)
-- Health check + restart prompt
-- Skills 상태 요약(eligible/missing/blocked)
-- 레거시 값을 현재 형식으로 config normalization
-- OpenCode Zen provider override 경고(`models.providers.opencode`)
-- 레거시 디스크 상태 migration(sessions/agent dir/WhatsApp auth)
-- 레거시 cron store migration(`jobId`, `schedule.cron`, 최상위 delivery/payload field, payload `provider`, 단순 `notify: true` webhook fallback job)
-- State 무결성 및 권한 점검(session, transcript, state dir)
-- 로컬 실행 시 config file 권한 점검(chmod 600)
-- 모델 인증 상태: OAuth 만료 확인, 만료 임박 token refresh 가능, auth-profile cooldown/disabled 상태 보고
-- 추가 workspace dir 감지(`~/openclaw`)
-- sandboxing이 활성화된 경우 sandbox image repair
-- 레거시 서비스 migration 및 추가 gateway 감지
-- Gateway 런타임 점검(서비스는 설치됐지만 실행 중이 아님, cached launchd label 등)
-- Channel 상태 경고(실행 중 gateway를 probe해서 확인)
-- Supervisor config audit(launchd/systemd/schtasks) 및 선택적 repair
-- Gateway 런타임 best-practice 점검(Node vs Bun, version-manager 경로)
-- Gateway 포트 충돌 진단(기본값 `18789`)
-- open DM policy 보안 경고
-- 로컬 token mode에서 Gateway auth 점검(token source가 없으면 token 생성 제안, token SecretRef 설정은 덮어쓰지 않음)
-- Linux의 systemd linger check
-- 소스 설치 점검(pnpm workspace mismatch, UI asset 누락, tsx binary 누락)
-- 업데이트된 config + wizard metadata 기록
+- **업데이트 확인**: Git 설치본의 경우 실행 전 선택적 업데이트 수행 (대화형 모드 전용).
+- **프로토콜 무결성**: UI 프로토콜 스키마가 변경된 경우 Control UI를 자동으로 재빌드함.
+- **헬스 체크**: 시스템 상태 진단 및 필요 시 재시작 프롬프트 표시.
+- **스킬 상태 요약**: 현재 워크스페이스에서 사용 가능한 스킬 및 누락/차단된 스킬 상태 보고.
+- **설정 정규화**: 레거시 설정 값을 현재 스키마에 맞게 정규화함.
+- **공급자 경고**: `models.providers.opencode` 등 수동 오버라이드로 인한 잠재적 오류 경고.
+- **상태 마이그레이션**: 세션, 에이전트 디렉터리, WhatsApp 인증 정보 등 레거시 디스크 경로 이동.
+- **크론 마이그레이션**: `jobId`, 스케줄 표현식, 페이로드 필드 등 오래된 크론 설정 변환.
+- **권한 검사**: 세션, 트랜스크립트, 상태 디렉터리 등의 무결성 및 파일 권한(chmod 600 등) 점검.
+- **인증 상태 점검**: OAuth 토큰 만료 확인 및 갱신, 인증 프로필의 쿨다운/비활성화 상태 보고.
+- **워크스페이스 감지**: 중복되거나 잘못된 워크스페이스 경로 확인.
+- **샌드박스 복구**: 샌드박스 활성화 시 관련 Docker 이미지 상태 점검 및 복구.
+- **서비스 관리**: 레거시 서비스 마이그레이션 및 포트 충돌(기본값 `18789`) 진단.
+- **런타임 최적화**: Node.js 버전 관리 도구 경로 및 런타임(Node vs Bun) 관련 권장 사항 제시.
+- **보안 경고**: 개방된 DM 정책 등 보안상 취약한 설정에 대한 경고.
+- **링거링(Linger) 체크**: Linux 환경에서 사용자 로그아웃 후에도 서비스가 유지되도록 설정 확인.
+- **설정 및 메타데이터 기록**: 업데이트된 설정과 마법사(Wizard) 실행 이력을 저장함.
 
-## Detailed behavior and rationale
+## 상세 동작 원리 및 근거
 
-### 0) Optional update (git installs)
+### 1) 설정 정규화 (Config normalization)
 
-git checkout이고 doctor가 대화형으로 실행 중이면, doctor 전에 update(fetch/rebase/build)를 할지 묻습니다.
+설정 파일에 채널별 오버라이드가 없는 전역 설정(예: `messages.ackReaction`) 등 레거시 형식이 포함된 경우, 이를 현재 스키마 규격으로 정규화함.
 
-### 1) Config normalization
+### 2) 레거시 설정 키 마이그레이션
 
-config에 레거시 값 형식이 있으면(예: 채널별 override 없이 `messages.ackReaction`만 존재), doctor가 이를 현재 schema로 정규화합니다.
+더 이상 사용되지 않는 키가 감지되면 시스템은 실행을 거부하고 `openclaw doctor` 실행을 요청함.
 
-### 2) Legacy config key migrations
+**Doctor 수행 내용:**
+- 발견된 레거시 키 목록 설명.
+- 적용될 마이그레이션 내용 표시.
+- 최신 스키마를 적용하여 `~/.openclaw/openclaw.json` 파일 재기록.
 
-config에 더 이상 쓰지 않는 key가 있으면, 다른 명령은 실행을 거부하고 `openclaw doctor`를 실행하라고 안내합니다.
+Gateway 실행 시에도 레거시 형식이 감지되면 자동으로 마이그레이션을 시도하므로, 수동 조작 없이도 설정을 최신 상태로 유지할 수 있음.
 
-Doctor는 다음을 수행합니다.
-
-- 어떤 legacy key가 발견되었는지 설명
-- 적용한 migration 표시
-- `~/.openclaw/openclaw.json`을 현재 schema로 다시 기록
-
-Gateway도 startup 시 legacy config format을 감지하면 doctor migration을 자동 실행하므로, 오래된 config는 수동 개입 없이 복구됩니다.
-
-현재 migration:
-
+**현재 지원되는 마이그레이션 항목:**
 - `routing.allowFrom` → `channels.whatsapp.allowFrom`
-- `routing.groupChat.requireMention` → `channels.whatsapp/telegram/imessage.groups."*".requireMention`
+- `routing.groupChat.requireMention` → `channels.<provider>.groups."*".requireMention`
 - `routing.groupChat.historyLimit` → `messages.groupChat.historyLimit`
-- `routing.groupChat.mentionPatterns` → `messages.groupChat.mentionPatterns`
 - `routing.queue` → `messages.queue`
 - `routing.bindings` → 최상위 `bindings`
-- `routing.agents`/`routing.defaultAgentId` → `agents.list` + `agents.list[].default`
+- `routing.agents`/`routing.defaultAgentId` → `agents.list` 및 `agents.list[].default`
 - `routing.agentToAgent` → `tools.agentToAgent`
-- `routing.transcribeAudio` → `tools.media.audio.models`
-- `bindings[].match.accountID` → `bindings[].match.accountId`
-- named `accounts`가 있지만 `accounts.default`가 없는 채널에서는, top-level 단일 account 값을 `channels.<channel>.accounts.default`로 이동
-- `identity` → `agents.list[].identity`
-- `agent.*` → `agents.defaults` + `tools.*` (tools/elevated/exec/sandbox/subagents)
-- `agent.model`/`allowedModels`/`modelAliases`/`modelFallbacks`/`imageModelFallbacks`
-  → `agents.defaults.models` + `agents.defaults.model.primary/fallbacks` + `agents.defaults.imageModel.primary/fallbacks`
+- `agent.*` → `agents.defaults` 및 `tools.*` (tools/elevated/exec/sandbox/subagents)
 - `browser.ssrfPolicy.allowPrivateNetwork` → `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork`
 
-Doctor 경고에는 multi-account channel의 account-default 가이드도 포함됩니다.
+또한, 다중 계정 채널에서 `defaultAccount` 설정이 누락되어 예기치 않은 라우팅이 발생할 수 있는 경우에 대해서도 가이드를 제공함.
 
-- `channels.<channel>.defaultAccount` 또는 `accounts.default` 없이 `channels.<channel>.accounts`가 둘 이상 설정되어 있으면, fallback routing이 예상치 못한 account를 선택할 수 있다고 경고합니다.
-- `channels.<channel>.defaultAccount`가 존재하지 않는 account ID를 가리키면, doctor가 configured account ID 목록과 함께 경고합니다.
+### 3) 디스크 레이아웃 마이그레이션
 
-### 2b) OpenCode Zen provider overrides
+오래된 디스크 경로 구조를 최신 구조로 자동 이동함:
+- **세션 및 트랜스크립트**: `~/.openclaw/sessions/` → `~/.openclaw/agents/<agentId>/sessions/`
+- **에이전트 디렉터리**: `~/.openclaw/agent/` → `~/.openclaw/agents/<agentId>/agent/`
+- **WhatsApp 인증 정보**: `~/.openclaw/credentials/*.json` → `~/.openclaw/credentials/whatsapp/<accountId>/`
 
-`models.providers.opencode`(또는 `opencode-zen`)를 수동으로 추가한 경우, `@mariozechner/pi-ai`의 built-in OpenCode Zen catalog를 덮어쓸 수 있습니다. 그러면 모든 모델이 하나의 API로 강제되거나 비용 정보가 0이 될 수 있습니다. doctor는 override를 제거해 모델별 API routing + 비용을 복원하라고 경고합니다.
+이 과정은 멱등성(Idempotent)을 유지하며 안전하게 수행됨. WhatsApp 인증 정보의 경우 반드시 `openclaw doctor`를 통해서만 마이그레이션되도록 설계됨.
 
-### 3) Legacy state migrations (disk layout)
+### 4) 상태 무결성 점검 (세션, 라우팅 및 보안)
 
-Doctor는 이전 디스크 레이아웃을 현재 구조로 migration할 수 있습니다.
+상태 디렉터리는 시스템의 핵심 데이터를 담고 있음. 해당 경로에 문제가 생기면 세션, 인증 정보, 로그 등이 유실될 수 있음.
 
-- Sessions store + transcript:
-  - `~/.openclaw/sessions/`에서 `~/.openclaw/agents/<agentId>/sessions/`로
-- Agent dir:
-  - `~/.openclaw/agent/`에서 `~/.openclaw/agents/<agentId>/agent/`로
-- WhatsApp auth state (Baileys):
-  - 레거시 `~/.openclaw/credentials/*.json`(단 `oauth.json` 제외)에서
-  - `~/.openclaw/credentials/whatsapp/<accountId>/...`로 (기본 account id: `default`)
+- **디렉터리 누락**: 데이터 유실 경고 및 디렉터리 재구성 제안.
+- **파일 권한**: 쓰기 권한 확인 및 `chown` 등 복구 힌트 제공.
+- **클라우드 동기화 경고**: iCloud Drive 등 동기화 경로 사용 시 I/O 지연 및 락(Lock) 경합 위험 알림.
+- **저장 매체 수명**: SD 카드나 eMMC 환경에서 잦은 쓰기로 인한 수명 단축 및 성능 저하 경고 (Linux).
+- **트랜스크립트 불일치**: 세션 엔트리에 대응하는 실제 파일이 없는 경우 경고.
+- **설정 파일 보안**: `openclaw.json` 파일이 타인에게 읽기 권한이 부여된 경우 `600`으로 제한할 것을 권장함.
 
-이 migration은 best-effort이고 idempotent합니다. 백업으로 남겨진 legacy folder가 있으면 doctor가 경고를 출력합니다. Gateway/CLI도 startup 시 legacy sessions + agent dir를 자동 migration하므로, history/auth/models가 수동 doctor 실행 없이 agent별 경로로 옮겨집니다. 반면 WhatsApp auth는 의도적으로 `openclaw doctor`를 통해서만 migration됩니다.
+### 5) 모델 인증 상태 및 갱신 (OAuth)
 
-### 3b) Legacy cron store migrations
+인증 저장소의 OAuth 프로필을 검사하여 토큰 만료를 경고하고, 안전한 경우 자동 갱신을 수행함. Anthropic Claude Code 프로필이 만료된 경우 `setup-token` 재설정을 안내함. 갱신 프롬프트는 대화형(TTY) 환경에서만 표시됨.
 
-Doctor는 cron job store(기본값 `~/.openclaw/cron/jobs.json`, 또는 `cron.store` override 시 해당 경로)에서 scheduler가 호환성 때문에 아직 수용하는 오래된 job 형식도 점검합니다.
+### 6) 샌드박스 이미지 복구
 
-현재 cron 정리 항목:
+샌드박싱 기능 활성화 시 Docker 이미지 존재 여부를 확인하고, 누락된 경우 빌드 또는 설정을 지원함.
 
-- `jobId` → `id`
-- `schedule.cron` → `schedule.expr`
-- 최상위 payload field(`message`, `model`, `thinking`, ...) → `payload`
-- 최상위 delivery field(`deliver`, `channel`, `to`, `provider`, ...) → `delivery`
-- payload `provider` delivery alias → 명시적 `delivery.channel`
-- 단순 레거시 `notify: true` webhook fallback job → 명시적 `delivery.mode="webhook"` + `delivery.to=cron.webhook`
+### 7) 서비스(Supervisor) 구성 진단 및 복구
 
-Doctor는 동작을 바꾸지 않고 변환할 수 있을 때만 `notify: true` job을 자동 migration합니다. 레거시 notify fallback과 기존의 non-webhook delivery mode가 함께 있으면, doctor는 경고만 하고 수동 검토를 위해 그대로 둡니다.
+설치된 서비스 설정(launchd, systemd, schtasks)이 최신 기본값(네트워크 의존성, 재시작 지연 등)을 따르는지 확인함. 불일치 감지 시 업데이트를 권장하며 설정을 재기록할 수 있음.
 
-### 4) State integrity checks (session persistence, routing, and safety)
+**참고 사항:**
+- 토큰 인증 사용 시, 시크릿 참조(SecretRef)로 관리되는 토큰 값은 서비스 환경 변수에 평문으로 노출되지 않도록 처리함.
+- `gateway.auth.mode`가 명확하지 않은 경우 서비스 설치/복구 단계를 차단하고 설정을 요청함.
+- Linux 사용자 systemd 유닛의 경우 `Environment=` 및 `EnvironmentFile=` 소스를 모두 대조하여 토큰 드리프트(Drift) 여부를 확인함.
 
-state directory는 운영상의 두뇌줄기와 같습니다. 이 경로가 사라지면 session, credential, log, config를 잃게 됩니다. 다른 백업이 없다면 복구할 수 없습니다.
+### 8) 포트 충돌 및 런타임 진단
 
-Doctor가 점검하는 항목:
+기본 포트(`18789`) 충돌 여부를 확인하고 원인(기존 프로세스, SSH 터널 등)을 진단함. 또한 서비스가 설치되었으나 실행 중이 아닌 상태를 감지하여 보고함.
 
-- **State dir missing**: 심각한 state 손실을 경고하고 디렉터리 재생성을 제안하며, 사라진 데이터는 복구할 수 없음을 알림
-- **State dir permissions**: 쓰기 가능 여부 확인, 권한 repair 제안, owner/group mismatch가 있으면 `chown` 힌트 출력
-- **macOS cloud-synced state dir**: iCloud Drive(`~/Library/Mobile Documents/com~apple~CloudDocs/...`) 또는 `~/Library/CloudStorage/...` 아래에 있으면 느린 I/O와 lock/sync race를 경고
-- **Linux SD 또는 eMMC state dir**: `mmcblk*` mount source에 있으면 세션/credential 쓰기에서 느리고 마모가 빠를 수 있다고 경고
-- **Session dirs missing**: `sessions/`와 session store dir은 history 저장과 `ENOENT` crash 방지에 필수
-- **Transcript mismatch**: 최근 session entry에 transcript file이 없으면 경고
-- **Main session “1-line JSONL”**: main transcript가 한 줄뿐이면 history가 누적되지 않는 것으로 간주하고 경고
-- **Multiple state dirs**: 서로 다른 홈 디렉터리에 여러 `~/.openclaw`가 있거나 `OPENCLAW_STATE_DIR`가 다른 곳을 가리키면 history가 여러 설치에 흩어질 수 있다고 경고
-- **Remote mode reminder**: `gateway.mode=remote`이면 실제 state가 remote host에 있으므로 그곳에서 doctor를 실행하라고 안내
-- **Config file permissions**: `~/.openclaw/openclaw.json`이 group/world readable이면 경고하고 `600`으로 조이도록 제안
+### 9) 런타임 권장 사항 (Node.js)
 
-### 5) Model auth health (OAuth expiry)
+Gateway 서비스가 Bun 또는 버전 관리 도구(nvm, fnm 등) 경로에서 실행되는 경우 경고를 표시함. WhatsApp 및 Telegram 채널은 Node.js 환경이 필수적이며, 버전 관리 도구 경로는 시스템 업데이트 시 서비스 실행이 중단될 위험이 있음. 가능하면 시스템 설치 Node.js(Homebrew, apt 등) 경로로 마이그레이션할 것을 권장함.
 
-Doctor는 auth store의 OAuth profile을 검사하고, token이 만료 직전인지 이미 만료됐는지 경고하며, 안전할 때는 refresh도 시도할 수 있습니다. Anthropic Claude Code profile이 오래되었다면 `claude setup-token` 실행 또는 setup-token 붙여넣기를 제안합니다.
-refresh 프롬프트는 대화형 TTY일 때만 나타나며, `--non-interactive`는 refresh 시도를 건너뜁니다.
+### 10) 워크스페이스 팁 (백업 및 메모리)
+
+워크스페이스에 메모리 시스템이 구축되어 있지 않거나 Git으로 관리되고 있지 않은 경우, 데이터 보존 및 에이전트 성능 향상을 위한 백업 및 메모리 활용 팁을 제공함.
+
+상세 내용은 [에이전트 워크스페이스 개념 가이드](/concepts/agent-workspace)를 참조함.
