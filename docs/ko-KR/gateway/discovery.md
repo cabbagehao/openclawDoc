@@ -1,123 +1,119 @@
 ---
-summary: "gateway를 찾기 위한 노드 디스커버리와 전송 계층(Bonjour, Tailscale, SSH)"
+summary: "Gateway 탐색 및 전송 계층(Bonjour, Tailscale, SSH) 가이드"
 read_when:
-  - Bonjour discovery/advertising을 구현하거나 변경할 때
-  - 원격 연결 방식(direct vs SSH)을 조정할 때
-  - 원격 노드용 discovery + pairing을 설계할 때
-title: "디스커버리와 전송 계층"
+  - Bonjour 탐색/공고 기능을 구현하거나 수정할 때
+  - 원격 연결 방식(Direct vs SSH)을 조정하고자 할 때
+  - 원격 노드용 탐색 및 페어링 프로세스를 설계할 때
+title: "탐색 및 전송 계층"
+x-i18n:
+  source_path: "gateway/discovery.md"
 ---
 
-# 디스커버리와 전송 계층
+# 탐색(Discovery) 및 전송 계층
 
-OpenClaw에는 겉으로 비슷해 보여도 실제로는 다른 두 가지 문제가 있습니다.
+OpenClaw의 연결 구조는 겉보기에는 비슷해 보이나 실제로는 성격이 다른 두 가지 케이스로 나뉨:
 
-1. **운영자 원격 제어**: macOS 메뉴 막대 앱이 다른 곳에서 실행 중인 gateway를 제어하는 문제
-2. **노드 페어링**: iOS/Android(및 향후 노드)가 gateway를 찾아 안전하게 페어링하는 문제
+1. **운영자 원격 제어**: macOS 메뉴 막대 앱이 원격지에 실행 중인 Gateway를 제어하는 경우.
+2. **노드 페어링**: iOS/Android(및 향후 추가될 노드) 기기가 Gateway를 찾아 안전하게 페어링하는 경우.
 
-설계 목표는 네트워크 discovery/advertising을 모두 **Node Gateway** (`openclaw gateway`) 에 두고, 클라이언트(mac 앱, iOS)는 이를 소비하는 역할만 하게 하는 것입니다.
+설계 목표는 모든 네트워크 탐색 및 공고(Advertising) 기능을 **Node Gateway** (`openclaw gateway`)에 집중시키고, 클라이언트(macOS 앱, iOS 등)는 이를 소비하는 역할만 수행하도록 하는 것임.
 
-## 용어
+## 주요 용어 정의
 
-- **Gateway**: 상태(세션, 페어링, 노드 레지스트리)를 소유하고 채널을 실행하는 단일 장기 실행 gateway 프로세스. 대부분의 환경은 호스트당 하나를 사용하지만, 격리된 multi-gateway 구성도 가능
-- **Gateway WS (control plane)**: 기본적으로 `127.0.0.1:18789` 의 WebSocket endpoint; `gateway.bind` 로 LAN/tailnet에 bind 가능
-- **Direct WS transport**: LAN/tailnet을 향하는 Gateway WS endpoint(SSH 없음)
-- **SSH transport (fallback)**: SSH를 통해 `127.0.0.1:18789` 를 포워딩해 원격 제어
-- **Legacy TCP bridge (deprecated/removed)**: 이전 노드 전송 방식([Bridge protocol](/gateway/bridge-protocol) 참고); 더 이상 discovery에 광고되지 않음
+- **Gateway**: 상태 정보(세션, 페어링, 노드 레지스트리)를 관리하고 채널을 실행하는 단일 프로세스. 일반적으로 호스트당 하나를 사용하며, 필요한 경우 격리된 멀티 Gateway 구성도 가능함.
+- **Gateway WS (제어 플레인)**: 기본값 `127.0.0.1:18789`에서 대기하는 WebSocket 엔드포인트. `gateway.bind` 설정을 통해 LAN 또는 Tailnet에 바인딩할 수 있음.
+- **Direct WS 전송**: SSH 터널링 없이 LAN/Tailnet을 통해 직접 노출된 Gateway WebSocket 엔드포인트.
+- **SSH 전송 (폴백)**: SSH 포워딩을 통해 `127.0.0.1:18789` 포트에 접속하여 원격 제어를 수행하는 방식.
+- **레거시 TCP 브리지 (제거됨)**: 과거의 노드 전송 프로토콜([브리지 프로토콜](/gateway/bridge-protocol) 참조). 현재는 탐색용으로 공고되지 않음.
 
-프로토콜 세부 사항:
+**프로토콜 상세 정보:**
+- [Gateway 프로토콜](/gateway/protocol)
+- [브리지 프로토콜 (레거시)](/gateway/bridge-protocol)
 
-- [Gateway protocol](/gateway/protocol)
-- [Bridge protocol (legacy)](/gateway/bridge-protocol)
+## Direct 전송과 SSH를 병행하는 이유
 
-## “direct”와 SSH를 둘 다 유지하는 이유
+- **Direct WS (권장)**: 동일 네트워크 또는 Tailnet 환경에서 최상의 사용자 경험(UX)을 제공함.
+  - Bonjour를 통한 LAN 내 자동 탐색 지원.
+  - Gateway가 페어링 토큰 및 ACL(접근 제어 목록)을 직접 관리.
+  - 셸 접근 권한이 필요 없으며, 노출되는 프로토콜 표면을 최소화하여 보안 감사에 유리함.
+- **SSH (폴백)**: 범용적인 대체 수단으로 활용됨.
+  - SSH 접근만 가능하다면 네트워크 경계를 넘어 어디서든 동작함.
+  - 멀티캐스트(mDNS) 통신이 제한된 환경에서도 안정적임.
+  - SSH 외에 별도의 인바운드 포트를 개방할 필요가 없음.
 
-- **Direct WS** 는 같은 네트워크와 tailnet 안에서 UX가 가장 좋습니다.
-  - Bonjour를 통한 LAN 자동 discovery
-  - gateway가 pairing token과 ACL을 소유
-  - shell 접근이 필요 없고, 프로토콜 표면을 더 좁고 감사 가능하게 유지 가능
-- **SSH** 는 보편적인 fallback입니다.
-  - SSH 접근만 있으면 어디서든 동작(서로 다른 네트워크를 넘어도 가능)
-  - multicast/mDNS 문제가 있어도 버팀
-  - SSH 외에 새로운 inbound port가 필요 없음
-
-## 디스커버리 입력(클라이언트가 gateway 위치를 아는 방법)
+## 탐색 입력 소스 (Gateway 위치 식별 방법)
 
 ### 1) Bonjour / mDNS (LAN 전용)
 
-Bonjour는 best-effort이며 네트워크를 넘지 않습니다. "같은 LAN" 편의를 위해서만 사용됩니다.
+Bonjour는 최선 노력(Best-effort) 방식이며 네트워크 경계를 넘지 못함. 오직 "동일 LAN" 내에서의 편의를 위해서만 사용됨.
 
-목표 방향:
+**동작 원리:**
+- **Gateway**는 Bonjour를 통해 자신의 WebSocket 엔드포인트를 공고함.
+- 클라이언트는 네트워크를 스캔(Browse)하여 "Gateway 선택" 목록을 표시하고, 사용자가 선택한 엔드포인트를 저장함.
 
-- **gateway** 가 Bonjour로 자신의 WS endpoint를 광고
-- 클라이언트는 browse해서 "gateway 선택" 목록을 보여주고, 선택된 endpoint를 저장
+상세 내용 및 트러블슈팅: [Bonjour](/gateway/bonjour)
 
-문제 해결과 beacon 세부 사항: [Bonjour](/gateway/bonjour)
+#### 서비스 비컨(Beacon) 상세 정보
 
-#### 서비스 beacon 세부 사항
+- **서비스 유형**: `_openclaw-gw._tcp` (Gateway 전송 비컨)
+- **TXT 레코드 키 (비밀 정보 아님)**:
+  - `role=gateway`: 서비스 역할.
+  - `lanHost=<호스트명>.local`: 로컬 호스트 주소.
+  - `sshPort=22`: 공고된 SSH 포트.
+  - `gatewayPort=18789`: Gateway WebSocket 및 HTTP 포트.
+  - `gatewayTls=1`: TLS 활성화 시 포함.
+  - `gatewayTlsSha256=<sha256>`: TLS 인증서 지문 (사용 가능한 경우).
+  - `canvasPort=<포트>`: 캔버스 호스트 포트 (활성화 시 `gatewayPort`와 동일).
+  - `cliPath=<경로>`: 실행 가능한 `openclaw` 엔트리포인트의 절대 경로 (선택 사항).
+  - `tailnetDns=<magicdns>`: Tailscale 사용 시 자동 감지된 매직 DNS 힌트 (선택 사항).
 
-- 서비스 타입:
-  - `_openclaw-gw._tcp` (gateway transport beacon)
-- TXT 키(비밀 아님):
-  - `role=gateway`
-  - `lanHost=<hostname>.local`
-  - `sshPort=22` (또는 광고된 값)
-  - `gatewayPort=18789` (Gateway WS + HTTP)
-  - `gatewayTls=1` (TLS가 켜진 경우만)
-  - `gatewayTlsSha256=<sha256>` (TLS가 켜져 있고 fingerprint를 알 수 있을 때만)
-  - `canvasPort=<port>` (canvas host 포트; 현재 canvas host가 켜져 있으면 `gatewayPort` 와 동일)
-  - `cliPath=<path>` (선택 사항; 실행 가능한 `openclaw` entrypoint 또는 binary의 절대 경로)
-  - `tailnetDns=<magicdns>` (선택 사항; Tailscale 사용 가능 시 자동 감지)
+**보안 주의 사항:**
+- Bonjour/mDNS TXT 레코드는 **인증되지 않은 정보**임. 클라이언트는 이를 단순한 UX 힌트로만 간주해야 함.
+- 실제 라우팅(호스트/포트) 결정 시에는 TXT 레코드 값보다 **해석된 서비스 엔드포인트**(SRV + A/AAAA) 정보를 우선적으로 신뢰해야 함.
+- TLS 핀고정(Pinning) 시, 공고된 지문(`gatewayTlsSha256`)이 기존에 저장된 정보를 자동으로 덮어쓰게 해서는 안 됨.
+- iOS/Android 노드는 탐색 기반의 직접 연결을 **TLS 전용**으로 취급해야 하며, 최초 연결 시 지문에 대한 명시적인 사용자 승인 절차를 거쳐야 함.
 
-보안 메모:
+**비활성화 및 오버라이드:**
+- `OPENCLAW_DISABLE_BONJOUR=1`: 공고 기능을 비활성화함.
+- `gateway.bind`: `~/.openclaw/openclaw.json` 설정 파일에서 바인딩 모드를 제어함.
+- `OPENCLAW_SSH_PORT`: TXT 레코드에 공고할 SSH 포트를 변경함 (기본값 22).
+- `OPENCLAW_TAILNET_DNS`: 매직 DNS 힌트(`tailnetDns`)를 게시함.
+- `OPENCLAW_CLI_PATH`: 공고되는 CLI 실행 경로를 변경함.
 
-- Bonjour/mDNS TXT record는 **인증되지 않습니다**. 클라이언트는 TXT 값을 UX 힌트로만 취급해야 합니다.
-- 라우팅(host/port)은 TXT의 `lanHost`, `tailnetDns`, `gatewayPort` 보다 **해석된 서비스 endpoint**(SRV + A/AAAA)를 우선해야 합니다.
-- TLS pinning에서는 광고된 `gatewayTlsSha256` 이 기존에 저장된 pin을 절대로 덮어쓰면 안 됩니다.
-- iOS/Android 노드는 discovery 기반 direct connect를 **TLS 전용**으로 취급하고, 최초 pin 저장 전 "이 fingerprint를 신뢰할지"를 명시적으로 확인해야 합니다(out-of-band 검증).
+### 2) Tailnet (광역 네트워크)
 
-비활성화/override:
+물리적으로 떨어진 환경에서는 Bonjour가 작동하지 않음. 이때 권장되는 직접 연결 대상은 다음과 같음:
+- **Tailscale 매직 DNS** 이름 (권장) 또는 고정된 **Tailnet IP**.
 
-- `OPENCLAW_DISABLE_BONJOUR=1` 은 advertising을 비활성화
-- `~/.openclaw/openclaw.json` 의 `gateway.bind` 가 Gateway bind 모드를 제어
-- `OPENCLAW_SSH_PORT` 는 TXT에 광고되는 SSH 포트를 override(기본값 22)
-- `OPENCLAW_TAILNET_DNS` 는 `tailnetDns` 힌트를 publish(MagicDNS)
-- `OPENCLAW_CLI_PATH` 는 광고되는 CLI 경로를 override
+Gateway가 Tailscale 환경임을 감지하면, 클라이언트를 위한 선택적 힌트(광역 비컨 포함)로 `tailnetDns` 정보를 게시함.
 
-### 2) Tailnet (네트워크 간)
+### 3) 수동 설정 및 SSH 대상
 
-London/Vienna 스타일 환경에서는 Bonjour가 도움이 되지 않습니다. 권장되는 "direct" 대상은:
+직접 연결이 불가능하거나 비활성화된 경우, 클라이언트는 언제든지 루프백 Gateway 포트를 SSH 터널링으로 포워딩하여 연결할 수 있음.
 
-- Tailscale MagicDNS 이름(권장) 또는 안정적인 tailnet IP
+상세 내용: [원격 액세스](/gateway/remote)
 
-gateway가 Tailscale 아래에서 동작 중임을 감지할 수 있으면, 클라이언트용 선택적 힌트(광역 beacon 포함)로 `tailnetDns` 를 publish합니다.
+## 전송 방식 선택 정책 (클라이언트 측)
 
-### 3) 수동 / SSH 대상
+권장되는 클라이언트 동작 순서:
 
-direct 경로가 없거나(direct 비활성화 포함) 사용할 수 없으면, 클라이언트는 언제든 loopback gateway 포트를 SSH로 포워딩해 연결할 수 있습니다.
+1. 이미 페어링된 직접 연결 엔드포인트가 설정되어 있고 도달 가능하다면 해당 경로를 사용함.
+2. 그렇지 않고 Bonjour가 LAN에서 Gateway를 발견했다면, "이 Gateway 사용" 선택지를 제공하고 이를 직접 연결 엔드포인트로 저장함.
+3. 직접 연결 엔드포인트가 없지만 Tailnet DNS/IP가 설정되어 있다면 직접 연결을 시도함.
+4. 모든 시도가 실패할 경우 SSH 방식으로 폴백함.
 
-[원격 액세스](/gateway/remote) 를 참고하세요.
+## 페어링 및 인증 (Direct 전송)
 
-## 전송 선택(클라이언트 정책)
+Gateway는 노드 및 클라이언트의 접속 권한을 관리하는 최종 결정 주체(Source of Truth)임.
 
-권장 클라이언트 동작:
+- 페어링 요청은 Gateway에서 생성, 승인 또는 거부됨 ([Gateway 페어링](/gateway/pairing) 참조).
+- Gateway는 다음 보안 정책을 강제함:
+  - 인증 (토큰 또는 키 쌍).
+  - 범위(Scope) 및 ACL 제어 (Gateway는 단순한 프록시가 아니며 허용된 메서드만 노출함).
+  - 속도 제한 (Rate limit).
 
-1. 페어링된 direct endpoint가 구성되어 있고 도달 가능하면 그것을 사용
-2. 아니면 Bonjour가 LAN에서 gateway를 찾을 때 "이 gateway 사용" 원탭 선택지를 제공하고 direct endpoint로 저장
-3. 아니면 tailnet DNS/IP가 구성되어 있으면 direct 시도
-4. 아니면 SSH로 fallback
+## 컴포넌트별 역할 및 책임
 
-## 페어링 + 인증 (direct transport)
-
-gateway가 node/client admission의 진실 소스입니다.
-
-- 페어링 요청은 gateway에서 생성/승인/거부됩니다([Gateway pairing](/gateway/pairing) 참고).
-- gateway는 다음을 강제합니다.
-  - 인증(token / keypair)
-  - scope/ACL(gateway는 모든 메서드에 대한 raw proxy가 아님)
-  - rate limit
-
-## 컴포넌트별 책임
-
-- **Gateway**: discovery beacon 광고, pairing 결정 소유, WS endpoint 호스팅
-- **macOS app**: gateway 선택을 돕고 pairing prompt를 보여주며 SSH는 fallback으로만 사용
-- **iOS/Android nodes**: 편의를 위해 Bonjour를 browse하고, 페어링된 Gateway WS에 연결
+- **Gateway**: 탐색 비컨 공고, 페어링 결정 및 WebSocket 엔드포인트 호스팅 담당.
+- **macOS 앱**: Gateway 선택을 지원하고 페어링 프롬프트를 표시하며, SSH를 최후의 폴백 수단으로 활용함.
+- **iOS/Android 노드**: 편의를 위해 Bonjour 탐색을 수행하고, 페어링된 Gateway WebSocket에 연결함.

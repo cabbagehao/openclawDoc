@@ -171,8 +171,8 @@
 - [x] `docs/gateway/cli-backends.md` -> `docs/ko-KR/gateway/cli-backends.md`
 - [x] `docs/gateway/configuration-examples.md` -> `docs/ko-KR/gateway/configuration-examples.md`
 - [x] `docs/gateway/configuration.md` -> `docs/ko-KR/gateway/configuration.md`
-- [ ] `docs/gateway/configuration-reference.md` -> `docs/ko-KR/gateway/configuration-reference.md`
-- [ ] `docs/gateway/discovery.md` -> `docs/ko-KR/gateway/discovery.md`
+- [x] `docs/gateway/configuration.md` -> `docs/ko-KR/gateway/configuration.md`
+- [x] `docs/gateway/discovery.md` -> `docs/ko-KR/gateway/discovery.md`
 - [ ] `docs/gateway/doctor.md` -> `docs/ko-KR/gateway/doctor.md`
 - [ ] `docs/gateway/gateway-lock.md` -> `docs/ko-KR/gateway/gateway-lock.md`
 - [ ] `docs/gateway/health.md` -> `docs/ko-KR/gateway/health.md`
