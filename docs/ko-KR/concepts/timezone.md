@@ -1,32 +1,34 @@
 ---
-summary: "agents, envelopes, prompts 의 timezone 처리"
+summary: "에이전트, 메시지 봉투(Envelope) 및 시스템 프롬프트의 시간대(Timezone) 처리 가이드"
 read_when:
-  - 모델에 보여지는 timestamp 가 어떻게 정규화되는지 이해해야 할 때
-  - system prompt 의 사용자 timezone 을 설정할 때
-title: "Timezones"
+  - 모델에 표시되는 타임스탬프 정규화 방식을 이해하고자 할 때
+  - 시스템 프롬프트용 사용자 시간대를 설정할 때
+title: "시간대 (Timezones)"
+x-i18n:
+  source_path: "concepts/timezone.md"
 ---
 
-# Timezones
+# 시간대 (Timezones)
 
-OpenClaw 는 모델이 **하나의 기준 시간** 을 보도록 timestamp 를 표준화합니다.
+OpenClaw는 모델이 **단일 기준 시간**을 참조할 수 있도록 모든 타임스탬프를 표준화하여 처리함.
 
-## 메시지 envelope (기본은 로컬 시간)
+## 메시지 봉투 (Envelope) (기본값: 로컬)
 
-인바운드 메시지는 다음과 같은 envelope 로 감싸집니다:
+수신되는 메시지는 다음과 같은 형식의 봉투(Envelope)로 감싸짐:
 
 ```
 [Provider ... 2026-01-05 16:26 PST] message text
 ```
 
-envelope 의 timestamp 는 기본적으로 **host-local** 이며, 분 단위 정밀도를 가집니다.
+봉투에 포함되는 타임스탬프는 기본적으로 **호스트 로컬 시간** 기준이며, 분 단위 정밀도를 제공함.
 
-다음 설정으로 재정의할 수 있습니다:
+다음 설정을 통해 시간대 표시 방식을 변경할 수 있음:
 
 ```json5
 {
   agents: {
     defaults: {
-      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA timezone
+      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA 시간대 이름
       envelopeTimestamp: "on", // "on" | "off"
       envelopeElapsed: "on", // "on" | "off"
     },
@@ -34,58 +36,52 @@ envelope 의 timestamp 는 기본적으로 **host-local** 이며, 분 단위 정
 }
 ```
 
-- `envelopeTimezone: "utc"` 는 UTC 를 사용합니다.
-- `envelopeTimezone: "user"` 는 `agents.defaults.userTimezone` 를 사용합니다(host timezone 으로 폴백).
-- 고정 offset 을 원하면 명시적 IANA timezone(예: `"Europe/Vienna"`)을 사용하세요.
-- `envelopeTimestamp: "off"` 는 envelope header 의 절대 timestamp 를 제거합니다.
-- `envelopeElapsed: "off"` 는 경과 시간 suffix(`+2m` 형식)를 제거합니다.
+- `envelopeTimezone: "utc"`: UTC 시간 기준 사용.
+- `envelopeTimezone: "user"`: `agents.defaults.userTimezone` 설정값 사용 (설정되지 않은 경우 호스트 시간대로 대체).
+- 고정 시간대 지정: IANA 시간대 이름(예: `"Asia/Seoul"`)을 직접 사용하여 고정된 오프셋 적용 가능.
+- `envelopeTimestamp: "off"`: 헤더에서 절대 타임스탬프 정보 제거.
+- `envelopeElapsed: "off"`: 경과 시간 접미사(`+2m` 형식) 제거.
 
-### 예시
+### 표시 예시
 
-**로컬(기본값):**
-
+**로컬 시간 (기본값):**
 ```
 [Signal Alice +1555 2026-01-18 00:19 PST] hello
 ```
 
-**고정 timezone:**
-
+**고정 시간대:**
 ```
 [Signal Alice +1555 2026-01-18 06:19 GMT+1] hello
 ```
 
-**경과 시간:**
-
+**경과 시간 표시:**
 ```
 [Signal Alice +1555 +2m 2026-01-18T05:19Z] follow-up
 ```
 
-## Tool payloads (raw provider data + normalized fields)
+## 도구 페이로드 (공급자 원본 + 정규화 필드)
 
-tool 호출(`channels.discord.readMessages`, `channels.slack.readMessages` 등)은 **raw provider timestamp** 를 반환합니다.
-일관성을 위해 정규화된 필드도 함께 붙습니다:
+메시지 읽기 도구(`channels.slack.readMessages` 등)는 **공급자 원본 타임스탬프**를 그대로 반환함. 데이터 일관성을 위해 시스템은 다음과 같은 정규화된 필드를 함께 제공함:
 
-- `timestampMs` (UTC epoch milliseconds)
-- `timestampUtc` (ISO 8601 UTC string)
+- `timestampMs`: UTC 기준 Epoch Milliseconds.
+- `timestampUtc`: ISO 8601 UTC 문자열.
 
-raw provider 필드는 그대로 보존됩니다.
+원본 필드는 정보 유실 방지를 위해 그대로 유지됨.
 
-## system prompt 의 사용자 timezone
+## 시스템 프롬프트용 사용자 시간대 설정
 
-모델에 사용자의 로컬 timezone 을 알려주려면 `agents.defaults.userTimezone` 을 설정하세요.
-unset 이면 OpenClaw 는 **런타임에 host timezone 을 해석** 합니다(config write 없음).
+`agents.defaults.userTimezone` 설정을 통해 에이전트에게 사용자의 현재 로컬 시간대를 알려줄 수 있음. 설정되지 않은 경우 OpenClaw는 실행 시점의 **호스트 시간대**를 자동으로 해석함.
 
 ```json5
 {
-  agents: { defaults: { userTimezone: "America/Chicago" } },
+  agents: { defaults: { userTimezone: "Asia/Seoul" } },
 }
 ```
 
-system prompt 에는 다음이 포함됩니다:
+시스템 프롬프트 주입 항목:
+- **`Current Date & Time`** 섹션: 사용자의 현재 날짜, 시각 및 시간대 정보.
+- **`Time format`**: `12-hour` 또는 `24-hour` 표기 방식 정보.
 
-- 로컬 시간과 timezone 이 담긴 `Current Date & Time` 섹션
-- `Time format: 12-hour` 또는 `24-hour`
+프롬프트 내 시간 표기 방식은 `agents.defaults.timeFormat` (`auto` | `12` | `24`) 설정을 통해 제어 가능함.
 
-prompt 형식은 `agents.defaults.timeFormat` (`auto` | `12` | `24`)로 제어할 수 있습니다.
-
-전체 동작과 예시는 [Date & Time](/date-time) 문서를 참고하세요.
+상세 동작 원리 및 추가 예시는 [날짜 및 시간 가이드](/date-time) 참조.

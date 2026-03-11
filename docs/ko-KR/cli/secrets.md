@@ -1,73 +1,79 @@
 ---
-summary: "CLI 참고: `openclaw secrets` (reload, audit, configure, apply)"
+summary: "시크릿 참조(SecretRef) 재해석, 평문 잔여물 점검 및 시크릿 구성을 위한 `openclaw secrets` 명령어 레퍼런스"
 read_when:
-  - 런타임에서 secret ref를 다시 해석할 때
-  - 평문 잔여물과 unresolved ref를 점검할 때
-  - SecretRef를 설정하고 일방향 scrub 변경을 적용할 때
+  - 런타임 시점에 시크릿 참조를 다시 해석(Resolve)하고자 할 때
+  - 설정 파일 내 평문 노출 여부나 해석되지 않은 참조를 감사(Audit)할 때
+  - 새로운 시크릿 공급자를 구성하고 평문 데이터를 시크릿 참조로 일괄 전환할 때
 title: "secrets"
+x-i18n:
+  source_path: "cli/secrets.md"
 ---
 
 # `openclaw secrets`
 
-`openclaw secrets`는 SecretRef를 관리하고 현재 런타임 snapshot을 건강한 상태로 유지할 때 사용합니다.
+시크릿 참조(SecretRef)를 관리하고 현재 런타임 스냅샷의 무결성을 유지함.
 
-명령 역할:
+## 하위 명령어 역할
 
-- `reload`: gateway RPC(`secrets.reload`)로 ref를 다시 해석하고, 완전히 성공했을 때만 runtime snapshot을 교체합니다(config 파일은 쓰지 않음).
-- `audit`: configuration/auth/generated-model 저장소와 legacy residue를 읽기 전용으로 스캔하여 plaintext, unresolved ref, precedence drift를 찾습니다.
-- `configure`: provider 설정, 대상 매핑, preflight를 위한 대화형 planner입니다(TTY 필요).
-- `apply`: 저장된 plan을 실행합니다. `--dry-run`은 검증만 수행하고, 이후 지정된 plaintext residue를 scrub합니다.
+- **`reload`**: Gateway RPC(`secrets.reload`)를 호출하여 모든 참조를 다시 해석함. 완전히 성공했을 때만 런타임 스냅샷을 교체하며, 설정 파일은 수정하지 않음.
+- **`audit`**: 설정, 인증 프로필, 생성된 모델 정보 및 레거시 잔여물을 읽기 전용으로 스캔하여 평문 비밀 정보 노출, 해석되지 않은 참조, 우선순위 불일치 등을 점검함.
+- **`configure`**: 시크릿 공급자 설정 및 필드 매핑을 위한 대화형 계획 도구(Planner)임. (터미널 TTY 환경 필요)
+- **`apply`**: 저장된 계획 파일(`.json`)을 실행함. `--dry-run`으로 검증만 수행하거나, 실제 실행 후 기존의 평문 잔여물들을 영구 삭제(Scrub)함.
 
-권장 운영 루프:
+## 권장 운영 프로세스
 
 ```bash
+# 1. 현재 상태 점검
 openclaw secrets audit --check
+
+# 2. 대화형 설정 및 계획 생성
 openclaw secrets configure
+
+# 3. 생성된 계획 검증 (Dry-run)
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
+
+# 4. 계획 실제 적용 및 평문 데이터 삭제
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
+
+# 5. 최종 점검 및 런타임 반영
 openclaw secrets audit --check
 openclaw secrets reload
 ```
 
-CI/게이트용 종료 코드 참고:
+**종료 코드 안내 (CI/CD 연동용):**
+- `audit --check`: 문제 발견 시 `1` 반환.
+- 해석되지 않은 참조 존재 시 `2` 반환.
 
-- `audit --check`는 발견 사항이 있으면 `1`을 반환합니다.
-- unresolved ref는 `2`를 반환합니다.
+**관련 문서:**
+- 시크릿 관리 가이드: [Secrets Management](/gateway/secrets)
+- 지원되는 시크릿 필드 목록: [SecretRef Credential Surface](/reference/secretref-credential-surface)
+- 보안 아키텍처 개요: [Security](/gateway/security)
 
-관련 문서:
+---
 
-- Secrets guide: [Secrets Management](/gateway/secrets)
-- Credential surface: [SecretRef Credential Surface](/reference/secretref-credential-surface)
-- Security guide: [Security](/gateway/security)
+## 런타임 스냅샷 재로드 (Reload)
 
-## Reload runtime snapshot
-
-secret ref를 다시 해석하고 runtime snapshot을 원자적으로 교체합니다.
+시크릿 참조를 다시 해석하고 런타임 스냅샷을 원자적으로 교체함.
 
 ```bash
 openclaw secrets reload
 openclaw secrets reload --json
 ```
 
-참고:
+- **동작 특징**: 해석 과정에서 하나라도 실패하면 기존의 정상 스냅샷을 유지하고 오류를 반환함. 부분적인 적용은 지원하지 않음.
+- **결과값**: JSON 응답에는 `warningCount` 정보가 포함됨.
 
-- gateway RPC 메서드 `secrets.reload`를 사용합니다.
-- 해석에 실패하면 gateway는 마지막 정상 snapshot을 유지하고 오류를 반환합니다. 부분 적용은 없습니다.
-- JSON 응답에는 `warningCount`가 포함됩니다.
+## 시크릿 감사 (Audit)
 
-## Audit
+OpenClaw 상태 데이터에서 다음 항목들을 정밀 스캔함:
 
-다음 항목에 대해 OpenClaw 상태를 스캔합니다.
+- 저장된 **평문(Plaintext)** 비밀 정보 유무.
+- **해석 불가능한** 시크릿 참조 정보.
+- **우선순위 불일치**: `auth-profiles.json`의 자격 증명이 `openclaw.json`의 시크릿 참조를 가리고(Shadowing) 있는 경우.
+- **자동 생성 파일 잔여물**: `models.json` 등에 남은 API 키나 민감한 헤더 정보.
+- **레거시 데이터**: 이전 버전의 인증 정보나 OAuth 관련 기록.
 
-- plaintext secret 저장
-- unresolved ref
-- precedence drift(`auth-profiles.json` 자격 증명이 `openclaw.json` ref를 가리는 경우)
-- 생성된 `agents/*/agent/models.json` residue(provider `apiKey` 값과 민감한 provider header)
-- legacy residue(legacy auth store 항목, OAuth reminder)
-
-Header residue 참고:
-
-- 민감한 provider header 탐지는 이름 기반 휴리스틱입니다. `authorization`, `x-api-key`, `token`, `secret`, `password`, `credential` 같은 공통 인증 헤더명과 조각을 사용합니다.
+**헤더 탐지 규칙**: `authorization`, `x-api-key`, `token`, `secret`, `password`, `credential` 등 주요 키워드를 포함한 헤더를 민감 정보로 간주함.
 
 ```bash
 openclaw secrets audit
@@ -75,99 +81,56 @@ openclaw secrets audit --check
 openclaw secrets audit --json
 ```
 
-종료 동작:
+## 대화형 구성 도우미 (Configure)
 
-- `--check`는 발견 사항이 있으면 non-zero로 종료합니다.
-- unresolved ref는 더 높은 우선순위의 non-zero 코드로 종료합니다.
-
-리포트 주요 필드:
-
-- `status`: `clean | findings | unresolved`
-- `summary`: `plaintextCount`, `unresolvedRefCount`, `shadowedRefCount`, `legacyResidueCount`
-- finding code:
-  - `PLAINTEXT_FOUND`
-  - `REF_UNRESOLVED`
-  - `REF_SHADOWED`
-  - `LEGACY_RESIDUE`
-
-## Configure (interactive helper)
-
-대화형으로 provider와 SecretRef 변경을 구성하고, preflight를 수행한 뒤 선택적으로 적용합니다.
+공급자 및 시크릿 참조 변경 사항을 단계별로 구성하고 즉석에서 검증함.
 
 ```bash
 openclaw secrets configure
-openclaw secrets configure --plan-out /tmp/openclaw-secrets-plan.json
+openclaw secrets configure --plan-out /tmp/secrets-plan.json
 openclaw secrets configure --apply --yes
-openclaw secrets configure --providers-only
-openclaw secrets configure --skip-provider-setup
 openclaw secrets configure --agent ops
-openclaw secrets configure --json
 ```
 
-흐름:
+**설정 흐름:**
+1. **공급자 설정**: `secrets.providers` 별칭 등록 및 수정.
+2. **필드 매핑**: 암호화가 필요한 필드를 선택하고 `{source, provider, id}` 참조를 할당함.
+3. **사전 검증 및 적용**: 실제 적용 전 해석 가능 여부를 테스트함.
 
-- 먼저 provider 설정(`secrets.providers` alias의 `add/edit/remove`)
-- 그다음 credential mapping(필드를 선택하고 `{source, provider, id}` ref 배정)
-- 마지막으로 preflight 및 선택적 apply
+**주요 옵션:**
+- **`--agent <id>`**: 인증 프로필 스캔 및 수정 범위를 특정 에이전트로 한정함.
+- **`--apply`**: 계획 수립 완료 후 즉시 적용함. `--yes` 플래그가 없으면 최종 확인 프롬프트를 표시함.
 
-플래그:
+<Note>
+**실행 권한 주의**: 시크릿 공급자로 실행 파일(Exec)을 사용할 경우, Homebrew 등의 경로(`/opt/homebrew/bin/*`)는 심볼릭 링크인 경우가 많음. 이 경우 해당 공급자에 `allowSymlinkCommand: true`를 설정하고 `trustedDirs` 목록에 해당 경로를 추가해야 함.
+</Note>
 
-- `--providers-only`: `secrets.providers`만 설정하고 credential mapping은 건너뜀
-- `--skip-provider-setup`: provider 설정은 건너뛰고 기존 provider에 credential mapping만 수행
-- `--agent <id>`: `auth-profiles.json` 대상 탐색과 쓰기 범위를 하나의 agent store로 제한
+## 계획 파일 적용 (Apply)
 
-참고:
-
-- 대화형 TTY가 필요합니다.
-- `--providers-only`와 `--skip-provider-setup`은 함께 사용할 수 없습니다.
-- `configure`는 `openclaw.json`의 secret-bearing field와 선택된 agent 범위의 `auth-profiles.json`을 대상으로 합니다.
-- `configure`는 picker 흐름에서 직접 새 `auth-profiles.json` 매핑을 만들 수 있습니다.
-- 정식 지원 surface는 [SecretRef Credential Surface](/reference/secretref-credential-surface)입니다.
-- apply 전에 preflight resolution을 수행합니다.
-- 생성된 plan은 기본적으로 scrub 옵션(`scrubEnv`, `scrubAuthProfilesForProviderTargets`, `scrubLegacyAuthJson`)이 모두 활성화됩니다.
-- apply 경로는 scrub된 plaintext 값에 대해 일방향입니다.
-- `--apply`를 쓰지 않아도 CLI는 preflight 뒤에 `Apply this plan now?`를 물어봅니다.
-- `--apply`를 사용하고 `--yes`가 없으면, 되돌릴 수 없다는 추가 확인 프롬프트가 표시됩니다.
-
-Exec provider 안전성 참고:
-
-- Homebrew 설치는 종종 `/opt/homebrew/bin/*` 아래의 심볼릭 링크 바이너리를 노출합니다.
-- 신뢰된 package-manager 경로에 꼭 필요할 때만 `allowSymlinkCommand: true`를 설정하고, `trustedDirs`(예: `["/opt/homebrew"]`)와 함께 사용하세요.
-- Windows에서 provider 경로의 ACL 검증을 할 수 없으면 OpenClaw는 fail closed 합니다. 신뢰된 경로에서만 해당 provider에 `allowInsecurePath: true`를 설정해 경로 보안 검사를 우회하세요.
-
-## Apply a saved plan
-
-이전에 생성한 plan을 적용하거나 preflight만 수행합니다.
+이전에 생성된 계획 파일을 바탕으로 실제 변경을 수행함.
 
 ```bash
-openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
-openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
-openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --json
+openclaw secrets apply --from /tmp/secrets-plan.json
 ```
 
-Plan 계약 세부 사항(허용 대상 경로, 검증 규칙, 실패 의미):
+**수정 대상 범위:**
+- `openclaw.json`: 시크릿 참조 필드 업데이트 및 공급자 정보 관리.
+- `auth-profiles.json`: 대상 필드의 평문 데이터 삭제.
+- 레거시 `auth.json` 및 `~/.openclaw/.env` 파일 정제.
 
-- [Secrets Apply Plan Contract](/gateway/secrets-plan-contract)
+상세 규약은 [Secrets Apply Plan Contract](/gateway/secrets-plan-contract) 참조.
 
-`apply`가 갱신할 수 있는 것:
+## 롤백 및 백업 정책
 
-- `openclaw.json` (SecretRef 대상 + provider upsert/delete)
-- `auth-profiles.json` (provider-target scrubbing)
-- legacy `auth.json` residue
-- 마이그레이션된 값에 해당하는 `~/.openclaw/.env`의 알려진 secret key
+`secrets apply` 명령어는 보안을 위해 평문 데이터가 포함된 **이전 버전의 백업 파일을 생성하지 않음.** 안전한 작업을 위해 실행 전 엄격한 사전 검증(Preflight)을 수행하며, 오류 발생 시 메모리 내에서 최선의 노력을 다해 복구를 시도함.
 
-## Why no rollback backups
-
-`secrets apply`는 이전 plaintext 값을 포함한 rollback backup을 의도적으로 만들지 않습니다.
-
-안전성은 엄격한 preflight와, 실패 시 best-effort 메모리 복구를 포함한 거의 원자적인 apply 경로에서 보장됩니다.
-
-## Example
+## 문제 해결 예시
 
 ```bash
 openclaw secrets audit --check
+# 문제 발견 시
 openclaw secrets configure
+# 수정 완료 후 재점검
 openclaw secrets audit --check
 ```
-
-`audit --check`가 여전히 plaintext 발견 사항을 보고하면, 남아 있는 대상 경로를 수정한 뒤 audit을 다시 실행하세요.
+감사 결과 여전히 평문 노출이 보고된다면, 출력된 경로 정보에 따라 해당 설정을 시크릿 참조로 전환하고 감사를 다시 실행함.

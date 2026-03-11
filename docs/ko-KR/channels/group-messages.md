@@ -1,7 +1,7 @@
 ---
-summary: "WhatsApp 그룹 메시지 처리 동작과 설정 (`mentionPatterns`는 여러 채널에서 공유됨)"
+summary: "WhatsApp 그룹 메시지 처리 방식 및 설정 가이드 (멘션 패턴 공유 및 그룹 세션 격리)"
 read_when:
-  - 그룹 메시지 규칙이나 멘션 동작을 바꿀 때
+  - 그룹 메시지 응답 규칙이나 멘션 감지 설정을 수정하고자 할 때
 title: "그룹 메시지"
 x-i18n:
   source_path: "channels/group-messages.md"
@@ -9,23 +9,28 @@ x-i18n:
 
 # 그룹 메시지 (WhatsApp 웹 채널)
 
-목표: Clawd가 WhatsApp 그룹에 들어가 있다가 핑이 올 때만 깨어나고, 그 스레드를 개인 DM 세션과 분리해 유지하도록 하는 것입니다.
+**목표**: 에이전트가 WhatsApp 그룹 대화에 참여하되 명시적인 호출(Ping)이 있을 때만 활성화되도록 하며, 해당 대화 이력을 개인 DM 세션과 완전히 분리하여 관리하는 것임.
 
-참고: `agents.list[].groupChat.mentionPatterns`는 이제 Telegram/Discord/Slack/iMessage에서도 사용됩니다. 이 문서는 WhatsApp 전용 동작에 초점을 둡니다. 멀티 에이전트 구성을 쓴다면 에이전트별로 `agents.list[].groupChat.mentionPatterns`를 설정하세요(또는 전역 fallback으로 `messages.groupChat.mentionPatterns`를 사용하세요).
+<Note>
+`agents.list[].groupChat.mentionPatterns` 설정은 이제 Telegram, Discord, Slack, iMessage 등 모든 채널에서 공통으로 사용됨. 이 문서는 WhatsApp 전용 동작을 중심으로 설명하며, 멀티 에이전트 환경에서는 에이전트별로 패턴을 다르게 설정할 수 있음.
+</Note>
 
-## 구현된 내용 (2025-12-03)
+## 주요 기능 및 구현 현황
 
-- 활성화 모드: `mention`(기본값) 또는 `always`. `mention`은 핑이 필요합니다(실제 WhatsApp @-멘션 via `mentionedJids`, regex 패턴, 또는 텍스트 어디에든 있는 봇의 E.164). `always`는 모든 메시지에서 에이전트를 깨우지만, 의미 있는 값을 더할 수 있을 때만 답하고 그렇지 않으면 무음 토큰 `NO_REPLY`를 반환해야 합니다. 기본값은 config(`channels.whatsapp.groups`)에서 설정할 수 있고, 그룹별로 `/activation`으로 덮어쓸 수 있습니다. `channels.whatsapp.groups`가 설정되면 group allowlist 역할도 함께 합니다(모든 그룹을 허용하려면 `"*"` 포함).
-- 그룹 정책: `channels.whatsapp.groupPolicy`가 그룹 메시지 수락 여부를 제어합니다(`open|disabled|allowlist`). `allowlist`는 `channels.whatsapp.groupAllowFrom`을 사용하며, 없으면 명시적 `channels.whatsapp.allowFrom`으로 fallback합니다. 기본값은 `allowlist`입니다(발신자를 추가하기 전까지 차단됨).
-- 그룹별 세션: 세션 키는 `agent:<agentId>:whatsapp:group:<jid>` 형태이므로 `/verbose on`이나 `/think high` 같은 명령(독립 메시지로 보냄)은 해당 그룹 범위에만 적용됩니다. 개인 DM 상태는 손대지 않습니다. 그룹 스레드에서는 heartbeat를 건너뜁니다.
-- 컨텍스트 주입: 실행을 트리거하지 못한 **pending-only** 그룹 메시지(기본값 50개)는 `[Chat messages since your last reply - for context]` 아래에 앞부분으로 붙고, 실제 트리거 라인은 `[Current message - respond to this]` 아래에 붙습니다. 이미 세션에 들어간 메시지는 다시 주입되지 않습니다.
-- 발신자 표면화: 이제 모든 그룹 배치 끝에 `[from: Sender Name (+E164)]`가 붙어서 Pi가 누가 말하는지 알 수 있습니다.
-- ephemeral/view-once: 텍스트/멘션을 추출하기 전에 이를 unwrap하므로, 그 안의 핑도 여전히 트리거됩니다.
-- 그룹 시스템 프롬프트: 그룹 세션의 첫 턴(그리고 `/activation`으로 모드가 바뀔 때마다) 시스템 프롬프트에 `You are replying inside the WhatsApp group "<subject>". Group members: Alice (+44...), Bob (+43...), … Activation: trigger-only … Address the specific sender noted in the message context.` 같은 짧은 설명을 주입합니다. 메타데이터가 없어도 그룹 채팅이라는 사실은 알려 줍니다.
+- **활성화 모드 (Activation Modes)**: `mention` (기본값) 또는 `always`.
+  - `mention`: 명시적인 호출 시에만 응답함. 실제 WhatsApp @멘션, 정규표현식 패턴 또는 텍스트 내 봇의 전화번호 포함 여부를 감지함.
+  - `always`: 모든 메시지에 대해 에이전트를 활성화함. 에이전트는 내용을 검토한 뒤 유의미한 답변이 가능한 경우에만 응답하며, 그렇지 않을 경우 `NO_REPLY` 토큰을 사용하여 무음 처리함.
+  - **설정**: `channels.whatsapp.groups`에서 기본값을 설정하고, 채팅창에서 `/activation` 명령어로 그룹별 오버라이드가 가능함.
+- **그룹 정책 (Group Policy)**: `channels.whatsapp.groupPolicy`를 통해 그룹 메시지 수락 여부(`open`, `allowlist`, `disabled`)를 제어함. `allowlist` 사용 시 `groupAllowFrom`에 등록된 발신자만 에이전트를 호출할 수 있음.
+- **그룹별 독립 세션**: 세션 키는 `agent:<agentId>:whatsapp:group:<jid>` 형식을 사용함. 따라서 그룹 내에서 실행한 `/think high`나 `/verbose on` 등의 설정은 해당 그룹에만 적용되며 개인 DM 상태에는 영향을 주지 않음. 그룹 세션에서는 하트비트(Heartbeat) 실행을 건너뜀.
+- **지능적 컨텍스트 주입**: 직접적인 응답을 트리거하지 않은 이전 메시지들(최대 50개)은 `[Chat messages since your last reply - for context]` 섹션에 포함되어 에이전트에게 전달됨. 현재 응답 대상 메시지는 `[Current message - respond to this]` 아래에 배치됨.
+- **발신자 식별**: 모든 메시지 조각 끝에 `[from: 이름 (+번호)]` 마커를 추가하여 에이전트가 현재 누구와 대화 중인지 명확히 인식할 수 있게 함.
+- **휘발성/일회성 메시지 지원**: 일회성 보기(View-once) 메시지 내부의 텍스트나 멘션도 정상적으로 추출하여 응답을 트리거함.
+- **그룹 전용 시스템 프롬프트**: 그룹 세션 시작 시 그룹명, 멤버 목록, 활성화 모드 정보가 담긴 안내 문구를 시스템 프롬프트에 동적으로 주입함.
 
 ## 설정 예시 (WhatsApp)
 
-WhatsApp가 텍스트 본문에서 시각적 `@`를 제거하더라도 display-name 기반 핑이 동작하도록 `~/.openclaw/openclaw.json`에 `groupChat` 블록을 추가하세요.
+표시 이름 기반의 멘션이 텍스트에서 누락되더라도 정상적으로 작동하도록 `mentionPatterns`를 설정함:
 
 ```json5
 {
@@ -50,37 +55,35 @@ WhatsApp가 텍스트 본문에서 시각적 `@`를 제거하더라도 display-n
 }
 ```
 
-참고:
+**참고 사항:**
+- 정규표현식은 대소문자를 구분하지 않음.
+- 연락처를 직접 선택하여 발생하는 표준 멘션(`mentionedJids`)은 패턴 설정 없이도 항상 우선적으로 처리됨.
 
-- 이 regex는 대소문자를 구분하지 않습니다. `@openclaw` 같은 display-name 핑과 `+`/공백 유무에 관계없는 원시 번호를 모두 커버합니다.
-- 누군가 연락처를 탭해서 멘션하면 WhatsApp는 여전히 canonical mention을 `mentionedJids`로 보내므로, 번호 fallback은 거의 필요 없지만 안전장치로는 유용합니다.
+### 활성화 모드 즉시 변경 (소유자 전용)
 
-### 활성화 명령 (소유자 전용)
+그룹 채팅 창에서 직접 명령어를 입력함:
+- `/activation mention`: 멘션 시에만 응답.
+- `/activation always`: 모든 메시지에 응답 시도.
 
-그룹 채팅 명령 사용:
-
-- `/activation mention`
-- `/activation always`
-
-이를 바꿀 수 있는 사람은 소유자 번호(`channels.whatsapp.allowFrom`, 없으면 봇 자신의 E.164)뿐입니다. 현재 활성화 모드를 보려면 그룹에 `/status`를 독립 메시지로 보내세요.
+이 명령어는 `allowFrom`에 등록된 소유자 번호만 실행 가능함. 현재 모드는 `/status` 명령어로 확인 가능함.
 
 ## 사용 방법
 
-1. OpenClaw가 실행 중인 WhatsApp 계정을 그룹에 추가합니다.
-2. `@openclaw ...`라고 말하거나 번호를 포함합니다. `groupPolicy: "open"`으로 두지 않았다면 allowlist된 발신자만 트리거할 수 있습니다.
-3. 에이전트 프롬프트에는 최근 그룹 컨텍스트와 마지막 `[from: ...]` 마커가 포함되어, 올바른 사람에게 응답할 수 있습니다.
-4. 세션 수준 지시(`/verbose on`, `/think high`, `/new` 또는 `/reset`, `/compact`)는 해당 그룹 세션에만 적용됩니다. 반드시 독립 메시지로 보내야 인식됩니다. 개인 DM 세션은 별개로 유지됩니다.
+1. OpenClaw가 구동 중인 WhatsApp 계정을 대상 그룹에 추가함.
+2. `@이름` 또는 전화번호를 포함하여 메시지를 보냄. `groupPolicy`가 `allowlist`인 경우 승인된 사용자만 에이전트를 깨울 수 있음.
+3. 에이전트의 프롬프트에는 이전 대화 흐름과 발신자 정보가 포함되어 적절한 대상에게 답변을 제공함.
+4. `/new`, `/reset`, `/compact` 등의 세션 제어 명령어는 해당 그룹 세션에만 국한되어 적용됨.
 
-## 테스트 / 검증
+## 테스트 및 검증
 
-- 수동 스모크 테스트:
-  - 그룹에서 `@openclaw` 핑을 보내고, 발신자 이름을 참조하는 응답이 오는지 확인합니다.
-  - 두 번째 핑을 보내고, history 블록이 포함됐다가 다음 턴에서 비워지는지 확인합니다.
-- gateway 로그(`--verbose`로 실행)에서 `from: <groupJid>`와 `[from: ...]` 접미사를 포함한 `inbound web message` 항목을 확인합니다.
+- **동작 확인**:
+  - 그룹에서 봇을 호출하고, 답변에서 발신자의 이름을 올바르게 언급하는지 확인함.
+  - 연속된 대화 시 이전 메시지들이 문맥 섹션에 정상적으로 포함되는지 확인함.
+- **로그 분석**: `--verbose` 모드로 실행 중인 Gateway 로그에서 `inbound web message` 항목의 `from: <groupJid>` 및 `[from: ...]` 접미사 추가 여부를 모니터링함.
 
-## 알려진 고려사항
+## 알려진 고려 사항
 
-- 그룹에서는 시끄러운 브로드캐스트를 피하기 위해 heartbeat를 의도적으로 건너뜁니다.
-- 에코 억제는 합쳐진 배치 문자열을 기준으로 동작하므로, 멘션 없이 동일한 텍스트를 두 번 보내면 첫 번째만 응답할 수 있습니다.
-- 세션 저장소 항목은 기본적으로 `~/.openclaw/agents/<agentId>/sessions/sessions.json` 안에서 `agent:<agentId>:whatsapp:group:<jid>`로 보입니다. 항목이 없다는 것은 아직 그 그룹이 실행을 트리거하지 않았다는 뜻일 뿐입니다.
-- 그룹에서의 typing indicator는 `agents.defaults.typingMode`를 따릅니다(기본값: 멘션이 없을 때 `message`).
+- **하트비트 생략**: 그룹 내 불필요한 공지 발송을 막기 위해 그룹 세션에서는 하트비트 기능을 수행하지 않음.
+- **중복 응답 억제**: 멘션이 없는 동일한 텍스트가 반복 수신될 경우, 첫 번째 메시지에 대해서만 응답을 생성함.
+- **세션 저장소**: 그룹 세션 데이터는 `agent:<agentId>:whatsapp:group:<jid>` 키값으로 저장됨.
+- **입력 중 표시**: 그룹에서의 입력 중 상태 표시는 `agents.defaults.typingMode` 설정을 따르며, 멘션이 없는 경우에는 보통 응답 생성이 시작된 이후(`message` 모드)에만 나타남.

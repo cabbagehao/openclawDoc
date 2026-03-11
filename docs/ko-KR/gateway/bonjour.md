@@ -1,163 +1,154 @@
 ---
-summary: "Bonjour/mDNS discovery + debugging (Gateway beacon, client, 일반적인 실패 모드)"
+summary: "Bonjour/mDNS 탐색 가이드: Gateway 비컨 설정, 클라이언트 연결 및 문제 해결 방법 안내"
 read_when:
-  - macOS/iOS에서 Bonjour discovery 문제를 디버깅할 때
-  - mDNS service type, TXT record, discovery UX를 변경할 때
-title: "Bonjour Discovery"
+  - macOS/iOS 환경에서 Bonjour 탐색 관련 문제를 디버깅할 때
+  - mDNS 서비스 유형, TXT 레코드 또는 탐색 UX 설정을 변경하고자 할 때
+title: "Bonjour 탐색"
+x-i18n:
+  source_path: "gateway/bonjour.md"
 ---
 
-# Bonjour / mDNS discovery
+# Bonjour / mDNS 탐색 (Discovery)
 
-OpenClaw는 활성 Gateway(WebSocket endpoint)를 찾기 위해 Bonjour(mDNS / DNS-SD)를 **LAN 전용 편의 기능**으로 사용합니다. 이는 best-effort 기능이며, SSH나 Tailnet 기반 연결을 대체하지 않습니다.
+OpenClaw는 활성화된 Gateway(WebSocket 엔드포인트)를 찾기 위한 **LAN 전용 편의 기능**으로 Bonjour(mDNS / DNS-SD)를 사용함. 이는 최선 노력(Best-effort) 방식의 기능이며, SSH 터널링이나 Tailnet 기반의 직접 연결을 완전히 대체하지는 않음.
 
-## Wide-area Bonjour (Unicast DNS-SD) over Tailscale
+## Tailscale 기반 광역 Bonjour (Unicast DNS-SD)
 
-node와 gateway가 서로 다른 네트워크에 있으면 multicast mDNS는 그 경계를 넘지 못합니다. 이때 Tailscale 위에서 **unicast DNS-SD**("Wide-Area Bonjour")로 전환하면 같은 discovery UX를 유지할 수 있습니다.
+노드와 Gateway가 서로 다른 네트워크에 위치한 경우 멀티캐스트 mDNS는 네트워크 경계를 넘을 수 없음. 이때 Tailscale 망 위에서 **유니캐스트 DNS-SD**("Wide-Area Bonjour")로 전환하면 동일한 탐색 경험을 유지할 수 있음.
 
-상위 단계:
+**핵심 구축 단계:**
 
-1. gateway host에서 DNS server를 실행합니다(Tailnet에서 접근 가능해야 함).
-2. 전용 zone(예: `openclaw.internal.`) 아래에 `_openclaw-gw._tcp`용 DNS-SD record를 게시합니다.
-3. 클라이언트(iOS 포함)가 해당 DNS server를 통해 도메인을 해석하도록 Tailscale **split DNS**를 구성합니다.
+1. **DNS 서버 가동**: Gateway 호스트에서 DNS 서버를 실행함 (Tailnet 주소를 통해 접근 가능해야 함).
+2. **레코드 게시**: 전용 존(Zone, 예: `openclaw.internal.`) 하위에 `_openclaw-gw._tcp`용 DNS-SD 레코드를 게시함.
+3. **분할 DNS(Split DNS) 설정**: 클라이언트(iOS 포함)가 해당 DNS 서버를 통해 도메인을 해석하도록 Tailscale 관리 콘솔에서 설정함.
 
-OpenClaw는 어떤 discovery domain이든 지원합니다. `openclaw.internal.`은 예시일 뿐입니다. iOS/Android node는 `local.`과 설정된 wide-area domain을 모두 browse합니다.
+OpenClaw는 모든 탐색 도메인을 지원함. `openclaw.internal.`은 예시이며, iOS/Android 노드는 `local.` 존과 사용자가 설정한 광역 도메인을 모두 스캔함.
 
-### Gateway config (recommended)
+### Gateway 설정 (권장)
 
 ```json5
 {
-  gateway: { bind: "tailnet" }, // tailnet-only (권장)
-  discovery: { wideArea: { enabled: true } }, // wide-area DNS-SD 게시 활성화
+  gateway: { bind: "tailnet" }, // Tailnet 전용 바인딩 (권장)
+  discovery: { wideArea: { enabled: true } }, // 광역 DNS-SD 게시 활성화
 }
 ```
 
-### One-time DNS server setup (gateway host)
+### DNS 서버 초기 설정 (Gateway 호스트)
 
 ```bash
 openclaw dns setup --apply
 ```
 
-이 명령은 CoreDNS를 설치하고 다음처럼 설정합니다.
+이 명령어는 CoreDNS를 설치하고 다음과 같이 구성함:
+- Gateway의 Tailscale 인터페이스 포트 53에서만 수신 대기.
+- 지정된 도메인(예: `openclaw.internal.`) 정보를 `~/.openclaw/dns/<domain>.db` 파일로부터 서비스함.
 
-- gateway의 Tailscale interface에서만 port 53 리슨
-- 선택한 domain(예: `openclaw.internal.`)을 `~/.openclaw/dns/<domain>.db`에서 서비스
-
-tailnet 연결된 머신에서 검증:
-
+**Tailnet 연결 기기에서의 검증 방법:**
 ```bash
 dns-sd -B _openclaw-gw._tcp openclaw.internal.
 dig @<TAILNET_IPV4> -p 53 _openclaw-gw._tcp.openclaw.internal PTR +short
 ```
 
-### Tailscale DNS settings
+### Tailscale DNS 설정
 
-Tailscale admin console에서:
+Tailscale 관리자 콘솔(Admin Console)에서:
+- Gateway의 Tailnet IP를 가리키는 네임서버(Nameserver)를 추가함 (UDP/TCP 53).
+- 설정한 탐색 도메인이 해당 네임서버를 사용하도록 **Split DNS**를 구성함.
 
-- gateway의 tailnet IP를 가리키는 nameserver를 추가(UDP/TCP 53)
-- 선택한 discovery domain이 해당 nameserver를 쓰도록 split DNS 추가
+클라이언트가 Tailnet DNS 설정을 수용하면, iOS 노드는 멀티캐스트 없이도 지정된 도메인 내에서 `_openclaw-gw._tcp` 서비스를 찾을 수 있게 됨.
 
-클라이언트가 tailnet DNS를 수용하면 iOS node는 multicast 없이도 discovery domain에서 `_openclaw-gw._tcp`를 browse할 수 있습니다.
+### Gateway 리스너 보안 (권장)
 
-### Gateway listener security (recommended)
+Gateway WebSocket 포트(기본값: `18789`)는 기본적으로 루프백(`127.0.0.1`)에 바인딩됨. LAN이나 Tailnet 접근을 허용하려면 명시적인 바인딩 설정과 함께 인증 기능을 반드시 유지해야 함.
 
-Gateway WS 포트(기본값 `18789`)는 기본적으로 loopback에 bind됩니다. LAN/tailnet 접근을 허용하려면 명시적으로 bind하고 auth를 유지하세요.
+**Tailnet 전용 구성 예시:**
+- `~/.openclaw/openclaw.json` 파일에 `gateway.bind: "tailnet"` 설정 적용.
+- Gateway 서버 또는 macOS 메뉴 막대 앱을 재시작함.
 
-tailnet-only 구성:
+## 광고 주체 (Advertising)
 
-- `~/.openclaw/openclaw.json`에 `gateway.bind: "tailnet"` 설정
-- Gateway 또는 macOS menubar app 재시작
+시스템 내에서 `_openclaw-gw._tcp` 서비스를 광고하는 주체는 **Gateway** 서버가 유일함.
 
-## What advertises
+## 서비스 유형 (Service Types)
 
-`_openclaw-gw._tcp`를 광고하는 것은 Gateway뿐입니다.
+- **`_openclaw-gw._tcp`**: Gateway 전송 비컨. macOS, iOS, Android 노드 기기에서 서버를 찾는 데 사용됨.
 
-## Service types
+## TXT 레코드 키 (비밀 정보가 아닌 힌트)
 
-- `_openclaw-gw._tcp` — gateway transport beacon(macOS/iOS/Android node에서 사용)
+Gateway는 사용자 편의를 위해 다음과 같은 메타데이터를 TXT 레코드에 포함하여 광고함:
 
-## TXT keys (non-secret hints)
+- `role=gateway`: 서비스 역할.
+- `displayName=<이름>`: UI에 표시될 서버 이름.
+- `lanHost=<호스트명>.local`: 로컬 호스트 주소.
+- `gatewayPort=<포트>`: Gateway WebSocket 및 HTTP 포트.
+- `gatewayTls=1`: TLS 활성화 여부.
+- `gatewayTlsSha256=<sha256>`: TLS 인증서 지문 (사용 가능한 경우).
+- `canvasPort=<포트>`: 캔버스 호스트 포트 (현재 Gateway 포트와 동일).
+- `sshPort=<포트>`: SSH 포트 (기본값: 22).
+- `transport=gateway`: 전송 방식 정보.
+- `cliPath=<경로>`: (선택 사항) 실행 가능한 `openclaw` 엔트리포인트의 절대 경로.
+- `tailnetDns=<magicdns>`: (선택 사항) Tailnet 사용 시의 매직 DNS 정보.
 
-Gateway는 UI 흐름을 편하게 하기 위한 작은 비밀이 아닌 힌트를 TXT에 광고합니다.
+**보안 주의 사항:**
+- Bonjour/mDNS TXT 레코드는 **인증되지 않은** 정보임. 클라이언트는 TXT 정보를 신뢰할 수 있는 최종 라우팅 정보로 취급해서는 안 됨.
+- 클라이언트는 반드시 해석된 서비스 엔드포인트(SRV + A/AAAA) 주소를 기준으로 연결해야 함. `lanHost`, `tailnetDns` 등은 단순 힌트로만 활용함.
+- TLS 핀고정(Pinning) 시, 광고된 지문(`gatewayTlsSha256`)이 기존에 저장된 핀 정보를 자동으로 덮어쓰게 해서는 안 됨.
+- iOS/Android 노드는 탐색 기반의 직접 연결을 항상 **TLS 전용**으로 취급해야 하며, 최초 연결 시 지문에 대한 명시적인 사용자 승인을 받아야 함.
 
-- `role=gateway`
-- `displayName=<friendly name>`
-- `lanHost=<hostname>.local`
-- `gatewayPort=<port>` (Gateway WS + HTTP)
-- `gatewayTls=1` (TLS 활성화 시에만)
-- `gatewayTlsSha256=<sha256>` (TLS 활성화 + fingerprint 사용 가능 시에만)
-- `canvasPort=<port>` (canvas host 활성화 시에만, 현재는 `gatewayPort`와 동일)
-- `sshPort=<port>` (override 없으면 기본값 22)
-- `transport=gateway`
-- `cliPath=<path>` (선택, 실행 가능한 `openclaw` entrypoint의 절대 경로)
-- `tailnetDns=<magicdns>` (선택, Tailnet 사용 가능할 때의 힌트)
+## macOS에서의 디버깅
 
-보안 참고:
+터미널 내장 도구 활용:
 
-- Bonjour/mDNS TXT record는 **인증되지 않습니다**. client는 TXT를 authoritative routing 정보로 취급하면 안 됩니다.
-- client는 해석된 service endpoint(SRV + A/AAAA)를 기준으로 route해야 합니다. `lanHost`, `tailnetDns`, `gatewayPort`, `gatewayTlsSha256`는 힌트일 뿐입니다.
-- TLS pinning은 광고된 `gatewayTlsSha256`가 기존에 저장된 pin을 덮어쓰게 해서는 안 됩니다.
-- iOS/Android node는 discovery 기반 직접 연결을 **TLS-only**로 취급하고, 처음 보는 fingerprint를 신뢰하기 전에 명시적인 사용자 확인을 받아야 합니다.
-
-## Debugging on macOS
-
-유용한 내장 도구:
-
-- instance browse:
-
+- **인스턴스 탐색 (Browse)**:
   ```bash
   dns-sd -B _openclaw-gw._tcp local.
   ```
 
-- instance resolve( `<instance>` 교체):
-
+- **특정 인스턴스 해석 (Resolve)**:
   ```bash
-  dns-sd -L "<instance>" _openclaw-gw._tcp local.
+  dns-sd -L "<인스턴스명>" _openclaw-gw._tcp local.
   ```
 
-browse는 되는데 resolve가 실패하면, 보통 LAN policy나 mDNS resolver 문제입니다.
+탐색은 되지만 해석(Resolve)이 실패하는 경우, 대개 네트워크 정책에 의해 차단되었거나 mDNS 해석기(Resolver) 문제일 가능성이 높음.
 
-## Debugging in Gateway logs
+## Gateway 로그 확인
 
-Gateway는 rolling log file을 기록하며, 시작 시 `gateway log file: ...`로 출력합니다. 특히 다음 `bonjour:` 로그를 확인하세요.
+Gateway는 순환 로그 파일(`gateway log file: ...`)을 기록함. `bonjour:` 키워드가 포함된 라인을 추적함:
 
-- `bonjour: advertise failed ...`
-- `bonjour: ... name conflict resolved` / `hostname conflict resolved`
-- `bonjour: watchdog detected non-announced service ...`
+- `bonjour: advertise failed ...`: 광고 실행 실패.
+- `bonjour: ... name conflict resolved`: 이름 충돌 해결 내역.
+- `bonjour: watchdog detected non-announced service ...`: 감시 도구가 미공고 서비스를 감지함.
 
-## Debugging on iOS node
+## iOS 노드 디버깅
 
-iOS node는 `NWBrowser`로 `_openclaw-gw._tcp`를 discover합니다.
+iOS 노드는 `NWBrowser` 프레임워크를 사용하여 서비스를 탐색함.
 
-로그 수집 방법:
+**로그 수집 절차:**
+1. **Settings** → **Gateway** → **Advanced** → **Discovery Debug Logs** 활성화.
+2. 동일 메뉴의 **Discovery Logs** 진입 → 문제 재현 → **Copy** 클릭 후 전송.
 
-- Settings → Gateway → Advanced → **Discovery Debug Logs**
-- Settings → Gateway → Advanced → **Discovery Logs** → 문제 재현 → **Copy**
+로그에는 브라우저 상태 전이 및 검색 결과 변화 내역이 포함됨.
 
-로그에는 browser state transition과 result-set change가 포함됩니다.
+## 일반적인 실패 원인
 
-## Common failure modes
+- **네트워크 경계 문제**: Bonjour는 기본적으로 서브넷을 넘지 못함. Tailnet이나 SSH 터널을 사용함.
+- **멀티캐스트 차단**: 일부 공용 Wi-Fi 환경은 보안을 위해 mDNS 통신을 차단함.
+- **잠자기 모드 및 인터페이스 변경**: macOS가 일시적으로 mDNS 정보를 놓칠 수 있음. 잠시 후 다시 시도함.
+- **해석 실패 (Resolve failure)**: 기기 이름에 이모지나 특수문자가 포함된 경우 일부 해석기가 혼란을 겪을 수 있음. 이름을 단순하게 수정하고 Gateway를 재시작함.
 
-- **Bonjour doesn’t cross networks**: Tailnet 또는 SSH를 사용하세요.
-- **Multicast blocked**: 일부 Wi-Fi 네트워크는 mDNS를 비활성화합니다.
-- **Sleep / interface churn**: macOS가 일시적으로 mDNS 결과를 잃을 수 있습니다. 다시 시도하세요.
-- **Browse works but resolve fails**: machine name은 단순하게 유지하세요(emoji나 특수문자 피하기). 그 뒤 Gateway를 재시작하세요. service instance name은 host name에서 파생되므로, 지나치게 복잡한 이름은 resolver를 혼란스럽게 할 수 있습니다.
+## 이스케이프된 인스턴스 이름 (`\032`)
 
-## Escaped instance names (`\032`)
+Bonjour/DNS-SD 명세에 따라 서비스 이름 내의 공백 등은 `\032`와 같은 10진수 이스케이프 시퀀스로 표현될 수 있음. 이는 프로토콜 레벨의 정상적인 동작이며, UI 표시 시에는 이를 디코딩하여 보여주어야 함.
 
-Bonjour/DNS-SD는 service instance name의 byte를 `\DDD` 형식의 10진 escape로 표현하는 경우가 많습니다(예: 공백은 `\032`).
+## 비활성화 및 상세 설정
 
-- protocol 수준에서는 정상 동작입니다.
-- UI는 이를 decode해서 표시해야 합니다(iOS는 `BonjourEscapes.decode` 사용).
+- **`OPENCLAW_DISABLE_BONJOUR=1`**: 서비스 공고 기능을 완전히 비활성화함.
+- **`gateway.bind`**: Gateway의 네트워크 바인딩 모드 제어.
+- **`OPENCLAW_SSH_PORT`**: TXT 레코드에 공고할 SSH 포트 번호 오버라이드.
+- **`OPENCLAW_TAILNET_DNS`**: TXT 레코드에 매직 DNS 힌트 주입.
+- **`OPENCLAW_CLI_PATH`**: 공고되는 CLI 실행 경로 오버라이드.
 
-## Disabling / configuration
+## 관련 문서 목록
 
-- `OPENCLAW_DISABLE_BONJOUR=1`은 advertising을 비활성화합니다(legacy: `OPENCLAW_DISABLE_BONJOUR`)
-- `~/.openclaw/openclaw.json`의 `gateway.bind`가 Gateway bind mode를 제어합니다.
-- `OPENCLAW_SSH_PORT`는 TXT에 광고할 SSH port를 override합니다(legacy: `OPENCLAW_SSH_PORT`)
-- `OPENCLAW_TAILNET_DNS`는 TXT에 MagicDNS 힌트를 게시합니다(legacy: `OPENCLAW_TAILNET_DNS`)
-- `OPENCLAW_CLI_PATH`는 광고되는 CLI path를 override합니다(legacy: `OPENCLAW_CLI_PATH`)
-
-## Related docs
-
-- Discovery policy and transport selection: [Discovery](/gateway/discovery)
-- Node pairing + approvals: [Gateway pairing](/gateway/pairing)
+- 탐색 정책 및 전송 계층 선택: [Discovery](/gateway/discovery)
+- 노드 페어링 및 승인 절차: [Gateway pairing](/gateway/pairing)

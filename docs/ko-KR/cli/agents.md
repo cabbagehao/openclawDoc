@@ -1,109 +1,115 @@
 ---
-summary: "`openclaw agents`를 위한 CLI 레퍼런스 (list/add/delete/bindings/bind/unbind/set identity)"
+summary: "에이전트 목록 조회, 추가, 삭제 및 바인딩(Bindings), 신원 설정(Identity) 등을 관리하는 `openclaw agents` 명령어 레퍼런스"
 read_when:
-  - 여러 개의 격리된 에이전트(워크스페이스 + 라우팅 + 인증)가 필요할 때
+  - 워크스페이스, 라우팅, 인증 정보가 분리된 여러 에이전트를 운영하고자 할 때
 title: "agents"
+x-i18n:
+  source_path: "cli/agents.md"
 ---
 
 # `openclaw agents`
 
-격리된 에이전트(워크스페이스 + 인증 + 라우팅)를 관리합니다.
+워크스페이스, 인증 정보 및 라우팅 설정이 격리된 여러 에이전트 인스턴스를 관리함.
 
-관련 항목:
+**관련 문서:**
+- 멀티 에이전트 라우팅 개요: [Multi-Agent Routing](/concepts/multi-agent)
+- 에이전트 워크스페이스 구조: [Agent workspace](/concepts/agent-workspace)
 
-- 멀티 에이전트 라우팅: [Multi-Agent Routing](/concepts/multi-agent)
-- 에이전트 워크스페이스: [Agent workspace](/concepts/agent-workspace)
-
-## 예시
+## 사용 예시
 
 ```bash
+# 전체 에이전트 목록 조회
 openclaw agents list
+
+# 특정 경로의 워크스페이스를 사용하는 신규 에이전트 'work' 추가
 openclaw agents add work --workspace ~/.openclaw/workspace-work
+
+# 현재 설정된 모든 라우팅 바인딩 확인
 openclaw agents bindings
+
+# 에이전트 'work'를 특정 Telegram 계정('ops')에 연결
 openclaw agents bind --agent work --bind telegram:ops
+
+# 에이전트 'work'와 Telegram 계정('ops') 간의 연결 해제
 openclaw agents unbind --agent work --bind telegram:ops
+
+# 워크스페이스 내 IDENTITY.md 파일을 읽어 신원 정보 업데이트
 openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
+
+# 메인 에이전트의 아바타 이미지를 명시적으로 설정
 openclaw agents set-identity --agent main --avatar avatars/openclaw.png
+
+# 에이전트 'work' 인스턴스 삭제
 openclaw agents delete work
 ```
 
-## 라우팅 바인딩
+## 라우팅 바인딩 (Routing Bindings)
 
-라우팅 바인딩을 사용하면 인바운드 채널 트래픽을 특정 에이전트에 고정할 수 있습니다.
+바인딩 설정을 통해 수신되는 채널 트래픽을 특정 에이전트에게 전달하도록 고정할 수 있음.
 
-바인딩 나열:
-
+**바인딩 목록 확인:**
 ```bash
 openclaw agents bindings
 openclaw agents bindings --agent work
 openclaw agents bindings --json
 ```
 
-바인딩 추가:
-
+**바인딩 추가:**
 ```bash
 openclaw agents bind --agent work --bind telegram:ops --bind discord:guild-a
 ```
+`accountId`를 생략하고 `--bind <channel>` 형식만 입력할 경우, 시스템은 해당 채널의 기본값이나 플러그인 설정 정보를 바탕으로 계정을 자동 해석함.
 
-`accountId`(`--bind <channel>`)를 생략하면, OpenClaw는 가능할 때 채널 기본값과 플러그인 설정 훅에서 이를 해석합니다.
+### 바인딩 범위(Scope) 동작 규칙
 
-### 바인딩 범위 동작
+- 계정 ID(`accountId`)가 없는 바인딩은 해당 채널의 **기본 계정**에만 적용됨.
+- `accountId: "*"` 설정은 채널의 모든 계정에 대한 **폴백(Fallback)** 역할을 수행하며, 명시적 계정 바인딩보다 우선순위가 낮음.
+- 기존에 계정 ID 없이 설정된 바인딩이 있는 상태에서, 나중에 동일 채널에 대해 명시적인 계정 ID로 다시 바인딩할 경우 OpenClaw는 중복 생성 대신 기존 설정을 해당 계정 범위로 **업그레이드**함.
 
-- `accountId`가 없는 바인딩은 채널 기본 계정에만 일치합니다.
-- `accountId: "*"`는 채널 전체에 대한 폴백(모든 계정)이며, 명시적 계정 바인딩보다 덜 구체적입니다.
-- 같은 에이전트에 이미 `accountId` 없는 일치하는 채널 바인딩이 있고, 나중에 명시적이거나 해석된 `accountId`로 바인딩하면 OpenClaw는 중복을 추가하는 대신 기존 바인딩을 제자리에서 업그레이드합니다.
-
-예시:
-
+**업그레이드 예시:**
 ```bash
-# initial channel-only binding
+# 1. 초기 채널 단위 바인딩 (계정 미지정)
 openclaw agents bind --agent work --bind telegram
 
-# later upgrade to account-scoped binding
+# 2. 특정 계정 범위로 업그레이드
 openclaw agents bind --agent work --bind telegram:ops
 ```
+업그레이드 완료 후, 해당 바인딩은 오직 `telegram:ops` 계정의 메시지만 처리함. 기본 계정 메시지도 계속 처리하려면 `--bind telegram:default`와 같이 명시적으로 추가해야 함.
 
-업그레이드 후 해당 바인딩의 라우팅 범위는 `telegram:ops`로 지정됩니다. 기본 계정 라우팅도 원한다면 명시적으로 추가하세요(예: `--bind telegram:default`).
-
-바인딩 제거:
-
+**바인딩 해제:**
 ```bash
 openclaw agents unbind --agent work --bind telegram:ops
 openclaw agents unbind --agent work --all
 ```
 
-## IDENTITY 파일
+## 신원 정보 파일 (Identity Files)
 
-각 에이전트 워크스페이스는 워크스페이스 루트에 `IDENTITY.md`를 포함할 수 있습니다:
+각 에이전트 워크스페이스 루트에는 신원 정보를 담은 `IDENTITY.md` 파일을 포함할 수 있음:
 
-- 예시 경로: `~/.openclaw/workspace/IDENTITY.md`
-- `set-identity --from-identity`는 워크스페이스 루트(또는 명시적인 `--identity-file`)에서 읽습니다
+- 기본 경로 예시: `~/.openclaw/workspace/IDENTITY.md`
+- `set-identity --from-identity` 옵션 사용 시 워크스페이스 루트(또는 `--identity-file`로 지정된 경로)의 파일을 읽어옴.
+- 아바타 이미지 경로는 워크스페이스 루트를 기준으로 해석됨.
 
-아바타 경로는 워크스페이스 루트를 기준으로 해석됩니다.
+## 신원 설정 (Set Identity)
 
-## identity 설정
+`set-identity` 명령어를 통해 `agents.list[].identity` 하위 필드를 업데이트함:
 
-`set-identity`는 필드를 `agents.list[].identity`에 기록합니다:
+- **`name`**: 에이전트 이름.
+- **`theme`**: 응답 스타일이나 색상 테마.
+- **`emoji`**: 에이전트를 상징하는 이모지.
+- **`avatar`**: 이미지 경로(워크스페이스 상대 경로), URL 또는 Data URI.
 
-- `name`
-- `theme`
-- `emoji`
-- `avatar`(워크스페이스 상대 경로, http(s) URL 또는 data URI)
-
-`IDENTITY.md`에서 로드:
-
+**데이터 로드:**
 ```bash
 openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
 ```
 
-필드를 명시적으로 덮어쓰기:
-
+**필드 개별 오버라이드:**
 ```bash
 openclaw agents set-identity --agent main --name "OpenClaw" --emoji "🦞" --avatar avatars/openclaw.png
 ```
 
-설정 예시:
-
+**설정 파일 예시:**
 ```json5
 {
   agents: {

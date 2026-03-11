@@ -1,231 +1,104 @@
 ---
-summary: "여러 채널에서의 그룹 채팅 동작(WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams/Zalo)"
+summary: "WhatsApp, Telegram, Discord 등 다양한 채널에서의 그룹 대화 동작 방식 및 멘션 게이팅 설정 가이드"
 read_when:
-  - 그룹 채팅 동작이나 멘션 gating을 바꿀 때
-title: "그룹"
+  - 그룹 대화의 응답 규칙이나 멘션 필터링 로직을 변경하고자 할 때
+title: "그룹 대화 관리"
 x-i18n:
   source_path: "channels/groups.md"
 ---
 
-# 그룹
+# 그룹 대화 관리 (Groups)
 
-OpenClaw는 WhatsApp, Telegram, Discord, Slack, Signal, iMessage, Microsoft Teams, Zalo 등 여러 채널에서 그룹 채팅을 일관된 방식으로 다룹니다.
+OpenClaw는 WhatsApp, Telegram, Discord, Slack, Signal, iMessage, Microsoft Teams, Zalo 등 연동된 모든 채널의 그룹 대화에 대해 일관된 관리 체계를 제공함.
 
-## 입문 안내 (2분)
+## 입문 가이드 (2분 요약)
 
-OpenClaw는 여러분 자신의 메시징 계정 안에 “살아” 있습니다. 별도의 WhatsApp 봇 사용자가 있는 것이 아닙니다.
-**여러분**이 어떤 그룹에 들어가 있다면, OpenClaw도 그 그룹을 볼 수 있고 그 안에서 응답할 수 있습니다.
+OpenClaw 에이전트는 사용자의 기존 메시징 계정 내에서 "함께 상주"하는 형태임. 별도의 봇 계정을 운영하는 것이 아니므로, **사용자**가 참여 중인 모든 그룹 대화 내용을 에이전트도 실시간으로 확인할 수 있으며 설정에 따라 응답함.
 
-기본 동작:
+**기본 동작 원칙:**
+- **접근 제한**: 그룹 대화는 기본적으로 제한된 상태(`groupPolicy: "allowlist"`)로 운영됨.
+- **멘션 필수**: 멘션 게이팅을 명시적으로 해제하지 않는 한, 에이전트는 본인이 멘션(@이름)되었을 때만 답변함.
 
-- 그룹은 제한됩니다 (`groupPolicy: "allowlist"`).
-- 명시적으로 mention gating을 끄지 않았다면, 응답에는 멘션이 필요합니다.
+즉, **허용된 발신자**가 에이전트를 **멘션**할 때만 에이전트가 활성화됨.
 
-즉, allowlist된 발신자가 OpenClaw를 멘션해야 트리거할 수 있습니다.
+> **핵심 요약 (TL;DR)**
+> - **개인 대화(DM)**: `*.allowFrom` 설정으로 제어.
+> - **그룹 참여**: `*.groupPolicy` 및 허용 목록(`*.groups`, `*.groupAllowFrom`)으로 제어.
+> - **응답 트리거**: 멘션 게이팅(`requireMention`, `/activation` 명령어)으로 제어.
 
-> TL;DR
->
-> - **DM 접근**은 `*.allowFrom`으로 제어합니다.
-> - **그룹 접근**은 `*.groupPolicy` + allowlist(`*.groups`, `*.groupAllowFrom`)로 제어합니다.
-> - **응답 트리거**는 mention gating(`requireMention`, `/activation`)으로 제어합니다.
-
-빠른 흐름(그룹 메시지에 무슨 일이 일어나는가):
-
+**그룹 메시지 처리 흐름:**
 ```
-groupPolicy? disabled -> drop
-groupPolicy? allowlist -> group allowed? no -> drop
-requireMention? yes -> mentioned? no -> store for context only
-otherwise -> reply
+그룹 정책(groupPolicy)이 'disabled'인가? -> 메시지 무시
+그룹 정책이 'allowlist'인가? -> 허용된 그룹인가? -> 아니오: 메시지 무시
+멘션 필수(requireMention)인가? -> 멘션되었는가? -> 아니오: 대화 이력(Context)으로만 저장
+위 조건 통과 시 -> 에이전트 응답 생성
 ```
 
-![Group message flow](/images/groups-flow.svg)
+## 세션 키 (Session Keys)
 
-원하는 것이...
+- **그룹 대화**: `agent:<agentId>:<channel>:group:<id>` 키를 사용하여 세션을 관리함. (공개 채널/룸의 경우 `...:channel:<id>` 사용)
+- **Telegram 포럼**: 각 주제(Topic)마다 독립된 세션을 갖도록 그룹 ID 뒤에 `:topic:<threadId>`가 추가됨.
+- **하트비트**: 불필요한 알림 방지를 위해 그룹 세션에서는 하트비트(Heartbeat) 실행을 건너뜀.
 
-| 목표                                     | 설정 값                                                    |
-| ---------------------------------------- | ---------------------------------------------------------- |
-| 모든 그룹을 허용하되 @mention에서만 응답 | `groups: { "*": { requireMention: true } }`                |
-| 모든 그룹 응답 비활성화                  | `groupPolicy: "disabled"`                                  |
-| 특정 그룹만 허용                         | `groups: { "<group-id>": { ... } }` (`"*"` 키 없음)        |
-| 그룹에서 나만 트리거 가능                | `groupPolicy: "allowlist"`, `groupAllowFrom: ["+1555..."]` |
+## 권장 패턴: 개인용 DM + 공개용 그룹 (단일 에이전트 구성)
 
-## Session key
+하나의 에이전트("두뇌")를 유지하면서, 대화 채널에 따라 보안 수준을 다르게 적용하고 싶을 때 유용한 패턴임.
 
-- 그룹 세션은 `agent:<agentId>:<channel>:group:<id>` session key를 사용합니다(rooms/channels는 `agent:<agentId>:<channel>:channel:<id>` 사용).
-- Telegram forum topic은 그룹 ID 뒤에 `:topic:<threadId>`를 붙여 topic마다 독립 세션을 가집니다.
-- 직접 채팅은 main session을 사용합니다(또는 설정돼 있다면 발신자별 session).
-- 그룹 session에서는 heartbeat를 건너뜁니다.
+**이유**: 단일 에이전트 모드에서 DM은 **메인 세션**(`agent:main:main`)으로, 그룹은 **비메인 세션**(`agent:main:<channel>:group:<id>`)으로 분류됨. 샌드박스 모드를 `"non-main"`으로 설정하면 다음과 같은 하이브리드 운영이 가능함:
 
-## 패턴: 개인 DM + 공개 그룹(단일 에이전트)
-
-네, “개인” 트래픽이 **DM**이고 “공개” 트래픽이 **그룹**이라면 이 패턴은 잘 작동합니다.
-
-이유: 단일 에이전트 모드에서 DM은 보통 **main** session key(`agent:main:main`)로 들어가고, 그룹은 항상 **non-main** session key(`agent:main:<channel>:group:<id>`)를 사용합니다. `mode: "non-main"`으로 sandboxing을 켜면 그룹 session은 Docker 안에서 실행되고 main DM session은 호스트에 남습니다.
-
-이렇게 하면 하나의 에이전트 “brain”(공유 workspace + memory)을 유지하면서도 실행 자세는 둘로 나눌 수 있습니다.
-
-- **DM**: 전체 도구(호스트)
-- **그룹**: sandbox + 제한된 도구(Docker)
-
-> 진짜로 별도 workspace/persona가 필요하다면(“개인”과 “공개”가 절대 섞이면 안 된다면) 두 번째 agent + bindings를 사용하세요. [Multi-Agent Routing](/concepts/multi-agent)을 참고하세요.
-
-예시(DM은 host, 그룹은 sandbox + 메시징 전용 도구):
+- **개인 DM**: 호스트 권한의 모든 도구 사용 가능 (전체 권한).
+- **그룹 대화**: Docker 샌드박스 내에서 격리된 상태로 실행되며 제한된 도구만 사용 가능.
 
 ```json5
 {
   agents: {
     defaults: {
       sandbox: {
-        mode: "non-main", // groups/channels are non-main -> sandboxed
-        scope: "session", // 가장 강한 격리(그룹/채널당 컨테이너 하나)
-        workspaceAccess: "none",
+        mode: "non-main", // 그룹/채널 대화만 샌드박스 적용
+        scope: "session", // 세션별로 독립된 컨테이너 할당
+        workspaceAccess: "none", // 호스트 워크스페이스 접근 차단
       },
     },
   },
   tools: {
     sandbox: {
       tools: {
-        // allow가 비어 있지 않으면 나머지는 모두 차단됩니다(deny가 여전히 우선).
-        allow: ["group:messaging", "group:sessions"],
-        deny: ["group:runtime", "group:fs", "group:ui", "nodes", "cron", "gateway"],
+        allow: ["group:messaging", "group:sessions"], // 메시징 및 세션 관리 도구만 허용
+        deny: ["group:runtime", "group:fs", "nodes", "cron", "gateway"], // 시스템 도구 전체 차단
       },
     },
   },
 }
 ```
 
-“호스트 접근 없음” 대신 “그룹은 폴더 X만 볼 수 있게” 하고 싶다면 `workspaceAccess: "none"`을 유지하고 허용한 경로만 sandbox에 마운트하세요.
+특정 폴더만 그룹 대화 에이전트에게 노출하고 싶다면 샌드박스 설정의 `binds` 옵션을 활용함.
 
-```json5
-{
-  agents: {
-    defaults: {
-      sandbox: {
-        mode: "non-main",
-        scope: "session",
-        workspaceAccess: "none",
-        docker: {
-          binds: [
-            // hostPath:containerPath:mode
-            "/home/user/FriendsShared:/data:ro",
-          ],
-        },
-      },
-    },
-  },
-}
-```
+## 그룹 정책 (Group Policy) 상세
 
-관련:
+각 채널별로 그룹 메시지 수락 정책을 개별적으로 제어할 수 있음:
 
-- 설정 키와 기본값: [Gateway configuration](/gateway/configuration#agentsdefaultssandbox)
-- 어떤 도구가 왜 차단됐는지 디버깅: [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)
-- bind mount 상세: [Sandboxing](/gateway/sandboxing#custom-bind-mounts)
+| 정책 (Policy) | 동작 설명 |
+| :--- | :--- |
+| `"open"` | 모든 그룹 메시지를 수락함. (단, 멘션 게이팅 규칙은 여전히 적용됨) |
+| `"disabled"` | 해당 채널의 모든 그룹 메시지를 완전히 무시함. |
+| `"allowlist"` | 설정된 허용 목록과 일치하는 그룹/룸의 메시지만 처리함. |
 
-## 표시 레이블
+<Note>
+**주의**: 설정 파일에 특정 채널 블록(`channels.<provider>`)이 아예 없는 경우, 시스템은 보안을 위해 해당 채널의 그룹 메시지를 거부(`allowlist` 모드이나 목록이 비어 있는 상태) 처리함.
+</Note>
 
-- UI 레이블은 가능하면 `displayName`을 사용하며, 형식은 `<channel>:<token>`입니다.
-- `#room`은 room/channel용 예약값이고, 그룹 채팅은 `g-<slug>`를 사용합니다(소문자, 공백은 `-`, `#@+._-`는 유지).
+## 멘션 게이팅 (Mention Gating)
 
-## 그룹 정책
+에이전트가 모든 대화에 끼어들지 않도록 제어하는 기능임. 봇의 답변에 사용자가 '답장(Reply)' 기능을 사용하여 메시지를 보내는 경우, 시스템은 이를 암묵적인 멘션으로 간주함.
 
-채널별로 그룹/룸 메시지를 어떻게 처리할지 제어합니다.
-
-```json5
-{
-  channels: {
-    whatsapp: {
-      groupPolicy: "disabled", // "open" | "disabled" | "allowlist"
-      groupAllowFrom: ["+15551234567"],
-    },
-    telegram: {
-      groupPolicy: "disabled",
-      groupAllowFrom: ["123456789"], // 숫자형 Telegram user id (wizard가 @username 해석 가능)
-    },
-    signal: {
-      groupPolicy: "disabled",
-      groupAllowFrom: ["+15551234567"],
-    },
-    imessage: {
-      groupPolicy: "disabled",
-      groupAllowFrom: ["chat_id:123"],
-    },
-    msteams: {
-      groupPolicy: "disabled",
-      groupAllowFrom: ["user@org.com"],
-    },
-    discord: {
-      groupPolicy: "allowlist",
-      guilds: {
-        GUILD_ID: { channels: { help: { allow: true } } },
-      },
-    },
-    slack: {
-      groupPolicy: "allowlist",
-      channels: { "#general": { allow: true } },
-    },
-    matrix: {
-      groupPolicy: "allowlist",
-      groupAllowFrom: ["@owner:example.org"],
-      groups: {
-        "!roomId:example.org": { allow: true },
-        "#alias:example.org": { allow: true },
-      },
-    },
-  },
-}
-```
-
-| 정책          | 동작                                                            |
-| ------------- | --------------------------------------------------------------- |
-| `"open"`      | 그룹은 allowlist를 우회하지만 mention gating은 계속 적용됩니다. |
-| `"disabled"`  | 모든 그룹 메시지를 완전히 차단합니다.                           |
-| `"allowlist"` | 설정된 allowlist와 일치하는 그룹/룸만 허용합니다.               |
-
-참고:
-
-- `groupPolicy`는 mention-gating(@mentions 필요)과 별개입니다.
-- WhatsApp/Telegram/Signal/iMessage/Microsoft Teams/Zalo는 `groupAllowFrom`을 사용합니다(fallback: 명시적 `allowFrom`).
-- DM pairing 승인(`*-allowFrom` 저장소 항목)은 DM 접근에만 적용되며, 그룹 발신자 인증은 그룹 allowlist에 명시적으로 남아야 합니다.
-- Discord: allowlist는 `channels.discord.guilds.<id>.channels`를 사용합니다.
-- Slack: allowlist는 `channels.slack.channels`를 사용합니다.
-- Matrix: allowlist는 `channels.matrix.groups`(room ID, alias, name)를 사용합니다. 발신자 제한에는 `channels.matrix.groupAllowFrom`을 쓰며, room별 `users` allowlist도 지원합니다.
-- Group DM은 별도로 제어됩니다(`channels.discord.dm.*`, `channels.slack.dm.*`).
-- Telegram allowlist는 user ID(`"123456789"`, `"telegram:123456789"`, `"tg:123456789"`) 또는 username(`"@alice"` 또는 `"alice"`)과 매치될 수 있습니다. 접두사는 대소문자를 구분하지 않습니다.
-- 기본값은 `groupPolicy: "allowlist"`입니다. 그룹 allowlist가 비어 있으면 그룹 메시지는 차단됩니다.
-- 런타임 안전성: provider 블록 자체가 완전히 없으면(`channels.<provider>` 부재), group policy는 `channels.defaults.groupPolicy`를 상속하지 않고 fail-closed 모드(보통 `allowlist`)로 fallback합니다.
-
-빠른 멘탈 모델(그룹 메시지 평가 순서):
-
-1. `groupPolicy` (open/disabled/allowlist)
-2. 그룹 allowlist(`*.groups`, `*.groupAllowFrom`, 채널별 allowlist)
-3. mention gating(`requireMention`, `/activation`)
-
-## Mention gating (기본값)
-
-그룹 메시지는 그룹별 override가 없는 한 기본적으로 멘션이 필요합니다. 기본값은 각 하위 시스템의 `*.groups."*"` 아래에 있습니다.
-
-봇 메시지에 대한 reply는 암묵적 멘션으로 간주됩니다(채널이 reply metadata를 지원하는 경우). 이는 Telegram, WhatsApp, Slack, Discord, Microsoft Teams에 적용됩니다.
-
+**설정 예시:**
 ```json5
 {
   channels: {
     whatsapp: {
       groups: {
-        "*": { requireMention: true },
-        "123@g.us": { requireMention: false },
-      },
-    },
-    telegram: {
-      groups: {
-        "*": { requireMention: true },
-        "123456789": { requireMention: false },
-      },
-    },
-    imessage: {
-      groups: {
-        "*": { requireMention: true },
-        "123": { requireMention: false },
+        "*": { requireMention: true }, // 모든 그룹에서 멘션 필수
+        "123@g.us": { requireMention: false }, // 특정 그룹은 모든 메시지에 응답
       },
     },
   },
@@ -234,8 +107,8 @@ otherwise -> reply
       {
         id: "main",
         groupChat: {
-          mentionPatterns: ["@openclaw", "openclaw", "\\+15555550123"],
-          historyLimit: 50,
+          mentionPatterns: ["@openclaw", "openclaw", "\\+8210..."], // 커스텀 멘션 패턴
+          historyLimit: 50, // 참조할 이전 메시지 개수
         },
       },
     ],
@@ -243,139 +116,27 @@ otherwise -> reply
 }
 ```
 
-참고:
+## 그룹/채널 전용 도구 제한
 
-- `mentionPatterns`는 대소문자를 구분하지 않는 regex입니다.
-- 명시적 멘션을 제공하는 채널에서는 그것이 우선 통과하고, pattern은 fallback입니다.
-- 에이전트별 override: `agents.list[].groupChat.mentionPatterns`(여러 agent가 하나의 그룹을 공유할 때 유용).
-- mention gating은 mention 감지가 가능할 때만 강제됩니다(native mention 또는 `mentionPatterns`가 설정된 경우).
-- Discord 기본값은 `channels.discord.guilds."*"`에 있으며, guild/channel별로 override할 수 있습니다.
-- 그룹 history context는 채널 전반에서 동일한 형식으로 감싸지며 **pending-only**(mention gating으로 건너뛴 메시지)입니다. 전역 기본값은 `messages.groupChat.historyLimit`, override는 `channels.<channel>.historyLimit`(또는 `channels.<channel>.accounts.*.historyLimit`)를 사용하세요. `0`으로 설정하면 비활성화됩니다.
+특정 그룹이나 채널 내에서 에이전트가 사용할 수 있는 도구 권한을 더 세밀하게 제어할 수 있음.
 
-## 그룹/채널 도구 제한 (선택)
+**우선순위 (구체적인 설정이 우선됨):**
+1. 그룹 내 특정 발신자별 설정 (`toolsBySender`)
+2. 해당 그룹 전체 설정 (`tools`)
+3. 기본 발신자 설정 (`"*"`)
+4. 기본 도구 설정
 
-일부 채널 config는 **특정 그룹/룸/채널 안에서** 사용할 수 있는 도구를 제한할 수 있습니다.
+## 그룹 허용 목록 (Group Allowlists)
 
-- `tools`: 전체 그룹에 대한 도구 allow/deny
-- `toolsBySender`: 그룹 내 발신자별 override
-  명시적 키 prefix를 사용하세요:
-  `id:<senderId>`, `e164:<phone>`, `username:<handle>`, `name:<displayName>`, 그리고 `"*"` wildcard.
-  레거시 무접두사 키도 여전히 허용되지만 `id:`로만 매칭됩니다.
+`groups` 섹션의 키값으로 그룹 ID를 등록하면 해당 그룹이 허용 목록에 추가됨. `"*"` 키를 사용하면 모든 그룹을 대상으로 기본 동작(멘션 필수 여부 등)을 일괄 적용할 수 있음.
 
-해결 순서(가장 구체적인 것이 우선):
+## 활성화 제어 (Activation - 소유자 전용)
 
-1. 그룹/채널 `toolsBySender` 매치
-2. 그룹/채널 `tools`
-3. 기본값(`"*"` ) `toolsBySender` 매치
-4. 기본값(`"*"` ) `tools`
+그룹의 소유자(관리자)는 대화 창에서 직접 에이전트의 반응 모드를 변경할 수 있음 (현재 WhatsApp 지원):
+- `/activation mention`: 멘션 시에만 답변하도록 설정.
+- `/activation always`: 모든 메시지에 대해 답변 시도.
 
-예시(Telegram):
+## iMessage 및 WhatsApp 특이 사항
 
-```json5
-{
-  channels: {
-    telegram: {
-      groups: {
-        "*": { tools: { deny: ["exec"] } },
-        "-1001234567890": {
-          tools: { deny: ["exec", "read", "write"] },
-          toolsBySender: {
-            "id:123456789": { alsoAllow: ["exec"] },
-          },
-        },
-      },
-    },
-  },
-}
-```
-
-참고:
-
-- 그룹/채널 도구 제한은 전역/에이전트 도구 정책에 추가로 적용됩니다(deny가 여전히 우선).
-- 일부 채널은 room/channel용으로 다른 중첩 구조를 사용합니다(예: Discord `guilds.*.channels.*`, Slack `channels.*`, MS Teams `teams.*.channels.*`).
-
-## 그룹 allowlist
-
-`channels.whatsapp.groups`, `channels.telegram.groups`, `channels.imessage.groups`가 설정되면 키가 group allowlist 역할을 합니다. `"*"`를 사용하면 모든 그룹을 허용하면서 기본 mention 동작도 설정할 수 있습니다.
-
-흔한 의도(복사/붙여넣기):
-
-1. 모든 그룹 응답 비활성화
-
-```json5
-{
-  channels: { whatsapp: { groupPolicy: "disabled" } },
-}
-```
-
-2. 특정 그룹만 허용(WhatsApp)
-
-```json5
-{
-  channels: {
-    whatsapp: {
-      groups: {
-        "123@g.us": { requireMention: true },
-        "456@g.us": { requireMention: false },
-      },
-    },
-  },
-}
-```
-
-3. 모든 그룹을 허용하되 멘션 필요(명시적)
-
-```json5
-{
-  channels: {
-    whatsapp: {
-      groups: { "*": { requireMention: true } },
-    },
-  },
-}
-```
-
-4. 그룹에서 소유자만 트리거 가능(WhatsApp)
-
-```json5
-{
-  channels: {
-    whatsapp: {
-      groupPolicy: "allowlist",
-      groupAllowFrom: ["+15551234567"],
-      groups: { "*": { requireMention: true } },
-    },
-  },
-}
-```
-
-## Activation (소유자 전용)
-
-그룹 소유자는 그룹별 activation을 토글할 수 있습니다.
-
-- `/activation mention`
-- `/activation always`
-
-소유자는 `channels.whatsapp.allowFrom`으로 결정됩니다(없으면 봇 자신의 E.164). 이 명령은 독립 메시지로 보내야 합니다. 다른 채널은 현재 `/activation`을 무시합니다.
-
-## 컨텍스트 필드
-
-그룹 인바운드 payload는 다음을 설정합니다.
-
-- `ChatType=group`
-- `GroupSubject` (알 수 있는 경우)
-- `GroupMembers` (알 수 있는 경우)
-- `WasMentioned` (mention gating 결과)
-- Telegram forum topic은 `MessageThreadId`와 `IsForum`도 포함합니다.
-
-에이전트 시스템 프롬프트에는 새 그룹 세션의 첫 턴에 그룹 소개가 포함됩니다. 모델에게 사람처럼 답하고, Markdown table을 피하고, 리터럴 `\n` 시퀀스를 쓰지 말라고 알려 줍니다.
-
-## iMessage 관련 사항
-
-- 라우팅/allowlist에는 `chat_id:<id>` 사용을 권장합니다.
-- 채팅 목록 보기: `imsg chats --limit 20`.
-- 그룹 응답은 항상 같은 `chat_id`로 돌아갑니다.
-
-## WhatsApp 관련 사항
-
-WhatsApp 전용 동작(history injection, mention 처리 상세)은 [그룹 메시지](/channels/group-messages)를 참고하세요.
+- **iMessage**: 라우팅 및 허용 목록 설정 시 `chat_id:<id>` 형식을 권장함. `imsg chats` 명령어로 ID 확인 가능.
+- **WhatsApp**: 상세한 대화 이력 주입 로직 및 멘션 처리 방식은 [WhatsApp 그룹 메시지 상세 가이드](/channels/group-messages) 참조.

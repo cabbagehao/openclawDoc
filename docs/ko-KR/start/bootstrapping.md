@@ -1,43 +1,37 @@
 ---
-summary: "에이전트 부트스트래핑 의식은 작업 공간과 신원 파일을 시드합니다"
+summary: "워크스페이스 초기화 및 신원 정보 파일을 생성하는 에이전트 부트스트래핑 과정 안내"
 read_when:
-  - 첫 번째 에이전트 실행 시 발생하는 일 이해하기
-  - 부트스트래핑 파일 위치 설명하기
-  - 온보딩 신원 설정 디버깅하기
+  - 에이전트 최초 실행 시 수행되는 작업을 이해하고자 할 때
+  - 부트스트래핑 관련 파일의 저장 위치를 확인해야 할 때
+  - 온보딩 과정의 신원 설정 문제를 디버깅할 때
 title: "에이전트 부트스트래핑"
 sidebarTitle: "부트스트래핑"
 x-i18n:
   source_path: "start/bootstrapping.md"
-  source_hash: "4a08b5102f25c6c4bcdbbdd44384252a9e537b245a7b070c4961a72b4c6c6601"
-  provider: "anthropic"
-  model: "claude-opus-4-6"
-  workflow: 1
-  generated_at: "2026-03-10T08:14:42.829Z"
 ---
 
+# 에이전트 부트스트래핑(Bootstrapping)
 
-# 에이전트 부트스트래핑
+부트스트래핑은 에이전트 워크스페이스를 준비하고 필요한 신원 정보를 수집하는 **최초 실행** 절차임. 온보딩 완료 후 에이전트가 처음 시작될 때 자동으로 진행됨.
 
-부트스트래핑은 에이전트 작업 공간을 준비하고 신원 세부 정보를 수집하는 **첫 실행** 의식입니다. 온보딩 후 에이전트가 처음 시작될 때 발생합니다.
+## 주요 수행 작업
 
-## 부트스트래핑이 수행하는 작업
+에이전트가 처음 실행되면 OpenClaw는 지정된 워크스페이스 경로(기본값: `~/.openclaw/workspace`)를 초기화함:
 
-첫 번째 에이전트 실행 시 OpenClaw는 작업 공간(기본값 `~/.openclaw/workspace`)을 부트스트랩합니다:
+- **기본 파일 생성**: `AGENTS.md`, `BOOTSTRAP.md`, `IDENTITY.md`, `USER.md` 파일을 생성(Seeding)함.
+- **Q&A 진행**: 사용자에게 필요한 정보를 묻는 짧은 인터뷰 과정을 거침.
+- **정보 기록**: 수집된 신원 정보 및 사용자 선호도를 `IDENTITY.md`, `USER.md`, `SOUL.md` 파일에 기록함.
+- **파일 정리**: 모든 과정이 완료되면 `BOOTSTRAP.md` 파일을 삭제하여 중복 실행되지 않도록 함.
 
-- `AGENTS.md`, `BOOTSTRAP.md`, `IDENTITY.md`, `USER.md`를 시드합니다.
-- 짧은 Q&A 의식을 실행합니다(한 번에 하나의 질문).
-- 신원 + 선호도를 `IDENTITY.md`, `USER.md`, `SOUL.md`에 작성합니다.
-- 완료되면 `BOOTSTRAP.md`를 제거하여 한 번만 실행되도록 합니다.
+## 실행 환경 및 위치
 
-## 실행 위치
-
-부트스트래핑은 항상 **게이트웨이 호스트**에서 실행됩니다. macOS 앱이 원격 Gateway에 연결하는 경우 작업 공간과 부트스트래핑 파일은 해당 원격 머신에 있습니다.
+부트스트래핑은 항상 **Gateway가 설치된 호스트**에서 실행됨. 예를 들어, macOS 앱을 통해 원격 Gateway 서버에 연결한 경우, 워크스페이스 및 부트스트래핑 관련 파일은 로컬 PC가 아닌 원격 서버에 저장됨.
 
 <Note>
-Gateway가 다른 머신에서 실행되는 경우 게이트웨이 호스트에서 작업 공간 파일을 편집하세요(예: `user@gateway-host:~/.openclaw/workspace`).
+Gateway가 외부 서버에서 실행 중인 경우, 워크스페이스 파일 편집은 해당 서버에 접속하여 수행해야 함 (예: `ssh user@gateway-host` 접속 후 `~/.openclaw/workspace` 편집).
 </Note>
 
 ## 관련 문서
 
-- macOS 앱 온보딩: [온보딩](/start/onboarding)
-- 작업 공간 레이아웃: [에이전트 작업 공간](/concepts/agent-workspace)
+- **macOS 앱 온보딩 가이드**: [온보딩 절차 안내](/start/onboarding)
+- **워크스페이스 구조 상세**: [에이전트 워크스페이스 이해하기](/concepts/agent-workspace)

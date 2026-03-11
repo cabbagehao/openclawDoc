@@ -1,260 +1,131 @@
 ---
-summary: "CLI 참고: `openclaw message` (send + channel actions)"
+summary: "메시지 발신 및 채널별 액션(리액션, 설문, 스레드 등)을 수행하는 `openclaw message` 명령어 레퍼런스"
 read_when:
-  - message CLI action을 추가하거나 수정할 때
-  - outbound channel 동작을 변경할 때
+  - CLI를 통해 메시지를 전송하거나 채널별 특정 기능을 수행하고자 할 때
+  - 아웃바운드 채널의 동작 방식을 변경하거나 테스트할 때
 title: "message"
+x-i18n:
+  source_path: "cli/message.md"
 ---
 
 # `openclaw message`
 
-메시지 전송과 channel action을 위한 단일 outbound 명령입니다.
-(Discord/Google Chat/Slack/Mattermost(plugin)/Telegram/WhatsApp/Signal/iMessage/MS Teams 지원)
+통합된 아웃바운드 명령어로 메시지 전송 및 채널별 액션을 수행함. (WhatsApp, Telegram, Discord, Slack, Google Chat, Mattermost, Signal, iMessage, MS Teams 지원)
 
-## Usage
+## 사용법
 
-```
+```bash
 openclaw message <subcommand> [flags]
 ```
 
-채널 선택:
+**채널 선택 규칙:**
+- 둘 이상의 채널이 설정된 경우 `--channel` 플래그가 필수임.
+- 하나의 채널만 설정된 경우 해당 채널이 기본값으로 자동 선택됨.
+- 지원 값: `whatsapp`, `telegram`, `discord`, `googlechat`, `slack`, `mattermost`, `signal`, `imessage`, `msteams`. (Mattermost는 별도 플러그인 필요)
 
-- channel이 둘 이상 설정된 경우 `--channel`이 필요합니다.
-- 정확히 하나만 설정된 경우 그 채널이 기본값이 됩니다.
-- 값: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams` (Mattermost는 plugin 필요)
+**대상 지정 형식 (`--target`):**
+- **WhatsApp**: E.164 번호 또는 그룹 JID.
+- **Telegram**: 숫자 채팅 ID 또는 `@사용자명`.
+- **Discord**: `channel:<id>`, `user:<id>` 또는 `<@id>` 멘션. (순수 숫자는 채널 ID로 간주)
+- **Google Chat**: `spaces/<spaceId>` 또는 `users/<userId>`.
+- **Slack**: `channel:<id>` 또는 `user:<id>`. (순수 채널 ID 허용)
+- **Mattermost**: `channel:<id>`, `user:<id>` 또는 `@사용자명`.
+- **Signal**: `+E.164`, `group:<id>`, `signal:+E.164`, `username:<name>`.
+- **iMessage**: 핸들(Handle), `chat_id:<id>`, `chat_guid:<guid>`.
+- **MS Teams**: 대화 ID (`19:...@thread.tacv2`) 또는 `user:<aad-object-id>`.
 
-대상 형식(`--target`):
+**이름 해석 (Name Lookup):**
+- Discord, Slack 등 지원 채널에서는 `#help`와 같은 채널명을 디렉터리 캐시를 통해 실제 ID로 자동 변환함. 캐시에 없을 경우 실시간 조회를 시도함.
 
-- WhatsApp: E.164 또는 group JID
-- Telegram: chat id 또는 `@username`
-- Discord: `channel:<id>` 또는 `user:<id>` (`<@id>` mention도 가능, 순수 숫자 id는 channel로 처리)
-- Google Chat: `spaces/<spaceId>` 또는 `users/<userId>`
-- Slack: `channel:<id>` 또는 `user:<id>` (raw channel id 허용)
-- Mattermost(plugin): `channel:<id>`, `user:<id>`, 또는 `@username` (bare id는 channel로 처리)
-- Signal: `+E.164`, `group:<id>`, `signal:+E.164`, `signal:group:<id>`, 또는 `username:<name>`/`u:<name>`
-- iMessage: handle, `chat_id:<id>`, `chat_guid:<guid>`, 또는 `chat_identifier:<id>`
-- MS Teams: conversation id(`19:...@thread.tacv2`) 또는 `conversation:<id>` 또는 `user:<aad-object-id>`
+## 공통 플래그
 
-이름 lookup:
+- `--channel <name>`: 채널 지정.
+- `--account <id>`: 계정 지정 (기본값 사용 가능).
+- `--target <dest>`: 전송 대상 채널 또는 사용자 ID.
+- `--targets <name>`: 다중 대상 지정 (브로드캐스트 전용, 반복 가능).
+- `--json`: JSON 형식 출력.
+- `--dry-run`: 실제 전송 없이 실행 결과만 확인.
+- `--verbose`: 상세 로그 출력.
 
-- 지원되는 provider(Discord/Slack 등)에서는 `Help`, `#help` 같은 channel 이름을 directory cache로 해석합니다.
-- cache miss 시 provider가 지원하면 live directory lookup을 시도합니다.
+---
 
-## Common flags
+## 주요 액션 (Actions)
 
-- `--channel <name>`
-- `--account <id>`
-- `--target <dest>` (send/poll/read 등에 사용할 target channel 또는 user)
-- `--targets <name>` (반복 가능, broadcast 전용)
-- `--json`
-- `--dry-run`
-- `--verbose`
+### 코어 기능 (Core)
 
-## Actions
+- **`send`** (메시지 전송)
+  - 필수: `--target`, `--message` 또는 `--media`.
+  - 선택: `--reply-to` (답장), `--thread-id` (스레드), `--gif-playback` (GIF 재생 여부).
+- **`poll`** (설문 조사)
+  - 필수: `--target`, `--poll-question` (질문), `--poll-option` (보기, 반복 가능).
+  - 선택: `--poll-multi` (복수 응답 허용).
+- **`react`** (리액션 추가/제거)
+  - 필수: `--message-id`, `--target`.
+  - 선택: `--emoji`, `--remove` (제거).
+- **`read`** (메시지 읽기)
+  - 지원: Discord, Slack.
+  - 선택: `--limit` (개수), `--before`, `--after` (시점).
+- **`edit`** / **`delete`** (수정/삭제)
+  - 필수: `--message-id`, `--target`, (`edit`의 경우 `--message`).
 
-### Core
+### 스레드 관리 (Threads)
 
-- `send`
-  - 채널: WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost(plugin)/Signal/iMessage/MS Teams
-  - 필수: `--target`, 그리고 `--message` 또는 `--media`
-  - 선택: `--media`, `--reply-to`, `--thread-id`, `--gif-playback`
-  - Telegram 전용: `--buttons` (`channels.telegram.capabilities.inlineButtons` 허용 필요)
-  - Telegram 전용: `--thread-id` (forum topic id)
-  - Slack 전용: `--thread-id` (thread timestamp, `--reply-to`도 동일 필드 사용)
-  - WhatsApp 전용: `--gif-playback`
+- **`thread create`**: 새 스레드 생성 (Discord 전용).
+- **`thread reply`**: 특정 스레드에 답장 전송.
 
-- `poll`
-  - 채널: WhatsApp/Telegram/Discord/Matrix/MS Teams
-  - 필수: `--target`, `--poll-question`, `--poll-option` (반복)
-  - 선택: `--poll-multi`
-  - Discord 전용: `--poll-duration-hours`, `--silent`, `--message`
-  - Telegram 전용: `--poll-duration-seconds` (5-600), `--silent`, `--poll-anonymous` / `--poll-public`, `--thread-id`
+### 미디어 및 기타 (Discord 전용)
 
-- `react`
-  - 채널: Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
-  - 필수: `--message-id`, `--target`
-  - 선택: `--emoji`, `--remove`, `--participant`, `--from-me`, `--target-author`, `--target-author-uuid`
-  - 참고: `--remove`는 `--emoji`가 필요합니다. 지원되는 곳에서는 `--emoji` 없이 자신의 reaction만 지울 수 있습니다. 자세한 내용은 /tools/reactions 참고
-  - WhatsApp 전용: `--participant`, `--from-me`
-  - Signal group reaction: `--target-author` 또는 `--target-author-uuid` 필요
+- **`emoji list`** / **`upload`**: 커스텀 이모지 관리.
+- **`sticker send`** / **`upload`**: 스티커 관리.
+- **`event create`** / **`list`**: 서버 이벤트 관리.
+- **`timeout`** / **`kick`** / **`ban`**: 커뮤니티 관리 및 제재 도구.
 
-- `reactions`
-  - 채널: Discord/Google Chat/Slack
-  - 필수: `--message-id`, `--target`
-  - 선택: `--limit`
+### 브로드캐스트 (Broadcast)
 
-- `read`
-  - 채널: Discord/Slack
-  - 필수: `--target`
-  - 선택: `--limit`, `--before`, `--after`
-  - Discord 전용: `--around`
+- **`broadcast`**: 설정된 모든 채널 또는 특정 공급자 전체에 메시지 전송.
+  - `--channel all` 지정 시 모든 활성 공급자에게 전송됨.
 
-- `edit`
-  - 채널: Discord/Slack
-  - 필수: `--message-id`, `--message`, `--target`
+---
 
-- `delete`
-  - 채널: Discord/Slack/Telegram
-  - 필수: `--message-id`, `--target`
+## 사용 예시
 
-- `pin` / `unpin`
-  - 채널: Discord/Slack
-  - 필수: `--message-id`, `--target`
-
-- `pins` (list)
-  - 채널: Discord/Slack
-  - 필수: `--target`
-
-- `permissions`
-  - 채널: Discord
-  - 필수: `--target`
-
-- `search`
-  - 채널: Discord
-  - 필수: `--guild-id`, `--query`
-  - 선택: `--channel-id`, `--channel-ids`(반복), `--author-id`, `--author-ids`(반복), `--limit`
-
-### Threads
-
-- `thread create`
-  - 채널: Discord
-  - 필수: `--thread-name`, `--target` (channel id)
-  - 선택: `--message-id`, `--message`, `--auto-archive-min`
-
-- `thread list`
-  - 채널: Discord
-  - 필수: `--guild-id`
-  - 선택: `--channel-id`, `--include-archived`, `--before`, `--limit`
-
-- `thread reply`
-  - 채널: Discord
-  - 필수: `--target` (thread id), `--message`
-  - 선택: `--media`, `--reply-to`
-
-### Emojis
-
-- `emoji list`
-  - Discord: `--guild-id`
-  - Slack: 추가 flag 없음
-
-- `emoji upload`
-  - 채널: Discord
-  - 필수: `--guild-id`, `--emoji-name`, `--media`
-  - 선택: `--role-ids` (반복)
-
-### Stickers
-
-- `sticker send`
-  - 채널: Discord
-  - 필수: `--target`, `--sticker-id` (반복)
-  - 선택: `--message`
-
-- `sticker upload`
-  - 채널: Discord
-  - 필수: `--guild-id`, `--sticker-name`, `--sticker-desc`, `--sticker-tags`, `--media`
-
-### Roles / Channels / Members / Voice
-
-- `role info` (Discord): `--guild-id`
-- `role add` / `role remove` (Discord): `--guild-id`, `--user-id`, `--role-id`
-- `channel info` (Discord): `--target`
-- `channel list` (Discord): `--guild-id`
-- `member info` (Discord/Slack): `--user-id` (Discord는 `--guild-id`도 필요)
-- `voice status` (Discord): `--guild-id`, `--user-id`
-
-### Events
-
-- `event list` (Discord): `--guild-id`
-- `event create` (Discord): `--guild-id`, `--event-name`, `--start-time`
-  - 선택: `--end-time`, `--desc`, `--channel-id`, `--location`, `--event-type`
-
-### Moderation (Discord)
-
-- `timeout`: `--guild-id`, `--user-id` (선택: `--duration-min` 또는 `--until`, 둘 다 없으면 timeout 해제)
-- `kick`: `--guild-id`, `--user-id` (`--reason` 선택)
-- `ban`: `--guild-id`, `--user-id` (`--delete-days`, `--reason` 선택)
-  - `timeout`도 `--reason` 지원
-
-### Broadcast
-
-- `broadcast`
-  - 채널: 설정된 모든 채널. 모든 provider를 대상으로 하려면 `--channel all`
-  - 필수: `--targets` (반복)
-  - 선택: `--message`, `--media`, `--dry-run`
-
-## Examples
-
-Discord에 답장 보내기:
-
-```
+**Discord 답장 보내기:**
+```bash
 openclaw message send --channel discord \
-  --target channel:123 --message "hi" --reply-to 456
+  --target channel:123 --message "안녕하세요" --reply-to 456
 ```
 
-컴포넌트를 포함한 Discord 메시지 보내기:
-
-```
+**Discord 대화형 컴포넌트 포함 메시지:**
+```bash
 openclaw message send --channel discord \
-  --target channel:123 --message "Choose:" \
-  --components '{"text":"Choose a path","blocks":[{"type":"actions","buttons":[{"label":"Approve","style":"success"},{"label":"Decline","style":"danger"}]}]}'
+  --target channel:123 --message "선택해 주세요:" \
+  --components '{"text":"진행 경로 선택","blocks":[{"type":"actions","buttons":[{"label":"승인","style":"success"},{"label":"거부","style":"danger"}]}]}'
 ```
 
-전체 스키마는 [Discord components](/channels/discord#interactive-components)를 참고하세요.
-
-Discord poll 생성:
-
-```
-openclaw message poll --channel discord \
-  --target channel:123 \
-  --poll-question "Snack?" \
-  --poll-option Pizza --poll-option Sushi \
-  --poll-multi --poll-duration-hours 48
-```
-
-Telegram poll 생성(2분 후 자동 종료):
-
-```
+**Telegram 설문 조사 생성 (2분 후 자동 종료):**
+```bash
 openclaw message poll --channel telegram \
   --target @mychat \
-  --poll-question "Lunch?" \
-  --poll-option Pizza --poll-option Sushi \
+  --poll-question "오늘 점심 메뉴는?" \
+  --poll-option "피자" --poll-option "초밥" \
   --poll-duration-seconds 120 --silent
 ```
 
-Teams proactive message 보내기:
-
-```
-openclaw message send --channel msteams \
-  --target conversation:19:abc@thread.tacv2 --message "hi"
-```
-
-Teams poll 생성:
-
-```
-openclaw message poll --channel msteams \
-  --target conversation:19:abc@thread.tacv2 \
-  --poll-question "Lunch?" \
-  --poll-option Pizza --poll-option Sushi
-```
-
-Slack에서 reaction 달기:
-
-```
+**Slack 리액션 추가:**
+```bash
 openclaw message react --channel slack \
   --target C123 --message-id 456 --emoji "✅"
 ```
 
-Signal group에서 reaction 달기:
-
-```
+**Signal 그룹 대화 리액션:**
+```bash
 openclaw message react --channel signal \
   --target signal:group:abc123 --message-id 1737630212345 \
-  --emoji "✅" --target-author-uuid 123e4567-e89b-12d3-a456-426614174000
+  --emoji "👍" --target-author-uuid 123e4567-e89b-12d3-a456-426614174000
 ```
 
-Telegram inline button 보내기:
-
-```
-openclaw message send --channel telegram --target @mychat --message "Choose:" \
-  --buttons '[ [{"text":"Yes","callback_data":"cmd:yes"}], [{"text":"No","callback_data":"cmd:no"}] ]'
+**Telegram 인라인 버튼 전송:**
+```bash
+openclaw message send --channel telegram --target @mychat --message "선택:" \
+  --buttons '[ [{"text":"예","callback_data":"cmd:yes"}], [{"text":"아니요","callback_data":"cmd:no"}] ]'
 ```

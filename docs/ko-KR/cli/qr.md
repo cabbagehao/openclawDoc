@@ -1,45 +1,55 @@
 ---
-summary: "CLI reference for `openclaw qr` (iOS 페어링 QR + setup code 생성)"
+summary: "iOS 앱 페어링을 위한 QR 코드 및 설정 코드(Setup Code)를 생성하는 `openclaw qr` 명령어 레퍼런스"
 read_when:
-  - iOS 앱을 gateway 와 빠르게 페어링하고 싶을 때
-  - 원격/수동 공유용 setup-code 출력이 필요할 때
+  - iOS 앱과 Gateway 서버를 간편하게 페어링하고자 할 때
+  - 원격 접속 또는 수동 설정을 위한 설정 코드가 필요할 때
 title: "qr"
+x-i18n:
+  source_path: "cli/qr.md"
 ---
 
 # `openclaw qr`
 
-현재 Gateway 설정에서 iOS pairing QR 과 setup code 를 생성합니다.
+현재의 Gateway 설정을 기반으로 iOS 페어링용 QR 코드 및 설정 코드(Setup Code)를 생성함.
 
-## Usage
+## 사용법
 
 ```bash
+# 로컬 설정 기준 QR 코드 생성
 openclaw qr
+
+# 설정 코드만 텍스트로 출력
 openclaw qr --setup-code-only
+
+# 모든 정보를 JSON 형식으로 출력
 openclaw qr --json
+
+# 원격 서버 설정 기준 QR 코드 생성
 openclaw qr --remote
+
+# 특정 URL 및 토큰을 지정하여 생성
 openclaw qr --url wss://gateway.example/ws --token '<token>'
 ```
 
-## Options
+## 주요 옵션
 
-- `--remote`: 설정의 `gateway.remote.url` 과 원격 token/password 사용
-- `--url <url>`: payload 에 사용할 gateway URL 재정의
-- `--public-url <url>`: payload 에 사용할 public URL 재정의
-- `--token <token>`: payload 용 gateway token 재정의
-- `--password <password>`: payload 용 gateway password 재정의
-- `--setup-code-only`: setup code 만 출력
-- `--no-ascii`: ASCII QR 렌더링 생략
-- `--json`: JSON 출력 (`setupCode`, `gatewayUrl`, `auth`, `urlSource`)
+- **`--remote`**: 설정 파일의 `gateway.remote.url` 및 원격 인증 정보(토큰/비밀번호)를 사용함.
+- **`--url <url>`**: 페어링 정보에 포함될 Gateway WebSocket 주소를 오버라이드함.
+- **`--public-url <url>`**: 페어링 정보에 포함될 공개(Public) URL 주소를 오버라이드함.
+- **`--token <token>`**: 페어링용 토큰 지정.
+- **`--password <password>`**: 페어링용 비밀번호 지정.
+- **`--setup-code-only`**: QR 코드를 제외하고 설정 코드 문자열만 출력함.
+- **`--no-ascii`**: 터미널에 ASCII QR 코드를 렌더링하지 않음.
+- **`--json`**: `setupCode`, `gatewayUrl`, `auth`, `urlSource` 등이 포함된 JSON 데이터를 출력함.
 
-## 메모
+## 참고 사항
 
-- `--token` 과 `--password` 는 함께 사용할 수 없습니다.
-- `--remote` 사용 시, 실질적으로 활성화된 원격 자격 증명이 SecretRef 로 구성되어 있고 `--token` 또는 `--password` 를 넘기지 않으면, 명령은 활성 gateway 스냅샷에서 값을 해석합니다. gateway 를 사용할 수 없으면 즉시 실패합니다.
-- `--remote` 없이 실행하면, CLI 인증 재정의를 주지 않은 경우 로컬 gateway auth SecretRef 가 해석됩니다:
-  - `gateway.auth.token` 은 token auth 가 이길 수 있을 때 해석됩니다(명시적 `gateway.auth.mode="token"` 또는 비밀번호 소스가 우세하지 않은 추론 모드).
-  - `gateway.auth.password` 는 password auth 가 이길 수 있을 때 해석됩니다(명시적 `gateway.auth.mode="password"` 또는 auth/env 에서 token 이 우세하지 않은 추론 모드).
-- `gateway.auth.token` 과 `gateway.auth.password` 가 모두 구성되어 있는데(SecretRef 포함) `gateway.auth.mode` 가 설정되지 않으면, mode 를 명시적으로 설정할 때까지 setup-code 해석이 실패합니다.
-- Gateway 버전 차이 메모: 이 명령 경로는 `secrets.resolve` 를 지원하는 gateway 가 필요합니다. 오래된 gateway 는 unknown-method 오류를 반환합니다.
-- 스캔 후 device pairing 을 승인하려면:
-  - `openclaw devices list`
-  - `openclaw devices approve <requestId>`
+- **인증 상호 배타성**: `--token`과 `--password` 옵션은 동시에 사용할 수 없음.
+- **시크릿 관리 (SecretRef)**:
+  - `--remote` 모드에서 인증 정보가 시크릿 참조(SecretRef)로 설정되어 있고 직접 값을 전달하지 않은 경우, CLI는 실행 중인 Gateway로부터 실제 값을 안전하게 가져옴. Gateway 서버에 연결할 수 없는 경우 실행이 중단됨.
+  - 로컬 모드에서도 별도의 오버라이드가 없으면 인증 모드(`gateway.auth.mode`)에 따라 적절한 SecretRef 값을 자동으로 해석하여 사용함.
+- **모드 설정 필수**: 토큰과 비밀번호가 모두 설정되어 있으나 인증 모드가 지정되지 않은 경우, 모드가 확실히 지정될 때까지 설정 코드 생성이 차단됨.
+- **버전 호환성**: 이 기능은 `secrets.resolve` 메서드를 지원하는 최신 버전의 Gateway 서버를 필요로 함. 이전 버전의 서버는 오류를 반환할 수 있음.
+- **페어링 완료 절차**: 모바일 앱에서 QR 코드를 스캔한 후, Gateway에서 최종 승인이 필요함:
+  1. `openclaw devices list` 명령어로 대기 중인 요청 확인.
+  2. `openclaw devices approve <requestId>` 명령어로 승인 완료.

@@ -1,132 +1,111 @@
 ---
-summary: "채널별 라우팅 규칙(WhatsApp, Telegram, Discord, Slack)과 공유 컨텍스트"
+summary: "채팅 채널별 라우팅 규칙(WhatsApp, Telegram, Discord, Slack) 및 세션/에이전트 매핑 가이드"
 read_when:
-  - 채널 라우팅이나 inbox 동작을 바꿀 때
+  - 채널별 메시지 라우팅 또는 수신함 처리 로직을 수정할 때
 title: "채널 라우팅"
 x-i18n:
   source_path: "channels/channel-routing.md"
 ---
 
-# 채널과 라우팅
+# 채널 및 라우팅 (Routing)
 
-OpenClaw는 **메시지가 들어온 채널로 다시 응답을 돌려보냅니다**. 모델이 채널을 고르는 것이 아니라, 라우팅은 host 설정에 의해 결정론적으로 제어됩니다.
+OpenClaw는 **메시지가 수신된 동일한 채널로 응답을 보냄**. 모델이 응답 채널을 스스로 선택하는 것이 아니며, 라우팅은 호스트 설정에 의해 결정론적으로 제어됨.
 
-## 핵심 용어
+## 주요 용어 정의
 
-- **Channel**: `whatsapp`, `telegram`, `discord`, `slack`, `signal`, `imessage`, `webchat`.
-- **AccountId**: 채널별 계정 인스턴스(지원되는 경우).
-- 선택적 채널 기본 계정: `channels.<channel>.defaultAccount`는 아웃바운드 경로에 `accountId`가 없을 때 어떤 계정을 쓸지 결정합니다.
-  - 멀티 계정 구성에서는 두 개 이상 계정이 있을 경우 명시적인 기본값(`defaultAccount` 또는 `accounts.default`)을 설정하세요. 없으면 fallback 라우팅이 첫 번째 정규화된 account ID를 고를 수 있습니다.
-- **AgentId**: 격리된 workspace + session store(“brain”).
-- **SessionKey**: 컨텍스트 저장과 동시성 제어에 사용하는 버킷 키.
+- **채널 (Channel)**: `whatsapp`, `telegram`, `discord`, `slack`, `signal`, `imessage`, `webchat`.
+- **계정 ID (AccountId)**: 채널별 계정 인스턴스 (지원되는 경우).
+- **기본 계정**: `channels.<channel>.defaultAccount` 설정을 통해 아웃바운드 경로에 계정 ID가 명시되지 않았을 때 사용할 기본 계정을 지정함.
+  - 다중 계정 환경에서는 명시적인 기본값 설정을 권장함. 미설정 시 첫 번째로 정규화된 계정 ID가 자동으로 선택될 수 있음.
+- **에이전트 ID (AgentId)**: 독립된 워크스페이스와 세션 저장소를 가진 논리적 실행 단위 ("두뇌").
+- **세션 키 (SessionKey)**: 대화 맥락을 저장하고 동시성 제어(레인 관리)를 위한 식별자.
 
-## Session key 형태(예시)
+## 세션 키 구조 예시
 
-직접 메시지는 에이전트의 **main** 세션으로 합쳐집니다.
-
+개인 대화(DM)는 에이전트의 **메인(Main)** 세션으로 통합됨:
 - `agent:<agentId>:<mainKey>` (기본값: `agent:main:main`)
 
-그룹과 채널은 채널별로 격리된 상태를 유지합니다.
+그룹 및 채널 대화는 각 방마다 격리된 세션을 유지함:
+- **그룹 대화**: `agent:<agentId>:<channel>:group:<id>`
+- **공개 채널/룸**: `agent:<agentId>:<channel>:channel:<id>`
 
-- 그룹: `agent:<agentId>:<channel>:group:<id>`
-- 채널/룸: `agent:<agentId>:<channel>:channel:<id>`
+스레드 및 포럼 주제 처리:
+- **Slack/Discord 스레드**: 기본 키 뒤에 `:thread:<threadId>`가 추가됨.
+- **Telegram 포럼 주제**: 그룹 키 내에 `:topic:<topicId>` 정보가 포함됨.
 
-스레드:
-
-- Slack/Discord 스레드는 기본 키 뒤에 `:thread:<threadId>`가 붙습니다.
-- Telegram forum topic은 그룹 키에 `:topic:<topicId>`를 포함합니다.
-
-예시:
-
+**예시:**
 - `agent:main:telegram:group:-1001234567890:topic:42`
 - `agent:main:discord:channel:123456:thread:987654`
 
-## 메인 DM route pinning
+## 메인 DM 경로 고정 (Route Pinning)
 
-`session.dmScope`가 `main`이면 직접 메시지는 하나의 main 세션을 공유할 수 있습니다.
-비소유자 DM 때문에 세션의 `lastRoute`가 덮어써지지 않도록,
-OpenClaw는 다음 조건이 모두 참일 때 `allowFrom`에서 pinned owner를 추론합니다.
+`session.dmScope`가 `"main"`인 경우, 여러 명의 발신자가 하나의 메인 세션을 공유할 수 있음. 이때 세션의 `lastRoute`(마지막 응답 경로) 정보가 원치 않게 변경되는 것을 방지하기 위해 다음 조건 충족 시 **소유자 고정**이 적용됨:
 
-- `allowFrom`에 와일드카드가 아닌 항목이 정확히 하나 있다.
-- 그 항목을 해당 채널의 구체적 발신자 ID로 정규화할 수 있다.
-- 인바운드 DM 발신자가 그 pinned owner와 일치하지 않는다.
+- `allowFrom` 설정에 와일드카드가 없는 항목이 정확히 하나만 존재할 때.
+- 해당 항목이 유효한 발신자 ID로 정규화 가능할 때.
+- 현재 메시지의 발신자가 위 소유자와 일치하지 않을 때.
 
-이 불일치 상황에서는 OpenClaw가 인바운드 세션 메타데이터는 기록하지만,
-main 세션의 `lastRoute`는 갱신하지 않습니다.
+이 경우 OpenClaw는 메시지 이력은 기록하지만, 응답을 엉뚱한 곳으로 보내지 않도록 메인 세션의 `lastRoute` 정보는 갱신하지 않음.
 
-## 라우팅 규칙(에이전트 선택 방법)
+## 라우팅 규칙 (에이전트 선택 프로세스)
 
-각 인바운드 메시지에는 **하나의 에이전트**만 선택됩니다.
+수신된 각 메시지는 다음 우선순위에 따라 **단 하나의 에이전트**에게 할당됨:
 
-1. **정확한 peer 일치** (`bindings`의 `peer.kind` + `peer.id`)
-2. **부모 peer 일치** (스레드 상속)
-3. **guild + roles 일치** (Discord) via `guildId` + `roles`
-4. **guild 일치** (Discord) via `guildId`
-5. **team 일치** (Slack) via `teamId`
-6. **account 일치** (채널의 `accountId`)
-7. **channel 일치** (그 채널의 아무 계정이나, `accountId: "*"` )
-8. **기본 에이전트** (`agents.list[].default`, 없으면 리스트 첫 항목, 마지막 fallback은 `main`)
+1. **정확한 피어 일치**: `bindings`의 `peer.kind`와 `peer.id`가 모두 일치.
+2. **부모 피어 일치**: 스레드 답장의 경우 원본 메시지의 피어 정보를 상속함.
+3. **서버 및 역할 일치 (Discord)**: `guildId`와 `roles`가 모두 일치.
+4. **서버 일치 (Discord)**: `guildId`가 일치.
+5. **팀 일치 (Slack)**: `teamId`가 일치.
+6. **계정 일치**: 특정 채널의 `accountId`와 일치.
+7. **채널 전체 일치**: 해당 채널의 모든 계정 대상 (`accountId: "*"`).
+8. **기본 에이전트 설정**: `agents.list[].default: true` 인 항목, 또는 목록의 첫 번째 에이전트 (최종 폴백은 `main`).
 
-binding에 여러 매치 필드(`peer`, `guildId`, `teamId`, `roles`)가 함께 있으면, **제공된 모든 필드가 일치해야** 해당 binding이 적용됩니다.
+<Note>
+**주의**: 바인딩 설정에 여러 필드(`peer`, `guildId`, `roles` 등)가 함께 정의된 경우, 해당 필드가 **모두 일치(AND)**해야 규칙이 적용됨.
+</Note>
 
-매치된 에이전트가 어떤 workspace와 session store를 쓸지 결정합니다.
+## 브로드캐스트 그룹 (멀티 에이전트 실행)
 
-## 브로드캐스트 그룹(여러 에이전트 실행)
+브로드캐스트 그룹을 설정하면 동일한 수신 메시지에 대해 **여러 에이전트**가 동시에 응답하도록 할 수 있음. 이는 일반적인 응답 조건(멘션, 명령어 등)이 충족되었을 때 실행됨.
 
-브로드캐스트 그룹은 **OpenClaw가 원래 응답했을 상황에서** 같은 peer에 대해 **여러 에이전트**를 실행하게 해 줍니다(예: WhatsApp 그룹에서 mention/activation gating 이후).
+상세 가이드: [브로드캐스트 그룹](/channels/broadcast-groups)
 
-설정:
-
-```json5
-{
-  broadcast: {
-    strategy: "parallel",
-    "120363403215116621@g.us": ["alfred", "baerbel"],
-    "+15555550123": ["support", "logger"],
-  },
-}
-```
-
-참고: [브로드캐스트 그룹](/channels/broadcast-groups)
-
-## 설정 개요
-
-- `agents.list`: 이름이 있는 에이전트 정의(workspace, model 등)
-- `bindings`: 인바운드 채널/계정/peer를 에이전트에 매핑
-
-예시:
+## 설정 예시
 
 ```json5
 {
   agents: {
-    list: [{ id: "support", name: "Support", workspace: "~/.openclaw/workspace-support" }],
+    list: [
+      { id: "support", name: "고객 지원", workspace: "~/.openclaw/workspace-support" }
+    ],
   },
   bindings: [
+    // 특정 Slack 워크스페이스의 모든 메시지를 support 에이전트로 전달
     { match: { channel: "slack", teamId: "T123" }, agentId: "support" },
+    // 특정 Telegram 그룹 메시지를 support 에이전트로 전달
     { match: { channel: "telegram", peer: { kind: "group", id: "-100123" } }, agentId: "support" },
   ],
 }
 ```
 
-## 세션 저장
+## 세션 데이터 저장
 
-세션 저장소는 state 디렉터리(기본값 `~/.openclaw`) 아래에 있습니다.
+세션 데이터는 상태 디렉터리(기본값: `~/.openclaw`) 하위에 저장됨:
 
-- `~/.openclaw/agents/<agentId>/sessions/sessions.json`
-- JSONL transcript는 저장소와 같은 위치에 생성됩니다.
+- **인덱스 파일**: `~/.openclaw/agents/<agentId>/sessions/sessions.json`
+- **대화 이력**: 인덱스 파일과 동일한 위치에 JSONL 형식으로 저장됨.
 
-`session.store`와 `{agentId}` 템플릿을 사용해 저장소 경로를 바꿀 수 있습니다.
+`session.store` 설정을 통해 저장 경로를 커스터마이징할 수 있음.
 
-## WebChat 동작
+## WebChat 동작 원리
 
-WebChat은 **선택된 에이전트**에 붙고, 기본적으로 그 에이전트의 main
-세션을 사용합니다. 그래서 WebChat에서는 해당 에이전트의 여러 채널 컨텍스트를 한곳에서 볼 수 있습니다.
+WebChat은 **선택된 에이전트**에 직접 연결되며 기본적으로 해당 에이전트의 메인 세션을 사용함. 이를 통해 사용자는 여러 채널에서 발생한 대화 맥락을 WebChat 한곳에서 통합하여 확인할 수 있음.
 
-## 응답 컨텍스트
+## 답장 맥락 처리 (Reply Context)
 
-인바운드 reply에는 다음이 포함됩니다.
+수신된 답장 메시지에는 다음 정보가 포함됨:
 
-- 가능할 경우 `ReplyToId`, `ReplyToBody`, `ReplyToSender`
-- 인용 컨텍스트는 `[Replying to ...]` 블록으로 `Body`에 추가됩니다.
+- `ReplyToId`, `ReplyToBody`, `ReplyToSender` (사용 가능한 경우).
+- 인용된 내용은 에이전트에게 전달될 때 본문 끝에 `[Replying to ...]` 블록 형식으로 자동 추가됨.
 
-이 동작은 채널 전반에서 일관됩니다.
+이 처리 방식은 모든 통신 채널에서 동일하게 적용됨.

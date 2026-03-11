@@ -1,20 +1,20 @@
 ---
-summary: "채널 수준에서 빠르게 점검하는 문제 해결 가이드와 채널별 대표 증상/수정 방법"
+summary: "채널별 주요 오류 패턴과 즉각적인 해결 방법을 담은 빠른 문제 해결 가이드"
 read_when:
-  - 채널 transport는 연결됐는데 응답 동작이 이상할 때
-  - 깊은 provider 문서로 들어가기 전에 채널별 점검이 필요할 때
+  - 채널 연결은 성공했으나 응답이나 수신 동작이 비정상적일 때
+  - 상세한 공급자 문서를 확인하기 전 채널 레벨의 기본 점검이 필요할 때
 title: "채널 문제 해결"
 x-i18n:
   source_path: "channels/troubleshooting.md"
 ---
 
-# 채널 문제 해결
+# 채널 문제 해결 (Channel Troubleshooting)
 
-채널은 연결되지만 동작이 잘못될 때 이 페이지를 사용하세요.
+채널 연결은 유지되고 있으나 의도한 대로 동작하지 않을 때 이 가이드를 참조함.
 
-## 명령 사다리
+## 단계별 점검 명령어 (Command Ladder)
 
-먼저 아래 순서대로 실행하세요.
+문제가 발생하면 다음 명령어들을 순서대로 실행하여 상태를 확인함:
 
 ```bash
 openclaw status
@@ -24,96 +24,108 @@ openclaw doctor
 openclaw channels status --probe
 ```
 
-정상 기준선:
+**정상 상태 기준:**
+- **Runtime**: `running`
+- **RPC probe**: `ok`
+- **Channel probe**: 연결됨(Connected) 또는 준비됨(Ready) 상태 표시.
 
-- `Runtime: running`
-- `RPC probe: ok`
-- 채널 probe가 connected/ready를 보여 줌
+---
 
 ## WhatsApp
 
-### WhatsApp 대표 증상
+### 주요 오류 패턴 및 해결책
 
-| 증상                          | 가장 빠른 점검                                   | 해결책                                                  |
-| ----------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
-| 연결됐지만 DM 응답이 없음     | `openclaw pairing list whatsapp`                 | 발신자를 승인하거나 DM 정책/allowlist를 바꾸세요.       |
-| 그룹 메시지를 무시함          | config의 `requireMention` + mention pattern 확인 | 봇을 멘션하거나 해당 그룹의 mention 정책을 완화하세요.  |
-| 랜덤하게 끊기고 재로그인 반복 | `openclaw channels status --probe` + 로그        | 다시 로그인하고 credentials 디렉터리 상태를 확인하세요. |
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| 연결되었으나 DM 응답 없음 | `openclaw pairing list whatsapp` | 발신자를 승인하거나 DM 정책 및 허용 목록을 수정함. |
+| 그룹 메시지 무시 현상 | 설정 내 `requireMention` 및 멘션 패턴 확인 | 봇을 명시적으로 @멘션하거나 해당 그룹의 멘션 필수 설정을 해제함. |
+| 잦은 연결 끊김 또는 재로그인 반복 | `openclaw channels status --probe` 및 로그 분석 | 다시 로그인을 수행하고 자격 증명(Credentials) 디렉터리 권한을 확인함. |
 
-전체 문제 해결: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
+상세 가이드: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
+
+---
 
 ## Telegram
 
-### Telegram 대표 증상
+### 주요 오류 패턴 및 해결책
 
-| 증상                                       | 가장 빠른 점검                                    | 해결책                                                                        |
-| ------------------------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `/start`는 되지만 usable reply 흐름이 없음 | `openclaw pairing list telegram`                  | pairing을 승인하거나 DM 정책을 바꾸세요.                                      |
-| 봇은 온라인인데 그룹에서 조용함            | mention requirement와 bot privacy mode 확인       | 그룹 가시성을 위해 privacy mode를 끄거나 봇을 멘션하세요.                     |
-| 전송이 network error와 함께 실패           | Telegram API 호출 실패 로그 확인                  | `api.telegram.org`로 가는 DNS/IPv6/proxy 라우팅을 고치세요.                   |
-| 업그레이드 후 allowlist가 나를 막음        | `openclaw security audit`와 config allowlist 확인 | `openclaw doctor --fix`를 실행하거나 `@username`을 숫자 sender ID로 바꾸세요. |
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| `/start` 입력 후 응답 흐름 없음 | `openclaw pairing list telegram` | 페어링을 승인하거나 DM 정책 설정을 변경함. |
+| 온라인 상태이나 그룹에서 무응답 | 멘션 필수 설정 및 봇 **Privacy Mode** 확인 | 그룹 메시지 수신을 위해 개인정보 보호 모드를 끄거나 봇을 멘션함. |
+| 네트워크 에러와 함께 발신 실패 | Telegram API 호출 실패 로그 확인 | `api.telegram.org`로의 DNS, IPv6 또는 프록시 라우팅 설정을 수정함. |
+| 업데이트 후 허용 목록 차단 발생 | `openclaw security audit` 및 허용 목록 점검 | `openclaw doctor --fix`를 실행하거나 `@사용자명`을 숫자 ID로 교체함. |
 
-전체 문제 해결: [/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
+상세 가이드: [/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
+
+---
 
 ## Discord
 
-### Discord 대표 증상
+### 주요 오류 패턴 및 해결책
 
-| 증상                              | 가장 빠른 점검                     | 해결책                                                                |
-| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------- |
-| 봇은 온라인인데 guild 응답이 없음 | `openclaw channels status --probe` | guild/channel을 허용하고 message content intent를 확인하세요.         |
-| 그룹 메시지를 무시함              | mention gating drop 로그 확인      | 봇을 멘션하거나 guild/channel에 `requireMention: false`를 설정하세요. |
-| DM 응답이 없음                    | `openclaw pairing list discord`    | DM pairing을 승인하거나 DM 정책을 조정하세요.                         |
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| 온라인 상태이나 서버 응답 없음 | `openclaw channels status --probe` | 서버/채널 허용 여부 및 **Message Content Intent** 활성화를 확인함. |
+| 그룹 메시지 무시 현상 | 로그에서 멘션 게이팅 필터링 기록 확인 | 봇을 멘션하거나 해당 채널에 `requireMention: false`를 설정함. |
+| DM 응답 누락 | `openclaw pairing list discord` | DM 페어링을 승인하거나 DM 정책 설정을 조정함. |
 
-전체 문제 해결: [/channels/discord#troubleshooting](/channels/discord#troubleshooting)
+상세 가이드: [/channels/discord#troubleshooting](/channels/discord#troubleshooting)
+
+---
 
 ## Slack
 
-### Slack 대표 증상
+### 주요 오류 패턴 및 해결책
 
-| 증상                                 | 가장 빠른 점검                         | 해결책                                             |
-| ------------------------------------ | -------------------------------------- | -------------------------------------------------- |
-| Socket mode는 연결됐지만 응답이 없음 | `openclaw channels status --probe`     | app token + bot token과 필요한 scope를 확인하세요. |
-| DM이 차단됨                          | `openclaw pairing list slack`          | pairing을 승인하거나 DM 정책을 완화하세요.         |
-| 채널 메시지가 무시됨                 | `groupPolicy`와 channel allowlist 확인 | 채널을 허용하거나 정책을 `open`으로 바꾸세요.      |
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| 소켓 모드 연결 후 응답 없음 | `openclaw channels status --probe` | 앱 토큰, 봇 토큰 및 필수 권한 범위(Scopes) 설정을 확인함. |
+| DM 차단 현상 | `openclaw pairing list slack` | 페어링을 승인하거나 DM 정책 제한을 완화함. |
+| 채널 메시지 무시 현상 | `groupPolicy` 및 채널 허용 목록 확인 | 채널을 허용 목록에 추가하거나 정책을 `"open"`으로 변경함. |
 
-전체 문제 해결: [/channels/slack#troubleshooting](/channels/slack#troubleshooting)
+상세 가이드: [/channels/slack#troubleshooting](/channels/slack#troubleshooting)
 
-## iMessage와 BlueBubbles
+---
 
-### iMessage와 BlueBubbles 대표 증상
+## iMessage 및 BlueBubbles
 
-| 증상                                  | 가장 빠른 점검                                                            | 해결책                                                 |
-| ------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------ |
-| 인바운드 이벤트가 없음                | webhook/server 도달 가능성과 앱 권한 확인                                 | webhook URL 또는 BlueBubbles 서버 상태를 수정하세요.   |
-| macOS에서 보낼 수는 있지만 수신 안 됨 | Messages automation용 macOS privacy permission 확인                       | TCC 권한을 다시 부여하고 채널 프로세스를 재시작하세요. |
-| DM 발신자가 차단됨                    | `openclaw pairing list imessage` 또는 `openclaw pairing list bluebubbles` | pairing을 승인하거나 allowlist를 업데이트하세요.       |
+### 주요 오류 패턴 및 해결책
 
-전체 문제 해결:
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| 수신 이벤트 발생 안 함 | 웹훅 및 서버 도달 가능성, 앱 권한 확인 | 웹훅 URL 주소 또는 BlueBubbles 서버 가동 상태를 수정함. |
+| 발신은 되나 macOS 수신 불가 | **Messages** 자동화 관련 macOS 개인정보 보호 권한 확인 | TCC 권한을 다시 부여하고 채널 프로세스를 재시작함. |
+| DM 발신자 차단 현상 | `pairing list imessage` 또는 `bluebubbles` 확인 | 페어링 요청을 승인하거나 허용 목록을 업데이트함. |
 
+상세 가이드:
 - [/channels/imessage#troubleshooting-macos-privacy-and-security-tcc](/channels/imessage#troubleshooting-macos-privacy-and-security-tcc)
 - [/channels/bluebubbles#troubleshooting](/channels/bluebubbles#troubleshooting)
 
+---
+
 ## Signal
 
-### Signal 대표 증상
+### 주요 오류 패턴 및 해결책
 
-| 증상                              | 가장 빠른 점검                         | 해결책                                                       |
-| --------------------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| daemon에는 도달하지만 봇이 조용함 | `openclaw channels status --probe`     | `signal-cli` daemon URL/account와 receive mode를 확인하세요. |
-| DM이 차단됨                       | `openclaw pairing list signal`         | 발신자를 승인하거나 DM 정책을 조정하세요.                    |
-| 그룹 응답이 트리거되지 않음       | group allowlist와 mention pattern 확인 | 발신자/그룹을 추가하거나 gating을 완화하세요.                |
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| 데몬 접속은 되나 봇이 무응답 | `openclaw channels status --probe` | `signal-cli` 데몬 URL, 계정 설정 및 수신 모드를 확인함. |
+| DM 차단 현상 | `openclaw pairing list signal` | 발신자 페어링을 승인하거나 DM 정책을 조정함. |
+| 그룹 응답 트리거 안 됨 | 그룹 허용 목록 및 멘션 패턴 확인 | 발신자/그룹을 허용 목록에 추가하거나 게이팅 설정을 완화함. |
 
-전체 문제 해결: [/channels/signal#troubleshooting](/channels/signal#troubleshooting)
+상세 가이드: [/channels/signal#troubleshooting](/channels/signal#troubleshooting)
+
+---
 
 ## Matrix
 
-### Matrix 대표 증상
+### 주요 오류 패턴 및 해결책
 
-| 증상                              | 가장 빠른 점검                       | 해결책                                                 |
-| --------------------------------- | ------------------------------------ | ------------------------------------------------------ |
-| 로그인됐지만 room 메시지를 무시함 | `openclaw channels status --probe`   | `groupPolicy`와 room allowlist를 확인하세요.           |
-| DM이 처리되지 않음                | `openclaw pairing list matrix`       | 발신자를 승인하거나 DM 정책을 조정하세요.              |
-| 암호화된 room이 실패함            | crypto module과 encryption 설정 확인 | encryption support를 켜고 room을 다시 join/sync하세요. |
+| 증상 | 즉시 점검 항목 | 해결 방법 |
+| :--- | :--- | :--- |
+| 로그인 상태이나 룸 메시지 무시 | `openclaw channels status --probe` | `groupPolicy` 및 룸(Room) 허용 목록 설정을 확인함. |
+| DM 처리 불가 | `openclaw pairing list matrix` | 발신자 페어링을 승인하거나 DM 정책을 조정함. |
+| 암호화된 룸 연동 실패 | 크립토 모듈 및 암호화 설정 확인 | 암호화 지원 기능을 활성화하고 해당 룸에 다시 참여하거나 동기화함. |
 
-전체 문제 해결: [/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)
+상세 가이드: [/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)

@@ -1,47 +1,43 @@
 ---
-summary: "Tlon/Urbit 지원 상태, 기능, 구성"
+summary: "Tlon/Urbit 연동 상태, 지원 기능 및 세부 설정 가이드"
 read_when:
-  - Tlon/Urbit 채널 기능 작업 시
+  - Tlon 또는 Urbit 채널 기능을 구현하고자 할 때
 title: "Tlon"
+x-i18n:
+  source_path: "channels/tlon.md"
 ---
 
-# Tlon (plugin)
+# Tlon (플러그인)
 
-Tlon은 Urbit 기반의 탈중앙화 메신저입니다. OpenClaw는 당신의 Urbit ship에 연결되어
-DM과 그룹 채팅 메시지에 응답할 수 있습니다. 그룹 응답은 기본적으로 @ 멘션이 필요하며,
-allowlist를 통해 추가로 제한할 수 있습니다.
+Tlon은 Urbit 기반의 탈중앙화 메시징 플랫폼임. OpenClaw는 사용자의 Urbit 쉽(Ship)에 연결하여 개인 대화(DM) 및 그룹 채팅 메시지에 응답할 수 있음. 그룹 응답은 기본적으로 @멘션이 필요하며, 허용 목록(Allowlist)을 통해 추가적인 제한이 가능함.
 
-상태: 플러그인을 통해 지원됩니다. DM, 그룹 멘션, 스레드 답글, 리치 텍스트 포맷팅,
-이미지 업로드를 지원합니다. 리액션과 투표는 아직 지원되지 않습니다.
+**상태**: 플러그인을 통해 지원됨. 개인 대화(DM), 그룹 멘션, 스레드 답장, 리치 텍스트 포맷팅 및 이미지 업로드 기능을 제공함. 리액션과 투표 기능은 아직 지원하지 않음.
 
-## Plugin required
+## 플러그인 설치 안내
 
-Tlon은 플러그인으로 제공되며 코어 설치에 번들되어 있지 않습니다.
+Tlon 연동 기능은 플러그인 형태로 제공되며 코어 패키지에 포함되어 있지 않음.
 
-CLI로 설치(npm 레지스트리):
-
+**CLI를 통한 설치 (npm):**
 ```bash
 openclaw plugins install @openclaw/tlon
 ```
 
-로컬 체크아웃 사용 시(git 저장소에서 실행하는 경우):
-
+**로컬 소스 환경 설치:**
 ```bash
 openclaw plugins install ./extensions/tlon
 ```
 
-자세한 내용: [Plugins](/tools/plugin)
+상세 내용은 [플러그인 가이드](/tools/plugin) 참조.
 
-## Setup
+## 설정 가이드
 
-1. Tlon 플러그인을 설치합니다.
-2. ship URL과 로그인 코드를 준비합니다.
-3. `channels.tlon`을 구성합니다.
-4. 게이트웨이를 재시작합니다.
-5. 봇에게 DM을 보내거나 그룹 채널에서 멘션합니다.
+1. **플러그인 설치**: 위 안내에 따라 Tlon 플러그인을 설치함.
+2. **연동 정보 준비**: 본인의 쉽(Ship) URL과 로그인 코드를 확인함.
+3. **OpenClaw 구성**: `openclaw.json` 설정 파일에 정보를 입력함.
+4. **Gateway 시작**: 서버를 재시작함.
+5. **테스트**: 봇에게 DM을 보내거나 그룹 채널에서 멘션하여 동작을 확인함.
 
-최소 구성(단일 계정):
-
+### 최소 설정 예시 (단일 계정)
 ```json5
 {
   channels: {
@@ -50,17 +46,15 @@ openclaw plugins install ./extensions/tlon
       ship: "~sampel-palnet",
       url: "https://your-ship-host",
       code: "lidlut-tabwed-pillex-ridrup",
-      ownerShip: "~your-main-ship", // 권장: 당신의 ship, 항상 허용됨
+      ownerShip: "~your-main-ship", // 권장: 본인의 메인 쉽 지정 (항상 승인됨)
     },
   },
 }
 ```
 
-## Private/LAN ships
+## 사설 네트워크/LAN 내 쉽(Ship) 연동
 
-기본적으로 OpenClaw는 SSRF 보호를 위해 private/internal hostname과 IP 범위를 차단합니다.
-당신의 ship이 private network(localhost, LAN IP 또는 internal hostname)에서 실행 중이라면,
-명시적으로 opt in 해야 합니다:
+OpenClaw는 보안(SSRF 보호)을 위해 기본적으로 내부 호스트명 및 사설 IP 대역으로의 접근을 차단함. 만약 쉽이 로컬 네트워크(localhost, LAN IP 등)에서 실행 중이라면 명시적인 허용 설정이 필요함:
 
 ```json5
 {
@@ -73,18 +67,13 @@ openclaw plugins install ./extensions/tlon
 }
 ```
 
-이는 다음과 같은 URL에 적용됩니다:
+<Warning>
+**주의**: 이 설정은 쉽 URL로 향하는 요청에 대한 SSRF 보호를 비활성화하므로, 신뢰할 수 있는 로컬 네트워크 환경에서만 사용해야 함.
+</Warning>
 
-- `http://localhost:8080`
-- `http://192.168.x.x:8080`
-- `http://my-ship.local:8080`
+## 그룹 채널 관리
 
-⚠️ 로컬 네트워크를 신뢰하는 경우에만 이 설정을 활성화하세요. 이 설정은
-당신의 ship URL로 향하는 요청에 대한 SSRF 보호를 비활성화합니다.
-
-## Group channels
-
-자동 발견은 기본적으로 활성화되어 있습니다. 채널을 수동으로 고정할 수도 있습니다:
+기본적으로 채널 자동 탐색 기능이 활성화되어 있음. 특정 채널을 수동으로 고정하려는 경우 다음과 같이 설정함:
 
 ```json5
 {
@@ -96,21 +85,12 @@ openclaw plugins install ./extensions/tlon
 }
 ```
 
-자동 발견 비활성화:
+자동 탐색 기능을 비활성화하려면 `autoDiscoverChannels: false`를 설정함.
 
-```json5
-{
-  channels: {
-    tlon: {
-      autoDiscoverChannels: false,
-    },
-  },
-}
-```
+## 접근 제어 정책
 
-## Access control
-
-DM allowlist(비어 있으면 DM 허용 없음, 승인 흐름에는 `ownerShip` 사용):
+### DM 허용 목록
+등록되지 않은 쉽의 DM을 차단함 (승인 프로세스를 위해 `ownerShip` 설정을 권장함):
 
 ```json5
 {
@@ -122,7 +102,8 @@ DM allowlist(비어 있으면 DM 허용 없음, 승인 흐름에는 `ownerShip` 
 }
 ```
 
-그룹 권한 부여(기본적으로 제한됨):
+### 그룹 권한 관리
+기본적으로 제한된 접근 정책을 사용하며, 특정 쉽이나 채널별로 규칙을 정의할 수 있음:
 
 ```json5
 {
@@ -145,9 +126,9 @@ DM allowlist(비어 있으면 DM 허용 없음, 승인 흐름에는 `ownerShip` 
 }
 ```
 
-## Owner and approval system
+## 소유자 및 승인 시스템 (Owner)
 
-승인되지 않은 사용자가 상호작용을 시도할 때 승인 요청을 받을 owner ship을 설정합니다:
+권한이 없는 사용자가 상호작용을 시도할 때 승인 요청을 받을 관리자 쉽(`ownerShip`)을 지정함:
 
 ```json5
 {
@@ -159,118 +140,63 @@ DM allowlist(비어 있으면 DM 허용 없음, 승인 흐름에는 `ownerShip` 
 }
 ```
 
-owner ship은 **모든 곳에서 자동으로 승인됨** 상태입니다. DM 초대는 자동 수락되고,
-채널 메시지는 항상 허용됩니다. owner를 `dmAllowlist`나
-`defaultAuthorizedShips`에 추가할 필요가 없습니다.
+**소유자 쉽의 특권**:
+- 모든 위치에서 **자동 승인** 상태로 취급됨.
+- DM 초대가 자동으로 수락되며, 모든 채널 메시지 발신이 허용됨.
+- 다음 상황에 대해 DM 알림을 수신함:
+  - 허용 목록에 없는 쉽의 DM 요청.
+  - 권한 없는 채널에서의 멘션 발생.
+  - 그룹 초대 요청 수신.
 
-설정되면 owner는 다음 상황에 대해 DM 알림을 받습니다:
+## 자동 수락 설정
 
-- allowlist에 없는 ship으로부터 온 DM 요청
-- 권한이 없는 채널에서의 멘션
-- 그룹 초대 요청
+특정 조건에 부합하는 초대를 자동으로 수락하도록 설정함:
 
-## Auto-accept settings
+- **DM 초대 자동 수락**: `autoAcceptDmInvites: true` (허용 목록에 있는 경우에만 적용).
+- **그룹 초대 자동 수락**: `autoAcceptGroupInvites: true` (모든 그룹 초대 수락).
 
-DM 초대 자동 수락(`dmAllowlist`에 있는 ship에 대해):
+## 아웃바운드 대상 지정
 
-```json5
-{
-  channels: {
-    tlon: {
-      autoAcceptDmInvites: true,
-    },
-  },
-}
-```
+`openclaw message send` 또는 크론 작업 실행 시 대상 식별자 형식임:
+- **개인 대화**: `~sampel-palnet` 또는 `dm/~sampel-palnet`
+- **그룹 대화**: `chat/~host-ship/channel` 또는 `group:~host-ship/channel`
 
-그룹 초대 자동 수락:
+## 내장 스킬 (Bundled Skill)
 
-```json5
-{
-  channels: {
-    tlon: {
-      autoAcceptGroupInvites: true,
-    },
-  },
-}
-```
+Tlon 플러그인은 CLI를 통해 Tlon의 기능을 직접 제어할 수 있는 내장 스킬([`@tloncorp/tlon-skill`](https://github.com/tloncorp/tlon-skill))을 포함함:
 
-## Delivery targets (CLI/cron)
+- **연락처**: 프로필 조회 및 업데이트, 연락처 목록 관리.
+- **채널**: 목록 조회, 채널 생성, 메시지 게시 및 이력 조회.
+- **그룹**: 목록 조회, 그룹 생성 및 멤버 관리.
+- **대화**: 메시지 전송 및 리액션 추가.
+- **설정**: 슬래시 명령어를 통한 플러그인 권한 제어.
 
-`openclaw message send` 또는 cron delivery와 함께 다음을 사용하세요:
+플러그인 설치 시 별도 설정 없이 바로 사용 가능함.
 
-- DM: `~sampel-palnet` 또는 `dm/~sampel-palnet`
-- Group: `chat/~host-ship/channel` 또는 `group:~host-ship/channel`
+## 지원 기능 요약
 
-## Bundled skill
+| 기능 | 지원 상태 |
+| :--- | :--- |
+| 개인 대화 (DM) | ✅ 지원 |
+| 그룹 및 채널 | ✅ 지원 (기본적으로 멘션 게이팅 적용) |
+| 스레드 (Threads) | ✅ 지원 (스레드 내 자동 답장) |
+| 리치 텍스트 | ✅ 마크다운을 Tlon 형식으로 자동 변환 |
+| 이미지 전송 | ✅ Tlon 저장소 업로드 및 임베딩 지원 |
+| 리액션 | ✅ [내장 스킬](#내장-스킬-bundled-skill)을 통해 지원 |
+| 투표 (Polls) | ❌ 미지원 |
+| 네이티브 명령어 | ✅ 지원 (기본적으로 소유자 전용) |
 
-Tlon 플러그인에는 Tlon 작업에 대한 CLI 접근을 제공하는 번들 skill
-([`@tloncorp/tlon-skill`](https://github.com/tloncorp/tlon-skill))이 포함되어 있습니다:
+## 문제 해결 (Troubleshooting)
 
-- **Contacts**: 프로필 조회/업데이트, 연락처 목록 조회
-- **Channels**: 목록 조회, 생성, 메시지 게시, 기록 가져오기
-- **Groups**: 목록 조회, 생성, 멤버 관리
-- **DMs**: 메시지 전송, 메시지에 리액션 추가
-- **Reactions**: 게시물과 DM에 emoji 리액션 추가/제거
-- **Settings**: slash command를 통한 플러그인 권한 관리
+진단 단계:
+1. `openclaw status` 및 `gateway status` 확인.
+2. `openclaw logs --follow` 모니터링.
+3. `openclaw doctor` 실행.
 
-플러그인을 설치하면 이 skill을 자동으로 사용할 수 있습니다.
+**일반적인 오류 사유:**
+- **DM 무시**: 발신자가 `dmAllowlist`에 없고 `ownerShip` 설정도 되어 있지 않은 경우.
+- **그룹 무응답**: 채널 탐색이 되지 않았거나 발신자 권한이 없는 경우.
+- **연결 실패**: 쉽 URL 도달 가능 여부 및 사설망 허용(`allowPrivateNetwork`) 설정 확인.
+- **인증 에러**: 로그인 코드가 만료되었는지 확인 (코드는 주기적으로 갱신될 수 있음).
 
-## Capabilities
-
-| Feature         | Status                                    |
-| --------------- | ----------------------------------------- |
-| Direct messages | ✅ 지원됨                                 |
-| Groups/channels | ✅ 지원됨(기본적으로 mention 게이트 적용) |
-| Threads         | ✅ 지원됨(스레드 내 자동 응답)            |
-| Rich text       | ✅ Markdown이 Tlon 형식으로 변환됨        |
-| Images          | ✅ Tlon storage에 업로드됨                |
-| Reactions       | ✅ [bundled skill](#bundled-skill) 경유   |
-| Polls           | ❌ 아직 지원되지 않음                     |
-| Native commands | ✅ 지원됨(기본적으로 owner 전용)          |
-
-## Troubleshooting
-
-먼저 이 순서대로 실행하세요:
-
-```bash
-openclaw status
-openclaw gateway status
-openclaw logs --follow
-openclaw doctor
-```
-
-일반적인 실패 사례:
-
-- **DM이 무시됨**: 발신자가 `dmAllowlist`에 없고 승인 흐름을 위한 `ownerShip`도 구성되지 않음.
-- **그룹 메시지가 무시됨**: 채널이 발견되지 않았거나 발신자에게 권한이 없음.
-- **연결 오류**: ship URL에 접근 가능한지 확인하고, 로컬 ship이면 `allowPrivateNetwork`를 활성화하세요.
-- **인증 오류**: 로그인 코드가 현재 유효한지 확인하세요(코드는 순환 갱신됨).
-
-## Configuration reference
-
-전체 구성: [Configuration](/gateway/configuration)
-
-Provider options:
-
-- `channels.tlon.enabled`: 채널 시작 활성화/비활성화.
-- `channels.tlon.ship`: 봇의 Urbit ship 이름(예: `~sampel-palnet`).
-- `channels.tlon.url`: ship URL(예: `https://sampel-palnet.tlon.network`).
-- `channels.tlon.code`: ship 로그인 코드.
-- `channels.tlon.allowPrivateNetwork`: localhost/LAN URL 허용(SSRF 우회).
-- `channels.tlon.ownerShip`: 승인 시스템용 owner ship(항상 승인됨).
-- `channels.tlon.dmAllowlist`: DM을 보낼 수 있는 ship 목록(비어 있으면 none).
-- `channels.tlon.autoAcceptDmInvites`: allowlist에 있는 ship의 DM을 자동 수락.
-- `channels.tlon.autoAcceptGroupInvites`: 모든 그룹 초대를 자동 수락.
-- `channels.tlon.autoDiscoverChannels`: 그룹 채널 자동 발견(기본값: true).
-- `channels.tlon.groupChannels`: 수동으로 고정한 channel nest.
-- `channels.tlon.defaultAuthorizedShips`: 모든 채널에서 승인된 ship.
-- `channels.tlon.authorization.channelRules`: 채널별 auth 규칙.
-- `channels.tlon.showModelSignature`: 메시지에 모델 이름을 덧붙임.
-
-## Notes
-
-- 그룹 응답은 응답하려면 멘션(예: `~your-bot-ship`)이 필요합니다.
-- 스레드 답글: 인바운드 메시지가 스레드 안에 있으면 OpenClaw도 스레드 안에서 응답합니다.
-- 리치 텍스트: Markdown 포맷팅(굵게, 기울임, 코드, 헤더, 리스트)이 Tlon의 네이티브 형식으로 변환됩니다.
-- 이미지: URL은 Tlon storage에 업로드되고 이미지 블록으로 임베드됩니다.
+상세한 설정 옵션은 [Gateway 설정 가이드](/gateway/configuration)를 참조함.

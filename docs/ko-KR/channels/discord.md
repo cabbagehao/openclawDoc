@@ -1,260 +1,207 @@
 ---
-summary: "Discord 봇 지원 상태, 기능, 구성"
+summary: "Discord 봇 지원 상태, 주요 기능 및 세부 설정 가이드"
 read_when:
-  - Discord 채널 기능을 작업할 때
+  - Discord 채널 연동 및 기능을 구현할 때
 title: "Discord"
+x-i18n:
+  source_path: "channels/discord.md"
 ---
 
 # Discord (Bot API)
 
-상태: 공식 Discord gateway를 통해 DM과 guild 채널에서 사용할 준비가 되어 있습니다.
+**상태**: 공식 Discord Gateway를 통해 개인 대화(DM) 및 서버(길드) 채널 연동 준비 완료.
 
 <CardGroup cols={3}>
   <Card title="페어링" icon="link" href="/channels/pairing">
-    Discord DM의 기본값은 페어링 모드입니다.
+    Discord DM은 기본적으로 페어링 모드로 작동함.
   </Card>
-  <Card title="슬래시 명령" icon="terminal" href="/tools/slash-commands">
-    네이티브 명령 동작과 명령 카탈로그.
+  <Card title="슬래시 명령어" icon="terminal" href="/tools/slash-commands">
+    네이티브 명령어 동작 방식 및 카탈로그 안내.
   </Card>
   <Card title="채널 문제 해결" icon="wrench" href="/channels/troubleshooting">
-    채널 전반의 진단 및 복구 흐름.
+    채널 전반의 진단 및 복구 프로세스.
   </Card>
 </CardGroup>
 
-## 빠른 설정
+## 빠른 설정 가이드
 
-새 애플리케이션과 봇을 만들고, 봇을 서버에 추가한 다음, OpenClaw와 페어링해야 합니다. 봇은 본인만 사용하는 비공개 서버에 추가하는 것을 권장합니다. 아직 서버가 없다면 먼저 [만드세요](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server) (**Create My Own > For me and my friends** 선택).
+새로운 Discord 애플리케이션과 봇을 생성하고, 이를 서버에 추가한 뒤 OpenClaw와 페어링해야 함. 본인만 사용하는 비공개 서버를 먼저 생성할 것을 권장함 ([서버 생성 방법](https://support.discord.com/hc/ko/articles/204849977) 참조).
 
 <Steps>
-  <Step title="Discord 애플리케이션과 봇 만들기">
-    [Discord Developer Portal](https://discord.com/developers/applications)로 이동해 **New Application**을 클릭하세요. 이름은 "OpenClaw" 같은 것으로 정하면 됩니다.
-
-    사이드바에서 **Bot**을 클릭하세요. **Username**은 OpenClaw 에이전트를 부르는 이름으로 설정하세요.
-
+  <Step title="Discord 애플리케이션 및 봇 생성">
+    [Discord Developer Portal](https://discord.com/developers/applications)에 접속하여 **New Application**을 클릭함. 이름은 "OpenClaw" 등으로 지정함. 사이드바의 **Bot** 메뉴에서 에이전트의 이름을 설정함.
   </Step>
 
-  <Step title="권한이 필요한 intent 활성화">
-    계속해서 **Bot** 페이지에서 아래로 스크롤해 **Privileged Gateway Intents**를 찾아 다음을 활성화하세요.
-
+  <Step title="권한 인텐트(Intents) 활성화">
+    **Bot** 페이지 하단의 **Privileged Gateway Intents** 섹션에서 다음 항목을 활성화함:
     - **Message Content Intent** (필수)
-    - **Server Members Intent** (권장, role allowlist와 이름-대-ID 매칭에 필요)
-    - **Presence Intent** (선택 사항, presence 업데이트가 필요할 때만)
-
+    - **Server Members Intent** (권장: 역할 기반 허용 목록 및 이름 해석에 필요)
+    - **Presence Intent** (선택: 상태 업데이트 정보가 필요한 경우에만)
   </Step>
 
   <Step title="봇 토큰 복사">
-    다시 **Bot** 페이지 위쪽으로 올라가 **Reset Token**을 클릭하세요.
-
-    <Note>
-    이름과 달리, 이것은 첫 번째 토큰을 생성하는 것입니다. 실제로 "reset"되는 것은 없습니다.
-    </Note>
-
-    토큰을 복사해서 어딘가에 저장하세요. 이것이 **Bot Token**이며, 곧 필요합니다.
-
+    **Bot** 페이지 상단의 **Reset Token**을 클릭하여 토큰을 생성하고 복사함. (처음 생성 시에도 이 버튼을 사용함) 이 토큰은 외부로 유출되지 않도록 안전하게 보관해야 함.
   </Step>
 
-  <Step title="초대 URL을 생성하고 서버에 봇 추가">
-    사이드바에서 **OAuth2**를 클릭하세요. 서버에 봇을 추가할 수 있도록 적절한 권한이 포함된 초대 URL을 생성합니다.
-
-    아래로 스크롤해 **OAuth2 URL Generator**에서 다음을 활성화하세요.
-
-    - `bot`
-    - `applications.commands`
-
-    아래에 **Bot Permissions** 섹션이 나타납니다. 다음을 활성화하세요.
-
-    - View Channels
-    - Send Messages
-    - Read Message History
-    - Embed Links
-    - Attach Files
-    - Add Reactions (선택 사항)
-
-    아래쪽에 생성된 URL을 복사해 브라우저에 붙여 넣고, 서버를 선택한 뒤 **Continue**를 클릭해 연결하세요. 이제 Discord 서버에서 봇이 보여야 합니다.
-
+  <Step title="초대 URL 생성 및 서버 추가">
+    사이드바의 **OAuth2** 메뉴에서 **URL Generator**를 선택함.
+    - **Scopes**: `bot`, `applications.commands` 선택.
+    - **Bot Permissions**: 다음 권한들을 선택함.
+      - View Channels, Send Messages, Read Message History, Embed Links, Attach Files, Add Reactions (선택).
+    생성된 URL을 브라우저에 붙여넣고 본인의 서버를 선택하여 봇을 초대함.
   </Step>
 
-  <Step title="Developer Mode를 켜고 ID 수집">
-    Discord 앱으로 돌아가 내부 ID를 복사할 수 있도록 Developer Mode를 활성화해야 합니다.
-
-    1. **User Settings**(아바타 옆 톱니바퀴 아이콘) → **Advanced** → **Developer Mode**를 켭니다
-    2. 사이드바에서 **server icon**을 우클릭 → **Copy Server ID**
-    3. 자신의 **avatar**를 우클릭 → **Copy User ID**
-
-    **Server ID**와 **User ID**를 Bot Token과 함께 저장하세요. 다음 단계에서 OpenClaw에 이 세 가지를 모두 보내게 됩니다.
-
+  <Step title="개발자 모드 활성화 및 ID 수집">
+    Discord 앱 설정 → **고급** → **개발자 모드**를 활성화함. 이후 다음 ID들을 복사함:
+    1. 서버 아이콘 우클릭 → **서버 ID 복사**
+    2. 본인 아바타 우클릭 → **사용자 ID 복사**
   </Step>
 
-  <Step title="서버 멤버의 DM 허용">
-    페어링이 작동하려면 Discord가 봇이 나에게 DM을 보낼 수 있도록 허용해야 합니다. **server icon**을 우클릭 → **Privacy Settings** → **Direct Messages**를 켜세요.
-
-    이렇게 하면 서버 멤버(봇 포함)가 나에게 DM을 보낼 수 있습니다. OpenClaw와 Discord DM을 사용하려면 이 설정을 켜 두세요. guild 채널만 사용할 계획이라면 페어링 후에는 DM을 꺼도 됩니다.
-
+  <Step title="서버 멤버의 DM 허용 설정">
+    페어링을 위해 봇이 사용자에게 DM을 보낼 수 있어야 함. **서버 설정** → **개인정보 보호 설정** → **서버 멤버가 보내는 개인 메시지 허용**을 활성화함. 페어링 완료 후에는 이 기능을 꺼도 무방함.
   </Step>
 
-  <Step title="0단계: 봇 토큰을 안전하게 설정하세요(채팅으로 보내지 마세요)">
-    Discord 봇 토큰은 비밀 정보입니다(비밀번호와 비슷합니다). 에이전트에게 메시지를 보내기 전에 OpenClaw를 실행하는 머신에 설정하세요.
-
-```bash
-openclaw config set channels.discord.token '"YOUR_BOT_TOKEN"' --json
-openclaw config set channels.discord.enabled true --json
-openclaw gateway
-```
-
-    OpenClaw가 이미 백그라운드 서비스로 실행 중이라면 대신 `openclaw gateway restart`를 사용하세요.
-
+  <Step title="봇 토큰 설정 (보안 주의)">
+    토큰은 민감한 정보이므로 채팅창이 아닌 CLI를 통해 직접 설정함:
+    ```bash
+    openclaw config set channels.discord.token '"YOUR_BOT_TOKEN"' --json
+    openclaw config set channels.discord.enabled true --json
+    openclaw gateway restart
+    ```
   </Step>
 
-  <Step title="OpenClaw를 설정하고 페어링">
-
+  <Step title="OpenClaw 설정 및 페어링">
     <Tabs>
       <Tab title="에이전트에게 요청">
-        기존 채널(예: Telegram)에서 OpenClaw 에이전트와 대화하며 이렇게 요청하세요. Discord가 첫 번째 채널이라면 CLI / config 탭을 사용하세요.
-
-        > "이미 Discord bot token을 config에 설정했습니다. User ID `<user_id>`와 Server ID `<server_id>`로 Discord 설정을 마무리해 주세요."
+        기존에 연결된 채널(예: Telegram)이 있다면 에이전트에게 직접 요청함:
+        > "Discord 봇 토큰 설정을 마쳤어. 사용자 ID `<user_id>`와 서버 ID `<server_id>` 정보를 바탕으로 설정을 마무리해줘."
       </Tab>
-      <Tab title="CLI / config">
-        파일 기반 config를 선호한다면 다음을 설정하세요.
-
-```json5
-{
-  channels: {
-    discord: {
-      enabled: true,
-      token: "YOUR_BOT_TOKEN",
-    },
-  },
-}
-```
-
-        기본 계정용 env fallback:
-
-```bash
-DISCORD_BOT_TOKEN=...
-```
-
-        `channels.discord.token`에는 SecretRef 값도 지원됩니다(env/file/exec provider). 자세한 내용은 [Secrets Management](/gateway/secrets)를 참고하세요.
-
+      <Tab title="수동 설정">
+        `openclaw.json` 파일에 직접 입력:
+        ```json5
+        {
+          channels: {
+            discord: { enabled: true, token: "YOUR_BOT_TOKEN" }
+          }
+        }
+        ```
+        환경 변수 폴백 지원: `DISCORD_BOT_TOKEN=...`
       </Tab>
     </Tabs>
-
   </Step>
 
   <Step title="첫 DM 페어링 승인">
-    gateway가 실행될 때까지 기다린 다음 Discord에서 봇에게 DM을 보내세요. 봇이 페어링 코드로 응답합니다.
-
-    <Tabs>
-      <Tab title="에이전트에게 요청">
-        기존 채널에서 에이전트에게 페어링 코드를 보내세요.
-
-        > "이 Discord pairing code를 승인해 주세요: `<CODE>`"
-      </Tab>
-      <Tab title="CLI">
-
-```bash
-openclaw pairing list discord
-openclaw pairing approve discord <CODE>
-```
-
-      </Tab>
-    </Tabs>
-
-    페어링 코드는 1시간 후 만료됩니다.
-
-    이제 Discord에서 DM으로 에이전트와 대화할 수 있어야 합니다.
-
+    Gateway 실행 중 Discord에서 봇에게 메시지를 보내면 페어링 코드를 받게 됨.
+    - **에이전트에게 요청**: "Discord 페어링 코드 `<CODE>`를 승인해줘."
+    - **CLI 사용**:
+      ```bash
+      openclaw pairing list discord
+      openclaw pairing approve discord <CODE>
+      ```
+    코드는 1시간 동안 유효함.
   </Step>
 </Steps>
 
-<Note>
-토큰 해석은 계정을 인식합니다. config의 토큰 값이 env fallback보다 우선합니다. `DISCORD_BOT_TOKEN`은 기본 계정에만 사용됩니다.
-</Note>
+## 권장 사항: 서버 워크스페이스 구축
 
-## 권장: guild 워크스페이스 설정
-
-DM이 작동하기 시작하면 Discord 서버를 전체 워크스페이스로 설정할 수 있습니다. 그러면 각 채널이 자체 컨텍스트를 가진 별도 에이전트 세션을 갖게 됩니다. 본인과 봇만 있는 비공개 서버라면 이 방식을 권장합니다.
+각 채널별로 독립된 세션과 컨텍스트를 가진 풀 워크스페이스 환경을 구축할 수 있음.
 
 <Steps>
-  <Step title="서버를 guild allowlist에 추가">
-    이렇게 하면 에이전트가 DM뿐 아니라 서버의 모든 채널에서 응답할 수 있습니다.
-
-    <Tabs>
-      <Tab title="에이전트에게 요청">
-        > "내 Discord Server ID `<server_id>`를 guild allowlist에 추가해 주세요"
-      </Tab>
-      <Tab title="Config">
-
-```json5
-{
-  channels: {
-    discord: {
-      groupPolicy: "allowlist",
-      guilds: {
-        YOUR_SERVER_ID: {
-          requireMention: true,
-          users: ["YOUR_USER_ID"],
-        },
-      },
-    },
-  },
-}
-```
-
-      </Tab>
-    </Tabs>
-
+  <Step title="서버 허용 목록 추가">
+    특정 서버(길드)의 모든 채널에서 에이전트가 활동할 수 있게 함:
+    ```json5
+    {
+      channels: {
+        discord: {
+          groupPolicy: "allowlist",
+          guilds: {
+            "YOUR_SERVER_ID": { requireMention: true, users: ["YOUR_USER_ID"] }
+          }
+        }
+      }
+    }
+    ```
   </Step>
-
-  <Step title="@mention 없이 응답 허용">
-    기본적으로 에이전트는 guild 채널에서 @mention이 있을 때만 응답합니다. 비공개 서버라면 아마 모든 메시지에 응답하도록 설정하고 싶을 것입니다.
-
-    <Tabs>
-      <Tab title="에이전트에게 요청">
-        > "이 서버에서는 @mentioned되지 않아도 에이전트가 응답하도록 허용해 주세요"
-      </Tab>
-      <Tab title="Config">
-        guild config에서 `requireMention: false`로 설정하세요.
-
-```json5
-{
-  channels: {
-    discord: {
-      guilds: {
-        YOUR_SERVER_ID: {
-          requireMention: false,
-        },
-      },
-    },
-  },
-}
-```
-
-      </Tab>
-    </Tabs>
-
+  <Step title="멘션 없이 응답 허용">
+    비공개 서버라면 모든 메시지에 응답하도록 설정 가능:
+    ```json5
+    {
+      channels: {
+        discord: {
+          guilds: { "YOUR_SERVER_ID": { requireMention: false } }
+        }
+      }
+    }
+    ```
   </Step>
-
-  <Step title="guild 채널에서 memory 사용 계획 세우기">
-    기본적으로 장기 메모리(`MEMORY.md`)는 DM 세션에서만 로드됩니다. guild 채널은 `MEMORY.md`를 자동으로 로드하지 않습니다.
-
-    <Tabs>
-      <Tab title="에이전트에게 요청">
-        > "Discord 채널에서 질문할 때 `MEMORY.md`의 장기 컨텍스트가 필요하면 memory_search나 memory_get을 사용해 주세요."
-      </Tab>
-      <Tab title="수동">
-        모든 채널에서 공유되는 컨텍스트가 필요하다면 안정적인 지침은 `AGENTS.md`나 `USER.md`에 넣으세요(모든 세션에 주입됩니다). 장기 메모는 `MEMORY.md`에 두고, 필요할 때 memory 도구로 접근하세요.
-      </Tab>
-    </Tabs>
-
+  <Step title="기억(Memory) 활용">
+    기본적으로 `MEMORY.md`는 DM 세션에서만 자동 로드됨. 서버 채널에서는 에이전트가 필요할 때 `memory_search` 도구를 사용하도록 지시하거나, 공통 지침을 `AGENTS.md`에 포함시킴.
   </Step>
 </Steps>
-
-이제 Discord 서버에 채널 몇 개를 만들고 대화를 시작하세요. 에이전트는 채널 이름을 볼 수 있고, 각 채널은 자체적으로 격리된 세션을 갖습니다. 그래서 `#coding`, `#home`, `#research` 같은 식으로 워크플로에 맞게 구성할 수 있습니다.
 
 ## 런타임 모델
 
-- Gateway가 Discord 연결을 소유합니다.
-- 응답 라우팅은 결정적입니다. Discord에서 들어온 메시지에 대한 응답은 다시 Discord로 돌아갑니다.
-- 기본값(`session.dmScope=main`)에서는 직접 채팅이 에이전트의 메인 세션(`agent:main:main`)을 공유합니다.
-- Guild 채널은 격리된 세션 키(`agent:<agentId>:discord:channel:<channelId>`)를 사용합니다.
-- Group DM은 기본적으로 무시됩니다(`channels.discord.dm.groupEnabled=false`).
+- **연결 관리**: Gateway가 Discord 연결을 전담함.
+- **라우팅**: 결정론적 라우팅 적용 (Discord 유입 → Discord 응답).
+- **세션 구분**: DM은 메인 세션을 공유하며, 서버 채널은 채널별 고유 세션 키를 가짐.
+- **슬래시 명령어**: 네이티브 슬래시 명령어는 별도의 격리된 세션에서 실행되어 메인 대화 흐름을 방해하지 않음.
+
+## 포럼(Forum) 채널 지원
+
+- **자동 스레드 생성**: 포럼 상위 채널(`channel:<forumId>`)에 메시지를 보내면 첫 줄을 제목으로 하는 스레드가 자동 생성됨.
+- **직접 생성**: `openclaw message thread create` 명령어로 제목을 지정하여 생성 가능.
+
+## 대화형 컴포넌트 (Interactive Components)
+
+에이전트 응답에 버튼, 선택 메뉴, 모달 폼 등을 포함할 수 있음 (Components v2 지원).
+
+- **지원 블록**: `text`, `actions` (버튼 최대 5개), `select`, `file`, `media-gallery` 등.
+- **재사용성**: `reusable: true` 설정 시 만료 전까지 여러 번 클릭 가능.
+- **권한 제어**: `allowedUsers` 필드를 통해 특정 사용자만 버튼을 누를 수 있도록 제한 가능.
+- **모달(Modal)**: 최대 5개의 입력 필드를 가진 팝업 폼 구성 가능.
+
+## 접근 제어 및 정책 (Access Control)
+
+- **DM 정책**: `dmPolicy` 설정을 통해 `pairing` (기본값), `allowlist`, `open`, `disabled` 중 선택.
+- **서버 정책**: `groupPolicy`를 통해 허용 목록(`allowlist`) 기반으로 운영함.
+  - 서버 ID 기반 매칭을 권장하며, 역할(Role) 기반의 세밀한 접근 제어도 지원함.
+  - `requireMention`: 멘션 시에만 응답할지 여부.
+  - `ignoreOtherMentions`: 다른 사용자나 역할을 멘션한 메시지는 무시함.
+
+## 네이티브 슬래시 명령어
+
+- `commands.native: "auto"` 설정 시 Discord 앱 내에서 `/` 입력으로 OpenClaw 명령어를 직접 호출 가능.
+- 인증 정책은 일반 메시지 허용 목록과 동일하게 적용됨.
+- 명령어 실행 결과는 기본적으로 발신자에게만 보이는 **에페머럴(비공개)** 모드로 전송됨.
+
+## 심화 기능 상세
+
+<AccordionGroup>
+  <Accordion title="답장 태그 및 네이티브 답장">
+    `replyToMode` 설정을 통해 Discord의 네이티브 답장 기능을 제어함 (`off`, `first`, `all`). 에이전트 출력에 `[[reply_to:<id>]]` 태그를 사용하여 특정 메시지를 지정할 수 있음.
+  </Accordion>
+  <Accordion title="실시간 스트리밍 미리보기">
+    `streaming` 옵션(`partial`, `block`)을 통해 에이전트가 답변을 작성하는 동안 메시지를 실시간으로 업데이트하여 보여줌. 블록 스트리밍이 켜져 있는 경우 중복 전송 방지를 위해 미리보기는 자동으로 건너뜀.
+  </Accordion>
+  <Accordion title="스레드 기반 세션 고정">
+    `/focus <target>` 명령어를 사용하여 특정 스레드를 특정 에이전트나 하위 세션에 고정할 수 있음. 이는 하위 에이전트(`sessions_spawn`) 업무 처리에 매우 유용함.
+  </Accordion>
+  <Accordion title="명령어 실행 승인 (Discord UI)">
+    DM 또는 채널에 버튼 형식의 승인 요청 메시지를 전송함. 승인 권한이 있는 사용자만 버튼을 조작할 수 있음. 상세 내용은 [실행 승인 가이드](/tools/exec-approvals) 참조.
+  </Accordion>
+</AccordionGroup>
+
+## 음성 채널 (Voice Channels)
+
+- **실시간 대화**: Discord 음성 채널에 참여하여 음성으로 대화 가능.
+- **요구 사항**: 네이티브 명령어 활성화 및 `channels.discord.voice` 설정 필요.
+- **음성 메시지**: `asVoice: true` 옵션과 함께 오디오 파일을 전송하면 파형이 포함된 음성 메시지 형식으로 발송됨.
+
+## 문제 해결 (Troubleshooting)
+
+- **메시지 미수신**: 개발자 포털에서 **Message Content Intent** 활성화 여부를 확인하고 Gateway를 재시작함.
+- **멘션 무응답**: `requireMention` 설정과 `mentionPatterns` 정의가 올바른지 확인함.
+- **응답 지연**: `eventQueue.listenerTimeout` 설정을 늘려 긴 작업 시간을 확보함.
+- **음성 오류**: 복호화 실패(`DecryptionFailed`) 발생 시 `openclaw update`를 통해 최신 복구 로직을 적용함.
+
+상세한 설정 스키마 및 옵션은 [Gateway 설정 레퍼런스](/gateway/configuration-reference#discord)를 참조함.

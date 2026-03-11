@@ -1,37 +1,33 @@
 ---
-summary: "`openclaw node`용 CLI 레퍼런스(헤드리스 node host)"
+summary: "헤드리스 노드 호스트 실행 및 관리를 위한 `openclaw node` 명령어 레퍼런스"
 read_when:
-  - 헤드리스 node host를 실행할 때
-  - `system.run`용 비-macOS 노드를 페어링할 때
+  - 헤드리스 노드 호스트를 구동하여 원격 기기의 자원을 공유하고자 할 때
+  - `system.run` 기능을 위해 비 macOS 환경의 노드를 페어링할 때
 title: "node"
+x-i18n:
+  source_path: "cli/node.md"
 ---
 
 # `openclaw node`
 
-Gateway WebSocket에 연결하고 이 머신에서 `system.run` / `system.which`를
-노출하는 **헤드리스 node host**를 실행합니다.
+Gateway WebSocket에 연결되어 해당 기기의 `system.run` (명령어 실행) 및 `system.which` (경로 확인) 기능을 노출하는 **헤드리스 노드 호스트(Headless Node Host)**를 실행함.
 
-## 왜 node host를 사용하나요?
+## 노드 호스트를 사용하는 이유
 
-네트워크 안의 **다른 머신에서 명령을 실행**하고 싶지만, 그곳에 전체 macOS
-companion app을 설치하고 싶지 않을 때 node host를 사용합니다.
+에이전트가 네트워크 내의 **다른 기기에서 명령을 실행**하도록 허용하고 싶으나, 해당 기기에 전체 macOS 컴패니언 앱을 설치할 수 없거나 설치를 원치 않는 경우에 사용함.
 
-일반적인 사용 사례:
+**주요 활용 사례:**
+- 원격 Linux/Windows 서버(빌드 서버, 실험 장비, NAS 등)에서 명령 실행.
+- Gateway 서버 자체의 실행 환경은 **샌드박스**로 보호하면서, 승인된 작업만 특정 호스트에 위임.
+- 자동화 파이프라인이나 CI 노드를 위한 가벼운 명령 실행 타겟 제공.
 
-- 원격 Linux/Windows 박스(빌드 서버, 랩 장비, NAS)에서 명령을 실행합니다.
-- exec는 gateway에서 **샌드박스** 상태로 유지하면서, 승인된 실행은 다른 host에 위임합니다.
-- 자동화 또는 CI 노드용으로 가벼운 헤드리스 실행 대상을 제공합니다.
+실행 권한은 노드 호스트의 **명령어 실행 승인(Exec Approvals)** 정책 및 에이전트별 허용 목록(Allowlist)에 의해 엄격히 관리되므로 안전하게 운영 가능함.
 
-실행은 여전히 node host의 **exec approvals**와 agent별 allowlist로 보호되므로,
-명령 접근 범위를 명시적으로 제한할 수 있습니다.
+## 브라우저 프록시 (Zero-config)
 
-## 브라우저 프록시(추가 설정 없음)
+노드 호스트는 `browser.enabled` 설정이 비활성화되지 않은 경우, 자동으로 브라우저 프록시 기능을 광고함. 이를 통해 에이전트는 별도의 추가 설정 없이도 해당 노드의 브라우저를 자동화에 활용할 수 있음.
 
-node에서 `browser.enabled`가 비활성화되어 있지 않으면, node host는 자동으로
-브라우저 프록시를 advertise합니다. 따라서 추가 설정 없이도 agent가 해당
-node에서 브라우저 자동화를 사용할 수 있습니다.
-
-필요하면 node에서 비활성화하세요:
+필요 시 노드에서 해당 기능을 비활성화할 수 있음:
 
 ```json5
 {
@@ -43,80 +39,67 @@ node에서 브라우저 자동화를 사용할 수 있습니다.
 }
 ```
 
-## 실행(포그라운드)
+## 포그라운드 실행 (Run)
 
 ```bash
 openclaw node run --host <gateway-host> --port 18789
 ```
 
-옵션:
+**주요 옵션:**
+- **`--host <host>`**: Gateway WebSocket 주소 (기본값: `127.0.0.1`).
+- **`--port <port>`**: Gateway WebSocket 포트 (기본값: `18789`).
+- **`--tls`**: 보안 연결(TLS) 사용 여부.
+- **`--tls-fingerprint <sha256>`**: 신뢰할 수 있는 TLS 인증서 지문 지정.
+- **`--node-id <id>`**: 노드 ID 수동 지정 (기존 페어링 토큰 초기화됨).
+- **`--display-name <name>`**: Gateway UI에 표시될 노드 이름 설정.
 
-- `--host <host>`: Gateway WebSocket 호스트(기본값: `127.0.0.1`)
-- `--port <port>`: Gateway WebSocket 포트(기본값: `18789`)
-- `--tls`: gateway 연결에 TLS를 사용합니다
-- `--tls-fingerprint <sha256>`: 예상 TLS 인증서 지문(sha256)
-- `--node-id <id>`: node id를 override합니다(페어링 토큰 삭제)
-- `--display-name <name>`: node 표시 이름을 override합니다
+## 노드 호스트용 인증 (Auth)
 
-## node host용 Gateway 인증
+`openclaw node run` 및 `install` 명령어는 별도의 `--token` 플래그 없이 설정 파일이나 환경 변수로부터 Gateway 인증 정보를 자동으로 해석함:
 
-`openclaw node run`과 `openclaw node install`은 gateway 인증을 config/env에서 해석합니다(node 명령에는 `--token`/`--password` 플래그가 없음).
+1. **`OPENCLAW_GATEWAY_TOKEN`** / **`PASSWORD`** 환경 변수를 최우선으로 확인.
+2. 로컬 설정 파일(`gateway.auth.token` / `password`)을 폴백으로 사용.
+3. 로컬 모드에서 위 설정이 없을 경우 `gateway.remote.*` 설정을 참조함.
+4. 레거시 환경 변수인 `CLAWDBOT_GATEWAY_*`는 무시됨.
 
-- 먼저 `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`를 확인합니다.
-- 다음으로 로컬 config fallback: `gateway.auth.token` / `gateway.auth.password`.
-- 로컬 모드에서는 `gateway.auth.*`가 설정되지 않았을 때 `gateway.remote.token` / `gateway.remote.password`도 fallback 후보가 됩니다.
-- `gateway.mode=remote`에서는 원격 우선순위 규칙에 따라 원격 클라이언트 필드(`gateway.remote.token` / `gateway.remote.password`)도 사용할 수 있습니다.
-- 레거시 `CLAWDBOT_GATEWAY_*` env 변수는 node host 인증 해석에서 무시됩니다.
+## 백그라운드 서비스 (Service)
 
-## 서비스(백그라운드)
-
-헤드리스 node host를 사용자 서비스로 설치합니다.
+헤드리스 노드 호스트를 사용자 서비스로 설치하여 시스템 시작 시 자동 실행되도록 설정함.
 
 ```bash
 openclaw node install --host <gateway-host> --port 18789
 ```
 
-옵션:
-
-- `--host <host>`: Gateway WebSocket 호스트(기본값: `127.0.0.1`)
-- `--port <port>`: Gateway WebSocket 포트(기본값: `18789`)
-- `--tls`: gateway 연결에 TLS를 사용합니다
-- `--tls-fingerprint <sha256>`: 예상 TLS 인증서 지문(sha256)
-- `--node-id <id>`: node id를 override합니다(페어링 토큰 삭제)
-- `--display-name <name>`: node 표시 이름을 override합니다
-- `--runtime <runtime>`: 서비스 런타임(`node` 또는 `bun`)
-- `--force`: 이미 설치되어 있으면 다시 설치하거나 덮어씁니다
-
-서비스 관리:
-
+**서비스 관리 명령어:**
 ```bash
-openclaw node status
-openclaw node stop
-openclaw node restart
-openclaw node uninstall
+openclaw node status    # 설치 상태 및 가동 여부 확인
+openclaw node stop      # 서비스 중지
+openclaw node restart   # 서비스 재시작
+openclaw node uninstall # 서비스 제거
 ```
 
-포그라운드 node host(서비스 없음)에는 `openclaw node run`을 사용하세요.
+- **`--runtime <node|bun>`**: 서비스 실행 환경 선택.
+- **`--force`**: 이미 설치된 서비스가 있는 경우 덮어쓰기.
+- 서비스 관련 명령어 실행 시 `--json` 옵션을 통해 기계 판독 가능한 결과를 얻을 수 있음.
 
-서비스 명령은 기계가 읽을 수 있는 출력을 위해 `--json`을 지원합니다.
+## 페어링 (Pairing)
 
-## 페어링
-
-첫 번째 연결 시 Gateway에 대기 중인 디바이스 페어링 요청(`role: node`)이 생성됩니다.
-다음 명령으로 승인하세요:
+노드가 Gateway에 처음 접속하면 대기 중인 기기 페어링 요청(`role: node`)이 생성됨. 관리자는 다음 명령어를 통해 이를 승인해야 함:
 
 ```bash
+# 대기 중인 요청 확인
 openclaw devices list
+
+# 요청 승인
 openclaw devices approve <requestId>
 ```
 
-node host는 node id, token, 표시 이름, gateway 연결 정보를
-`~/.openclaw/node.json`에 저장합니다.
+노드 호스트는 할당받은 노드 ID, 토큰 및 접속 정보를 `~/.openclaw/node.json` 파일에 안전하게 보관함.
 
-## Exec approvals
+## 명령어 실행 승인 (Exec Approvals)
 
-`system.run`은 로컬 exec approvals로 제어됩니다:
+`system.run` 기능을 통한 명령어 실행은 로컬의 승인 정책에 의해 제어됨:
 
-- `~/.openclaw/exec-approvals.json`
-- [Exec approvals](/tools/exec-approvals)
-- `openclaw approvals --node <id|name|ip>` (Gateway에서 편집)
+- 정책 파일 위치: `~/.openclaw/exec-approvals.json`
+- 상세 내용: [Exec approvals 가이드](/tools/exec-approvals)
+- 원격 편집: Gateway 서버에서 `openclaw approvals --node <ID|이름|IP>` 명령어를 사용하여 해당 노드의 정책을 직접 수정할 수 있음.

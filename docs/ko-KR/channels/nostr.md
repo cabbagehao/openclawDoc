@@ -1,92 +1,83 @@
 ---
-summary: "NIP-04 암호화 메시지를 사용하는 Nostr DM 채널"
+summary: "NIP-04 암호화 메시지 규격을 사용하는 Nostr DM 채널 설정 및 사용 가이드"
 read_when:
-  - OpenClaw가 Nostr DM을 수신하게 하고 싶을 때
-  - 분산형 메시징을 설정할 때
+  - OpenClaw에서 Nostr 네트워크를 통한 DM 수발신 기능을 구현하고자 할 때
+  - 탈중앙화된 메시징 환경을 구축할 때
 title: "Nostr"
+x-i18n:
+  source_path: "channels/nostr.md"
 ---
 
-# Nostr
+# Nostr (플러그인)
 
-**상태:** 선택적 plugin(기본 비활성)
+**상태**: 선택적 플러그인 (기본 비활성화 상태).
 
-Nostr는 소셜 네트워킹을 위한 분산형 프로토콜입니다. 이 채널을 사용하면 OpenClaw가 NIP-04를 통해 암호화된 direct message(DM)를 수신하고 응답할 수 있습니다.
+Nostr는 소셜 네트워킹을 위한 탈중앙화 프로토콜임. 이 채널을 통해 OpenClaw는 NIP-04 규격에 따라 암호화된 개인 대화(DM)를 수신하고 응답할 수 있음.
 
-## Install (on demand)
+## 플러그인 설치
 
-### Onboarding (recommended)
+### 온보딩 마법사 활용 (권장)
+- `openclaw onboard` 또는 `openclaw channels add` 실행 시 선택 가능한 채널 플러그인 목록에 표시됨.
+- Nostr를 선택하면 설치 여부를 묻는 프롬프트가 나타나며 즉시 설치를 진행함.
 
-- onboarding wizard(`openclaw onboard`)와 `openclaw channels add`는 선택적 channel plugin을 나열합니다.
-- Nostr를 선택하면 필요 시 plugin 설치 프롬프트가 나타납니다.
+**설치 경로 규칙:**
+- **개발 채널 + Git 소스 환경**: 로컬 플러그인 경로를 우선 사용함.
+- **안정/베타 채널**: npm 저장소로부터 최신 패키지를 다운로드함.
 
-설치 기본 동작:
-
-- **Dev channel + git checkout 가능:** 로컬 plugin 경로 사용
-- **Stable/Beta:** npm에서 다운로드
-
-프롬프트에서 언제든 선택을 바꿀 수 있습니다.
-
-### Manual install
-
+### 수동 설치
 ```bash
 openclaw plugins install @openclaw/nostr
 ```
 
-로컬 체크아웃 사용(dev workflow):
-
+**로컬 소스 연동 (개발용):**
 ```bash
-openclaw plugins install --link <path-to-openclaw>/extensions/nostr
+openclaw plugins install --link <openclaw-경로>/extensions/nostr
 ```
+설치 또는 활성화 후에는 반드시 **Gateway를 재시작**해야 함.
 
-plugin 설치 또는 활성화 후에는 Gateway를 재시작하세요.
+## 빠른 설정 가이드
 
-## Quick setup
+1. **Nostr 키 쌍(Keypair) 생성**: (기존 키가 없는 경우)
+   ```bash
+   # nak 도구 사용 예시
+   nak key generate
+   ```
 
-1. 필요하면 Nostr keypair를 생성합니다.
+2. **설정 파일에 추가**:
+   ```json
+   {
+     "channels": {
+       "nostr": {
+         "privateKey": "${NOSTR_PRIVATE_KEY}"
+       }
+     }
+   }
+   ```
 
-```bash
-# nak 사용
-nak key generate
-```
+3. **환경 변수 등록**:
+   ```bash
+   export NOSTR_PRIVATE_KEY="nsec1..."
+   ```
 
-2. config에 추가합니다.
+4. **Gateway 시작**: 설정 반영을 위해 서버를 구동함.
 
-```json
-{
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}"
-    }
-  }
-}
-```
+## 주요 설정 레퍼런스
 
-3. key를 export 합니다.
+| 설정 키 | 타입 | 기본값 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `privateKey` | string | (필수) | `nsec` 또는 16진수(Hex) 형식의 개인 키 |
+| `relays` | string[] | `['wss://relay.damus.io', 'wss://nos.lol']` | 접속할 릴레이 URL 목록 (WebSocket) |
+| `dmPolicy` | string | `pairing` | DM 접근 제어 정책 |
+| `allowFrom` | string[] | `[]` | 허용된 발신자 공개 키(Pubkey) 목록 |
+| `enabled` | boolean | `true` | 채널 활성화 여부 |
+| `name` | string | - | 표시 이름 |
+| `profile` | object | - | NIP-01 프로필 메타데이터 |
 
-```bash
-export NOSTR_PRIVATE_KEY="nsec1..."
-```
+## 프로필 메타데이터 (Profile)
 
-4. Gateway를 재시작합니다.
+프로필 정보는 NIP-01 `kind:0` 이벤트로 네트워크에 게시됨. Control UI(Channels -> Nostr -> Profile)에서 관리하거나 설정 파일에서 직접 정의할 수 있음.
 
-## Configuration reference
-
-| Key          | Type     | Default                                     | Description                      |
-| ------------ | -------- | ------------------------------------------- | -------------------------------- |
-| `privateKey` | string   | required                                    | `nsec` 또는 hex 형식 private key |
-| `relays`     | string[] | `['wss://relay.damus.io', 'wss://nos.lol']` | Relay URL(WebSocket)             |
-| `dmPolicy`   | string   | `pairing`                                   | DM 접근 정책                     |
-| `allowFrom`  | string[] | `[]`                                        | 허용된 sender pubkey             |
-| `enabled`    | boolean  | `true`                                      | 채널 활성화/비활성화             |
-| `name`       | string   | -                                           | display name                     |
-| `profile`    | object   | -                                           | NIP-01 profile metadata          |
-
-## Profile metadata
-
-profile 데이터는 NIP-01 `kind:0` 이벤트로 게시됩니다. Control UI(Channels -> Nostr -> Profile)에서 관리하거나 config에 직접 지정할 수 있습니다.
-
-예시:
-
+**예시:**
 ```json
 {
   "channels": {
@@ -95,34 +86,28 @@ profile 데이터는 NIP-01 `kind:0` 이벤트로 게시됩니다. Control UI(Ch
       "profile": {
         "name": "openclaw",
         "displayName": "OpenClaw",
-        "about": "Personal assistant DM bot",
+        "about": "개인용 인공지능 비서 DM 봇",
         "picture": "https://example.com/avatar.png",
-        "banner": "https://example.com/banner.png",
         "website": "https://example.com",
-        "nip05": "openclaw@example.com",
-        "lud16": "openclaw@example.com"
+        "nip05": "openclaw@example.com"
       }
     }
   }
 }
 ```
 
-참고:
+- 프로필 내 이미지 및 웹사이트 URL은 반드시 `https://` 보안 프로토콜을 사용해야 함.
+- 릴레이로부터 프로필을 가져올 때 로컬 오버라이드 설정은 보존됨.
 
-- profile URL은 `https://`를 사용해야 합니다.
-- relay에서 가져온 데이터를 병합할 때 로컬 override는 유지됩니다.
+## 접근 제어 정책
 
-## Access control
+### DM 정책 (DM Policies)
+- **`pairing`** (기본값): 승인되지 않은 발신자에게는 페어링 코드를 전송함.
+- **`allowlist`**: `allowFrom`에 등록된 공개 키를 가진 사용자만 대화 가능.
+- **`open`**: 모든 공개 DM 수락 (`allowFrom: ["*"]` 설정 필요).
+- **`disabled`**: 모든 수신 DM 무시.
 
-### DM policies
-
-- **pairing** (기본값): 알 수 없는 발신자는 pairing code를 받습니다.
-- **allowlist**: `allowFrom`에 있는 pubkey만 DM 가능
-- **open**: 공개 inbound DM 허용(`allowFrom: ["*"]` 필요)
-- **disabled**: inbound DM 무시
-
-### Allowlist example
-
+### 허용 목록 설정 예시
 ```json
 {
   "channels": {
@@ -135,99 +120,60 @@ profile 데이터는 NIP-01 `kind:0` 이벤트로 게시됩니다. Control UI(Ch
 }
 ```
 
-## Key formats
+## 키 형식 (Key Formats)
 
-허용 형식:
+- **개인 키 (Private key)**: `nsec1...` 형식 또는 64자리 16진수 문자열.
+- **공개 키 (Pubkey)**: `npub1...` 형식 또는 16진수 문자열.
 
-- **Private key:** `nsec...` 또는 64자 hex
-- **Pubkeys (`allowFrom`):** `npub...` 또는 hex
+## 릴레이(Relays) 관리
 
-## Relays
-
-기본 relay: `relay.damus.io`, `nos.lol`
+기본값으로 `relay.damus.io` 및 `nos.lol`을 사용함.
 
 ```json
 {
   "channels": {
     "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}",
       "relays": ["wss://relay.damus.io", "wss://relay.primal.net", "wss://nostr.wine"]
     }
   }
 }
 ```
 
-팁:
+**팁:**
+- 가용성 확보를 위해 2~3개의 릴레이를 혼용할 것을 권장함.
+- 릴레이가 너무 많으면 지연 시간이 늘어나고 중복 수신 부하가 발생할 수 있음.
+- 테스트 시에는 로컬 릴레이(`ws://localhost:7777`) 사용 가능.
 
-- 중복 대비를 위해 relay는 2-3개 정도 사용하세요.
-- relay를 너무 많이 쓰면 지연과 중복이 늘어납니다.
-- 유료 relay는 안정성을 높일 수 있습니다.
-- 테스트에는 로컬 relay도 괜찮습니다(`ws://localhost:7777`).
+## 지원 프로토콜 (NIPs)
 
-## Protocol support
+| 규격 | 상태 | 설명 |
+| :--- | :--- | :--- |
+| NIP-01 | 지원 | 기본 이벤트 형식 및 프로필 메타데이터 |
+| NIP-04 | 지원 | 암호화된 DM (`kind:4`) |
+| NIP-17 | 예정 | 선물 포장(Gift-wrapped) DM |
+| NIP-44 | 예정 | 버전 관리형 암호화 |
 
-| NIP    | Status    | Description                        |
-| ------ | --------- | ---------------------------------- |
-| NIP-01 | Supported | 기본 event 형식 + profile metadata |
-| NIP-04 | Supported | 암호화 DM (`kind:4`)               |
-| NIP-17 | Planned   | gift-wrapped DM                    |
-| NIP-44 | Planned   | versioned encryption               |
+## 테스트 방법
 
-## Testing
-
-### Local relay
-
+### 로컬 릴레이 테스트
 ```bash
-# strfry 시작
+# strfry 릴레이 서버 실행 (Docker)
 docker run -p 7777:7777 ghcr.io/hoytech/strfry
 ```
 
-```json
-{
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}",
-      "relays": ["ws://localhost:7777"]
-    }
-  }
-}
-```
+### 수동 기능 점검
+1. Gateway 로그에서 봇의 공개 키(`npub`)를 확인함.
+2. Damus, Amethyst 등 Nostr 클라이언트를 실행함.
+3. 확인한 봇 공개 키로 DM을 전송함.
+4. 에이전트의 응답이 정상적으로 수신되는지 확인함.
 
-### Manual test
+## 문제 해결 (Troubleshooting)
 
-1. 로그에서 bot pubkey(npub)를 확인합니다.
-2. Nostr client(Damus, Amethyst 등)를 엽니다.
-3. bot pubkey에 DM을 보냅니다.
-4. 응답을 확인합니다.
+- **메시지 수신 불가**: 개인 키 유효 여부, 릴레이 주소의 오타(`wss://`), `enabled: true` 설정 여부를 재확인함.
+- **응답 전송 실패**: 릴레이 서버가 쓰기(Write) 권한을 허용하는지, Gateway 호스트의 아웃바운드 네트워크 환경을 점검함.
+- **중복 응답**: 여러 릴레이를 사용할 때 발생할 수 있으나, OpenClaw는 이벤트 ID 기반으로 중복을 제거하여 한 번만 응답을 트리거함.
 
-## Troubleshooting
+## 보안 및 제한 사항
 
-### Not receiving messages
-
-- private key가 유효한지 확인하세요.
-- relay URL에 접근 가능하고 `wss://`(또는 로컬이면 `ws://`)를 사용하는지 확인하세요.
-- `enabled`가 `false`가 아닌지 확인하세요.
-- Gateway log에서 relay 연결 오류를 확인하세요.
-
-### Not sending responses
-
-- relay가 쓰기를 허용하는지 확인하세요.
-- outbound connectivity를 점검하세요.
-- relay rate limit이 없는지 확인하세요.
-
-### Duplicate responses
-
-- 여러 relay를 쓸 때는 예상 가능한 동작입니다.
-- 메시지는 event ID로 deduplicate되며, 첫 전달만 응답을 트리거합니다.
-
-## Security
-
-- private key는 절대 커밋하지 마세요.
-- key는 environment variable로 관리하세요.
-- 운영 bot에는 `allowlist`를 고려하세요.
-
-## Limitations (MVP)
-
-- direct message만 지원(group chat 없음)
-- media attachment 없음
-- NIP-04만 지원(NIP-17 gift-wrap은 예정)
+- **보안**: 개인 키를 코드 저장소에 직접 커밋하지 말고 환경 변수를 활용할 것. 운영 환경에서는 허용 목록(`allowlist`) 사용을 권장함.
+- **제한 (MVP 단계)**: 현재는 개인 대화(DM)만 지원하며 그룹 대화 및 미디어 첨부 기능은 미지원 상태임.

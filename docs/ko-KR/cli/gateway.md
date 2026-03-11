@@ -1,85 +1,73 @@
 ---
-summary: "OpenClaw Gateway CLI (`openclaw gateway`) - gateway 실행, 질의, discovery"
+summary: "Gateway 서버 실행, 상태 조회 및 네트워크 탐색을 위한 `openclaw gateway` 명령어 레퍼런스"
 read_when:
-  - CLI에서 Gateway를 실행할 때(dev 또는 서버)
-  - Gateway auth, bind mode, connectivity를 디버깅할 때
-  - Bonjour(LAN + tailnet)로 gateway를 찾을 때
+  - CLI를 통해 Gateway 서버를 직접 실행하거나 관리하고자 할 때
+  - 인증 방식, 바인딩 모드 및 네트워크 연결 문제를 디버깅할 때
+  - Bonjour를 통해 네트워크 내의 Gateway를 찾고자 할 때
 title: "gateway"
+x-i18n:
+  source_path: "cli/gateway.md"
 ---
 
 # Gateway CLI
 
-Gateway는 OpenClaw의 WebSocket 서버입니다(channels, nodes, sessions, hooks 담당).
+Gateway는 OpenClaw의 핵심 WebSocket 서버임 (채널, 노드, 세션 및 훅 관리 담당). 이 페이지의 하위 명령어들은 모두 `openclaw gateway ...` 형식으로 사용됨.
 
-이 페이지의 하위 명령은 모두 `openclaw gateway …` 아래에 있습니다.
+**관련 문서:**
+- Bonjour 설정 가이드: [/gateway/bonjour](/gateway/bonjour)
+- Gateway 탐색 가이드: [/gateway/discovery](/gateway/discovery)
+- 설정 상세 레퍼런스: [/gateway/configuration](/gateway/configuration)
 
-관련 문서:
+## Gateway 서버 실행
 
-- [/gateway/bonjour](/gateway/bonjour)
-- [/gateway/discovery](/gateway/discovery)
-- [/gateway/configuration](/gateway/configuration)
-
-## Run the Gateway
-
-로컬 Gateway 프로세스를 실행합니다.
+로컬 Gateway 프로세스를 실행함:
 
 ```bash
 openclaw gateway
 ```
 
-포그라운드 별칭:
+포그라운드 실행 별칭:
 
 ```bash
 openclaw gateway run
 ```
 
-참고:
+### 참고 사항
 
-- 기본적으로 `~/.openclaw/openclaw.json`에서 `gateway.mode=local`이 설정되지 않으면 Gateway는 시작을 거부합니다. 임시/dev 실행에는 `--allow-unconfigured`를 사용하세요.
-- 인증 없이 loopback 바깥으로 바인딩하는 것은 safety guardrail에 의해 차단됩니다.
-- `SIGUSR1`은 권한이 있을 때 프로세스 내부 재시작을 트리거합니다(`commands.restart`는 기본 활성화, 수동 재시작을 막으려면 `commands.restart: false`를 설정하세요. 단 gateway tool/config apply/update는 계속 허용됩니다).
-- `SIGINT`/`SIGTERM` 핸들러는 gateway 프로세스를 멈추지만, 커스텀 터미널 상태는 복원하지 않습니다. CLI를 TUI나 raw-mode 입력으로 감싸고 있다면 종료 전에 터미널을 직접 복원하세요.
+- **기본 동작**: `~/.openclaw/openclaw.json` 설정 파일에 `gateway.mode=local`이 지정되지 않으면 보안을 위해 서버 시작이 거부됨. 개발 또는 테스트 목적의 즉시 실행 시에는 `--allow-unconfigured` 플래그를 사용함.
+- **보안 제한**: 루프백(Loopback) 이외의 인터페이스로 바인딩할 때 인증 설정이 없으면 실행이 차단됨.
+- **프로세스 제어**: `SIGUSR1` 신호를 보내면 서버를 내부적으로 재시작할 수 있음 (설정에서 `commands.restart: true`인 경우). `SIGINT`/`SIGTERM`은 프로세스를 종료하나, TUI 등의 특수 터미널 상태를 자동으로 복구하지는 않음.
 
-### Options
+### 주요 옵션
 
-- `--port <port>`: WebSocket 포트(기본값은 config/env에서 오며 보통 `18789`)
-- `--bind <loopback|lan|tailnet|auto|custom>`: listener bind mode
-- `--auth <token|password>`: auth mode override
-- `--token <token>`: token override(프로세스에 `OPENCLAW_GATEWAY_TOKEN`도 설정)
-- `--password <password>`: password override. 경고: 인라인 비밀번호는 로컬 프로세스 목록에 노출될 수 있습니다.
-- `--password-file <path>`: 파일에서 gateway password 읽기
-- `--tailscale <off|serve|funnel>`: Tailscale을 통해 Gateway 노출
-- `--tailscale-reset-on-exit`: 종료 시 Tailscale serve/funnel 설정 초기화
-- `--allow-unconfigured`: config에 `gateway.mode=local`이 없어도 gateway 시작 허용
-- `--dev`: dev config + workspace가 없으면 생성(BOOTSTRAP.md는 건너뜀)
-- `--reset`: dev config + credentials + sessions + workspace 초기화(`--dev` 필요)
-- `--force`: 시작 전에 선택한 포트에서 이미 열려 있는 listener 강제 종료
-- `--verbose`: 상세 로그
-- `--claude-cli-logs`: 콘솔에 claude-cli 로그만 표시(해당 stdout/stderr도 활성화)
-- `--ws-log <auto|full|compact>`: websocket 로그 스타일(기본값 `auto`)
-- `--compact`: `--ws-log compact`의 별칭
-- `--raw-stream`: 원시 model stream 이벤트를 jsonl로 기록
-- `--raw-stream-path <path>`: raw stream jsonl 경로
+- **`--port <port>`**: WebSocket 포트 지정 (기본값: `18789`).
+- **`--bind <mode>`**: 리스너 바인딩 모드 (`loopback`, `lan`, `tailnet`, `auto`, `custom`).
+- **`--auth <mode>`**: 인증 모드 강제 지정 (`token` 또는 `password`).
+- **`--token <token>`**: 토큰 값 오버라이드 (프로세스 환경 변수 `OPENCLAW_GATEWAY_TOKEN`도 함께 설정됨).
+- **`--password-file <path>`**: 파일로부터 서버 비밀번호를 읽어옴. (인라인 비밀번호 사용 시 프로세스 목록에 노출될 위험이 있으므로 권장함)
+- **`--tailscale <mode>`**: Tailscale을 통해 Gateway 노출 여부 지정 (`off`, `serve`, `funnel`).
+- **`--dev`**: 개발용 설정 및 워크스페이스가 없을 경우 자동 생성 (부트스트랩 단계 생략).
+- **`--force`**: 시작 전 해당 포트를 사용 중인 기존 프로세스를 강제 종료함.
+- **`--ws-log <style>`**: WebSocket 로그 스타일 설정 (`auto`, `full`, `compact`).
+- **`--raw-stream`**: 모델의 원시 스트림 이벤트를 별도 JSONL 파일로 기록함.
 
-## Query a running Gateway
+## 실행 중인 Gateway 상태 조회
 
-모든 query 명령은 WebSocket RPC를 사용합니다.
+모든 조회 명령어는 WebSocket RPC를 통해 통신함.
 
-출력 모드:
+**출력 모드:**
+- **기본**: 가독성 중심 (터미널 환경에 따라 색상 적용).
+- **`--json`**: 기계 판독 가능한 JSON 형식 (스타일링 및 진행 표시기 제외).
+- **`--no-color`**: ANSI 색상 코드를 제외한 텍스트 레이아웃 출력.
 
-- 기본: 사람이 읽기 쉬운 형식(TTY에서는 색상 포함)
-- `--json`: 기계 읽기용 JSON(styling/spinner 없음)
-- `--no-color` 또는 `NO_COLOR=1`: 사람이 읽는 레이아웃은 유지하되 ANSI 비활성화
+**공통 옵션:**
+- **`--url <url>`**: 대상 Gateway WebSocket 주소.
+- **`--token <token>`** / **`--password <password>`**: 인증 정보.
+- **`--timeout <ms>`**: 요청 타임아웃 시간.
 
-공통 옵션(지원되는 명령에 한함):
-
-- `--url <url>`: Gateway WebSocket URL
-- `--token <token>`: Gateway token
-- `--password <password>`: Gateway password
-- `--timeout <ms>`: timeout/budget(명령마다 다름)
-- `--expect-final`: “final” 응답(agent call)을 기다림
-
-참고: `--url`을 지정하면 CLI는 config나 environment의 자격 증명으로 fallback 하지 않습니다. `--token` 또는 `--password`를 명시적으로 전달하세요. 명시적 자격 증명이 없으면 오류입니다.
+<Note>
+`--url` 옵션을 지정할 경우, CLI는 기존 설정 파일의 자격 증명을 자동으로 참조하지 않음. 반드시 인증 관련 플래그를 함께 명시해야 함.
+</Note>
 
 ### `gateway health`
 
@@ -89,125 +77,74 @@ openclaw gateway health --url ws://127.0.0.1:18789
 
 ### `gateway status`
 
-`gateway status`는 Gateway 서비스(launchd/systemd/schtasks)와 선택적인 RPC probe를 함께 보여줍니다.
+시스템 서비스(launchd, systemd 등) 상태와 RPC 프로브 결과를 함께 표시함.
 
 ```bash
 openclaw gateway status
 openclaw gateway status --json
 ```
 
-옵션:
+- **`--no-probe`**: RPC 통신 점검을 생략하고 서비스 설치 상태만 확인.
+- **`--deep`**: 시스템 레벨의 서비스까지 확장하여 스캔.
 
-- `--url <url>`: probe URL override
-- `--token <token>`: probe용 token auth
-- `--password <password>`: probe용 password auth
-- `--timeout <ms>`: probe timeout(기본값 `10000`)
-- `--no-probe`: RPC probe를 건너뛰고 서비스 상태만 보기
-- `--deep`: 시스템 수준 서비스도 스캔
+### `gateway probe` (종합 진단)
 
-참고:
-
-- `gateway status`는 가능할 경우 probe auth용으로 설정된 auth SecretRef를 해석합니다.
-- 이 명령 경로에서 필요한 auth SecretRef를 해석할 수 없으면 probe auth가 실패할 수 있습니다. `--token`/`--password`를 직접 전달하거나 secret source를 먼저 해결하세요.
-- Linux systemd 설치에서 service auth drift check는 유닛의 `Environment=`와 `EnvironmentFile=` 값을 모두 읽습니다. `%h`, 인용된 경로, 여러 파일, 선택적 `-` 파일도 포함됩니다.
-
-### `gateway probe`
-
-`gateway probe`는 “모든 것을 디버깅”하는 명령입니다. 항상 다음을 probe합니다.
-
-- 설정된 remote gateway(있다면)
-- **remote가 설정되어 있어도** localhost(loopback)
-
-여러 gateway에 도달 가능하면 모두 출력합니다. rescue bot처럼 profile/port를 분리한 경우 여러 gateway를 함께 두는 구성이 가능하지만, 대부분의 설치는 여전히 단일 gateway를 사용합니다.
+설정된 원격 서버와 로컬 루프백 주소를 모두 점검하는 종합 디버깅 명령어임.
 
 ```bash
 openclaw gateway probe
-openclaw gateway probe --json
 ```
 
-#### Remote over SSH (Mac app parity)
-
-macOS 앱의 “Remote over SSH” 모드는 로컬 포트 포워드를 사용해 loopback 전용으로 바인딩된 remote gateway도 `ws://127.0.0.1:<port>`에서 접근 가능하게 만듭니다.
-
-동등한 CLI 명령:
+#### SSH 기반 원격 진단 (Mac 앱 호환)
+로컬 포트 포워딩을 통해 루프백에만 바인딩된 원격 서버에 접속하는 기능을 지원함.
 
 ```bash
 openclaw gateway probe --ssh user@gateway-host
 ```
 
-옵션:
-
-- `--ssh <target>`: `user@host` 또는 `user@host:port`(포트 기본값 `22`)
-- `--ssh-identity <path>`: identity file
-- `--ssh-auto`: 첫 번째로 발견된 gateway host를 SSH 대상으로 선택(LAN/WAB만)
-
-설정(선택, 기본값으로 사용):
-
-- `gateway.remote.sshTarget`
-- `gateway.remote.sshIdentity`
-
 ### `gateway call <method>`
 
-저수준 RPC helper입니다.
+저수준 RPC 호출 도우미.
 
 ```bash
+# 상태 정보 직접 호출
 openclaw gateway call status
+
+# 특정 파라미터와 함께 로그 스트리밍 호출
 openclaw gateway call logs.tail --params '{"sinceMs": 60000}'
 ```
 
-## Manage the Gateway service
+## Gateway 서비스 관리
+
+운영체제별 백그라운드 서비스를 관리함:
 
 ```bash
-openclaw gateway install
-openclaw gateway start
-openclaw gateway stop
-openclaw gateway restart
-openclaw gateway uninstall
+openclaw gateway install    # 서비스 등록
+openclaw gateway start      # 서비스 시작
+openclaw gateway stop       # 서비스 중단
+openclaw gateway restart    # 서비스 재시작
+openclaw gateway uninstall  # 서비스 제거
 ```
 
-참고:
+- **`install` 주요 옵션**: `--port`, `--runtime <node|bun>`, `--token`, `--force`.
+- **시크릿 관리**: 시크릿 참조(SecretRef)를 사용하는 경우, 설치 시 참조 유효성만 확인하며 평문 비밀번호를 서비스 설정 파일에 직접 기록하지 않음.
+- **인증 충돌**: 토큰과 비밀번호가 모두 설정되어 있으나 모드가 지정되지 않은 경우, 명확한 모드 설정 전까지 설치가 중단됨.
 
-- `gateway install`은 `--port`, `--runtime`, `--token`, `--force`, `--json`을 지원합니다.
-- token auth에 token이 필요하고 `gateway.auth.token`이 SecretRef로 관리된다면, `gateway install`은 SecretRef가 해석 가능한지만 검증하고 실제 token 값을 서비스 환경 메타데이터에 저장하지는 않습니다.
-- token auth에 token이 필요하지만 설정된 token SecretRef를 해석할 수 없으면, install은 fallback 평문을 저장하지 않고 fail closed 합니다.
-- `gateway run`에서 password auth를 쓸 때는 인라인 `--password`보다 `OPENCLAW_GATEWAY_PASSWORD`, `--password-file`, 또는 SecretRef 기반 `gateway.auth.password`를 권장합니다.
-- inferred auth mode에서 셸에만 설정된 `OPENCLAW_GATEWAY_PASSWORD`/`CLAWDBOT_GATEWAY_PASSWORD`는 install token 요구사항을 완화하지 않습니다. 관리형 서비스를 설치할 때는 영속 설정(`gateway.auth.password` 또는 config `env`)을 사용하세요.
-- `gateway.auth.token`과 `gateway.auth.password`가 모두 설정되어 있고 `gateway.auth.mode`가 비어 있으면, mode를 명시적으로 설정할 때까지 install이 차단됩니다.
-- lifecycle 명령은 스크립팅용 `--json`도 지원합니다.
+## Gateway 탐색 (Bonjour)
 
-## Discover gateways (Bonjour)
+`gateway discover` 명령어를 통해 네트워크상의 Gateway 비컨(`_openclaw-gw._tcp`)을 스캔함.
 
-`gateway discover`는 Gateway beacon(`_openclaw-gw._tcp`)을 스캔합니다.
+- **Multicast DNS-SD**: `local.` 도메인 탐색.
+- **Wide-Area Bonjour**: 커스텀 도메인(예: `openclaw.internal.`) 기반 탐색. 상세 설정은 [Bonjour 가이드](/gateway/bonjour) 참조.
 
-- 멀티캐스트 DNS-SD: `local.`
-- 유니캐스트 DNS-SD(Wide-Area Bonjour): 도메인(예: `openclaw.internal.`)을 정하고 split DNS + DNS server를 구성합니다. [/gateway/bonjour](/gateway/bonjour) 참고
+비컨 광고 설정이 활성화된 Gateway만 검색 결과에 나타남.
 
-Bonjour discovery가 활성화된 gateway만(기본값은 활성) beacon을 광고합니다.
-
-Wide-Area discovery 레코드는 다음 TXT를 포함합니다.
-
-- `role` (gateway 역할 힌트)
-- `transport` (전송 힌트, 예: `gateway`)
-- `gatewayPort` (WebSocket 포트, 일반적으로 `18789`)
-- `sshPort` (SSH 포트, 없으면 기본값 `22`)
-- `tailnetDns` (가능할 경우 MagicDNS hostname)
-- `gatewayTls` / `gatewayTlsSha256` (TLS 활성화 여부와 인증서 fingerprint)
-- `cliPath` (선택적 remote install 힌트)
-
-### `gateway discover`
+### 사용 예시
 
 ```bash
+# 네트워크상의 Gateway 검색
 openclaw gateway discover
-```
 
-옵션:
-
-- `--timeout <ms>`: 명령별 timeout(browse/resolve), 기본값 `2000`
-- `--json`: 기계 읽기용 출력(styling/spinner도 비활성화)
-
-예시:
-
-```bash
-openclaw gateway discover --timeout 4000
+# JSON 출력을 통한 URL 정보 추출
 openclaw gateway discover --json | jq '.beacons[].wsUrl'
 ```

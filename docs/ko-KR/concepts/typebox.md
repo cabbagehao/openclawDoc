@@ -1,80 +1,78 @@
 ---
-summary: "gateway protocol의 단일 source of truth로 쓰이는 TypeBox schema"
+summary: "Gateway 프로토콜의 데이터 단일 원천(SSOT)인 TypeBox 스키마 및 자동 생성 파이프라인 안내"
 read_when:
-  - protocol schema나 codegen을 업데이트할 때
+  - 통신 프로토콜 스키마를 수정하거나 코드 생성(Codegen) 로직을 업데이트할 때
+  - 시스템 내부의 메시지 구조를 파악해야 할 때
 title: "TypeBox"
+x-i18n:
+  source_path: "concepts/typebox.md"
 ---
 
-# TypeBox as protocol source of truth
+# TypeBox: 프로토콜의 단일 소스(SSOT)
 
 최종 업데이트: 2026-01-10
 
-TypeBox는 TypeScript 중심 schema library입니다. OpenClaw는 이를 사용해 **Gateway WebSocket protocol**(handshake, request/response, server event)을 정의합니다. 이 schema는 **runtime validation**, **JSON Schema export**, **Swift codegen**(macOS 앱용)을 모두 구동합니다. 하나의 source of truth에서 나머지를 생성하는 구조입니다.
+OpenClaw는 TypeScript 기반의 스키마 라이브러리인 **TypeBox**를 사용하여 **Gateway WebSocket 프로토콜**(핸드셰이크, 요청/응답, 서버 이벤트)을 정의함. 정의된 스키마는 **런타임 데이터 검증**, **JSON Schema 내보내기**, 그리고 macOS 앱을 위한 **Swift 코드 생성**의 기초가 됨. 모든 데이터 구조는 이 하나의 원천에서 파생되어 일관성을 유지함.
 
-더 높은 수준의 protocol 맥락이 필요하다면 [Gateway architecture](/concepts/architecture)부터 보세요.
+상위 수준의 프로토콜 아키텍처는 [Gateway 아키텍처](/concepts/architecture)를 참조함.
 
-## Mental model (30 seconds)
+## 프로토콜 멘탈 모델 (Mental Model)
 
-모든 Gateway WS 메시지는 세 가지 frame 중 하나입니다.
+Gateway와 주고받는 모든 WebSocket 메시지는 다음 세 가지 프레임 중 하나에 해당함:
 
-- **Request**: `{ type: "req", id, method, params }`
-- **Response**: `{ type: "res", id, ok, payload | error }`
-- **Event**: `{ type: "event", event, payload, seq?, stateVersion? }`
+- **요청 (Request)**: `{ type: "req", id, method, params }`
+- **응답 (Response)**: `{ type: "res", id, ok, payload | error }`
+- **이벤트 (Event)**: `{ type: "event", event, payload, seq?, stateVersion? }`
 
-첫 frame은 반드시 `connect` request여야 합니다. 그 후에야 client가 method(`health`, `send`, `chat.send` 등)를 호출하고 event(`presence`, `tick`, `agent` 등)를 구독할 수 있습니다.
+연결 후 첫 번째 메시지는 반드시 `connect` 요청이어야 함. 인증 및 연결이 완료된 후 클라이언트는 각종 메서드(`health`, `send`, `chat.send` 등)를 호출하거나 서버 이벤트(`presence`, `tick`, `agent` 등)를 구독할 수 있음.
 
-연결 흐름(최소):
+**연결 흐름 예시:**
 
-```
-Client                    Gateway
+```text
+클라이언트 (Client)           Gateway
   |---- req:connect -------->|
-  |<---- res:hello-ok --------|
-  |<---- event:tick ----------|
+  |<---- res:hello-ok -------|
+  |<---- event:tick ---------|
   |---- req:health ---------->|
-  |<---- res:health ----------|
+  |<---- res:health ---------|
 ```
 
-대표 method + event:
+**주요 메서드 및 이벤트 카테고리:**
 
-| Category  | Examples                                                  | Notes                                 |
-| --------- | --------------------------------------------------------- | ------------------------------------- |
-| Core      | `connect`, `health`, `status`                             | `connect`가 첫 호출이어야 함          |
-| Messaging | `send`, `poll`, `agent`, `agent.wait`                     | side-effect에는 `idempotencyKey` 필요 |
-| Chat      | `chat.history`, `chat.send`, `chat.abort`, `chat.inject`  | WebChat이 사용                        |
-| Sessions  | `sessions.list`, `sessions.patch`, `sessions.delete`      | session 관리                          |
-| Nodes     | `node.list`, `node.invoke`, `node.pair.*`                 | Gateway WS + node action              |
-| Events    | `tick`, `presence`, `agent`, `chat`, `health`, `shutdown` | server push                           |
+| 카테고리 | 주요 사례 | 비고 |
+| :--- | :--- | :--- |
+| **코어 (Core)** | `connect`, `health`, `status` | `connect`가 첫 호출이어야 함 |
+| **메시징** | `send`, `poll`, `agent`, `agent.wait` | 부수 효과 발생 시 `idempotencyKey` 필요 |
+| **채팅** | `chat.history`, `chat.send`, `chat.abort` | WebChat UI에서 주로 사용 |
+| **세션** | `sessions.list`, `sessions.patch`, `sessions.delete` | 에이전트 세션 관리 및 운영 |
+| **노드 (Nodes)** | `node.list`, `node.invoke`, `node.pair.*` | Gateway와 노드 간의 상호작용 |
+| **이벤트** | `tick`, `presence`, `agent`, `chat`, `shutdown` | 서버에서 클라이언트로의 푸시 알림 |
 
-권위 있는 목록은 `src/gateway/server.ts`의 `METHODS`, `EVENTS`에 있습니다.
+전체 목록은 `src/gateway/server.ts`의 `METHODS` 및 `EVENTS` 정의를 참조함.
 
-## Where the schemas live
+## 관련 파일 위치
 
-- Source: `src/gateway/protocol/schema.ts`
-- Runtime validator(AJV): `src/gateway/protocol/index.ts`
-- Server handshake + method dispatch: `src/gateway/server.ts`
-- Node client: `src/gateway/client.ts`
-- Generated JSON Schema: `dist/protocol.schema.json`
-- Generated Swift models: `apps/macos/Sources/OpenClawProtocol/GatewayModels.swift`
+- **소스 코드**: `src/gateway/protocol/schema.ts`
+- **런타임 검증기 (AJV)**: `src/gateway/protocol/index.ts`
+- **서버 핸드셰이크 및 디스패치**: `src/gateway/server.ts`
+- **생성된 JSON Schema**: `dist/protocol.schema.json`
+- **생성된 Swift 모델**: `apps/macos/Sources/OpenClawProtocol/GatewayModels.swift`
 
-## Current pipeline
+## 빌드 파이프라인 (Pipeline)
 
-- `pnpm protocol:gen`
-  - JSON Schema(draft-07)를 `dist/protocol.schema.json`에 기록
-- `pnpm protocol:gen:swift`
-  - Swift gateway model 생성
-- `pnpm protocol:check`
-  - 두 생성기를 모두 실행하고 결과가 커밋되어 있는지 확인
+- `pnpm protocol:gen`: JSON Schema (Draft-07)를 `dist/` 경로에 생성함.
+- `pnpm protocol:gen:swift`: macOS 앱용 Swift 데이터 모델을 생성함.
+- `pnpm protocol:check`: 생성기를 실행하고 결과물이 최신 상태로 커밋되었는지 검증함.
 
-## How the schemas are used at runtime
+## 런타임 스키마 활용 방식
 
-- **Server side**: 모든 inbound frame은 AJV로 검증됩니다. handshake는 `params`가 `ConnectParams`에 맞는 `connect` request만 허용합니다.
-- **Client side**: JS client는 event frame과 response frame을 사용 전에 검증합니다.
-- **Method surface**: Gateway는 `hello-ok`에서 지원되는 `methods`와 `events`를 광고합니다.
+- **서버 측**: 유입되는 모든 프레임을 AJV로 즉시 검증함. 특히 핸드셰이크 단계에서는 `ConnectParams` 규격에 맞는 요청만 수락함.
+- **클라이언트 측**: 수신된 이벤트 및 응답 프레임을 처리하기 전 규격 일치 여부를 확인함.
+- **기능 광고**: Gateway는 `hello-ok` 응답을 통해 현재 지원하는 `methods`와 `events` 목록을 클라이언트에 전달함.
 
-## Example frames
+## 데이터 프레임 예시
 
-Connect (첫 메시지):
-
+**연결 요청 (Connect):**
 ```json
 {
   "type": "req",
@@ -87,16 +85,13 @@ Connect (첫 메시지):
       "id": "openclaw-macos",
       "displayName": "macos",
       "version": "1.0.0",
-      "platform": "macos 15.1",
-      "mode": "ui",
-      "instanceId": "A1B2"
+      "mode": "ui"
     }
   }
 }
 ```
 
-Hello-ok response:
-
+**연결 성공 응답 (Hello-ok):**
 ```json
 {
   "type": "res",
@@ -106,145 +101,33 @@ Hello-ok response:
     "type": "hello-ok",
     "protocol": 2,
     "server": { "version": "dev", "connId": "ws-1" },
-    "features": { "methods": ["health"], "events": ["tick"] },
-    "snapshot": {
-      "presence": [],
-      "health": {},
-      "stateVersion": { "presence": 0, "health": 0 },
-      "uptimeMs": 0
-    },
-    "policy": { "maxPayload": 1048576, "maxBufferedBytes": 1048576, "tickIntervalMs": 30000 }
+    "features": { "methods": ["health"], "events": ["tick"] }
   }
 }
 ```
 
-Request + response:
+## 신규 메서드 추가 절차 (End-to-End)
 
-```json
-{ "type": "req", "id": "r1", "method": "health" }
-```
+예: 텍스트를 그대로 돌려주는 `system.echo` 요청 추가 시.
 
-```json
-{ "type": "res", "id": "r1", "ok": true, "payload": { "ok": true } }
-```
+1. **스키마 정의**: `src/gateway/protocol/schema.ts`에 파라미터 및 결과값 스키마를 추가하고 유형(Type)을 내보냄.
+2. **검증 로직 등록**: `src/gateway/protocol/index.ts`에 AJV 검증기를 등록함.
+3. **서버 핸들러 구현**: `src/gateway/server-methods/` 경로에 실제 로직을 작성하고 서버 메서드 목록에 등록함.
+4. **코드 재생성**: `pnpm protocol:check` 명령어를 실행하여 JSON 및 Swift 코드를 갱신함.
+5. **테스트 및 문서화**: 유닛 테스트를 추가하고 관련 문서를 업데이트함.
 
-Event:
+## 버전 관리 및 호환성
 
-```json
-{ "type": "event", "event": "tick", "payload": { "ts": 1730000000 }, "seq": 12 }
-```
+- `PROTOCOL_VERSION` 정보는 `src/gateway/protocol/schema.ts`에서 관리됨.
+- 클라이언트는 연결 시 지원 가능한 프로토콜 범위(`min` ~ `max`)를 전송하며, 서버는 호환되지 않을 경우 연결을 거부함.
+- Swift 모델은 상위 호환성을 위해 미지의 프레임 타입을 원시 데이터 형태로 유지함.
 
-## Minimal client (Node.js)
+## 스키마 설계 원칙
 
-가장 작은 실용 흐름은 connect + health입니다.
+- 엄격한 데이터 검증을 위해 가급적 `additionalProperties: false` 설정을 사용함.
+- ID, 메서드명, 이벤트명 등에는 `NonEmptyString` 타입을 기본으로 사용함.
+- 부수 효과가 있는 메서드(예: `send`, `agent`)는 중복 실행 방지를 위해 `idempotencyKey` 파라미터를 필수로 요구함.
 
-```ts
-import { WebSocket } from "ws";
+## 실시간 스키마 정보
 
-const ws = new WebSocket("ws://127.0.0.1:18789");
-
-ws.on("open", () => {
-  ws.send(
-    JSON.stringify({
-      type: "req",
-      id: "c1",
-      method: "connect",
-      params: {
-        minProtocol: 3,
-        maxProtocol: 3,
-        client: {
-          id: "cli",
-          displayName: "example",
-          version: "dev",
-          platform: "node",
-          mode: "cli",
-        },
-      },
-    }),
-  );
-});
-
-ws.on("message", (data) => {
-  const msg = JSON.parse(String(data));
-  if (msg.type === "res" && msg.id === "c1" && msg.ok) {
-    ws.send(JSON.stringify({ type: "req", id: "h1", method: "health" }));
-  }
-  if (msg.type === "res" && msg.id === "h1") {
-    console.log("health:", msg.payload);
-    ws.close();
-  }
-});
-```
-
-## Worked example: add a method end-to-end
-
-예시: `{ ok: true, text }`를 반환하는 새 `system.echo` request를 추가합니다.
-
-1. **Schema (source of truth)**
-
-`src/gateway/protocol/schema.ts`에 추가:
-
-```ts
-export const SystemEchoParamsSchema = Type.Object(
-  { text: NonEmptyString },
-  { additionalProperties: false },
-);
-
-export const SystemEchoResultSchema = Type.Object(
-  { ok: Type.Boolean(), text: NonEmptyString },
-  { additionalProperties: false },
-);
-```
-
-이를 `ProtocolSchemas`에 추가하고 type을 export:
-
-```ts
-  SystemEchoParams: SystemEchoParamsSchema,
-  SystemEchoResult: SystemEchoResultSchema,
-```
-
-```ts
-export type SystemEchoParams = Static<typeof SystemEchoParamsSchema>;
-export type SystemEchoResult = Static<typeof SystemEchoResultSchema>;
-```
-
-2. **Validation**
-
-`src/gateway/protocol/index.ts`에서 AJV validator export:
-
-```ts
-export const validateSystemEchoParams = ajv.compile<SystemEchoParams>(SystemEchoParamsSchema);
-```
-
-3. **Server behavior**
-
-`src/gateway/server-methods/system.ts`에 handler 추가:
-
-```ts
-export const systemHandlers: GatewayRequestHandlers = {
-  "system.echo": ({ params, respond }) => {
-    const text = String(params.text ?? "");
-    respond(true, { ok: true, text });
-  },
-};
-```
-
-이를 `src/gateway/server-methods.ts`에 등록하고(이미 `systemHandlers` 병합 구조가 있음), `src/gateway/server.ts`의 `METHODS`에 `"system.echo"`를 추가합니다.
-
-4. **Regenerate**
-
-```bash
-pnpm protocol:check
-```
-
-5. **Tests + docs**
-
-`src/gateway/server.*.test.ts`에 서버 테스트를 추가하고, 문서에 해당 method를 적어 둡니다.
-
-## Swift codegen behavior
-
-Swift generator는 다음을 생성합니다.
-
-- `GatewayFrame` enum (`req`, `res`, `event`, `unknown` case 포함)
-- 강한 타입의 payload struct/enum
-- `ErrorCode` 값과 `GATEWAY_PROTOCOL_VERSION`
+최신 생성된 JSON 스키마는 GitHub 저장소의 `dist/protocol.schema.json` 파일에서 확인 가능함.

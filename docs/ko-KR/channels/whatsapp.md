@@ -1,323 +1,157 @@
 ---
-summary: "WhatsApp 채널 지원, 접근 제어, 전달 동작, 운영"
+summary: "WhatsApp 채널 연동 가이드: 접근 제어 정책, 메시지 전달 방식 및 운영 최적화 안내"
 read_when:
-  - WhatsApp/web 채널 동작이나 inbox routing 작업을 할 때
+  - WhatsApp 웹 채널의 동작 방식이나 메시지 라우팅 설정을 수정할 때
 title: "WhatsApp"
+x-i18n:
+  source_path: "channels/whatsapp.md"
 ---
 
-# WhatsApp (Web channel)
+# WhatsApp (웹 채널)
 
-상태: WhatsApp Web(Baileys)을 통한 프로덕션 준비 완료. Gateway가 linked session을 소유합니다.
+**상태**: WhatsApp Web(Baileys) 기술을 기반으로 하며, 실제 운영 환경에서 사용 가능한 준비 단계임. Gateway 서버가 연결된 세션을 직접 관리함.
 
 <CardGroup cols={3}>
   <Card title="페어링" icon="link" href="/channels/pairing">
-    알 수 없는 발신자에 대한 기본 DM 정책은 pairing입니다.
+    알 수 없는 발신자의 DM에 대해 기본적으로 페어링 모드를 적용함.
   </Card>
   <Card title="채널 문제 해결" icon="wrench" href="/channels/troubleshooting">
-    채널 전반의 진단 및 복구 플레이북입니다.
+    채널 전반의 진단 및 복구 가이드.
   </Card>
   <Card title="Gateway 설정" icon="settings" href="/gateway/configuration">
-    전체 채널 config 패턴과 예시입니다.
+    전체 채널 설정 패턴 및 다양한 예시.
   </Card>
 </CardGroup>
 
-## 빠른 설정
+## 빠른 설정 가이드
 
 <Steps>
-  <Step title="WhatsApp 접근 정책 설정">
-
+  <Step title="접근 정책 설정">
 ```json5
 {
   channels: {
     whatsapp: {
       dmPolicy: "pairing",
-      allowFrom: ["+15551234567"],
+      allowFrom: ["+821012345678"],
       groupPolicy: "allowlist",
-      groupAllowFrom: ["+15551234567"],
+      groupAllowFrom: ["+821012345678"],
     },
   },
 }
 ```
-
   </Step>
 
-  <Step title="WhatsApp 연결(QR)">
-
+  <Step title="WhatsApp 연동 (QR 코드)">
 ```bash
+# 기본 계정 로그인
 openclaw channels login --channel whatsapp
-```
 
-    특정 account용:
-
-```bash
+# 특정 계정('work') 로그인
 openclaw channels login --channel whatsapp --account work
 ```
-
   </Step>
 
-  <Step title="gateway 시작">
-
+  <Step title="Gateway 시작">
 ```bash
 openclaw gateway
 ```
-
   </Step>
 
-  <Step title="첫 pairing 요청 승인(pairing mode 사용 시)">
-
+  <Step title="첫 DM 페어링 승인">
 ```bash
 openclaw pairing list whatsapp
-openclaw pairing approve whatsapp <CODE>
+openclaw pairing approve whatsapp <코드>
 ```
-
-    Pairing 요청은 1시간 후 만료됩니다. 대기 요청은 채널당 3개로 제한됩니다.
-
+발급된 코드는 1시간 동안 유효하며, 채널당 최대 3개의 대기 요청을 유지함.
   </Step>
 </Steps>
 
 <Note>
-가능하면 OpenClaw는 WhatsApp을 별도 번호로 운영할 것을 권장합니다. (채널 메타데이터와 onboarding 흐름이 그 구성에 최적화되어 있지만, 개인 번호 구성도 지원합니다.)
+**권장 사항**: 가급적 개인 번호가 아닌 **별도의 전용 번호**로 운영할 것을 권장함. (채널 메타데이터 및 온보딩 워크플로우가 전용 번호 환경에 최적화되어 있음)
 </Note>
 
-## 배포 패턴
+---
 
-<AccordionGroup>
-  <Accordion title="전용 번호(권장)">
-    가장 깔끔한 운영 모드입니다.
+## 배포 및 운영 패턴
 
-    - OpenClaw 전용의 분리된 WhatsApp identity
-    - 더 명확한 DM allowlist와 routing 경계
-    - self-chat 혼동 가능성 감소
+### 전용 번호 운영 (강력 권장)
+가장 안정적이고 깔끔한 운영 모드임:
+- 에이전트 전용의 독립적인 WhatsApp 아이덴티티 확보.
+- DM 허용 목록 및 라우팅 경계가 명확함.
+- 본인과의 대화 시 발생할 수 있는 혼선 방지.
 
-    최소 정책 패턴:
+### 개인 번호 활용 (폴백 모드)
+온보딩 마법사를 통해 개인 번호 설정을 지원하며, 다음과 같은 기본 보안 설정을 적용함:
+- `dmPolicy: "allowlist"`
+- 본인 번호를 `allowFrom`에 포함.
+- `selfChatMode: true` 활성화 (자신과의 대화 보호 로직 작동).
 
-    ```json5
-    {
-      channels: {
-        whatsapp: {
-          dmPolicy: "allowlist",
-          allowFrom: ["+15551234567"],
-        },
-      },
-    }
-    ```
+---
 
-  </Accordion>
+## 런타임 동작 모델
 
-  <Accordion title="개인 번호 대체 구성">
-    Onboarding은 personal-number mode를 지원하며 self-chat에 적합한 기본선을 기록합니다.
+- **연결 관리**: Gateway가 WhatsApp 소켓 연결 및 재연결 루프를 전담함.
+- **라우팅**: 수신된 채널 및 계정 정보를 추적하여 정확히 회신함.
+- **제외 대상**: 상태(Status) 업데이트 및 브로드캐스트 대화는 무시함 (`@status`, `@broadcast`).
+- **세션 구분**: DM은 설정된 범위(`dmScope`)에 따라 처리되며, 그룹 대화는 `agent:<agentId>:whatsapp:group:<jid>` 형식의 격리된 세션을 사용함.
 
-    - `dmPolicy: "allowlist"`
-    - `allowFrom` 에 개인 번호 포함
-    - `selfChatMode: true`
+---
 
-    런타임에서 self-chat 보호는 linked self number와 `allowFrom` 을 기준으로 동작합니다.
+## 접근 제어 및 활성화
 
-  </Accordion>
+### DM 정책 (`dmPolicy`)
+- **`pairing`** (기본값): 승인 전까지 메시지 무시.
+- **`allowlist`**: 등록된 번호만 허용.
+- **`open`**: 모든 사용자 허용 (`allowFrom: ["*"]` 필요).
+- **`disabled`**: 수신 차단.
+- 번호 형식: 국제 표준인 E.164 형식을 사용함 (예: `+8210...`).
 
-  <Accordion title="WhatsApp Web 전용 채널 범위">
-    현재 OpenClaw 채널 아키텍처에서 messaging platform 채널은 WhatsApp Web 기반(`Baileys`)입니다.
+### 그룹 정책 및 허용 목록
+1. **그룹 참여 제어 (`groups`)**: 등록된 그룹이나 `"*"` 설정이 포함된 경우에만 응답함.
+2. **발신자 제어 (`groupPolicy`)**: `groupAllowFrom`에 등록된 사용자만 에이전트를 호출할 수 있음. 미설정 시 DM 허용 목록을 상속함.
 
-    내장 chat-channel registry에는 별도의 Twilio WhatsApp messaging channel이 없습니다.
+### 멘션 및 활성화 (`/activation`)
+- 그룹 내에서는 기본적으로 @멘션 시에만 응답함.
+- **실시간 모드 변경**: `/activation mention` (멘션 시 응답), `/activation always` (모든 메시지 응답). 이 설정은 세션 상태에만 저장되며 영구 반영하려면 설정 파일을 수정해야 함.
 
-  </Accordion>
-</AccordionGroup>
+---
 
-## 런타임 모델
+## 개인 번호 및 셀프 채팅(Self-chat) 보호
 
-- Gateway가 WhatsApp socket과 reconnect loop를 소유합니다.
-- Outbound send에는 대상 account에 대한 활성 WhatsApp listener가 필요합니다.
-- Status 및 broadcast chat은 무시됩니다(`@status`, `@broadcast`).
-- Direct chat은 DM session 규칙을 사용합니다(`session.dmScope`; 기본값 `main` 은 DM을 agent main session으로 합칩니다).
-- Group session은 격리됩니다(`agent:<agentId>:whatsapp:group:<jid>`).
+연동된 본인 번호가 `allowFrom`에 포함된 경우, 시스템은 자동으로 보호 기능을 활성화함:
+- 본인과의 대화에서는 **읽음 확인(Read receipt)** 전송을 건너뜀.
+- 본인 번호를 멘션하여 발생하는 자동 트리거 루프를 차단함.
+- 응답 접두사가 없을 경우 기본적으로 `[{에이전트이름}]` 형식을 사용하여 답변을 구분함.
 
-## 접근 제어 및 activation
+---
 
-<Tabs>
-  <Tab title="DM 정책">
-    `channels.whatsapp.dmPolicy` 는 direct chat 접근을 제어합니다.
+## 메시지 표준화 및 컨텍스트
 
-    - `pairing` (기본값)
-    - `allowlist`
-    - `open` (`allowFrom` 에 `"*"` 포함 필요)
-    - `disabled`
+### 수신 엔벨로프 및 답장 맥락
+수신된 모든 메시지는 공통 규격으로 래핑됨. 인용 답장의 경우 다음과 같은 마커가 본문에 추가됨:
+```text
+[Replying to <발신자> id:<메시지ID>]
+<인용된 본문 또는 미디어 정보>
+[/Replying]
+```
 
-    `allowFrom` 은 E.164 형식 번호를 받습니다(내부적으로 normalize됨).
+### 대기 중인 그룹 이력 주입 (Context Injection)
+에이전트가 호출되기 전 발생한 이전 메시지들(최대 50개)을 버퍼링했다가, 활성화 시점에 문맥 정보로 주입함. 이를 통해 에이전트는 앞선 대화 흐름을 파악한 뒤 답변할 수 있음.
 
-    Multi-account override: `channels.whatsapp.accounts.<id>.dmPolicy` (및 `allowFrom`)가 해당 account에 대해 채널 수준 기본값보다 우선합니다.
+---
 
-    런타임 동작 세부:
+## 미디어 처리 및 전송
 
-    - pairing은 채널 allow-store에 저장되며 설정된 `allowFrom` 과 병합됩니다
-    - allowlist가 전혀 설정되지 않으면 linked self number가 기본적으로 허용됩니다
-    - outbound `fromMe` DM은 자동 pairing되지 않습니다
+- **텍스트 청킹 (Chunking)**: 발신 메시지는 최대 4,000자 단위로 자동 분할됨. `chunkMode="newline"` 설정 시 문단 단위 분할을 우선함.
+- **지원 미디어**: 이미지, 비디오, 오디오(음성 메시지), 문서 지원.
+- **자동 최적화**: 고용량 이미지는 전송 한도에 맞춰 자동으로 크기 및 품질이 조정됨.
+- **용량 제한**: 수발신 미디어의 기본 한도는 50MB이며, `mediaMaxMb` 설정을 통해 변경 가능함.
 
-  </Tab>
+---
 
-  <Tab title="그룹 정책 + allowlist">
-    Group 접근은 두 층으로 구성됩니다.
+## 확인 리액션 (Ack Reactions)
 
-    1. **Group membership allowlist** (`channels.whatsapp.groups`)
-       - `groups` 가 없으면 모든 group이 대상이 됩니다
-       - `groups` 가 있으면 group allowlist 역할을 합니다(`"*"` 허용)
-
-    2. **Group sender 정책** (`channels.whatsapp.groupPolicy` + `groupAllowFrom`)
-       - `open`: sender allowlist 우회
-       - `allowlist`: sender는 `groupAllowFrom` (또는 `*`)과 일치해야 함
-       - `disabled`: 모든 group inbound 차단
-
-    Sender allowlist fallback:
-
-    - `groupAllowFrom` 이 설정되지 않으면, 런타임은 가능한 경우 `allowFrom` 으로 fallback합니다
-    - sender allowlist는 mention/reply activation보다 먼저 평가됩니다
-
-    참고: `channels.whatsapp` 블록 자체가 전혀 없으면, `channels.defaults.groupPolicy` 가 설정되어 있어도 런타임 group-policy fallback은 `allowlist` 입니다(경고 로그 포함).
-
-  </Tab>
-
-  <Tab title="Mention + /activation">
-    Group reply는 기본적으로 mention이 필요합니다.
-
-    Mention 감지는 다음을 포함합니다.
-
-    - bot identity에 대한 명시적 WhatsApp mention
-    - 설정된 mention regex 패턴(`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
-    - bot에 답장했는지에 대한 암묵적 감지(reply sender가 bot identity와 일치)
-
-    보안 참고:
-
-    - quote/reply는 mention gating만 만족시킬 뿐, sender authorization을 **부여하지 않습니다**
-    - `groupPolicy: "allowlist"` 에서는 allowlist에 없는 sender가 allowlist 사용자의 메시지에 답장해도 여전히 차단됩니다
-
-    Session 수준 activation 명령:
-
-    - `/activation mention`
-    - `/activation always`
-
-    `activation` 은 전역 config가 아니라 session state를 갱신합니다. owner-gated입니다.
-
-  </Tab>
-</Tabs>
-
-## 개인 번호 및 self-chat 동작
-
-linked self number가 `allowFrom` 에도 포함되어 있으면, WhatsApp self-chat safeguard가 활성화됩니다.
-
-- self-chat turn에서는 read receipt를 건너뜀
-- 자신을 ping하게 만들 수 있는 mention-JID auto-trigger 동작을 무시
-- `messages.responsePrefix` 가 설정되지 않았다면, self-chat reply는 기본적으로 `[{identity.name}]` 또는 `[openclaw]`
-
-## 메시지 normalize 및 context
-
-<AccordionGroup>
-  <Accordion title="Inbound envelope + reply context">
-    수신 WhatsApp 메시지는 공통 inbound envelope로 래핑됩니다.
-
-    quoted reply가 있으면 context가 다음 형식으로 추가됩니다.
-
-    ```text
-    [Replying to <sender> id:<stanzaId>]
-    <quoted body or media placeholder>
-    [/Replying]
-    ```
-
-    Reply 메타데이터 필드도 가능할 때 채워집니다(`ReplyToId`, `ReplyToBody`, `ReplyToSender`, sender JID/E.164).
-
-  </Accordion>
-
-  <Accordion title="미디어 placeholder와 위치/연락처 추출">
-    미디어만 있는 inbound 메시지는 다음과 같은 placeholder로 normalize됩니다.
-
-    - `<media:image>`
-    - `<media:video>`
-    - `<media:audio>`
-    - `<media:document>`
-    - `<media:sticker>`
-
-    위치 및 연락처 payload는 routing 전에 텍스트 context로 normalize됩니다.
-
-  </Accordion>
-
-  <Accordion title="대기 중인 group history 주입">
-    Group에서는 처리되지 않은 메시지를 버퍼링했다가, bot가 실제로 trigger될 때 context로 주입할 수 있습니다.
-
-    - 기본 제한: `50`
-    - config: `channels.whatsapp.historyLimit`
-    - fallback: `messages.groupChat.historyLimit`
-    - `0` 이면 비활성화
-
-    주입 마커:
-
-    - `[Chat messages since your last reply - for context]`
-    - `[Current message - respond to this]`
-
-  </Accordion>
-
-  <Accordion title="Read receipts">
-    Read receipt는 허용된 inbound WhatsApp 메시지에 대해 기본적으로 활성화됩니다.
-
-    전역 비활성화:
-
-    ```json5
-    {
-      channels: {
-        whatsapp: {
-          sendReadReceipts: false,
-        },
-      },
-    }
-    ```
-
-    Account별 override:
-
-    ```json5
-    {
-      channels: {
-        whatsapp: {
-          accounts: {
-            work: {
-              sendReadReceipts: false,
-            },
-          },
-        },
-      },
-    }
-    ```
-
-    전역 활성화 상태여도 self-chat turn에서는 read receipt를 건너뜁니다.
-
-  </Accordion>
-</AccordionGroup>
-
-## 전달, chunking, 미디어
-
-<AccordionGroup>
-  <Accordion title="텍스트 chunking">
-    - 기본 chunk 제한: `channels.whatsapp.textChunkLimit = 4000`
-    - `channels.whatsapp.chunkMode = "length" | "newline"`
-    - `newline` 모드는 문단 경계(빈 줄)를 우선 사용하고, 그 다음 길이 안전 chunking으로 fallback합니다
-  </Accordion>
-
-  <Accordion title="Outbound 미디어 동작">
-    - image, video, audio (PTT voice-note), document payload 지원
-    - `audio/ogg` 는 voice-note 호환성을 위해 `audio/ogg; codecs=opus` 로 다시 씁니다
-    - animated GIF 재생은 video send 시 `gifPlayback: true` 로 지원됩니다
-    - multi-media reply payload 전송 시 caption은 첫 번째 미디어 항목에 적용됩니다
-    - 미디어 source는 HTTP(S), `file://`, 또는 로컬 경로를 사용할 수 있습니다
-  </Accordion>
-
-  <Accordion title="미디어 크기 제한 및 fallback 동작">
-    - inbound 미디어 저장 한도: `channels.whatsapp.mediaMaxMb` (기본값 `50`)
-    - outbound 미디어 전송 한도: `channels.whatsapp.mediaMaxMb` (기본값 `50`)
-    - account별 override는 `channels.whatsapp.accounts.<accountId>.mediaMaxMb` 사용
-    - 이미지는 제한에 맞도록 자동 최적화됩니다(resize/quality sweep)
-    - 미디어 전송 실패 시, 첫 항목 fallback은 응답을 조용히 버리지 않고 텍스트 경고를 보냅니다
-  </Accordion>
-</AccordionGroup>
-
-## Acknowledgment reaction
-
-WhatsApp은 `channels.whatsapp.ackReaction` 을 통해 inbound 수신 직후 즉시 ack reaction을 지원합니다.
+메시지 수신 시 에이전트가 답변을 생성하는 동안 즉시 이모지 리액션을 표시하도록 설정할 수 있음.
 
 ```json5
 {
@@ -333,113 +167,13 @@ WhatsApp은 `channels.whatsapp.ackReaction` 을 통해 inbound 수신 직후 즉
 }
 ```
 
-동작 참고:
+---
 
-- inbound가 허용된 직후(응답 전) 즉시 전송됨
-- 실패는 로그에 남지만 일반 reply 전달을 막지 않음
-- group mode `mentions` 는 mention-trigger된 turn에 reaction함; group activation `always` 는 이 검사에 대한 우회로 동작함
-- WhatsApp은 `channels.whatsapp.ackReaction` 을 사용합니다(legacy `messages.ackReaction` 은 여기서 사용되지 않음)
+## 문제 해결 (Troubleshooting)
 
-## Multi-account 및 자격 증명
+- **연동 해제 상태**: `openclaw channels status` 명령어로 상태를 확인하고, `login` 명령어를 통해 QR 코드를 다시 스캔함.
+- **반복적인 연결 끊김**: `openclaw doctor` 명령어를 실행하여 자격 증명 디렉터리 권한을 점검하고 로그를 모니터링함.
+- **그룹 메시지 무응답**: `groupPolicy`, `groupAllowFrom`, 멘션 게이팅 설정을 순서대로 점검함.
+- **런타임 주의**: WhatsApp 연동은 안정성을 위해 반드시 **Node.js** 환경에서 실행해야 함. **Bun** 런타임은 현재 공식적으로 지원하지 않음.
 
-<AccordionGroup>
-  <Accordion title="Account 선택과 기본값">
-    - account id는 `channels.whatsapp.accounts` 에서 옴
-    - 기본 account 선택: `default` 가 있으면 그것, 없으면 설정된 account id 중 첫 번째(정렬 기준)
-    - account id는 lookup을 위해 내부적으로 normalize됩니다
-  </Accordion>
-
-  <Accordion title="자격 증명 경로와 legacy 호환성">
-    - 현재 auth 경로: `~/.openclaw/credentials/whatsapp/<accountId>/creds.json`
-    - 백업 파일: `creds.json.bak`
-    - `~/.openclaw/credentials/` 의 legacy default auth도 default-account 흐름에서는 계속 인식/마이그레이션됩니다
-  </Accordion>
-
-  <Accordion title="로그아웃 동작">
-    `openclaw channels logout --channel whatsapp [--account <id>]` 는 해당 account의 WhatsApp auth state를 지웁니다.
-
-    legacy auth 디렉터리에서는 `oauth.json` 은 유지되고 Baileys auth 파일만 제거됩니다.
-
-  </Accordion>
-</AccordionGroup>
-
-## Tools, action, config write
-
-- Agent tool 지원에는 WhatsApp reaction action(`react`)이 포함됩니다.
-- Action gate:
-  - `channels.whatsapp.actions.reactions`
-  - `channels.whatsapp.actions.polls`
-- Channel initiated config write는 기본적으로 활성화됩니다(`channels.whatsapp.configWrites=false` 로 비활성화).
-
-## 문제 해결
-
-<AccordionGroup>
-  <Accordion title="연결되지 않음(QR 필요)">
-    증상: channel status에 not linked로 표시됨.
-
-    해결:
-
-    ```bash
-    openclaw channels login --channel whatsapp
-    openclaw channels status
-    ```
-
-  </Accordion>
-
-  <Accordion title="연결됐지만 disconnected / reconnect loop">
-    증상: linked account가 반복적으로 disconnect되거나 reconnect를 시도함.
-
-    해결:
-
-    ```bash
-    openclaw doctor
-    openclaw logs --follow
-    ```
-
-    필요하면 `channels login` 으로 다시 연결하세요.
-
-  </Accordion>
-
-  <Accordion title="전송 시 활성 listener 없음">
-    대상 account에 대한 활성 gateway listener가 없으면 outbound send는 즉시 실패합니다.
-
-    gateway가 실행 중이고 account가 연결되어 있는지 확인하세요.
-
-  </Accordion>
-
-  <Accordion title="Group 메시지가 예상치 않게 무시됨">
-    다음 순서로 확인하세요.
-
-    - `groupPolicy`
-    - `groupAllowFrom` / `allowFrom`
-    - `groups` allowlist 항목
-    - mention gating (`requireMention` + mention pattern)
-    - `openclaw.json` 의 중복 key (JSON5): 나중 항목이 이전 항목을 override하므로, scope별로 `groupPolicy` 는 하나만 두세요
-
-  </Accordion>
-
-  <Accordion title="Bun 런타임 경고">
-    WhatsApp gateway runtime은 Node를 사용해야 합니다. Bun은 안정적인 WhatsApp/Telegram gateway 운영과 호환되지 않는 것으로 표시됩니다.
-  </Accordion>
-</AccordionGroup>
-
-## Configuration reference 안내
-
-기본 참고 문서:
-
-- [Configuration reference - WhatsApp](/gateway/configuration-reference#whatsapp)
-
-신호가 큰 WhatsApp 필드:
-
-- 접근 제어: `dmPolicy`, `allowFrom`, `groupPolicy`, `groupAllowFrom`, `groups`
-- 전달: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `sendReadReceipts`, `ackReaction`
-- multi-account: `accounts.<id>.enabled`, `accounts.<id>.authDir`, account 수준 override
-- 운영: `configWrites`, `debounceMs`, `web.enabled`, `web.heartbeatSeconds`, `web.reconnect.*`
-- session 동작: `session.dmScope`, `historyLimit`, `dmHistoryLimit`, `dms.<id>.historyLimit`
-
-## 관련 문서
-
-- [Pairing](/channels/pairing)
-- [Channel routing](/channels/channel-routing)
-- [Multi-agent routing](/concepts/multi-agent)
-- [Troubleshooting](/channels/troubleshooting)
+상세한 설정 옵션과 스키마는 [Gateway 설정 레퍼런스](/gateway/configuration-reference#whatsapp)를 참조함.

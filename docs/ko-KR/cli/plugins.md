@@ -1,86 +1,92 @@
 ---
-summary: "CLI reference for `openclaw plugins` (list, install, uninstall, enable/disable, doctor)"
+summary: "Gateway 플러그인 설치, 삭제, 활성화 및 문제 해결을 위한 `openclaw plugins` 명령어 레퍼런스"
 read_when:
-  - in-process Gateway plugins 를 설치하거나 관리하고 싶을 때
-  - plugin load 실패를 디버깅하고 싶을 때
+  - Gateway 프로세스 내에서 실행되는 플러그인이나 확장 기능을 관리하고자 할 때
+  - 플러그인 로드 실패 원인을 디버깅하고 점검해야 할 때
 title: "plugins"
+x-i18n:
+  source_path: "cli/plugins.md"
 ---
 
 # `openclaw plugins`
 
-Gateway plugins/extensions (in-process 로 로드됨)을 관리합니다.
+Gateway 프로세스에 로드되어 기능을 확장하는 플러그인(Plugins) 및 익스텐션(Extensions)을 관리함.
 
-관련:
+**관련 문서:**
+- 플러그인 시스템 개요: [Plugins](/tools/plugin)
+- 플러그인 매니페스트 및 스키마: [Plugin manifest](/plugins/manifest)
+- 보안 강화 설정: [Security](/gateway/security)
 
-- Plugin system: [Plugins](/tools/plugin)
-- Plugin manifest + schema: [Plugin manifest](/plugins/manifest)
-- Security hardening: [Security](/gateway/security)
-
-## Commands
+## 주요 명령어
 
 ```bash
+# 설치된 플러그인 목록 조회
 openclaw plugins list
+
+# 특정 플러그인의 상세 정보 확인
 openclaw plugins info <id>
+
+# 플러그인 활성화
 openclaw plugins enable <id>
+
+# 플러그인 비활성화
 openclaw plugins disable <id>
+
+# 플러그인 완전 제거
 openclaw plugins uninstall <id>
+
+# 플러그인 로드 오류 진단
 openclaw plugins doctor
+
+# 특정 플러그인 업데이트
 openclaw plugins update <id>
+
+# 설치된 모든 npm 플러그인 업데이트
 openclaw plugins update --all
 ```
 
-번들 플러그인은 OpenClaw 와 함께 제공되지만 시작 시 비활성화되어 있습니다. 활성화하려면 `plugins enable` 을 사용하세요.
+내장(Bundled) 플러그인은 OpenClaw 설치 시 함께 제공되지만 초기에는 비활성 상태임. 활성화하려면 `plugins enable` 명령어를 사용함.
 
-모든 플러그인은 inline JSON Schema 가 포함된 `openclaw.plugin.json` 파일(`configSchema`, 비어 있어도 필요)을 제공해야 합니다. manifest 나 schema 가 없거나 잘못되면 플러그인이 로드되지 않고 config validation 이 실패합니다.
+모든 플러그인은 반드시 인라인 JSON 스키마(`configSchema`)가 포함된 `openclaw.plugin.json` 매니페스트 파일을 포함해야 함. 매니페스트나 스키마가 누락되거나 유효하지 않을 경우 플러그인 로드 및 설정 검증이 실패함.
 
-### Install
+## 플러그인 설치 (Install)
 
 ```bash
-openclaw plugins install <path-or-spec>
+# 로컬 경로 또는 패키지 명으로 설치
+openclaw plugins install <경로-또는-이름>
+
+# npm 패키지 설치 시 특정 버전 고정
 openclaw plugins install <npm-spec> --pin
 ```
 
-보안 메모: plugin 설치는 코드를 실행하는 것과 같습니다. pinned version 을 권장합니다.
+<Warning>
+**보안 주의**: 플러그인 설치는 시스템에서 임의의 코드를 실행하는 것과 같음. 신뢰할 수 있는 소스만 사용하고, 가급적 버전을 고정(`--pin`)하여 관리할 것을 권장함.
+</Warning>
 
-Npm spec 은 **registry-only** 입니다(패키지 이름 + 선택적 **정확한 버전** 또는 **dist-tag**). Git/URL/file spec 과 semver range 는 거부됩니다. dependency install 은 안전을 위해 `--ignore-scripts` 로 실행됩니다.
+**설치 규칙:**
+- **npm 설치**: 레지스트리에 등록된 패키지 이름과 선택적으로 정확한 버전 또는 배포 태그(`dist-tag`)만 허용함. 보안을 위해 의존성 설치 시 `--ignore-scripts` 옵션이 강제됨.
+- **버전 선택**: 일반적인 이름이나 `@latest` 지정 시 안정(Stable) 버전을 우선함. 프리릴리스(Prerelease) 버전 설치 시에는 `@beta` 등 명시적인 태그 사용이 필요함.
+- **이름 충돌**: 설치하려는 이름이 내장 플러그인 ID와 겹칠 경우(예: `diffs`), 시스템은 내장 플러그인을 우선적으로 설치함. 동일 명칭의 외부 npm 패키지를 설치하려면 `@scope/name` 형식을 사용해야 함.
+- **로컬 연결**: `--link` 플래그를 사용하면 파일을 복사하지 않고 로컬 디렉터리 경로를 직접 참조함.
 
-bare spec 과 `@latest` 는 stable track 에 남습니다. npm 이 둘 중 하나를 prerelease 로 해석하면, OpenClaw 는 중단하고 `@beta`/`@rc` 같은 prerelease tag 또는 `@1.2.3-beta.4` 같은 정확한 prerelease version 으로 명시적 opt-in 을 요구합니다.
+지원 압축 형식: `.zip`, `.tgz`, `.tar.gz`, `.tar`.
 
-bare install spec 이 번들 plugin id 와 일치하면(예: `diffs`), OpenClaw 는 번들 플러그인을 직접 설치합니다. 같은 이름의 npm 패키지를 설치하려면 `@scope/diffs` 같은 명시적 scoped spec 을 사용하세요.
-
-지원 archive: `.zip`, `.tgz`, `.tar.gz`, `.tar`.
-
-로컬 디렉터리를 복사하지 않으려면 `--link` 를 사용하세요(`plugins.load.paths` 에 추가):
-
-```bash
-openclaw plugins install -l ./my-plugin
-```
-
-npm 설치에서 `--pin` 을 사용하면 기본 동작은 unpinned 로 유지하면서도 `plugins.installs` 에 해석된 정확한 spec (`name@version`)을 저장합니다.
-
-### Uninstall
+## 플러그인 삭제 (Uninstall)
 
 ```bash
+# 플러그인 레코드 및 파일 삭제
 openclaw plugins uninstall <id>
-openclaw plugins uninstall <id> --dry-run
+
+# 파일은 유지하고 설정 정보만 제거
 openclaw plugins uninstall <id> --keep-files
 ```
 
-`uninstall` 은 `plugins.entries`, `plugins.installs`, plugin allowlist, 그리고 필요한 경우 linked `plugins.load.paths` 항목에서 plugin 기록을 제거합니다.
-활성 memory plugin 의 경우 memory slot 은 `memory-core` 로 리셋됩니다.
+`uninstall` 명령어 수행 시 설정 파일의 `entries`, `installs`, 허용 목록 및 연결 경로 정보가 모두 삭제됨. 특히 활성화된 메모리 플러그인이 삭제될 경우, 시스템 메모리 슬롯은 기본값인 `memory-core`로 자동 복구됨.
 
-기본적으로 uninstall 은 활성 state dir 의 extensions root (`$OPENCLAW_STATE_DIR/extensions/<id>`) 아래 plugin install 디렉터리도 제거합니다. 디스크의 파일을 유지하려면 `--keep-files` 를 사용하세요.
+기본적으로 상태 디렉터리의 익스텐션 루트(`$OPENCLAW_STATE_DIR/extensions/<id>`) 하위의 설치 폴더도 함께 삭제됨.
 
-`--keep-config` 는 `--keep-files` 의 deprecated alias 로 지원됩니다.
+## 플러그인 업데이트 (Update)
 
-### Update
+업데이트는 오직 npm을 통해 설치된 플러그인(`plugins.installs`에 등록된 항목)에만 적용됨.
 
-```bash
-openclaw plugins update <id>
-openclaw plugins update --all
-openclaw plugins update <id> --dry-run
-```
-
-update 는 npm 에서 설치된 plugin 에만 적용됩니다(`plugins.installs` 에 추적됨).
-
-저장된 integrity hash 가 있고 가져온 artifact hash 가 바뀌면, OpenClaw 는 경고를 출력하고 진행 전에 확인을 요청합니다. CI/non-interactive 환경에서는 전역 `--yes` 로 프롬프트를 우회하세요.
+저장된 무결성 해시(Integrity hash) 정보가 존재하고 새로 가져온 아티팩트의 해시가 변경된 경우, 시스템은 경고 메시지를 출력하고 사용자 승인을 요청함. CI 환경이나 비대화형 실행 시에는 전역 `--yes` 플래그로 이를 건너뛸 수 있음.

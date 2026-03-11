@@ -1,157 +1,114 @@
 ---
-summary: "OpenClaw의 OAuth: 토큰 교환, 저장, 멀티 계정 패턴"
+summary: "OpenClaw의 OAuth 인증 체계: 토큰 교환 방식, 저장 위치 및 다중 계정 활용 패턴 안내"
 read_when:
-  - OpenClaw OAuth를 처음부터 끝까지 이해하고 싶을 때
-  - 토큰 무효화 / 로그아웃 문제를 겪을 때
-  - setup-token 또는 OAuth 인증 흐름이 필요할 때
-  - 여러 계정이나 프로필 라우팅을 원할 때
-title: "OAuth"
+  - OpenClaw의 OAuth 인증 메커니즘을 심층적으로 이해하고자 할 때
+  - 토큰 만료 또는 예기치 않은 로그아웃 문제를 해결해야 할 때
+  - setup-token 또는 OAuth 로그인 절차가 궁금할 때
+  - 하나의 공급자 내에서 여러 계정이나 프로필을 관리하고 싶을 때
+title: "OAuth 인증"
+x-i18n:
+  source_path: "concepts/oauth.md"
 ---
 
-# OAuth
+# OAuth 인증
 
-OpenClaw는 이를 제공하는 프로바이더에 대해 OAuth 기반 "구독 인증(subscription auth)"을 지원합니다(특히 **OpenAI Codex (ChatGPT OAuth)**). Anthropic 구독에는 **setup-token** 흐름을 사용하세요. Anthropic 구독을 Claude Code 외부에서 사용하는 것은 과거 일부 사용자에게 제한된 적이 있으므로, 이는 사용자 선택에 따른 위험으로 간주하고 현재 Anthropic 정책은 직접 확인해야 합니다. OpenAI Codex OAuth는 OpenClaw 같은 외부 도구에서의 사용이 명시적으로 지원됩니다. 이 페이지에서는 다음을 설명합니다.
+OpenClaw는 공급자별 "구독 기반 인증(Subscription Auth)"을 위해 OAuth 방식을 지원함 (대표적으로 **OpenAI Codex/ChatGPT OAuth**). Anthropic 구독 사용자의 경우 **setup-token** 흐름을 활용할 수 있음. 단, Anthropic의 경우 Claude Code 외부에서의 구독 사용이 정책상 제한될 수 있으므로, 사용 시 공급자의 최신 약관을 반드시 확인해야 함. OpenAI Codex OAuth는 OpenClaw와 같은 외부 도구에서의 활용이 공식적으로 지원됨.
 
-프로덕션 환경에서 Anthropic은 구독 setup-token 인증보다 API 키 인증이 더 안전하고 권장되는 경로입니다.
+운영 환경의 Anthropic 사용 시에는 구독 기반의 setup-token보다 정식 **API 키** 인증 방식을 사용할 것을 권장함.
 
-- OAuth **토큰 교환**이 어떻게 작동하는지(PKCE)
-- 토큰이 **어디에 저장되는지**(그리고 그 이유)
-- **여러 계정**을 어떻게 처리하는지(프로필 + 세션별 재정의)
+이 가이드에서는 다음 내용을 다룸:
+- **토큰 교환(Token Exchange)** 방식 (PKCE 프로토콜)
+- 자격 증명의 **저장 위치** 및 관리 원칙
+- **다중 계정** 처리 (프로필 시스템 및 세션별 오버라이드)
 
-OpenClaw는 또한 자체 OAuth 또는 API 키 흐름을 제공하는 **provider plugin**도 지원합니다. 다음 명령으로 실행하세요.
+또한, OpenClaw는 플러그인을 통해 공급자별 독자적인 OAuth 또는 API 키 인증 흐름을 확장할 수 있음:
 
 ```bash
-openclaw models auth login --provider <id>
+openclaw models auth login --provider <공급자ID>
 ```
 
-## 토큰 싱크(token sink)(왜 필요한가)
+## 토큰 싱크 (Token Sink): 단일 관리의 필요성
 
-OAuth 프로바이더는 로그인/갱신 흐름에서 종종 **새 refresh token**을 발급합니다. 일부 프로바이더(또는 OAuth 클라이언트)는 같은 사용자/앱에 대해 새 토큰이 발급되면 이전 refresh token을 무효화할 수 있습니다.
+OAuth 공급자는 로그인 또는 갱신(Refresh) 시 흔히 **새로운 리프레시 토큰**을 발급함. 이때 일부 공급자는 동일 계정에 대해 새 토큰이 생성되면 기존 토큰을 즉시 무효화함.
 
-실제 증상:
+- **문제 현상**: OpenClaw와 다른 CLI 도구(예: Claude Code)에서 동시에 로그인하여 사용할 경우, 한쪽에서 토큰을 갱신하면 다른 한쪽은 강제로 로그아웃되는 현상이 발생함.
 
-- OpenClaw에서도 로그인하고 Claude Code / Codex CLI에서도 로그인하면 → 나중에 둘 중 하나가 무작위로 "로그아웃"된 것처럼 보일 수 있음
+이를 방지하기 위해 OpenClaw는 `auth-profiles.json` 파일을 모든 인증 정보의 **단일 소스(SSOT)**로 취급함:
+- 런타임은 오직 **지정된 한 곳**에서만 자격 증명을 읽어옴.
+- 여러 프로필을 유지하며 결정론적인 라우팅 규칙에 따라 적절한 토큰을 선택함.
 
-이를 줄이기 위해 OpenClaw는 `auth-profiles.json`을 **token sink**로 취급합니다.
+## 자격 증명 저장소 위치
 
-- 런타임은 **한 곳**에서 자격 증명을 읽습니다.
-- 여러 프로필을 유지하고 결정적으로 라우팅할 수 있습니다.
+모든 비밀 정보는 **에이전트별**로 격리되어 저장됨:
 
-## 저장소(토큰은 어디에 저장되는가)
+- **인증 프로필**: `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` (OAuth, API 키, 시크릿 참조 포함)
+- **레거시 호환 파일**: `~/.openclaw/agents/<agentId>/agent/auth.json` (발견 시 정적 API 키 정보는 마스킹 처리됨)
+- **가져오기 전용**: `~/.openclaw/credentials/oauth.json` (최초 실행 시 `auth-profiles.json`으로 자동 병합됨)
 
-비밀은 **에이전트별**로 저장됩니다.
+위 모든 경로는 `$OPENCLAW_STATE_DIR` 환경 변수 설정을 준수함. 상세 내용은 [Gateway 설정 가이드](/gateway/configuration) 참조.
 
-- Auth profiles(OAuth + API keys + 선택적 값 단위 ref): `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
-- 레거시 호환 파일: `~/.openclaw/agents/<agentId>/agent/auth.json`
-  (정적 `api_key` 엔트리는 발견 시 제거됨)
+정적 시크릿 참조(SecretRef) 및 런타임 활성화 동작은 [시크릿 관리 가이드](/gateway/secrets) 참조.
 
-레거시 import 전용 파일(여전히 지원되지만 주 저장소는 아님):
-
-- `~/.openclaw/credentials/oauth.json`(첫 사용 시 `auth-profiles.json`으로 가져옴)
-
-위 모든 경로는 `$OPENCLAW_STATE_DIR`(state dir override)도 따릅니다. 전체 참조: [/gateway/configuration](/gateway/configuration#auth-storage-oauth--api-keys)
-
-정적 secret ref와 런타임 snapshot activation 동작은 [Secrets Management](/gateway/secrets)를 참고하세요.
-
-## Anthropic setup-token(구독 인증)
+## Anthropic setup-token (구독 인증)
 
 <Warning>
-Anthropic setup-token 지원은 기술적 호환성이지, 정책 보장을 의미하지 않습니다.
-Anthropic은 과거 Claude Code 외부의 일부 구독 사용을 차단한 적이 있습니다.
-구독 인증을 사용할지는 스스로 판단하고, Anthropic의 현재 약관을 직접 확인하세요.
+Anthropic의 setup-token 지원은 기술적인 호환성 제공일 뿐, 정책적인 사용 보장을 의미하지 않음. 사용자는 Anthropic의 서비스 약관을 준수해야 하며, 정책 위반으로 인한 계정 제한 위험을 스스로 감수해야 함.
 </Warning>
 
-아무 머신에서나 `claude setup-token`을 실행한 뒤, OpenClaw에 붙여 넣으세요.
+활성화 방법:
+1. `claude setup-token` 명령어로 토큰 생성.
+2. OpenClaw에 해당 토큰 등록:
+   ```bash
+   openclaw models auth setup-token --provider anthropic
+   ```
+   (다른 기기에서 생성한 토큰은 `paste-token` 명령어로 직접 입력 가능)
 
-```bash
-openclaw models auth setup-token --provider anthropic
-```
+확인 명령어: `openclaw models status`
 
-토큰을 다른 곳에서 생성했다면 수동으로 붙여 넣을 수도 있습니다.
+## OAuth 인증 프로세스 (Login)
 
-```bash
-openclaw models auth paste-token --provider anthropic
-```
+### Anthropic setup-token 흐름
+1. 외부에서 토큰 생성.
+2. OpenClaw에 수동 입력.
+3. 리프레시 기능이 없는 단일 토큰 프로필로 저장됨.
 
-확인:
+### OpenAI Codex (ChatGPT OAuth) 흐름
+PKCE(Proof Key for Code Exchange) 프로토콜을 사용하며 OpenClaw 워크플로우에서 공식 지원됨:
+1. PKCE 검증자/챌린지 및 무작위 `state` 값 생성.
+2. 브라우저에서 OpenAI 인증 페이지 오픈.
+3. 로컬 콜백 엔드포인트(`http://127.0.0.1:1455/auth/callback`)로 인증 정보 수신.
+4. (헤드리스 환경의 경우) 리디렉션된 URL이나 코드를 직접 복사하여 입력.
+5. 최종 토큰 교환 후 `access`, `refresh`, `expires`, `accountId` 정보를 프로필에 저장.
 
-```bash
-openclaw models status
-```
+## 토큰 갱신 및 만료 관리
 
-## OAuth 교환(로그인이 작동하는 방식)
+각 프로필은 `expires`(만료 시각) 정보를 보유함:
+- **유효한 경우**: 저장된 액세스 토큰을 즉시 사용.
+- **만료된 경우**: 파일 잠금(File lock) 상태에서 자동으로 리프레시를 수행하고 갱신된 정보를 파일에 업데이트함.
 
-OpenClaw의 대화형 로그인 흐름은 `@mariozechner/pi-ai`에 구현되어 있으며 마법사/명령에 연결되어 있습니다.
+이 과정은 시스템에서 자동으로 처리되므로 사용자가 수동으로 개입할 필요가 없음.
 
-### Anthropic setup-token
+## 다중 계정(프로필) 관리 및 라우팅
 
-흐름 형태:
+공급자별로 여러 계정을 사용하는 경우 다음 두 가지 패턴을 권장함:
 
-1. `claude setup-token` 실행
-2. 토큰을 OpenClaw에 붙여 넣기
-3. 토큰 auth profile로 저장(refresh 없음)
-
-마법사 경로는 `openclaw onboard` → auth choice `setup-token`(Anthropic)입니다.
-
-### OpenAI Codex(ChatGPT OAuth)
-
-OpenAI Codex OAuth는 Codex CLI 외부, OpenClaw 워크플로우를 포함한 사용이 명시적으로 지원됩니다.
-
-흐름 형태(PKCE):
-
-1. PKCE verifier/challenge + 무작위 `state` 생성
-2. `https://auth.openai.com/oauth/authorize?...` 열기
-3. `http://127.0.0.1:1455/auth/callback`에서 콜백 캡처 시도
-4. 콜백을 바인드할 수 없거나 원격/headless 환경이면, redirect URL/code를 붙여 넣기
-5. `https://auth.openai.com/oauth/token`에서 교환
-6. access token에서 `accountId`를 추출해 `{ access, refresh, expires, accountId }` 저장
-
-마법사 경로는 `openclaw onboard` → auth choice `openai-codex`입니다.
-
-## 갱신 + 만료
-
-프로필은 `expires` 타임스탬프를 저장합니다.
-
-런타임에서는:
-
-- `expires`가 미래면 → 저장된 access token 사용
-- 만료되었으면 → refresh 수행(파일 잠금 하에서) 후 저장된 자격 증명 덮어쓰기
-
-갱신 흐름은 자동이므로, 일반적으로 토큰을 수동 관리할 필요는 없습니다.
-
-## 여러 계정(프로필) + 라우팅
-
-두 가지 패턴이 있습니다.
-
-### 1) 권장: 분리된 에이전트
-
-"개인용"과 "업무용"이 절대 섞이지 않게 하려면, 격리된 에이전트(분리된 세션 + 자격 증명 + 워크스페이스)를 사용하세요.
-
+### 1. 권장 방식: 독립된 에이전트 운영
+"개인용"과 "업무용" 데이터를 완벽히 분리하고 싶다면, 각각 별도의 에이전트를 생성함:
 ```bash
 openclaw agents add work
 openclaw agents add personal
 ```
+각 에이전트는 독립된 워크스페이스와 인증 프로필을 가짐.
 
-그다음 에이전트별로 인증을 구성(마법사)하고, 채팅을 올바른 에이전트로 라우팅하세요.
+### 2. 심화 방식: 단일 에이전트 내 멀티 프로필
+하나의 에이전트 데이터 디렉터리에 여러 프로필 ID를 등록하여 사용함:
+- **전역 설정**: `auth.order` 옵션으로 우선순위 지정.
+- **세션별 지정**: 채팅 시 `/model ...@<profileId>` 명령어로 특정 계정 강제 지정.
+  - 예: `/model Opus@anthropic:work`
 
-### 2) 고급: 하나의 에이전트에 여러 프로필
+사용 가능한 프로필 목록 확인:
+`openclaw channels list --json` 명령의 `auth[]` 항목 참조.
 
-`auth-profiles.json`은 같은 프로바이더에 대해 여러 profile ID를 지원합니다.
-
-어떤 프로필을 사용할지는 다음으로 선택합니다.
-
-- 전역적으로 설정 순서(`auth.order`)
-- 세션별로 `/model ...@<profileId>`
-
-예시(세션 재정의):
-
-- `/model Opus@anthropic:work`
-
-어떤 profile ID가 있는지 확인하는 방법:
-
-- `openclaw channels list --json`(`auth[]` 표시)
-
-관련 문서:
-
-- [/concepts/model-failover](/concepts/model-failover) (회전 + 쿨다운 규칙)
-- [/tools/slash-commands](/tools/slash-commands) (명령 표면)
+관련 가이드:
+- [모델 장애 조치(Failover) 규칙](/concepts/model-failover): 순환 및 쿨다운 정책.
+- [슬래시 명령어 사용법](/tools/slash-commands): 실시간 설정 변경 도구.
