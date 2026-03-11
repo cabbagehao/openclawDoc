@@ -4,7 +4,7 @@ summary: "OpenClaw용 Node.js 설치 및 구성 — 버전 요구 사항, 설치
 read_when:
   - OpenClaw 설치 전에 Node.js를 설치해야 합니다
   - OpenClaw를 설치했지만 `openclaw` 명령을 찾을 수 없습니다
-  - `npm install -g`가 권한 또는 PATH 문제로 실패합니다
+  - "`npm install -g`가 권한 또는 PATH 문제로 실패합니다"
 ---
 
 # Node.js

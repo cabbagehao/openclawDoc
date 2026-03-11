@@ -1,8 +1,8 @@
 ---
 summary: "`web_search` 기능을 위한 Brave Search API 설정 방법"
 read_when:
-  - `web_search` 도구에 Brave Search를 사용하고자 할 때
-  - `BRAVE_API_KEY` 발급 또는 요금제 정보를 확인하고 싶을 때
+  - "`web_search` 도구에 Brave Search를 사용하고자 할 때"
+  - "`BRAVE_API_KEY` 발급 또는 요금제 정보를 확인하고 싶을 때"
 title: "Brave Search"
 x-i18n:
   source_path: "brave-search.md"

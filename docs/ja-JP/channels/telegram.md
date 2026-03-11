@@ -698,7 +698,18 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     パブリック エンドポイントが異なる場合は、リバース プロキシを前面に配置し、`webhookUrl` をパブリック URL に指定します。
     意図的に外部イングレスが必要な場合は、`webhookHost` (例: `0.0.0.0`) を設定します。
 
-</Accordion><Accordion title="制限、再試行、および CLI ターゲット"> - `channels.telegram.textChunkLimit` のデフォルトは 4000 です。- `channels.telegram.chunkMode="newline"` は、長さを分割する前に段落境界 (空白行) を優先します。- `channels.telegram.mediaMaxMb` (デフォルトは 100) は、インバウンドおよびアウトバウンドの Telegram メディア サイズを制限します。- `channels.telegram.timeoutSeconds` は Telegram API クライアントのタイムアウトをオーバーライドします (未設定の場合、grammY のデフォルトが適用されます)。- グループ コンテキスト履歴は `channels.telegram.historyLimit` または `messages.groupChat.historyLimit` (デフォルトは 50) を使用します。 `0` は無効になります。- DM 履歴コントロール: - `channels.telegram.dmHistoryLimit` - `channels.telegram.dms["<user_id>"].historyLimit` - `channels.telegram.retry` 構成は、回復可能なアウトバウンド API エラーの Telegram 送信ヘルパー (CLI/ツール/アクション) に適用されます。
+  </Accordion>
+
+  <Accordion title="制限、再試行、および CLI ターゲット">
+    - `channels.telegram.textChunkLimit` のデフォルトは 4000 です。
+    - `channels.telegram.chunkMode="newline"` は、長さで分割する前に段落境界（空行）を優先します。
+    - `channels.telegram.mediaMaxMb`（デフォルト 100）は、受信および送信する Telegram メディアのサイズを制限します。
+    - `channels.telegram.timeoutSeconds` は Telegram API クライアントのタイムアウトを上書きします（未設定時は grammY の既定値が使われます）。
+    - グループ コンテキスト履歴は `channels.telegram.historyLimit` または `messages.groupChat.historyLimit`（デフォルト 50）を使います。`0` で無効になります。
+    - DM 履歴の制御項目:
+      - `channels.telegram.dmHistoryLimit`
+      - `channels.telegram.dms["<user_id>"].historyLimit`
+    - `channels.telegram.retry` 設定は、回復可能な送信 API エラーに対する Telegram 送信ヘルパー（CLI / ツール / アクション）へ適用されます。
 
     CLI 送信ターゲットには、数値のチャット ID またはユーザー名を指定できます。
 
@@ -707,7 +718,7 @@ openclaw message send --channel telegram --target 123456789 --message "hi"
 openclaw message send --channel telegram --target @name --message "hi"
 ```
 
-    Telegram の投票では `openclaw message poll` が使用され、フォーラムのトピックがサポートされます。
+    Telegram の投票では `openclaw message poll` を使用し、フォーラム トピックもサポートします。
 
 ```bash
 openclaw message poll --channel telegram --target 123456789 \
@@ -735,9 +746,11 @@ openclaw message poll --channel telegram --target -1001234567890:topic:42 \
 ## トラブルシューティング
 
 <AccordionGroup>
-  <Accordion title="ボットはメンション以外のグループ メッセージに応答しません">- `requireMention=false` の場合、Telegram プライバシー モードでは完全な可視性を許可する必要があります。
-      - BotFather: `/setprivacy` -> 無効にする
-      - その後、ボットを削除してグループに再度追加します
+  <Accordion title="ボットはメンション以外のグループ メッセージに応答しません">
+
+    - `requireMention=false` の場合、Telegram プライバシー モードでは完全な可視性を許可する必要があります。
+    - BotFather: `/setprivacy` -> 無効にする
+    - その後、ボットを削除してグループに再度追加します
     - `openclaw channels status` は、構成で言及されていないグループ メッセージが予期される場合に警告します。
     - `openclaw channels status --probe` は、明示的な数値グループ ID をチェックできます。ワイルドカード `"*"` はメンバーシップを調査できません。
     - クイックセッションテスト: `/activation always`。
@@ -760,7 +773,12 @@ openclaw message poll --channel telegram --target -1001234567890:topic:42 \
 
   </Accordion>
 
-<Accordion title="ポーリングまたはネットワークの不安定性">- ノード 22 以降 + カスタム フェッチ/プロキシは、AbortSignal タイプが一致しない場合に即時中止動作をトリガーできます。- 一部のホストは、最初に `api.telegram.org` を IPv6 に解決します。壊れた IPv6 出力により、断続的な Telegram API エラーが発生する可能性があります。- ログに `TypeError: fetch failed` または `Network request for 'getUpdates' failed!` が含まれている場合、OpenClaw はこれらを回復可能なネットワーク エラーとして再試行するようになりました。- 不安定な直接出力/TLS を備えた VPS ホストでは、Telegram API 呼び出しを `channels.telegram.proxy` 経由でルーティングします。
+<Accordion title="ポーリングまたはネットワークの不安定性">
+
+    - ノード 22 以降 + カスタム フェッチ/プロキシは、AbortSignal タイプが一致しない場合に即時中止動作をトリガーできます。
+    - 一部のホストは、最初に `api.telegram.org` を IPv6 に解決します。壊れた IPv6 出力により、断続的な Telegram API エラーが発生する可能性があります。
+    - ログに `TypeError: fetch failed` または `Network request for 'getUpdates' failed!` が含まれている場合、OpenClaw はこれらを回復可能なネットワーク エラーとして再試行するようになりました。
+    - 不安定な直接出力/TLS を備えた VPS ホストでは、Telegram API 呼び出しを `channels.telegram.proxy` 経由でルーティングします。
 
 ```yaml
 channels:

@@ -2,7 +2,7 @@
 summary: "web_search 기능을 위한 Perplexity Search API 설정 및 Sonar/OpenRouter 호환성 안내"
 read_when:
   - 웹 검색 도구로 Perplexity Search를 사용하고자 할 때
-  - `PERPLEXITY_API_KEY` 또는 `OPENROUTER_API_KEY` 설정 방법이 궁금할 때
+  - "`PERPLEXITY_API_KEY` 또는 `OPENROUTER_API_KEY` 설정 방법이 궁금할 때"
 title: "Perplexity 검색"
 x-i18n:
   source_path: "perplexity.md"

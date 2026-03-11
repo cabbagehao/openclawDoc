@@ -1,7 +1,7 @@
 ---
 summary: "Web search + fetch 도구(Brave, Gemini, Grok, Kimi, Perplexity provider)"
 read_when:
-  - `web_search` 또는 `web_fetch`를 활성화하려고 할 때
+  - "`web_search` 또는 `web_fetch`를 활성화하려고 할 때"
   - Brave 또는 Perplexity Search API key 설정이 필요할 때
   - Google Search grounding과 함께 Gemini를 사용하려고 할 때
 title: "Web Tools"

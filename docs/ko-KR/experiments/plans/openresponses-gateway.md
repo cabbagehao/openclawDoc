@@ -1,7 +1,7 @@
 ---
 summary: "계획: OpenResponses /v1/responses 엔드포인트를 추가하고 chat completions 를 깔끔하게 폐기"
 read_when:
-  - `/v1/responses` gateway 지원을 설계하거나 구현할 때
+  - "`/v1/responses` gateway 지원을 설계하거나 구현할 때"
   - Chat Completions 호환성에서의 마이그레이션을 계획할 때
 owner: "openclaw"
 status: "draft"

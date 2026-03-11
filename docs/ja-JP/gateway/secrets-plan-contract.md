@@ -1,7 +1,7 @@
 ---
 summary: "`secrets apply` 実行プランの仕様: ターゲットの検証、パスの一致ルール、および `auth-profiles.json` の対象範囲"
 read_when:
-  - `openclaw secrets apply` 用のプランを生成またはレビューする場合
+  - "`openclaw secrets apply` 用のプランを生成またはレビューする場合"
   - 「Invalid plan target path」エラーをデバッグする場合
   - ターゲットの種類やパスの検証ルールを理解したい場合
 title: "シークレット適用プランの仕様"

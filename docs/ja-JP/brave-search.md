@@ -2,7 +2,7 @@
 summary: "web_search 向けの Brave Search API 設定"
 read_when:
   - web_search で Brave Search を使いたい場合
-  - `BRAVE_API_KEY` またはプランの詳細を確認したい場合
+  - "`BRAVE_API_KEY` またはプランの詳細を確認したい場合"
 title: "Brave Search"
 x-i18n:
   source_path: "brave-search.md"

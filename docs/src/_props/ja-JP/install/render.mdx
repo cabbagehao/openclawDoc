@@ -1,0 +1,156 @@
+---
+title: Render にデプロイ
+---
+
+Infrastructure as Code を使用して OpenClaw を Render にデプロイします。同梱の `render.yaml` Blueprint は、サービス、ディスク、環境変数など、スタック全体を宣言的に定義するため、ワンクリックでデプロイでき、コードと一緒にインフラストラクチャをバージョン管理できます。
+
+## 前提条件
+
+* [Render アカウント](https://render.com) (無料枠あり)
+* お好みの[モデルプロバイダ](/providers)の API キー
+
+## Render Blueprint でデプロイ
+
+[Render にデプロイ](https://render.com/deploy?repo=https://github.com/openclaw/openclaw)
+
+このリンクをクリックすると:
+
+1. このリポジトリのルートにある `render.yaml` Blueprint から新しい Render サービスが作成されます。
+2. `SETUP_PASSWORD` を設定するように求められます。
+3. Docker イメージをビルドしてデプロイします。
+
+デプロイされると、サービスの URL は `https://<service-name>.onrender.com` のパターンに従います。
+
+## Blueprint について理解する
+
+Render Blueprints は、インフラストラクチャを定義する YAML ファイルです。このリポジトリの `render.yaml` は、OpenClaw を実行するために必要なすべてを設定します:
+
+```yaml
+services:
+  - type: web
+    name: openclaw
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SETUP_PASSWORD
+        sync: false # deploy 時にプロンプトを表示
+      - key: OPENCLAW_STATE_DIR
+        value: /data/.openclaw
+      - key: OPENCLAW_WORKSPACE_DIR
+        value: /data/workspace
+      - key: OPENCLAW_GATEWAY_TOKEN
+        generateValue: true # 安全なトークンを自動生成
+    disk:
+      name: openclaw-data
+      mountPath: /data
+      sizeGB: 1
+```
+
+使用されている主な Blueprint の機能:
+
+| 機能                    | 目的                                    |
+| --------------------- | ------------------------------------- |
+| `runtime: docker`     | リポジトリの Dockerfile からビルド               |
+| `healthCheckPath`     | Render は `/health` を監視し、異常なインスタンスを再起動 |
+| `sync: false`         | デプロイ中に値 (シークレット) の入力を求める              |
+| `generateValue: true` | 暗号化された安全な値を自動生成                       |
+| `disk`                | 再デプロイ後も残る永続ストレージ                      |
+
+## プランの選択
+
+| プラン       | スピンダウン     | ディスク | 最適な用途       |
+| --------- | ---------- | ---- | ----------- |
+| Free      | 15分間のアイドル後 | 利用不可 | テスト、デモ      |
+| Starter   | なし         | 1GB+ | 個人利用、小規模チーム |
+| Standard+ | なし         | 1GB+ | 本番環境、複数チャネル |
+
+Blueprint のデフォルトは `starter` です。無料枠を使用するには、フォークした `render.yaml` の `plan: free` を変更します (ただし、永続ディスクがないため、デプロイのたびに設定がリセットされることに注意してください)。
+
+## デプロイ後
+
+### セットアップウィザードの完了
+
+1. `https://<your-service>.onrender.com/setup` に移動します
+2. `SETUP_PASSWORD` を入力します
+3. モデルプロバイダを選択し、API キーを貼り付けます
+4. (オプション) メッセージングチャネル (Telegram、Discord、Slack) を設定します
+5. **Run setup** をクリックします
+
+### Control UI へのアクセス
+
+Web ダッシュボードは `https://<your-service>.onrender.com/openclaw` で利用できます。
+
+## Render Dashboard の機能
+
+### ログ
+
+**Dashboard → your service → Logs** でリアルタイムログを表示します。以下でフィルタリングできます:
+
+* Build logs (Docker イメージの作成)
+* Deploy logs (サービスの起動)
+* Runtime logs (アプリケーションの出力)
+
+### シェルアクセス
+
+デバッグを行うには、**Dashboard → your service → Shell** からシェルセッションを開きます。永続ディスクは `/data` にマウントされています。
+
+### 環境変数
+
+**Dashboard → your service → Environment** で変数を変更します。変更すると、自動再デプロイがトリガーされます。
+
+### 自動デプロイ
+
+元の OpenClaw リポジトリを使用している場合、Render は OpenClaw を自動デプロイしません。更新するには、ダッシュボードから手動で Blueprint 同期を実行します。
+
+## カスタムドメイン
+
+1. **Dashboard → your service → Settings → Custom Domains** に移動します
+2. ドメインを追加します
+3. 指示に従って DNS を構成します (`*.onrender.com` への CNAME)
+4. Render は TLS 証明書を自動的にプロビジョニングします
+
+## スケーリング
+
+Render は、水平および垂直スケーリングをサポートしています:
+
+* **垂直**: プランを変更して、より多くの CPU/RAM を取得します
+* **水平**: インスタンス数を増やします (Standard プラン以上)
+
+OpenClaw の場合、通常は垂直スケーリングで十分です。水平スケーリングには、スティッキーセッションまたは外部状態管理が必要です。
+
+## バックアップと移行
+
+いつでも設定とワークスペースをエクスポートできます:
+
+```
+https://<your-service>.onrender.com/setup/export
+```
+
+これにより、任意の OpenClaw ホストで復元できるポータブルバックアップがダウンロードされます。
+
+## トラブルシューティング
+
+### サービスが開始しない
+
+Render Dashboard のデプロイログを確認してください。一般的な問題:
+
+* `SETUP_PASSWORD` の欠落 — Blueprint はこれの入力を求めますが、設定されていることを確認してください
+* ポートの不一致 — `PORT=8080` が Dockerfile の公開ポートと一致していることを確認してください
+
+### コールドスタートが遅い (無料枠)
+
+無料枠のサービスは、15分間操作がないとスピンダウンします。スピンダウン後の最初の要求は、コンテナの起動中に数秒かかります。常時オンにするには、Starter プランにアップグレードしてください。
+
+### 再デプロイ後のデータ損失
+
+これは無料枠 (永続ディスクなし) で発生します。有料プランにアップグレードするか、`/setup/export` 経由で定期的に設定をエクスポートしてください。
+
+### ヘルスチェックの失敗
+
+Render は、`/health` から 30 秒以内に 200 応答を期待します。ビルドは成功してもデプロイが失敗する場合、サービスの起動に時間がかかりすぎている可能性があります。以下を確認してください:
+
+* ビルドログにエラーがないか
+* コンテナが `docker build && docker run` でローカルに実行されるかどうか

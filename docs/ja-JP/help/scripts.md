@@ -2,7 +2,7 @@
 summary: "リポジトリ スクリプト: 目的、範囲、安全上の注意事項"
 read_when:
   - リポジトリ内のスクリプトを実行する場合
-  - `./scripts` 配下のスクリプトを追加または変更する場合
+  - "`./scripts` 配下のスクリプトを追加または変更する場合"
 title: "スクリプト"
 x-i18n:
   source_hash: "efd220df28f20b338fbc4f5e6152c8abeade4b56f76496476e7e99928a8dedbe"

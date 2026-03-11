@@ -291,9 +291,9 @@
 - [ ] **docs/providers/nvidia.md** -> `docs/ja-JP/providers/nvidia.md`
 - [ ] **docs/providers/ollama.md** -> `docs/ja-JP/providers/ollama.md`
 - [ ] **docs/providers/openai.md** -> `docs/ja-JP/providers/openai.md`
-- [ ] **docs/providers/opencode.md** -> `docs/ja-JP/providers/opencode.md`
-- [ ] **docs/providers/openrouter.md** -> `docs/ja-JP/providers/openrouter.md`
-- [ ] **docs/providers/qianfan.md** -> `docs/ja-JP/providers/qianfan.md`
+- [x] **docs/providers/opencode.md** -> `docs/ja-JP/providers/opencode.md`
+- [x] **docs/providers/openrouter.md** -> `docs/ja-JP/providers/openrouter.md`
+- [x] **docs/providers/qianfan.md** -> `docs/ja-JP/providers/qianfan.md`
 - [ ] **docs/providers/qwen.md** -> `docs/ja-JP/providers/qwen.md`
 - [ ] **docs/providers/synthetic.md** -> `docs/ja-JP/providers/synthetic.md`
 - [ ] **docs/providers/together.md** -> `docs/ja-JP/providers/together.md`
@@ -301,7 +301,7 @@
 - [ ] **docs/providers/vercel-ai-gateway.md** -> `docs/ja-JP/providers/vercel-ai-gateway.md`
 - [ ] **docs/providers/vllm.md** -> `docs/ja-JP/providers/vllm.md`
 - [ ] **docs/providers/xiaomi.md** -> `docs/ja-JP/providers/xiaomi.md`
-- [ ] **docs/providers/zai.md** -> `docs/ja-JP/providers/zai.md`
+- [x] **docs/providers/zai.md** -> `docs/ja-JP/providers/zai.md`
 - [ ] **docs/refactor/clawnet.md** -> `docs/ja-JP/refactor/clawnet.md`
 - [ ] **docs/refactor/cluster.md** -> `docs/ja-JP/refactor/cluster.md`
 - [ ] **docs/refactor/exec-host.md** -> `docs/ja-JP/refactor/exec-host.md`

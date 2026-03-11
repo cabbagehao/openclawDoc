@@ -2,7 +2,7 @@
 summary: "`openclaw node` の CLI リファレンス (ヘッドレスノードホスト)"
 read_when:
   - ヘッドレスノードホストを実行したい場合
-  - `system.run` のために非 macOS ノードをペアリングしたい場合
+  - "`system.run` のために非 macOS ノードをペアリングしたい場合"
 title: "node"
 x-i18n:
   source_hash: "cf901108417a08df7293e7f2542b424057fcb8e4e12455d39895e4c8d4cfaee6"

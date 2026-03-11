@@ -17,7 +17,7 @@ Use these hubs to discover every page, including deep dives and reference docs t
 
 - [Index](/)
 - [Getting Started](/start/getting-started)
-- [Quick start](/start/quickstart)
+- [Getting Started](/start/getting-started)
 - [Onboarding](/start/onboarding)
 - [Wizard](/start/wizard)
 - [Setup](/start/setup)
@@ -69,7 +69,7 @@ Use these hubs to discover every page, including deep dives and reference docs t
 ## Providers + ingress
 
 - [Chat channels hub](/channels)
-- [Model providers hub](/providers/models)
+- [Model providers hub](/providers)
 - [WhatsApp](/channels/whatsapp)
 - [Telegram](/channels/telegram)
 - [Slack](/channels/slack)

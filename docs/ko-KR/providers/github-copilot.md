@@ -2,7 +2,7 @@
 summary: "device flow를 사용해 OpenClaw에서 GitHub Copilot에 로그인하기"
 read_when:
   - GitHub Copilot을 모델 제공업체로 사용하고 싶을 때
-  - `openclaw models auth login-github-copilot` 흐름이 필요할 때
+  - "`openclaw models auth login-github-copilot` 흐름이 필요할 때"
 title: "GitHub Copilot"
 x-i18n:
   source_path: "providers/github-copilot.md"

@@ -2,7 +2,7 @@
 summary: "legacy `openclaw-*` skills를 대체하는 OpenClaw용 agent tool surface (browser, canvas, nodes, message, cron)"
 read_when:
   - agent tool을 추가하거나 수정할 때
-  - `openclaw-*` skills를 폐기하거나 변경할 때
+  - "`openclaw-*` skills를 폐기하거나 변경할 때"
 title: "Tools"
 ---
 

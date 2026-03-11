@@ -2,7 +2,7 @@
 summary: "OpenClaw から device flow を使って GitHub Copilot にサインインする"
 read_when:
   - GitHub Copilot を model provider として使いたいとき
-  - `openclaw models auth login-github-copilot` フローが必要なとき
+  - "`openclaw models auth login-github-copilot` フローが必要なとき"
 title: "GitHub Copilot"
 x-i18n:
   source_hash: "503e0496d92c921e2f7111b1b4ba16374f5b781643bfbc6cb69cea97d9395c25"

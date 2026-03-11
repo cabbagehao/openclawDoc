@@ -2,7 +2,7 @@
 summary: "web_search 向けの Perplexity Search API と Sonar / OpenRouter 互換"
 read_when:
   - Perplexity Search を Web 検索に使いたいとき
-  - `PERPLEXITY_API_KEY` または `OPENROUTER_API_KEY` の設定が必要なとき
+  - "`PERPLEXITY_API_KEY` または `OPENROUTER_API_KEY` の設定が必要なとき"
 title: "Perplexity Search"
 ---
 

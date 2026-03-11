@@ -2,7 +2,7 @@
 summary: "헤드리스 노드 호스트 실행 및 관리를 위한 `openclaw node` 명령어 레퍼런스"
 read_when:
   - 헤드리스 노드 호스트를 구동하여 원격 기기의 자원을 공유하고자 할 때
-  - `system.run` 기능을 위해 비 macOS 환경의 노드를 페어링할 때
+  - "`system.run` 기능을 위해 비 macOS 환경의 노드를 페어링할 때"
 title: "node"
 x-i18n:
   source_path: "cli/node.md"

@@ -1,7 +1,7 @@
 ---
 summary: "`openclaw clawbot` の CLI リファレンス (レガシーな別名名前空間)"
 read_when:
-  - `openclaw clawbot ...` を使用した古いスクリプトを保守している場合
+  - "`openclaw clawbot ...` を使用した古いスクリプトを保守している場合"
   - 現在の推奨コマンドへの移行ガイドが必要な場合
 title: "clawbot"
 x-i18n:

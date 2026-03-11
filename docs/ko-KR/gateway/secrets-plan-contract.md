@@ -1,8 +1,8 @@
 ---
 summary: "`secrets apply` 계획(Plan)을 위한 규격 정의: 대상 검증, 경로 매칭 및 auth-profiles.json 적용 범위 안내"
 read_when:
-  - `openclaw secrets apply` 실행을 위한 계획 파일을 생성하거나 검토할 때
-  - `Invalid plan target path` 오류 발생 시 원인을 파악하고자 할 때
+  - "`openclaw secrets apply` 실행을 위한 계획 파일을 생성하거나 검토할 때"
+  - "`Invalid plan target path` 오류 발생 시 원인을 파악하고자 할 때"
   - 대상 타입(Target type) 및 경로 검증 규칙을 이해해야 할 때
 title: "시크릿 적용 계획 규격"
 x-i18n:

@@ -2,7 +2,7 @@
 summary: "OpenClaw의 안전한 업데이트 및 채널 전환을 지원하는 `openclaw update` 명령어 레퍼런스"
 read_when:
   - 소스 체크아웃 환경을 최신 버전으로 안전하게 업데이트하고자 할 때
-  - `--update` 축약어의 동작 방식을 이해해야 할 때
+  - "`--update` 축약어의 동작 방식을 이해해야 할 때"
 title: "update"
 x-i18n:
   source_path: "cli/update.md"

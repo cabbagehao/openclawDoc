@@ -1,4 +1,5 @@
 ---
+description: "Reference the OpenClaw CLI command tree, global flags, command groups, and output behavior for setup, gateway, models, channels, and more."
 summary: "OpenClaw CLI reference for `openclaw` commands, subcommands, and options"
 read_when:
   - Adding or modifying CLI commands or options

@@ -1,7 +1,7 @@
 ---
 summary: "CLI 온보딩 워크플로우, 인증 및 모델 설정, 내부 동작 방식에 대한 상세 레퍼런스"
 read_when:
-  - `openclaw onboard` 명령어의 세부 동작을 파악하고자 할 때
+  - "`openclaw onboard` 명령어의 세부 동작을 파악하고자 할 때"
   - 온보딩 결과 데이터를 디버깅하거나 커스텀 클라이언트를 통합할 때
 title: "CLI 온보딩 상세 레퍼런스"
 sidebarTitle: "CLI 레퍼런스"

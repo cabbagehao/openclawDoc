@@ -247,7 +247,7 @@ const PREFERRED_PROVIDER_BY_AUTH_CHOICE: Partial<Record<AuthChoice, string>> = {
 
 #### 8. `src/commands/auth-choice.apply.api-providers.ts`
 
-import 추가:
+Import 추가:
 
 ```typescript
 import {
@@ -399,7 +399,7 @@ if (authChoice === "kilocode-api-key") {
 
 #### 11. `src/commands/onboard-auth.ts`
 
-export 추가:
+다음 export를 추가:
 
 ```typescript
 export {

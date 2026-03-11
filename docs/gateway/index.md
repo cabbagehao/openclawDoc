@@ -1,4 +1,5 @@
 ---
+description: "Run and operate the OpenClaw gateway with startup steps, health checks, configuration links, secrets, and troubleshooting paths."
 summary: "Runbook for the Gateway service, lifecycle, and operations"
 read_when:
   - Running or debugging the gateway process

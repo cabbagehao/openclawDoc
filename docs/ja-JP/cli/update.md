@@ -2,7 +2,7 @@
 summary: "`openclaw update` の CLI リファレンス (ソースコードの安全なアップデートとゲートウェイの自動再起動)"
 read_when:
   - ソースインストール環境を安全にアップデートしたい場合
-  - `--update` 短縮コマンドの動作を理解したい場合
+  - "`--update` 短縮コマンドの動作を理解したい場合"
 title: "update"
 x-i18n:
   source_hash: "f0ab6c4d21952fc637f91e245bcacfe99e18d79d2782076b3bfba35ba4fc4300"

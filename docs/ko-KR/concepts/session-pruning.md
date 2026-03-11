@@ -3,7 +3,7 @@ title: "세션 가지치기 (Session Pruning)"
 summary: "도구 실행 결과 데이터를 선별적으로 제거하여 컨텍스트 팽창을 방지하는 세션 가지치기 가이드"
 read_when:
   - 도구 출력 데이터로 인한 LLM 컨텍스트 급증을 억제하고 싶을 때
-  - `agents.defaults.contextPruning` 설정값을 조정하고자 할 때
+  - "`agents.defaults.contextPruning` 설정값을 조정하고자 할 때"
 x-i18n:
   source_path: "concepts/session-pruning.md"
 ---

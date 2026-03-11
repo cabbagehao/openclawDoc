@@ -2,7 +2,7 @@
 summary: "저장소 스크립트의 목적, 적용 범위, 그리고 안전하게 사용하는 기준"
 read_when:
   - 저장소의 스크립트를 실행할 때
-  - `./scripts` 아래 스크립트를 추가하거나 변경할 때
+  - "`./scripts` 아래 스크립트를 추가하거나 변경할 때"
 title: "스크립트"
 x-i18n:
   source_path: "help/scripts.md"

@@ -1,5 +1,4 @@
 ---
-title: "Fly.io 설치"
 description: "Fly.io 플랫폼에 OpenClaw 배포하기"
 summary: "영구 스토리지 및 자동 HTTPS 설정을 포함한 OpenClaw의 Fly.io 배포 단계별 가이드"
 read_when:
