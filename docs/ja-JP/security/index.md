@@ -1,3 +1,7 @@
+---
+title: "OpenClaw のセキュリティと信頼"
+---
+
 # OpenClaw のセキュリティと信頼
 
 **Live:** [trust.openclaw.ai](https://trust.openclaw.ai)

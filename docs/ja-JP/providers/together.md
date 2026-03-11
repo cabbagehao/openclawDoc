@@ -3,6 +3,7 @@ summary: "一緒に AI セットアップ (認証 + モデル選択)"
 read_when:
   - Together AI と OpenClaw を使用したい
   - API キーの環境変数または CLI 認証の選択が必要です
+title: "一緒にAI"
 x-i18n:
   source_hash: "4f2ba5a12b03d0140feba4f54e0540bb57237cd131c8f1d826bc3629fde2d111"
 ---

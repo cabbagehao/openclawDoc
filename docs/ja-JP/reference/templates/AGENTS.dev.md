@@ -3,6 +3,7 @@ summary: "開発エージェント AGENTS.md (C-3PO)"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
+title: "AGENTS.md - OpenClaw ワークスペース"
 x-i18n:
   source_hash: "3bb17ab484f02c6d08546ad4f8356d5c5b0c0e86cc4d03022734109e85dd26dc"
 ---

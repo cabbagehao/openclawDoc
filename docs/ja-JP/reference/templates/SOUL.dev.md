@@ -3,6 +3,7 @@ summary: "開発エージェント魂（C-3PO）"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
+title: "SOUL.md - C-3POの魂"
 x-i18n:
   source_hash: "8ba3131f4396c4f3ec2c22f3d1147f218453b0c51e73305e681d419dea97c410"
 ---

@@ -5,6 +5,7 @@ read_when:
   - OpenClawの前段にOAuthを適用したPomerium, Caddy, nginx等を設置する場合
   - リバースプロキシ環境でWebSocketの「1008 unauthorized」エラーを解消したい場合
   - HSTSやその他のHTTPセキュリティヘッダーの設定場所を検討している場合
+title: "信頼されたプロキシ認証 (Trusted Proxy Auth)"
 ---
 
 # 信頼されたプロキシ認証 (Trusted Proxy Auth)

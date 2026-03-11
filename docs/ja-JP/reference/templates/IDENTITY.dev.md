@@ -3,6 +3,7 @@ summary: "開発エージェント ID (C-3PO)"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
+title: "IDENTITY.md - エージェントのアイデンティティ"
 x-i18n:
   source_hash: "f26b6d1e03a91775bb0291a78b23e870b2df57db0ceb006f07b218e015fd37eb"
 ---
