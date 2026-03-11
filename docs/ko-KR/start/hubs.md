@@ -1,202 +1,196 @@
 ---
-summary: "모든 OpenClaw 문서로 연결되는 허브"
+summary: "OpenClaw의 모든 문서 테마별 목록 및 허브 안내"
 read_when:
-  - 문서의 전체 맵을 원할 때
+  - OpenClaw 문서 전체의 구조를 한눈에 파악하고 싶을 때
 title: "문서 허브"
 x-i18n:
   source_path: "start/hubs.md"
-  source_hash: "7faa7ebec705a3ef3968eabee1ab45cb7630af9ab76bf76f021dbbaec8cf5be9"
-  provider: "anthropic"
-  model: "claude-opus-4-6"
-  workflow: 1
-  generated_at: "2026-03-10T08:16:12.693Z"
 ---
 
-
-# 문서 허브
+# 문서 허브 (Docs Hubs)
 
 <Note>
-OpenClaw를 처음 사용하는 경우 [Getting Started](/start/getting-started)부터 시작하세요.
+OpenClaw를 처음 접하신다면 [시작하기](/start/getting-started) 가이드를 먼저 읽어보시기 바랍니다.
 </Note>
 
-이 허브를 사용하여 왼쪽 네비게이션에 표시되지 않는 심층 분석 및 참조 문서를 포함한 모든 페이지를 찾아보세요.
+이 허브는 왼쪽 내비게이션 바에 표시되지 않는 심화 가이드와 레퍼런스를 포함하여 모든 문서를 쉽게 찾을 수 있도록 돕기 위해 작성됨.
 
-## 여기서 시작
+## 시작하기
 
-- [인덱스](/)
-- [Getting Started](/start/getting-started)
-- [빠른 시작](/start/quickstart)
-- [온보딩](/start/onboarding)
-- [마법사](/start/wizard)
-- [설정](/start/setup)
-- [대시보드 (local loopback Gateway)](http://127.0.0.1:18789/)
-- [도움말](/help)
-- [문서 디렉토리](/start/docs-directory)
-- [구성](/gateway/configuration)
-- [구성 예제](/gateway/configuration-examples)
-- [OpenClaw 어시스턴트](/start/openclaw)
-- [쇼케이스](/start/showcase)
-- [로어](/start/lore)
+- [인덱스(홈)](/)
+- [시작하기 (Getting Started)](/start/getting-started)
+- [빠른 시작 (Quick Start)](/start/quickstart)
+- [온보딩 절차 안내](/start/onboarding)
+- [설정 마법사(Wizard) 사용법](/start/wizard)
+- [수동 설정 가이드](/start/setup)
+- [로컬 Gateway 대시보드](http://127.0.0.1:18789/)
+- [도움말 및 자주 묻는 질문(FAQ)](/help)
+- [문서 디렉터리 (주요 링크)](/start/docs-directory)
+- [Gateway 설정 레퍼런스](/gateway/configuration)
+- [다양한 설정 예시 모음](/gateway/configuration-examples)
+- [OpenClaw 어시스턴트 설정](/start/openclaw)
+- [쇼케이스 (사용 사례)](/start/showcase)
+- [OpenClaw 세계관(Lore)](/start/lore)
 
-## 설치 + 업데이트
+## 설치 및 업데이트
 
-- [Docker](/install/docker)
-- [Nix](/install/nix)
-- [업데이트 / 롤백](/install/updating)
+- [Docker 설치 가이드](/install/docker)
+- [Nix 설치 및 관리](/install/nix)
+- [업데이트 및 롤백 방법](/install/updating)
 - [Bun 워크플로우 (실험적)](/install/bun)
 
-## 핵심 개념
+## 핵심 개념 (Core Concepts)
 
-- [아키텍처](/concepts/architecture)
-- [기능](/concepts/features)
-- [네트워크 허브](/network)
-- [에이전트 런타임](/concepts/agent)
-- [에이전트 워크스페이스](/concepts/agent-workspace)
-- [메모리](/concepts/memory)
-- [에이전트 루프](/concepts/agent-loop)
-- [스트리밍 + 청킹](/concepts/streaming)
+- [시스템 아키텍처](/concepts/architecture)
+- [주요 기능 개요](/concepts/features)
+- [네트워크 아키텍처 허브](/network)
+- [에이전트 런타임 이해하기](/concepts/agent)
+- [에이전트 워크스페이스 구조](/concepts/agent-workspace)
+- [메모리(Memory) 시스템](/concepts/memory)
+- [에이전트 실행 루프](/concepts/agent-loop)
+- [스트리밍 및 청킹(Chunking)](/concepts/streaming)
 - [멀티 에이전트 라우팅](/concepts/multi-agent)
-- [압축](/concepts/compaction)
-- [세션](/concepts/session)
-- [세션 정리](/concepts/session-pruning)
-- [세션 도구](/concepts/session-tool)
-- [큐](/concepts/queue)
-- [슬래시 명령](/tools/slash-commands)
-- [RPC 어댑터](/reference/rpc)
-- [TypeBox 스키마](/concepts/typebox)
-- [시간대 처리](/concepts/timezone)
-- [프레즌스](/concepts/presence)
-- [디스커버리 + 트랜스포트](/gateway/discovery)
-- [Bonjour](/gateway/bonjour)
-- [채널 라우팅](/channels/channel-routing)
-- [그룹](/channels/groups)
-- [그룹 메시지](/channels/group-messages)
-- [모델 페일오버](/concepts/model-failover)
-- [OAuth](/concepts/oauth)
+- [데이터 압축(Compaction)](/concepts/compaction)
+- [세션(Sessions) 관리](/concepts/session)
+- [세션 가지치기(Pruning)](/concepts/session-pruning)
+- [세션 관련 도구들](/concepts/session-tool)
+- [명령어 대기열(Queue)](/concepts/queue)
+- [슬래시 명령어 사용법](/tools/slash-commands)
+- [RPC 어댑터 시스템](/reference/rpc)
+- [TypeBox 데이터 스키마](/concepts/typebox)
+- [시간대(Timezone) 처리](/concepts/timezone)
+- [상태 표시(Presence)](/concepts/presence)
+- [탐색(Discovery) 및 전송 계층](/gateway/discovery)
+- [Bonjour / mDNS 설정](/gateway/bonjour)
+- [채널별 메시지 라우팅](/channels/channel-routing)
+- [그룹 대화 관리](/channels/groups)
+- [그룹 메시지 처리 상세](/channels/group-messages)
+- [모델 장애 조치(Failover)](/concepts/model-failover)
+- [OAuth 인증 연동](/concepts/oauth)
 
-## 프로바이더 + 인그레스
+## 공급자 및 입력 채널
 
-- [채팅 채널 허브](/channels)
-- [모델 프로바이더 허브](/providers/models)
-- [WhatsApp](/channels/whatsapp)
-- [Telegram](/channels/telegram)
-- [Slack](/channels/slack)
-- [Discord](/channels/discord)
-- [Mattermost](/channels/mattermost) (플러그인)
-- [Signal](/channels/signal)
-- [BlueBubbles (iMessage)](/channels/bluebubbles)
-- [iMessage (레거시)](/channels/imessage)
-- [위치 파싱](/channels/location)
-- [WebChat](/web/webchat)
-- [웹훅](/automation/webhook)
-- [Gmail Pub/Sub](/automation/gmail-pubsub)
+- [채팅 채널 통합 허브](/channels)
+- [모델 공급자(Providers) 허브](/providers/models)
+- [WhatsApp 연동](/channels/whatsapp)
+- [Telegram 연동](/channels/telegram)
+- [Slack 연동](/channels/slack)
+- [Discord 연동](/channels/discord)
+- [Mattermost 연동 (플러그인)](/channels/mattermost)
+- [Signal 연동](/channels/signal)
+- [BlueBubbles (iMessage 연동)](/channels/bluebubbles)
+- [iMessage 연동 (레거시)](/channels/imessage)
+- [위치 정보 파싱](/channels/location)
+- [WebChat 인터페이스](/web/webchat)
+- [웹훅(Webhooks) 시스템](/automation/webhook)
+- [Gmail Pub/Sub 자동화](/automation/gmail-pubsub)
 
-## 게이트웨이 + 운영
+## Gateway 및 운영
 
-- [게이트웨이 런북](/gateway)
-- [네트워크 모델](/gateway/network-model)
-- [게이트웨이 페어링](/gateway/pairing)
-- [게이트웨이 잠금](/gateway/gateway-lock)
-- [백그라운드 프로세스](/gateway/background-process)
-- [헬스](/gateway/health)
-- [하트비트](/gateway/heartbeat)
-- [닥터](/gateway/doctor)
-- [로깅](/gateway/logging)
-- [샌드박싱](/gateway/sandboxing)
-- [대시보드](/web/dashboard)
-- [컨트롤 UI](/web/control-ui)
-- [원격 액세스](/gateway/remote)
-- [원격 게이트웨이 README](/gateway/remote-gateway-readme)
-- [Tailscale](/gateway/tailscale)
-- [보안](/gateway/security)
-- [문제 해결](/gateway/troubleshooting)
+- [Gateway 실행 가이드(Runbook)](/gateway)
+- [네트워크 모델 개요](/gateway/network-model)
+- [Gateway 기기 페어링](/gateway/pairing)
+- [Gateway 접근 잠금 설정](/gateway/gateway-lock)
+- [백그라운드 프로세스 관리](/gateway/background-process)
+- [헬스 체크(Health)](/gateway/health)
+- [하트비트(Heartbeat) 시스템](/gateway/heartbeat)
+- [Doctor 진단 도구](/gateway/doctor)
+- [로깅(Logging) 가이드](/gateway/logging)
+- [샌드박싱(Sandboxing) 보안](/gateway/sandboxing)
+- [웹 대시보드](/web/dashboard)
+- [Control UI 웹 인터페이스](/web/control-ui)
+- [원격 접속 가이드](/gateway/remote)
+- [원격 Gateway README](/gateway/remote-gateway-readme)
+- [Tailscale 네트워크 통합](/gateway/tailscale)
+- [보안 아키텍처 개요](/gateway/security)
+- [문제 해결(Troubleshooting)](/gateway/troubleshooting)
 
-## 도구 + 자동화
+## 도구 및 자동화 (Tools)
 
-- [도구 표면](/tools)
-- [OpenProse](/prose)
-- [CLI 참조](/cli)
-- [Exec 도구](/tools/exec)
-- [PDF 도구](/tools/pdf)
-- [상승 모드](/tools/elevated)
-- [Cron 작업](/automation/cron-jobs)
-- [Cron vs Heartbeat](/automation/cron-vs-heartbeat)
-- [사고 + 상세](/tools/thinking)
-- [모델](/concepts/models)
-- [서브 에이전트](/tools/subagents)
-- [에이전트 전송 CLI](/tools/agent-send)
-- [터미널 UI](/web/tui)
-- [브라우저 제어](/tools/browser)
-- [브라우저 (Linux 문제 해결)](/tools/browser-linux-troubleshooting)
-- [폴](/automation/poll)
+- [에이전트 도구 개요](/tools)
+- [OpenProse 워크플로우](/prose)
+- [CLI 명령어 레퍼런스](/cli)
+- [Exec 실행 도구](/tools/exec)
+- [PDF 처리 도구](/tools/pdf)
+- [권한 상승(Elevated) 모드](/tools/elevated)
+- [크론(Cron) 예약 작업](/automation/cron-jobs)
+- [Cron vs Heartbeat 차이점](/automation/cron-vs-heartbeat)
+- [생각(Thinking) 및 상세 출력 설정](/tools/thinking)
+- [모델 관리 및 설정](/concepts/models)
+- [하위 에이전트(Sub-agents)](/tools/subagents)
+- [에이전트 메시지 전송 CLI](/tools/agent-send)
+- [TUI (터미널 UI)](/web/tui)
+- [브라우저 자동화 도구](/tools/browser)
+- [브라우저 (Linux 환경 문제 해결)](/tools/browser-linux-troubleshooting)
+- [설문(Polls) 자동화](/automation/poll)
 
 ## 노드, 미디어, 음성
 
-- [노드 개요](/nodes)
-- [카메라](/nodes/camera)
-- [이미지](/nodes/images)
-- [오디오](/nodes/audio)
-- [위치 명령](/nodes/location-command)
-- [음성 웨이크](/nodes/voicewake)
-- [토크 모드](/nodes/talk)
+- [노드(Nodes) 시스템 개요](/nodes)
+- [카메라 제어 및 스냅샷](/nodes/camera)
+- [이미지 처리 가이드](/nodes/images)
+- [오디오 및 TTS](/nodes/audio)
+- [위치 정보 조회 명령어](/nodes/location-command)
+- [음성 깨우기(Voice Wake)](/nodes/voicewake)
+- [Talk 모드 (음성 대화)](/nodes/talk)
 
-## 플랫폼
+## 플랫폼 가이드
 
-- [플랫폼 개요](/platforms)
-- [macOS](/platforms/macos)
-- [iOS](/platforms/ios)
-- [Android](/platforms/android)
-- [Windows (WSL2)](/platforms/windows)
-- [Linux](/platforms/linux)
-- [웹 표면](/web)
+- [플랫폼 통합 개요](/platforms)
+- [macOS 환경](/platforms/macos)
+- [iOS 환경](/platforms/ios)
+- [Android 환경](/platforms/android)
+- [Windows (WSL2) 환경](/platforms/windows)
+- [Linux 환경](/platforms/linux)
+- [웹(Web) 기반 인터페이스](/web)
 
-## macOS 컴패니언 앱 (고급)
+## macOS 전용 가이드 (심화)
 
-- [macOS 개발 설정](/platforms/mac/dev-setup)
-- [macOS 메뉴 바](/platforms/mac/menu-bar)
-- [macOS 음성 웨이크](/platforms/mac/voicewake)
+- [macOS 개발 환경 구축](/platforms/mac/dev-setup)
+- [macOS 메뉴 막대 앱](/platforms/mac/menu-bar)
+- [macOS 음성 인식 설정](/platforms/mac/voicewake)
 - [macOS 음성 오버레이](/platforms/mac/voice-overlay)
-- [macOS WebChat](/platforms/mac/webchat)
-- [macOS Canvas](/platforms/mac/canvas)
-- [macOS 자식 프로세스](/platforms/mac/child-process)
-- [macOS 헬스](/platforms/mac/health)
-- [macOS 아이콘](/platforms/mac/icon)
-- [macOS 로깅](/platforms/mac/logging)
-- [macOS 권한](/platforms/mac/permissions)
-- [macOS 원격](/platforms/mac/remote)
-- [macOS 서명](/platforms/mac/signing)
-- [macOS 릴리스](/platforms/mac/release)
-- [macOS 게이트웨이 (launchd)](/platforms/mac/bundled-gateway)
-- [macOS XPC](/platforms/mac/xpc)
-- [macOS Skills](/platforms/mac/skills)
-- [macOS Peekaboo](/platforms/mac/peekaboo)
+- [macOS WebChat 가이드](/platforms/mac/webchat)
+- [macOS Canvas 연동](/platforms/mac/canvas)
+- [macOS 하위 프로세스 관리](/platforms/mac/child-process)
+- [macOS 헬스 모니터링](/platforms/mac/health)
+- [macOS 아이콘 설정](/platforms/mac/icon)
+- [macOS 로그 관리](/platforms/mac/logging)
+- [macOS 시스템 권한 설정](/platforms/mac/permissions)
+- [macOS 원격 제어](/platforms/mac/remote)
+- [macOS 앱 서명(Signing)](/platforms/mac/signing)
+- [macOS 배포 및 릴리스](/platforms/mac/release)
+- [macOS 전용 Gateway (launchd)](/platforms/mac/bundled-gateway)
+- [macOS XPC 통신](/platforms/mac/xpc)
+- [macOS 전용 스킬 시스템](/platforms/mac/skills)
+- [macOS Peekaboo 기능](/platforms/mac/peekaboo)
 
-## 워크스페이스 + 템플릿
+## 워크스페이스 및 템플릿
 
-- [Skills](/tools/skills)
-- [ClawHub](/tools/clawhub)
-- [Skills 구성](/tools/skills-config)
-- [기본 AGENTS](/reference/AGENTS.default)
-- [템플릿: AGENTS](/reference/templates/AGENTS)
-- [템플릿: BOOTSTRAP](/reference/templates/BOOTSTRAP)
-- [템플릿: HEARTBEAT](/reference/templates/HEARTBEAT)
-- [템플릿: IDENTITY](/reference/templates/IDENTITY)
-- [템플릿: SOUL](/reference/templates/SOUL)
-- [템플릿: TOOLS](/reference/templates/TOOLS)
-- [템플릿: USER](/reference/templates/USER)
+- [스킬(Skills) 상세 가이드](/tools/skills)
+- [ClawHub (스킬 저장소)](/tools/clawhub)
+- [스킬 설정 방법](/tools/skills-config)
+- [기본 AGENTS 설정](/reference/AGENTS.default)
+- [AGENTS 템플릿](/reference/templates/AGENTS)
+- [BOOTSTRAP 템플릿](/reference/templates/BOOTSTRAP)
+- [HEARTBEAT 템플릿](/reference/templates/HEARTBEAT)
+- [IDENTITY 템플릿](/reference/templates/IDENTITY)
+- [SOUL 템플릿](/reference/templates/SOUL)
+- [TOOLS 템플릿](/reference/templates/TOOLS)
+- [USER 템플릿](/reference/templates/USER)
 
-## 실험 (탐색적)
+## 실험적 기능 (Experiments)
 
-- [온보딩 구성 프로토콜](/experiments/onboarding-config-protocol)
-- [연구: 메모리](/experiments/research/memory)
-- [모델 구성 탐색](/experiments/proposals/model-config)
+- [온보딩 설정 프로토콜](/experiments/onboarding-config-protocol)
+- [연구 과제: 메모리 시스템](/experiments/research/memory)
+- [모델 설정 구조 탐색](/experiments/proposals/model-config)
 
-## 프로젝트
+## 프로젝트 정보
 
-- [크레딧](/reference/credits)
+- [기여 및 크레딧](/reference/credits)
 
-## 테스트 + 릴리스
+## 테스트 및 릴리스
 
-- [테스트](/reference/test)
+- [테스트(Testing) 가이드](/reference/test)
 - [릴리스 체크리스트](/reference/RELEASING)
-- [디바이스 모델](/reference/device-models)
+- [지원 기기 모델 목록](/reference/device-models)
