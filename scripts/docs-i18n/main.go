@@ -27,7 +27,7 @@ type docResult struct {
 
 func main() {
 	var (
-		targetLang = flag.String("lang", "zh-CN", "target language (e.g., zh-CN)")
+		targetLang = flag.String("lang", "ja-JP", "target language (e.g., ja-JP)")
 		sourceLang = flag.String("src", "en", "source language")
 		docsRoot   = flag.String("docs", "docs", "docs root")
 		tmPath     = flag.String("tm", "", "translation memory path")
