@@ -68,7 +68,7 @@ openclaw agents add <name>
 2. **ワークスペース** — エージェントファイルの場所 (デフォルトは `~/.openclaw/workspace`)。ブートストラップファイルを生成します。
 3. **Gateway** — ポート、バインド アドレス、認証モード、Tailscale 公開。
    対話型のトークンモードでは、デフォルトの平文トークンストレージを選択するか、SecretRef を選択します。
-   非対话型のトークン SecretRef パス: `--gateway-token-ref-env <ENV_VAR>`。
+   非対話型のトークン SecretRef パス: `--gateway-token-ref-env <ENV_VAR>`。
 4. **チャンネル** — WhatsApp、Telegram、Discord、Google Chat、Mattermost、Signal、BlueBubbles、または iMessage。
 5. **デーモン** — LaunchAgent (macOS) または systemd ユーザーユニット (Linux/WSL2) をインストールします。
    トークン認証にトークンが必要で、`gateway.auth.token` が SecretRef で管理されている場合、デーモンのインストールはそれを検証しますが、解決されたトークンをスーパーバイザーサービスの環境メタデータに永続化しません。
@@ -79,7 +79,7 @@ openclaw agents add <name>
 
 <Note>
 明示的に **リセット** を選択する (または `--reset` を渡す) か、構成が最新でない場合を除き、ウィザードを再実行しても何も消去されません。
-CLI の `--reset` はデフォルトで構成、資格情報、およびセッションを対象とします。ワークスペースを含めるには `--reset-scope full` を使用してください。
+CLI の `--reset` はデフォルトで構成、認証情報、およびセッションを対象とします。ワークスペースを含めるには `--reset-scope full` を使用してください。
 構成が無効であるか、レガシーキーが含まれている場合、ウィザードは最初に `openclaw doctor` を実行するように求めます。
 </Note>
 

@@ -1,54 +1,52 @@
 ---
-summary: "プラットフォーム サポートの概要 (ゲートウェイ + コンパニオン アプリ)"
+summary: "Platform support の概要（Gateway + companion app）"
 read_when:
-  - OS のサポートまたはインストール パスを確認する場合
-  - ゲートウェイを実行する場所の決定
-title: "プラットフォーム"
+  - OS ごとのサポート状況や install path を確認したいとき
+  - Gateway をどこで動かすか決めたいとき
+title: "Platforms"
 x-i18n:
   source_hash: "653f395598b9558cb15b58ab42ed931dba47c70780be1c803d33dd795bad6503"
 ---
 
-# プラットフォーム
+# Platforms
 
-OpenClaw コアは TypeScript で書かれています。 **ノードは推奨ランタイムです**。
-Bun はゲートウェイには推奨されません (WhatsApp/Telegram のバグ)。
+OpenClaw core は TypeScript 製で、**推奨ランタイムは Node** です。Bun は Gateway には推奨されません（WhatsApp / Telegram 周りに既知の不具合があります）。
 
-コンパニオン アプリは、macOS (メニュー バー アプリ) とモバイル ノード (iOS/Android) 用に存在します。ウィンドウズと
-Linux コンパニオン アプリも計画されていますが、ゲートウェイは現在完全にサポートされています。
-Windows 用のネイティブ コンパニオン アプリも計画されています。ゲートウェイは WSL2 経由をお勧めします。
+companion app は macOS（menu bar app）と mobile node（iOS / Android）向けに提供されています。Windows と Linux の companion app は今後対応予定ですが、Gateway 自体はすでに完全サポートされています。Windows 向け native companion app も計画中で、Gateway は現時点では WSL2 経由の利用を推奨します。
 
-## OSを選択してください
+## OS を選ぶ
 
 - macOS: [macOS](/platforms/macos)
 - iOS: [iOS](/platforms/ios)
-- アンドロイド: [アンドロイド](/platforms/android)
+- Android: [Android](/platforms/android)
 - Windows: [Windows](/platforms/windows)
 - Linux: [Linux](/platforms/linux)
 
 ## VPS とホスティング
 
-- VPS ハブ: [VPS ホスティング](/vps)
+- VPS hub: [VPS hosting](/vps)
 - Fly.io: [Fly.io](/install/fly)
-- ヘッツナー (Docker): [ヘッツナー](/install/hetzner)
-- GCP (コンピューティング エンジン): [GCP](/install/gcp)
-- exe.dev (VM + HTTPS プロキシ): [exe.dev](/install/exe-dev)
+- Hetzner（Docker）: [Hetzner](/install/hetzner)
+- GCP（Compute Engine）: [GCP](/install/gcp)
+- exe.dev（VM + HTTPS proxy）: [exe.dev](/install/exe-dev)
 
-## 共通リンク
+## よく使うリンク
 
-- インストールガイド: [はじめに](/start/getting-started)
-- ゲートウェイ ランブック: [ゲートウェイ](/gateway)
-- ゲートウェイ構成: [構成](/gateway/configuration)
-- サービスステータス: `openclaw gateway status`
+- install guide: [Getting Started](/start/getting-started)
+- gateway runbook: [Gateway](/gateway)
+- gateway configuration: [Configuration](/gateway/configuration)
+- service status: `openclaw gateway status`
 
-## ゲートウェイ サービスのインストール (CLI)
+## Gateway service のインストール（CLI）
 
-次のいずれかを使用します (すべてサポートされています)。
+次のいずれでもインストールできます（すべてサポート対象です）。
 
-- ウィザード (推奨): `openclaw onboard --install-daemon`
-- 直接: `openclaw gateway install`
-- フローの構成: `openclaw configure` → **ゲートウェイ サービス** を選択
-- 修復/移行: `openclaw doctor` (サービスのインストールまたは修正を提案)
+- Wizard（推奨）: `openclaw onboard --install-daemon`
+- 直接実行: `openclaw gateway install`
+- 設定フロー: `openclaw configure` → **Gateway service** を選択
+- 修復 / 移行: `openclaw doctor`（service の install / 修正を提案）
 
-サービスの対象は OS によって異なります。- macOS: LaunchAgent (`ai.openclaw.gateway` または `ai.openclaw.<profile>`、レガシー `com.openclaw.*`)
+service の配置先は OS によって異なります。
 
-- Linux/WSL2: systemd ユーザー サービス (`openclaw-gateway[-<profile>].service`)
+- macOS: LaunchAgent（`ai.openclaw.gateway` または `ai.openclaw.<profile>`、legacy は `com.openclaw.*`）
+- Linux / WSL2: systemd user service（`openclaw-gateway[-<profile>].service`）

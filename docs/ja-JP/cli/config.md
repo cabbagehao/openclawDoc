@@ -1,19 +1,17 @@
 ---
-summary: "「openclaw config」の CLI リファレンス (get/set/unset/file/validate)"
+summary: "`openclaw config` の CLI リファレンス (構成の取得、設定、削除、パスの確認、検証)"
 read_when:
-  - 構成を非対話的に読み取りまたは編集したい
-title: "構成"
+  - 構成（config）を非対話的に読み取ったり編集したりしたい場合
+title: "config"
 x-i18n:
   source_hash: "40f101e9159cf02175e461b248805b8b58692d7bbe94f62c7242c5a636f2efdf"
 ---
 
 # `openclaw config`
 
-構成ヘルパー: パスによって値を取得/設定/設定解除/検証し、アクティブな値を出力します。
-設定ファイル。サブコマンドを使用せずに実行して開く
-構成ウィザード (`openclaw configure` と同じ)。
+構成ファイルのヘルパーです。パスを指定して値の取得、設定、削除、検証を行ったり、現在有効な構成ファイルを表示したりできます。サブコマンドなしで実行した場合は、構成ウィザードが開きます（`openclaw configure` と同じです）。
 
-## 例
+## 実行例
 
 ```bash
 openclaw config file
@@ -26,26 +24,26 @@ openclaw config validate
 openclaw config validate --json
 ```
 
-## パス
+## パスの指定
 
-パスはドットまたは括弧表記を使用します。
+パスにはドット記法またはブラケット記法を使用できます:
 
 ```bash
 openclaw config get agents.defaults.workspace
 openclaw config get agents.list[0].id
 ```
 
-エージェント リスト インデックスを使用して、特定のエージェントをターゲットにします。
+エージェントのリスト内インデックスを使用して、特定のエージェントを対象にできます:
 
 ```bash
 openclaw config get agents.list
 openclaw config set agents.list[1].tools.exec.node "node-id-or-name"
 ```
 
-## 値
+## 値の形式
 
-可能な場合、値は JSON5 として解析されます。それ以外の場合は文字列として扱われます。
-JSON5 解析を要求するには、`--strict-json` を使用します。 `--json` は従来のエイリアスとして引き続きサポートされます。
+値は可能な限り JSON5 として解析され、解析できない場合は文字列として扱われます。
+明示的に JSON5 解析を行いたい場合は `--strict-json` を使用してください。`--json` フラグも互換性のためにサポートされています。
 
 ```bash
 openclaw config set agents.defaults.heartbeat.every "0m"
@@ -55,14 +53,13 @@ openclaw config set channels.whatsapp.groups '["*"]' --strict-json
 
 ## サブコマンド
 
-- `config file`: アクティブな構成ファイルのパス (`OPENCLAW_CONFIG_PATH` またはデフォルトの場所から解決) を出力します。
+- `config file`: 現在有効な構成ファイルのパスを表示します（`OPENCLAW_CONFIG_PATH` またはデフォルトの場所から解決されます）。
 
-編集後にゲートウェイを再起動します。
+編集後はゲートウェイを再起動してください。
 
-## 検証する
+## 構成の検証 (Validate)
 
-を開始せずに、アクティブなスキーマに対して現在の構成を検証します。
-ゲートウェイ。
+ゲートウェイを起動せずに、現在の構成がスキーマに従っているかを検証します。
 
 ```bash
 openclaw config validate

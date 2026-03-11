@@ -1,8 +1,8 @@
 ---
-summary: "WhatsAppグループメッセージの処理動作と設定（mentionPatternsは複数のサーフェスで共有されます）"
+summary: "WhatsApp グループメッセージの挙動と設定"
 read_when:
   - グループメッセージのルールやメンションを変更する場合
-title: "グループメッセージ"
+title: "Group Messages"
 x-i18n:
   source_path: "channels/group-messages.md"
   source_hash: "181a72f12f5021af77c2e4c913120f711e0c0bc271d218d75cb6fe80dab675bb"
@@ -12,25 +12,25 @@ x-i18n:
   generated_at: "2026-03-10T06:36:49.684Z"
 ---
 
-# グループメッセージ（WhatsApp webチャンネル）
+# Group messages (WhatsApp web channel)
 
-目標：ClawdをWhatsAppグループに参加させ、メンションされた時のみ起動し、そのスレッドを個人DMセッションとは別に保つ。
+目的: Clawd を WhatsApp グループに参加させ、必要なときだけ起動し、そのスレッドを個人 DM セッションから分離して扱えるようにすることです。
 
-注：`agents.list[].groupChat.mentionPatterns`は現在Telegram/Discord/Slack/iMessageでも使用されています。このドキュメントはWhatsApp固有の動作に焦点を当てています。マルチエージェント設定の場合は、エージェントごとに`agents.list[].groupChat.mentionPatterns`を設定してください（またはグローバルフォールバックとして`messages.groupChat.mentionPatterns`を使用）。
+注: `agents.list[].groupChat.mentionPatterns` は現在、Telegram、Discord、Slack、iMessage でも使われています。このページでは WhatsApp 固有の挙動に絞って説明します。マルチエージェント構成では、エージェントごとに `agents.list[].groupChat.mentionPatterns` を設定してください。グローバルなフォールバックとして `messages.groupChat.mentionPatterns` も利用できます。
 
-## 実装済みの機能（2025-12-03）
+## 実装済みの機能 (2025-12-03)
 
-- 起動モード：`mention`（デフォルト）または`always`。`mention`はメンション（`mentionedJids`経由の実際のWhatsApp @メンション、正規表現パターン、またはテキスト内のボットのE.164番号）が必要です。`always`はすべてのメッセージでエージェントを起動しますが、有意義な価値を追加できる場合のみ返信する必要があります。それ以外の場合はサイレントトークン`NO_REPLY`を返します。デフォルトは設定（`channels.whatsapp.groups`）で設定でき、`/activation`でグループごとに上書きできます。`channels.whatsapp.groups`が設定されている場合、グループ許可リストとしても機能します（すべてを許可するには`"*"`を含めてください）。
-- グループポリシー：`channels.whatsapp.groupPolicy`はグループメッセージを受け入れるかどうかを制御します（`open|disabled|allowlist`）。`allowlist`は`channels.whatsapp.groupAllowFrom`を使用します（フォールバック：明示的な`channels.whatsapp.allowFrom`）。デフォルトは`allowlist`（送信者を追加するまでブロック）です。
-- グループごとのセッション：セッションキーは`agent:<agentId>:whatsapp:group:<jid>`のような形式なので、`/verbose on`や`/think high`などのコマンド（スタンドアロンメッセージとして送信）はそのグループにスコープされます。個人DMの状態は影響を受けません。ハートビートはグループスレッドではスキップされます。
-- コンテキスト注入：実行をトリガー*しなかった***保留中のみ**のグループメッセージ（デフォルト50件）は`[Chat messages since your last reply - for context]`の下にプレフィックスが付けられ、トリガーメッセージは`[Current message - respond to this]`の下に配置されます。既にセッションにあるメッセージは再注入されません。
-- 送信者の表示：すべてのグループバッチは`[from: Sender Name (+E164)]`で終わるため、Piは誰が話しているかを把握できます。
-- エフェメラル/一度だけ表示：テキスト/メンションを抽出する前にそれらをアンラップするため、その中のメンションでもトリガーされます。
-- グループシステムプロンプト：グループセッションの最初のターン（および`/activation`でモードが変更されるたびに）、システムプロンプトに`You are replying inside the WhatsApp group "<subject>". Group members: Alice (+44...), Bob (+43...), … Activation: trigger-only … Address the specific sender noted in the message context.`のような短い説明を注入します。メタデータが利用できない場合でも、エージェントにグループチャットであることを伝えます。
+- 起動モード: `mention` (デフォルト) または `always` を使えます。`mention` では、実際の WhatsApp の @メンション (`mentionedJids`)、正規表現パターン、または本文内のボットの E.164 番号のいずれかが必要です。`always` ではすべてのメッセージでエージェントを起動しますが、意味のある応答ができる場合にのみ返信し、それ以外はサイレントトークン `NO_REPLY` を返します。既定値は `channels.whatsapp.groups` で設定でき、`/activation` でグループごとに上書きできます。`channels.whatsapp.groups` を設定した場合は、グループ allowlist としても機能します。すべてのグループを許可するには `"*"` を含めてください。
+- グループポリシー: `channels.whatsapp.groupPolicy` でグループメッセージを受け付けるかどうかを制御します (`open|disabled|allowlist`)。`allowlist` では `channels.whatsapp.groupAllowFrom` を使い、未設定時は明示的な `channels.whatsapp.allowFrom` へフォールバックします。デフォルトは `allowlist` で、送信者を追加するまでブロックされます。
+- グループごとのセッション: セッションキーは `agent:<agentId>:whatsapp:group:<jid>` の形式になります。そのため、`/verbose on` や `/think high` のようなコマンドを単独メッセージで送ると、そのグループだけに適用されます。個人 DM の状態には影響しません。ハートビートはグループスレッドでは実行されません。
+- コンテキスト注入: 実行をトリガーしなかった保留中のグループメッセージだけが、`[Chat messages since your last reply - for context]` の下に付加されます (デフォルトは 50 件)。トリガーになったメッセージは `[Current message - respond to this]` の下に入ります。すでにセッションへ取り込まれたメッセージは再注入されません。
+- 送信者表示: すべてのグループバッチの末尾には `[from: Sender Name (+E164)]` が付き、Pi が誰の発言か把握できるようになっています。
+- エフェメラル / 1 回表示メッセージ: テキストやメンションを抽出する前にアンラップするため、その中のメンションでもトリガーできます。
+- グループ用システムプロンプト: グループセッションの最初のターン、および `/activation` でモードが変わるたびに、`You are replying inside the WhatsApp group "<subject>". Group members: Alice (+44...), Bob (+43...), … Activation: trigger-only … Address the specific sender noted in the message context.` のような短い説明をシステムプロンプトへ注入します。メタデータが取れない場合でも、グループチャットであることはエージェントへ伝えられます。
 
-## 設定例（WhatsApp）
+## 設定例 (WhatsApp)
 
-`~/.openclaw/openclaw.json`に`groupChat`ブロックを追加して、WhatsAppがテキスト本文の視覚的な`@`を削除した場合でも表示名メンションが機能するようにします：
+`~/.openclaw/openclaw.json` に `groupChat` ブロックを追加すると、WhatsApp が本文中の見た目上の `@` を取り除いた場合でも、表示名によるメンションを検出できます。
 
 ```json5
 {
@@ -55,37 +55,37 @@ x-i18n:
 }
 ```
 
-注：
+補足:
 
-- 正規表現は大文字小文字を区別しません。`@openclaw`のような表示名メンションと、`+`/スペースの有無にかかわらず生の番号をカバーします。
-- 誰かが連絡先をタップすると、WhatsAppは`mentionedJids`経由で正規のメンションを送信するため、番号フォールバックはほとんど必要ありませんが、有用な安全策です。
+- 正規表現は大文字小文字を区別しません。`@openclaw` のような表示名メンションと、`+` や空白の有無にかかわらず生の番号を拾えるようにしています。
+- 誰かが連絡先をタップした場合、WhatsApp は通常 `mentionedJids` 経由で正規のメンションを送るため、番号フォールバックは必須ではありません。ただし、安全策としては有用です。
 
-### 起動コマンド（オーナーのみ）
+### 起動コマンド (オーナーのみ)
 
-グループチャットコマンドを使用：
+グループチャットで次のコマンドを使います。
 
 - `/activation mention`
 - `/activation always`
 
-オーナー番号（`channels.whatsapp.allowFrom`から、または未設定の場合はボット自身のE.164）のみがこれを変更できます。グループ内でスタンドアロンメッセージとして`/status`を送信すると、現在の起動モードが表示されます。
+これを変更できるのは、オーナー番号 (`channels.whatsapp.allowFrom`、未設定の場合はボット自身の E.164) だけです。グループで `/status` を単独メッセージとして送ると、現在の起動モードを確認できます。
 
-## 使用方法
+## 使い方
 
-1. WhatsAppアカウント（OpenClawを実行しているもの）をグループに追加します。
-2. `@openclaw …`と言う（または番号を含める）。`groupPolicy: "open"`を設定しない限り、許可リストに登録された送信者のみがトリガーできます。
-3. エージェントプロンプトには最近のグループコンテキストと末尾の`[from: …]`マーカーが含まれるため、適切な人に対応できます。
-4. セッションレベルのディレクティブ（`/verbose on`、`/think high`、`/new`または`/reset`、`/compact`）はそのグループのセッションにのみ適用されます。スタンドアロンメッセージとして送信して登録してください。個人DMセッションは独立したままです。
+1. OpenClaw を実行している WhatsApp アカウントをグループへ追加します。
+2. `@openclaw ...` と送るか、番号を本文に含めます。`groupPolicy: "open"` にしていない限り、トリガーできるのは allowlist に登録された送信者だけです。
+3. エージェントのプロンプトには最近のグループコンテキストと末尾の `[from: ...]` マーカーが入るため、誰に向けた返信か判断できます。
+4. セッション単位の指示 (`/verbose on`、`/think high`、`/new`、`/reset`、`/compact`) は、そのグループのセッションにだけ適用されます。反映させるには単独メッセージで送ってください。個人 DM セッションは独立したままです。
 
-## テスト/検証
+## テスト / 検証
 
-- 手動スモークテスト：
-  - グループで`@openclaw`メンションを送信し、送信者名を参照する返信を確認します。
-  - 2回目のメンションを送信し、履歴ブロックが含まれ、次のターンでクリアされることを確認します。
-- Gatewayログ（`--verbose`で実行）を確認して、`from: <groupJid>`と`[from: …]`サフィックスを示す`inbound web message`エントリを確認します。
+- 手動スモークテスト:
+  - グループで `@openclaw` メンションを送り、送信者名を参照した返信が返ることを確認します。
+  - 2 回目のメンションを送り、履歴ブロックが含まれ、次のターンで消えることを確認します。
+- ゲートウェイログを `--verbose` 付きで確認し、`from: <groupJid>` と `[from: ...]` のサフィックスが入った `inbound web message` エントリを確認します。
 
-## 既知の考慮事項
+## 注意点
 
-- ハートビートは、ノイズの多いブロードキャストを避けるため、グループでは意図的にスキップされます。
-- エコー抑制は結合されたバッチ文字列を使用します。メンションなしで同じテキストを2回送信した場合、最初のもののみが応答を受け取ります。
-- セッションストアエントリは、セッションストア（デフォルトでは`~/.openclaw/agents/<agentId>/sessions/sessions.json`）に`agent:<agentId>:whatsapp:group:<jid>`として表示されます。エントリがない場合は、グループがまだ実行をトリガーしていないことを意味します。
-- グループでのタイピングインジケーターは`agents.defaults.typingMode`に従います（デフォルト：メンションされていない場合は`message`）。
+- ハートビートはノイズの多いブロードキャストを避けるため、グループでは意図的に無効化されています。
+- エコー抑制は結合済みのバッチ文字列に対して働きます。メンションなしで同じテキストを 2 回送ると、返信は最初の 1 回だけになることがあります。
+- セッションストアには `agent:<agentId>:whatsapp:group:<jid>` という形式でエントリが保存されます (デフォルトの保存先は `~/.openclaw/agents/<agentId>/sessions/sessions.json`)。エントリがない場合は、そのグループでまだ実行が発生していないことを意味します。
+- グループでのタイピングインジケーターは `agents.defaults.typingMode` に従います。デフォルトは、未メンション時に `message` です。

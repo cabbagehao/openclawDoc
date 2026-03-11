@@ -1,7 +1,9 @@
 ---
-title: "サンドボックス CLI"
-summary: "サンドボックス コンテナを管理し、効果的なサンドボックス ポリシーを検査する"
-read_when: "You are managing sandbox containers or debugging sandbox/tool-policy behavior."
+title: サンドボックス CLI
+summary: "サンドボックスコンテナの管理と現在のポリシーの確認"
+read_when:
+  - サンドボックスコンテナを管理したい場合
+  - サンドボックスやツールポリシーの動作をデバッグしたい場合
 status: active
 x-i18n:
   source_hash: "6e1186f26c77e188206ce5e198ab624d6b38bc7bb7c06e4d2281b6935c39e347"
@@ -9,17 +11,17 @@ x-i18n:
 
 # サンドボックス CLI
 
-分離されたエージェントを実行するために Docker ベースのサンドボックス コンテナーを管理します。
+エージェントを分離して実行するための Docker ベースのサンドボックスコンテナを管理します。
 
 ## 概要
 
-OpenClaw は、セキュリティのために分離された Docker コンテナ内でエージェントを実行できます。 `sandbox` コマンドは、特に更新または構成変更後のこれらのコンテナーの管理に役立ちます。
+OpenClaw はセキュリティ向上のため、分離された Docker コンテナ内でエージェントを実行できます。`sandbox` コマンドは、アップデート後や構成変更時などにこれらのコンテナを管理するのに役立ちます。
 
-## コマンド
+## コマンド一覧
 
 ### `openclaw sandbox explain`
 
-**効果的な** サンドボックス モード/スコープ/ワークスペース アクセス、サンドボックス ツール ポリシー、および昇格されたゲート (fix-it config キー パスを含む) を検査します。
+**実際に適用されている**サンドボックスモード、スコープ、ワークスペースへのアクセス権限、ツールポリシー、および権限昇格ゲートの状態を確認します。修正が必要な場合の構成キーのパスも表示されます。
 
 ```bash
 openclaw sandbox explain
@@ -30,98 +32,99 @@ openclaw sandbox explain --json
 
 ### `openclaw sandbox list`
 
-すべてのサンドボックス コンテナーをそのステータスと構成とともにリストします。
+すべてのサンドボックスコンテナの状態と構成を一覧表示します。
 
 ```bash
 openclaw sandbox list
-openclaw sandbox list --browser  # List only browser containers
-openclaw sandbox list --json     # JSON output
+openclaw sandbox list --browser  # ブラウザ用コンテナのみを表示
+openclaw sandbox list --json     # JSON 形式で出力
 ```
 
-**出力には以下が含まれます:**
+**出力内容:**
 
-- コンテナ名とステータス(実行中/停止中)
-- Docker イメージとそれが構成と一致するかどうか
-- 年齢（作成からの経過時間）
-- アイドル時間 (最後に使用してからの時間)
-- 関連するセッション/エージェント
+- コンテナ名とステータス（実行中/停止中）
+- Docker イメージ名、および構成と一致しているか
+- 作成からの経過時間
+- 最終使用からのアイドル時間
+- 紐付けられているセッションまたはエージェント
 
 ### `openclaw sandbox recreate`
 
-サンドボックス コンテナを削除して、更新されたイメージ/構成で強制的に再作成します。
+サンドボックスコンテナを削除し、最新のイメージや構成で強制的に再作成します。
 
 ```bash
-openclaw sandbox recreate --all                # Recreate all containers
-openclaw sandbox recreate --session main       # Specific session
-openclaw sandbox recreate --agent mybot        # Specific agent
-openclaw sandbox recreate --browser            # Only browser containers
-openclaw sandbox recreate --all --force        # Skip confirmation
+openclaw sandbox recreate --all                # すべてのコンテナを再作成
+openclaw sandbox recreate --session main       # 特定のセッション用のみ
+openclaw sandbox recreate --agent mybot        # 特定のエージェント用のみ
+openclaw sandbox recreate --browser            # ブラウザ用コンテナのみ
+openclaw sandbox recreate --all --force        # 確認プロンプトをスキップ
 ```
 
 **オプション:**
 
-- `--all`: すべてのサンドボックス コンテナを再作成します。
-- `--session <key>`: 特定のセッションのコンテナを再作成します
-- `--agent <id>`: 特定のエージェントのコンテナを再作成します
-- `--browser`: ブラウザコンテナのみを再作成します
-- `--force`: 確認プロンプトをスキップします
+- `--all`: すべてのサンドボックスコンテナを再作成
+- `--session <キー>`: 特定のセッションのコンテナを再作成
+- `--agent <id>`: 特定のエージェントのコンテナを再作成
+- `--browser`: ブラウザ用コンテナのみを再作成
+- `--force`: 確認プロンプトを表示せずに実行
 
-**重要:** コンテナは、エージェントが次回使用されるときに自動的に再作成されます。
+**重要:** コンテナは、そのエージェントが次回使用される際に自動的に再作成されます。
 
-## 使用例
+## ユースケース
 
-### Docker イメージの更新後
+### Docker イメージを更新したとき
 
 ```bash
-# Pull new image
+# 新しいイメージを取得
 docker pull openclaw-sandbox:latest
 docker tag openclaw-sandbox:latest openclaw-sandbox:bookworm-slim
 
-# Update config to use new image
-# Edit config: agents.defaults.sandbox.docker.image (or agents.list[].sandbox.docker.image)
+# 構成ファイルを更新して新しいイメージを指定
+# 編集箇所: agents.defaults.sandbox.docker.image (または agents.list[].sandbox.docker.image)
 
-# Recreate containers
+# コンテナを再作成
 openclaw sandbox recreate --all
 ```
 
-### サンドボックス構成の変更後
+### サンドボックスの構成を変更したとき
 
-````bash
-# Edit config: agents.defaults.sandbox.* (or agents.list[].sandbox.*)
+```bash
+# 構成ファイルを編集: agents.defaults.sandbox.* (または agents.list[].sandbox.*)
 
-# Recreate to apply new config
+# 新しい設定を適用するためにコンテナを再作成
 openclaw sandbox recreate --all
-```### setupCommand 変更後
+```
+
+### `setupCommand` を変更したとき
 
 ```bash
 openclaw sandbox recreate --all
-# or just one agent:
+# または特定のエージェントのみ:
 openclaw sandbox recreate --agent family
-````
+```
 
-### 特定のエージェントのみ
+### 特定のエージェントのみを更新したいとき
 
 ```bash
-# Update only one agent's containers
+# 特定のエージェントのコンテナのみを更新
 openclaw sandbox recreate --agent alfred
 ```
 
-## なぜこれが必要なのでしょうか?
+## なぜこの操作が必要なのか
 
-**問題:** サンドボックス Docker イメージまたは構成を更新する場合:
+**問題:** サンドボックス用の Docker イメージや構成を更新しても、以下の状況が発生します:
 
-- 既存のコンテナは古い設定で引き続き実行されます
-- コンテナは、非アクティブ状態が 24 時間続いた場合にのみ削除されます。
-- 定期的に使用されるエージェントは古いコンテナを無期限に実行し続けます
+- 既存のコンテナは古い設定のまま動き続ける
+- コンテナは 24 時間以上アイドル状態でなければ自動削除されない
+- 頻繁に使用されるエージェントでは、古いコンテナがいつまでも残り続ける
 
-**解決策:** `openclaw sandbox recreate` を使用して古いコンテナを強制的に削除します。次に必要になったときに、現在の設定で自動的に再作成されます。
+**解決策:** `openclaw sandbox recreate` を使用して古いコンテナを強制的に削除してください。次に必要になった際に、最新の設定で自動的に再作成されます。
 
-ヒント: 手動の `docker rm` よりも `openclaw sandbox recreate` をお勧めします。それは、
-ゲートウェイのコンテナの名前付けと、スコープ/セッション キーが変更されたときの不一致を回避します。
+ヒント: 手動で `docker rm` を行うよりも、`openclaw sandbox recreate` の使用を推奨します。ゲートウェイのコンテナ命名規則に従って処理されるため、スコープやセッションキーが変更された際の不一致を避けることができます。
 
-## 構成
+## 構成設定
 
-サンドボックス設定は、`agents.defaults.sandbox` の `~/.openclaw/openclaw.json` にあります (エージェントごとのオーバーライドは `agents.list[].sandbox` にあります)。
+サンドボックスの設定は `~/.openclaw/openclaw.json` の `agents.defaults.sandbox` 配下に記述します（エージェントごとの上書きは `agents.list[].sandbox` で行います）:
 
 ```jsonc
 {
@@ -133,11 +136,11 @@ openclaw sandbox recreate --agent alfred
         "docker": {
           "image": "openclaw-sandbox:bookworm-slim",
           "containerPrefix": "openclaw-sbx-",
-          // ... more Docker options
+          // ... その他の Docker オプション
         },
         "prune": {
-          "idleHours": 24, // Auto-prune after 24h idle
-          "maxAgeDays": 7, // Auto-prune after 7 days
+          "idleHours": 24, // 24時間アイドル状態で自動削除
+          "maxAgeDays": 7, // 作成から7日で自動削除
         },
       },
     },
@@ -145,8 +148,8 @@ openclaw sandbox recreate --agent alfred
 }
 ```
 
-## 関連項目
+## 関連情報
 
-- [サンドボックス ドキュメント](/gateway/sandboxing)
+- [サンドボックス詳細ドキュメント](/gateway/sandboxing)
 - [エージェント構成](/concepts/agent-workspace)
-- [ドクターコマンド](/gateway/doctor) - サンドボックスの設定を確認してください
+- [Doctor コマンド](/gateway/doctor) - サンドボックス環境のチェック

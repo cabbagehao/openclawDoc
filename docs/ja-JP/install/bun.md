@@ -1,32 +1,32 @@
 ---
-summary: "Bun ワークフロー (実験的): pnpm との比較、インストール、注意点"
+summary: "Bun ワークフロー（実験的）: インストール方法と pnpm との差分、注意点"
 read_when:
-  - 最速のローカル開発ループを求めている場合 (bun + watch)
-  - Bun のインストール/パッチ/ライフサイクルスクリプトの問題に遭遇した場合
+  - 最速のローカル開発ループ（bun + watch）を使いたい
+  - Bun のインストール、パッチ、ライフサイクルスクリプトで問題が出た
 title: "Bun (実験的)"
 ---
 
 # Bun (実験的)
 
-目標: pnpm のワークフローから逸脱することなく、このリポジトリを **Bun** で実行すること (オプション、WhatsApp/Telegram では非推奨)。
+目的は、`pnpm` のワークフローから大きく外れずに、このリポジトリを **Bun** で実行できるようにすることです。Bun は任意で利用できますが、WhatsApp / Telegram 用途では推奨されません。
 
-⚠️ **Gateway ランタイムとしては推奨されません** (WhatsApp/Telegram のバグのため)。本番環境では Node を使用してください。
+⚠️ **ゲートウェイのランタイムには推奨されません**。WhatsApp / Telegram まわりで不具合があるため、本番環境では Node を使用してください。
 
 ## ステータス
 
-- Bun は、TypeScript を直接実行するためのオプションのローカルランタイムです (`bun run …`, `bun --watch …`)。
-- ビルドのデフォルトは `pnpm` であり、引き続き完全にサポートされます (一部のドキュメントツールでも使用されています)。
-- Bun は `pnpm-lock.yaml` を使用できず、無視します。
+- Bun は TypeScript を直接実行するための任意のローカルランタイムです（`bun run …`、`bun --watch …`）。
+- ビルドの既定は `pnpm` で、引き続き完全にサポートされています。一部のドキュメント用ツールも `pnpm` を使います。
+- Bun は `pnpm-lock.yaml` を利用できないため、このファイルは無視されます。
 
 ## インストール
 
-デフォルト:
+既定のインストール:
 
 ```sh
 bun install
 ```
 
-注意: `bun.lock`/`bun.lockb` は gitignore されているため、どちらにしてもリポジトリに変更は生じません。*ロックファイルの書き込みを一切行いたくない*場合は:
+補足: `bun.lock` / `bun.lockb` は `.gitignore` に含まれているため、どちらを使ってもリポジトリに余計な差分は出ません。ロックファイルを一切書き込みたくない場合は、次を使います。
 
 ```sh
 bun install --no-save
@@ -39,15 +39,16 @@ bun run build
 bun run vitest run
 ```
 
-## Bun のライフサイクルスクリプト (デフォルトでブロック)
+## Bun のライフサイクルスクリプト (既定ではブロック)
 
-Bun は、明示的に信頼されない限り、依存関係のライフサイクルスクリプトをブロックする場合があります (`bun pm untrusted` / `bun pm trust`)。
-このリポジトリでは、一般的にブロックされるスクリプトは必要ありません:
+Bun は、依存パッケージのライフサイクルスクリプトを明示的に信頼しない限り、実行をブロックすることがあります（`bun pm untrusted` / `bun pm trust`）。
 
-- `@whiskeysockets/baileys` `preinstall`: Node のメジャーバージョンが 20 以上であることを確認します (私たちは Node 22+ を実行しています)。
-- `protobufjs` `postinstall`: 互換性のないバージョンスキームに関する警告を出力します (ビルドアーティファクトはありません)。
+このリポジトリでは、一般にブロックされるスクリプトは通常不要です。
 
-これらのスクリプトを必要とする実際のランタイムの問題に遭遇した場合は、明示的に信頼してください:
+- `@whiskeysockets/baileys` の `preinstall`: Node のメジャーバージョンが 20 以上かを確認します。OpenClaw では Node 22+ を想定しています。
+- `protobufjs` の `postinstall`: 互換性のないバージョン体系に関する警告を出すだけで、ビルド成果物は生成しません。
+
+これらのスクリプトが本当に必要なランタイム問題に遭遇した場合のみ、明示的に信頼してください。
 
 ```sh
 bun pm trust @whiskeysockets/baileys protobufjs
@@ -55,4 +56,4 @@ bun pm trust @whiskeysockets/baileys protobufjs
 
 ## 注意点
 
-- 一部のスクリプトはまだ pnpm をハードコードしています (例: `docs:build`, `ui:*`, `protocol:check`)。現時点では、これらは pnpm を介して実行してください。
+- 一部のスクリプトはまだ `pnpm` を前提にしています。たとえば `docs:build`、`ui:*`、`protocol:check` です。現時点では、これらは `pnpm` で実行してください。

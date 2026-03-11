@@ -1,40 +1,34 @@
 ---
-summary: "「openclaw configure」の CLI リファレンス (対話型構成プロンプト)"
+summary: "`openclaw configure` の CLI リファレンス (対話形式による構成設定プロンプト)"
 read_when:
-  - 資格情報、デバイス、またはエージェントのデフォルトを対話的に調整したい
-title: "構成する"
+  - 認証情報、デバイス、またはエージェントのデフォルト設定を対話的に調整したい場合
+title: "configure"
 x-i18n:
   source_hash: "2df6bce0bf8c02cca7cdc28d6d28f3e32dd52329c54438c7b4fb7a236e105fa4"
 ---
 
 # `openclaw configure`
 
-資格情報、デバイス、エージェントのデフォルトを設定するための対話型プロンプト。
+認証情報、デバイス、およびエージェントのデフォルト設定を行うための対話形式のプロンプトです。
 
-注: **モデル** セクションには、
-`agents.defaults.models` ホワイトリスト (`/model` およびモデル ピッカーに表示されるもの)。
+補足: **Model** セクションには、`agents.defaults.models` の許可リスト（`/model` コマンドやモデル選択ツールに表示されるモデル）の複数選択機能が含まれています。
 
-ヒント: サブコマンドを指定しない `openclaw config` と同じウィザードが開きます。使用する
-`openclaw config get|set|unset` 非対話型編集の場合。
+ヒント: サブコマンドなしの `openclaw config` を実行しても同じウィザードが開きます。非対話形式で編集したい場合は `openclaw config get|set|unset` を使用してください。
 
-関連:
-
+関連ドキュメント:
 - ゲートウェイ構成リファレンス: [構成](/gateway/configuration)
-- 構成 CLI: [構成](/cli/config)
+- 構成用 CLI: [Config](/cli/config)
 
-注:
+注意事項:
+- ゲートウェイの実行場所を選択すると、常に `gateway.mode` が更新されます。他のセクションの設定が不要な場合は、そのまま "Continue" を選択して終了できます。
+- チャネル系のサービス（Slack, Discord, Matrix, Microsoft Teams）では、セットアップ中にチャネルやルームの許可リスト（allowlist）の設定を求められます。名前または ID を入力でき、ウィザードは可能な限り名前を ID に解決しようと試みます。
+- デーモンのインストール手順において、トークン認証が有効で、かつ `gateway.auth.token` が SecretRef で管理されている場合、ウィザードは SecretRef の妥当性を検証しますが、解決された平文のトークン値をサービスの環境メタデータに永続化させることはありません。
+- トークン認証が必要な状況で、構成されたトークン用の SecretRef が解決できない場合、ウィザードは具体的な解決策を提示した上でデーモンのインストールをブロックします。
+- `gateway.auth.token` と `gateway.auth.password` の両方が構成され、かつ `gateway.auth.mode` が未設定の場合、モードが明示的に設定されるまでデーモンのインストールはブロックされます。
 
-- ゲートウェイを実行する場所を選択すると、常に `gateway.mode` が更新されます。それだけが必要な場合は、他のセクションを選択せず​​に「続行」を選択できます。
-- チャネル指向のサービス (Slack/Discord/Matrix/Microsoft Teams) は、セットアップ中にチャネル/ルームの許可リストの入力を求めます。名前または ID を入力できます。可能な場合、ウィザードは名前を ID に解決します。
-- デーモンのインストール手順を実行し、トークン認証にトークンが必要で、`gateway.auth.token` が SecretRef で管理されている場合、configure は SecretRef を検証しますが、解決されたプレーンテキストのトークン値をスーパーバイザ サービス環境のメタデータに保持しません。
-- トークン認証にトークンが必要で、構成されたトークン SecretRef が未解決の場合は、実行可能な修復ガイダンスを使用して、ブロック デーモンのインストールを構成します。
-- `gateway.auth.token` と `gateway.auth.password` の両方が構成され、`gateway.auth.mode` が設定されていない場合は、モードが明示的に設定されるまで、ブロック デーモンのインストールを構成します。
+## 実行例
 
-## 例```bash
-
+```bash
 openclaw configure
 openclaw configure --section model --section channels
-
-```
-
 ```

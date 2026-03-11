@@ -1,67 +1,65 @@
 ---
-summary: "OpenResponses 互換の /v1/responses HTTP エンドポイントをゲートウェイから公開する"
+summary: "ゲートウェイから OpenResponses 互換の /v1/responses HTTP エンドポイントを公開する"
 read_when:
-  - OpenResponses API を使用するクライアントの統合
-  - アイテムベースの入力、クライアント ツール呼び出し、または SSE イベントが必要な場合
-title: "オープンレスポンス API"
+  - OpenResponses API を使用するクライアントと統合する場合
+  - アイテムベースの入力、クライアント側のツール呼び出し、または SSE イベントを利用したい場合
+title: "OpenResponses API"
 x-i18n:
   source_hash: "59aceb2143d65b2d13f39736170ef7c2d01f61b2b223941635148ba819c702d6"
 ---
 
 # OpenResponses API (HTTP)
 
-OpenClaw のゲートウェイは、OpenResponses 互換の `POST /v1/responses` エンドポイントにサービスを提供できます。
+OpenClaw ゲートウェイは、OpenResponses 互換の `POST /v1/responses` エンドポイントを提供できます。
 
-このエンドポイントは **デフォルトでは無効になっています**。まず設定で有効にしてください。
+このエンドポイントは **デフォルトで無効** になっています。利用するには、まず構成ファイルで有効にする必要があります。
 
-- `POST /v1/responses`
-- ゲートウェイと同じポート (WS + HTTP マルチプレックス): `http://<gateway-host>:<port>/v1/responses`
+- エンドポイント: `POST /v1/responses`
+- ポート: ゲートウェイと同じポート（WebSocket と HTTP のマルチプレックス）: `http://<gateway-host>:<port>/v1/responses`
 
-内部では、リクエストは通常のゲートウェイ エージェントの実行として実行されます (ゲートウェイ エージェントと同じコードパス)。
-`openclaw agent`)、ルーティング/権限/構成がゲートウェイと一致するようにします。
+内部的には、リクエストは通常のゲートウェイエージェントの実行（`openclaw agent` と同じパス）として処理されます。そのため、ルーティング、権限、および構成設定はゲートウェイ本体の設定に従います。
 
-## 認証
+## 認証 (Auth)
 
-ゲートウェイ認証構成を使用します。無記名トークンを送信します。
+ゲートウェイの認証設定を使用します。リクエスト時に Bearer トークンを送信してください:
 
-- `Authorization: Bearer <token>`
+- `Authorization: Bearer <トークン>`
 
-注:
-
-- `gateway.auth.mode="token"`の場合は、`gateway.auth.token`(または`OPENCLAW_GATEWAY_TOKEN`)を使用してください。
-- `gateway.auth.mode="password"`の場合は、`gateway.auth.password`(または`OPENCLAW_GATEWAY_PASSWORD`)を使用してください。
-- `gateway.auth.rateLimit` が構成されており、認証失敗が多すぎる場合、エンドポイントは `429` と `Retry-After` を返します。
+補足事項:
+- `gateway.auth.mode="token"` の場合、`gateway.auth.token` (または環境変数 `OPENCLAW_GATEWAY_TOKEN`) を使用します。
+- `gateway.auth.mode="password"` の場合、`gateway.auth.password` (または環境変数 `OPENCLAW_GATEWAY_PASSWORD`) を使用します。
+- `gateway.auth.rateLimit` が構成されている場合、認証失敗が繰り返されるとエンドポイントは `429` (Retry-After 付き) を返します。
 
 ## セキュリティ境界 (重要)
 
-このエンドポイントを、ゲートウェイ インスタンスの **完全なオペレータ アクセス** サーフェスとして扱います。- ここでの HTTP ベアラー認証は、ユーザーごとの範囲が狭いモデルではありません。
+このエンドポイントは、ゲートウェイインスタンスに対する **フルアクセス（オペレーター権限）** を持つインターフェースとして扱ってください。
 
-- このエンドポイントの有効なゲートウェイ トークン/パスワードは、所有者/オペレーターの資格情報と同様に扱われる必要があります。
-- リクエストは、信頼されたオペレーターのアクションと同じコントロール プレーン エージェント パスを通じて実行されます。
-- このエンドポイントには、非所有者/ユーザーごとの個別のツール境界はありません。呼び出し元がここでゲートウェイ認証を通過すると、OpenClaw はその呼び出し元をこのゲートウェイの信頼できるオペレーターとして扱います。
-- ターゲット エージェント ポリシーで機密ツールが許可されている場合、このエンドポイントはそれらを使用できます。
-- このエンドポイントをループバック/テールネット/プライベートイングレスのみに保持します。公共のインターネットに直接公開しないでください。
+- ここでの HTTP Bearer 認証は、一般ユーザー向けの制限されたスコープを持つものではありません。
+- このエンドポイントで使用する有効なトークンやパスワードは、オーナー/オペレーターの認証情報と同等に扱う必要があります。
+- リクエストは、信頼されたオペレーターのアクションと同じコントロールプレーンのエージェントパスを通じて実行されます。
+- このエンドポイントには、非所有者や一般ユーザー向けの個別のツール制限レイヤーはありません。ゲートウェイ認証を通過した呼び出し元は、OpenClaw によってこのゲートウェイの信頼されたオペレーターとして扱われます。
+- ターゲットとなるエージェントのポリシーで機密ツールが許可されている場合、このエンドポイント経由でもそれらのツールが実行可能です。
+- セキュリティのため、このエンドポイントはループバック、Tailnet、またはプライベートなネットワーク内でのみ公開し、インターネット上に直接公開することは避けてください。
 
-[セキュリティ](/gateway/security) および [リモート アクセス](/gateway/remote) を参照してください。
+詳細は [セキュリティ](/gateway/security) および [リモートアクセス](/gateway/remote) を参照してください。
 
 ## エージェントの選択
 
-カスタム ヘッダーは必要ありません。OpenResponses `model` フィールドでエージェント ID をエンコードします。
+カスタムヘッダーは不要です。OpenResponses の `model` フィールドにエージェント ID を埋め込んでください:
 
-- `model: "openclaw:<agentId>"` (例: `"openclaw:main"`、`"openclaw:beta"`)
+- `model: "openclaw:<agentId>"` (例: `"openclaw:main"`, `"openclaw:beta"`)
 - `model: "agent:<agentId>"` (エイリアス)
 
-または、ヘッダーによって特定の OpenClaw エージェントをターゲットにします。
+または、特定の OpenClaw エージェントをヘッダーで指定することも可能です:
 
-- `x-openclaw-agent-id: <agentId>` (デフォルト: `main`)
+- `x-openclaw-agent-id: <agentId>` (デフォルトは `main`)
 
-上級:
+高度な設定:
+- `x-openclaw-session-key: <sessionKey>` を指定することで、セッションルーティングを完全に制御できます。
 
-- `x-openclaw-session-key: <sessionKey>` はセッション ルーティングを完全に制御します。
+## 有効化の手順
 
-## エンドポイントを有効にする
-
-`gateway.http.endpoints.responses.enabled` を `true` に設定します。
+`gateway.http.endpoints.responses.enabled` を `true` に設定してください:
 
 ```json5
 {
@@ -75,9 +73,9 @@ OpenClaw のゲートウェイは、OpenResponses 互換の `POST /v1/responses`
 }
 ```
 
-## エンドポイントの無効化
+## 無効化の手順
 
-`gateway.http.endpoints.responses.enabled` を `false` に設定します。
+`gateway.http.endpoints.responses.enabled` を `false` に設定してください:
 
 ```json5
 {
@@ -91,25 +89,25 @@ OpenClaw のゲートウェイは、OpenResponses 互換の `POST /v1/responses`
 }
 ```
 
-## セッションの動作
+## セッションの挙動
 
-デフォルトでは、エンドポイントは **リクエストごとにステートレス** です (呼び出しごとに新しいセッション キーが生成されます)。リクエストに OpenResponses `user` 文字列が含まれている場合、ゲートウェイは安定したセッション キーを取得します。
-これにより、繰り返しの通話でエージェント セッションを共有できるようになります。
+デフォルトでは、エンドポイントは **リクエストごとにステートレス** です（呼び出しのたびに新しいセッションキーが生成されます）。
 
-## リクエスト形状 (サポートされています)
+リクエストに OpenResponses の `user` 文字列が含まれている場合、ゲートウェイはそこから固定のセッションキーを導出します。これにより、同じユーザー文字列を使用する繰り返しの呼び出しで、エージェントセッションを共有することが可能になります。
 
-リクエストは、項目ベースの入力を使用して OpenResponses API に従います。現在のサポート:
+## 対応しているリクエスト形式
 
-- `input`: 項目オブジェクトの文字列または配列。
-- `instructions`: システム プロンプトに統合されました。
-- `tools`: クライアント ツール定義 (機能ツール)。
-- `tool_choice`: フィルタリングするか、クライアント ツールを要求します。
-- `stream`: SSE ストリーミングを有効にします。
-- `max_output_tokens`: ベストエフォート型の出力制限 (プロバイダーに依存)。
-- `user`: 安定したセッション ルーティング。
+アイテムベースの入力を伴う OpenResponses API に従います。現在サポートされている項目は以下の通りです:
 
-受け入れられましたが、**現在無視されています**:
+- `input`: 文字列、またはアイテムオブジェクトの配列。
+- `instructions`: システムプロンプトにマージされます。
+- `tools`: クライアント側のツール定義（function tools）。
+- `tool_choice`: クライアントツールの使用を制限、あるいは強制します。
+- `stream`: SSE によるストリーミングを有効にします。
+- `max_output_tokens`: 出力トークン数の上限を指定します（プロバイダーに依存）。
+- `user`: 固定のセッションルーティング用文字列。
 
+受け入れ可能ですが、**現在は無視される** 項目:
 - `max_tool_calls`
 - `reasoning`
 - `metadata`
@@ -117,19 +115,19 @@ OpenClaw のゲートウェイは、OpenResponses 互換の `POST /v1/responses`
 - `previous_response_id`
 - `truncation`
 
-## 項目 (入力)
+## アイテム (入力)
 
 ### `message`
 
-役割: `system`、`developer`、`user`、`assistant`。
+ロール: `system`, `developer`, `user`, `assistant`。
 
-- `system` および `developer` がシステム プロンプトに追加されます。
-- 最新の `user` または `function_call_output` アイテムが「現在のメッセージ」になります。
-- 以前のユーザー/アシスタント メッセージは、コンテキストの履歴として含まれます。
+- `system` および `developer` はシステムプロンプトの末尾に追加されます。
+- 最新の `user` または `function_call_output` アイテムが「現在のメッセージ」となります。
+- それより前のユーザー/アシスタントのメッセージは、文脈（履歴）として含まれます。
 
 ### `function_call_output` (ターンベースのツール)
 
-ツールの結果をモデルに送り返します。
+ツールの実行結果をモデルに返します:
 
 ```json
 {
@@ -141,16 +139,17 @@ OpenClaw のゲートウェイは、OpenResponses 互換の `POST /v1/responses`
 
 ### `reasoning` および `item_reference`
 
-スキーマの互換性のために受け入れられますが、プロンプトの構築時には無視されます。## ツール (クライアント側の機能ツール)
+スキーマの互換性のために受け入れられますが、プロンプト構築時には無視されます。
 
-`tools: [{ type: "function", function: { name, description?, parameters? } }]` のツールを提供します。
+## ツール (クライアント側の関数ツール)
 
-エージェントがツールを呼び出すことを決定した場合、応答は `function_call` 出力項目を返します。
-次に、`function_call_output` を使用してフォローアップ リクエストを送信し、ターンを続行します。
+`tools: [{ type: "function", function: { name, description?, parameters? } }]` の形式でツールを提供します。
+
+エージェントがツールの呼び出しを決定した場合、レスポンスには `function_call` 出力アイテムが含まれます。その後、`function_call_output` を含む次のリクエストを送信することでターンを継続できます。
 
 ## 画像 (`input_image`)
 
-Base64 または URL ソースをサポートします。
+base64 または URL ソースをサポートしています:
 
 ```json
 {
@@ -159,12 +158,12 @@ Base64 または URL ソースをサポートします。
 }
 ```
 
-許可される MIME タイプ (現在): `image/jpeg`、`image/png`、`image/gif`、`image/webp`、`image/heic`、`image/heif`。
-最大サイズ (現在): 10MB。
+許可される MIME タイプ: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/heic`, `image/heif`。
+最大サイズ: 10MB。
 
 ## ファイル (`input_file`)
 
-Base64 または URL ソースをサポートします。
+base64 または URL ソースをサポートしています:
 
 ```json
 {
@@ -178,33 +177,27 @@ Base64 または URL ソースをサポートします。
 }
 ```
 
-許可されている MIME タイプ (現在): `text/plain`、`text/markdown`、`text/html`、`text/csv`、
-`application/json`、`application/pdf`。
+許可される MIME タイプ: `text/plain`, `text/markdown`, `text/html`, `text/csv`, `application/json`, `application/pdf`。
+最大サイズ: 5MB。
 
-最大サイズ (現在): 5MB。
+現在の挙動:
+- ファイルの内容はデコードされ、ユーザーメッセージではなく **システムプロンプト** に追加されます。そのため、セッション履歴には保存されず一時的なものとなります。
+- PDF はテキスト抽出が行われます。テキストが少ない場合は、最初の数ページが画像化（ラスタライズ）され、画像としてモデルに渡されます。
 
-現在の動作:
+PDF のパースには Node.js 親和性の高い `pdfjs-dist` のレガシービルド（ワーカーなし）を使用しています。最新の PDF.js ビルドはブラウザのワーカーや DOM グローバル変数を必要とするため、ゲートウェイ内では使用されません。
 
-- ファイルの内容はデコードされ、ユーザー メッセージではなく **システム プロンプト**に追加されます。
-  そのため、一時的なままになります (セッション履歴には保持されません)。
-- PDF はテキストとして解析されます。テキストがほとんど見つからない場合は、最初のページがラスタライズされます
-  画像に変換され、モデルに渡されます。
-
-PDF 解析では、ノードフレンドリーな `pdfjs-dist` レガシー ビルド (ワーカーなし) が使用されます。現代の
-PDF.js ビルドはブラウザー ワーカー/DOM グローバルを想定しているため、ゲートウェイでは使用されません。
-
-URL フェッチのデフォルト:- `files.allowUrl`: `true`
-
+URL 取得のデフォルト設定:
+- `files.allowUrl`: `true`
 - `images.allowUrl`: `true`
-- `maxUrlParts`: `8` (リクエストごとの URL ベースの合計 `input_file` + `input_image` パーツ)
-- リクエストは保護されます (DNS 解決、プライベート IP ブロック、リダイレクト キャップ、タイムアウト)。
-- 入力タイプごとにオプションのホスト名ホワイトリストがサポートされています (`files.urlAllowlist`、`images.urlAllowlist`)。
-  - 正確なホスト: `"cdn.example.com"`
-  - ワイルドカード サブドメイン: `"*.assets.example.com"` (頂点と一致しません)
+- `maxUrlParts`: `8` (1回のリクエストに含まれる URL ベースの `input_file` + `input_image` の合計数)
+- リクエストは安全に保護されます（DNS 解決、プライベート IP のブロック、リダイレクト制限、タイムアウト）。
+- 入力タイプごとに追加のホスト名許可リストを指定可能です (`files.urlAllowlist`, `images.urlAllowlist`)。
+  - 完全一致: `"cdn.example.com"`
+  - ワイルドカード（サブドメインのみ）: `"*.assets.example.com"` (apex ドメイン自体には一致しません)
 
-## ファイル + 画像の制限 (構成)
+## ファイルおよび画像の上限設定 (構成)
 
-デフォルトは `gateway.http.endpoints.responses` で調整できます。
+`gateway.http.endpoints.responses` 配下で調整可能です:
 
 ```json5
 {
@@ -258,12 +251,11 @@ URL フェッチのデフォルト:- `files.allowUrl`: `true`
 }
 ```
 
-省略時のデフォルト:
-
+省略時のデフォルト値:
 - `maxBodyBytes`: 20MB
 - `maxUrlParts`: 8
 - `files.maxBytes`: 5MB
-- `files.maxChars`: 200k
+- `files.maxChars`: 20万文字
 - `files.maxRedirects`: 3
 - `files.timeoutMs`: 10秒
 - `files.pdf.maxPages`: 4
@@ -272,24 +264,22 @@ URL フェッチのデフォルト:- `files.allowUrl`: `true`
 - `images.maxBytes`: 10MB
 - `images.maxRedirects`: 3
 - `images.timeoutMs`: 10秒
-- HEIC/HEIF `input_image` ソースは受け入れられ、プロバイダー配信前に JPEG に正規化されます。
+- HEIC/HEIF 形式の画像は受け入れられ、モデルプロバイダーに送られる前に自動的に JPEG に正規化されます。
 
 セキュリティ上の注意:
-
-- URL ホワイトリストは、フェッチ前およびリダイレクト ホップで適用されます。
-- ホスト名を許可リストに登録しても、プライベート/内部 IP ブロックはバイパスされません。
-- インターネットに公開されたゲートウェイの場合、アプリレベルのガードに加えてネットワーク下り制御を適用します。
-  [セキュリティ](/gateway/security) を参照してください。
+- ホスト名許可リストは、最初のフェッチ時およびリダイレクトの各ホップで適用されます。
+- ホスト名を許可リストに入れても、プライベート/内部 IP へのブロッキングをバイパスすることはできません。
+- インターネットに公開されたゲートウェイを運用する場合は、アプリレベルの保護に加えて、OS/ネットワークレベルでの下り通信制限（Egress control）も適用してください（詳細は [セキュリティ](/gateway/security) を参照）。
 
 ## ストリーミング (SSE)
 
-サーバー送信イベント (SSE) を受信するように `stream: true` を設定します。- `Content-Type: text/event-stream`
+`stream: true` を設定することで、Server-Sent Events (SSE) を受信できます:
 
-- 各イベント行は `event: <type>` および `data: <json>` です。
-- ストリームは `data: [DONE]` で終了します
+- `Content-Type: text/event-stream`
+- 各イベント行の形式: `event: <タイプ>` および `data: <JSON>`
+- ストリームの終了: `data: [DONE]`
 
-現在発行されているイベントの種類:
-
+現在発行されるイベントタイプ:
 - `response.created`
 - `response.in_progress`
 - `response.output_item.added`
@@ -299,29 +289,28 @@ URL フェッチのデフォルト:- `files.allowUrl`: `true`
 - `response.content_part.done`
 - `response.output_item.done`
 - `response.completed`
-- `response.failed` (エラー時)
+- `response.failed` (エラー発生時)
 
-## 使用法
+## 利用状況 (Usage)
 
-`usage` は、基礎となるプロバイダーがトークン数を報告するときに設定されます。
+下位のプロバイダーからトークン数が報告された場合、レスポンスの `usage` フィールドに値がセットされます。
 
-## エラー
+## エラー形式
 
-エラーでは次のような JSON オブジェクトが使用されます。
+エラーは以下の形式の JSON オブジェクトとして返されます:
 
 ```json
 { "error": { "message": "...", "type": "invalid_request_error" } }
 ```
 
-よくあるケース:
+主なステータスコード:
+- `401`: 認証情報の欠落、または無効。
+- `400`: リクエストボディが不正。
+- `405`: 許可されていないメソッド。
 
-- `401` 認証が見つからない/無効です
-- `400` リクエスト本文が無効です
-- `405` 間違った方法です
+## 実行例
 
-## 例
-
-非ストリーミング:
+通常（非ストリーミング）の実行:
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/responses \
@@ -330,11 +319,11 @@ curl -sS http://127.0.0.1:18789/v1/responses \
   -H 'x-openclaw-agent-id: main' \
   -d '{
     "model": "openclaw",
-    "input": "hi"
+    "input": "こんにちは"
   }'
 ```
 
-ストリーミング:
+ストリーミング実行:
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/responses \
@@ -344,6 +333,6 @@ curl -N http://127.0.0.1:18789/v1/responses \
   -d '{
     "model": "openclaw",
     "stream": true,
-    "input": "hi"
+    "input": "こんにちは"
   }'
 ```

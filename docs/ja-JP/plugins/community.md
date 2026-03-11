@@ -1,53 +1,52 @@
 ---
-summary: "コミュニティ プラグイン: 品質バー、ホスティング要件、PR 送信パス"
+summary: "コミュニティ プラグインの品質基準、公開要件、PR 提出方法"
 read_when:
-  - サードパーティの OpenClaw プラグインを公開したい
-  - ドキュメントリスト用のプラグインを提案したい
-title: "コミュニティプラグイン"
+  - サードパーティ製 OpenClaw プラグインを公開したいとき
+  - ドキュメント掲載用のプラグインを提案したいとき
+title: "コミュニティ プラグイン"
 x-i18n:
   source_hash: "5203b7a6973ed0551fe87d17cda2f6f6e35ce520fe7f8078b1840a445ed67642"
 ---
 
-# コミュニティプラグイン
+# Community plugins
 
-このページでは、**コミュニティによって管理されている OpenClaw 用の高品質プラグイン**を追跡します。
+このページでは、OpenClaw 向けの **コミュニティ保守プラグイン** のうち、一定の品質基準を満たしたものを掲載します。
 
-品質基準を満たしている場合、コミュニティ プラグインをここに追加する PR を受け入れます。
+品質基準を満たしていれば、このページへの追加 PR を受け付けます。
 
-## リストには必須です
+## 掲載条件
 
-- プラグイン パッケージは npmjs で公開されています (`openclaw plugins install <npm-spec>` 経由でインストール可能)。
-- ソース コードは GitHub (パブリック リポジトリ) でホストされています。
-- リポジトリには、セットアップ/使用ドキュメントと問題トラッカーが含まれています。
-- プラグインには明確なメンテナンス シグナル (アクティブなメンテナー、最近の更新、または応答性のある問題処理) があります。
+- プラグイン パッケージが npmjs に公開されていること（`openclaw plugins install <npm-spec>` でインストール可能）
+- ソースコードが GitHub の公開リポジトリでホストされていること
+- リポジトリにセットアップ手順、使用方法のドキュメント、issue tracker があること
+- 明確なメンテナンス シグナルがあること（アクティブな maintainer、最近の更新、issue への継続対応など）
 
 ## 提出方法
 
-次のコマンドを使用して、プラグインをこのページに追加する PR を開きます。
+このページにプラグインを追加する PR を作成し、次の情報を含めてください。
 
 - プラグイン名
-- npmパッケージ名
-- GitHub リポジトリ URL
-- 一行説明
-- インストールコマンド
+- npm package 名
+- GitHub repository URL
+- 1 行の説明
+- インストール コマンド
 
-## レビューバー
+## 審査基準
 
-私たちは、便利で文書化されており、安全に操作できるプラグインを好みます。
-労力の少ないラッパー、所有権が不明瞭、またはメンテナンスされていないパッケージは拒否される場合があります。
+有用で、文書化されており、安全に運用できるプラグインを優先します。低労力な wrapper、所有者が不明確なもの、保守されていない package は掲載を見送る場合があります。
 
-## 候補形式
+## 候補の記載形式
 
-エントリを追加するときは、次の形式を使用します。
+エントリを追加するときは、次の形式を使ってください。
 
-- **プラグイン名** — 簡単な説明
+- **Plugin Name** — short description
   npm: `@scope/package`
-  リポジトリ: `https://github.com/org/repo`
-  インストール: `openclaw plugins install @scope/package`
+  repo: `https://github.com/org/repo`
+  install: `openclaw plugins install @scope/package`
 
-## リストされたプラグイン
+## 掲載済みプラグイン
 
-- **WeChat** — WeChatPadPro (iPad プロトコル) 経由で OpenClaw を WeChat 個人アカウントに接続します。キーワードをトリガーとした会話によるテキスト、画像、ファイルの交換をサポートします。
+- **WeChat** — WeChatPadPro（iPad protocol）を通じて、OpenClaw を WeChat の個人アカウントへ接続します。キーワード起動の会話で、テキスト、画像、ファイルをやり取りできます。
   npm: `@icesword760/openclaw-wechat`
-  リポジトリ: `https://github.com/icesword0760/openclaw-wechat`
-  インストール: `openclaw plugins install @icesword760/openclaw-wechat`
+  repo: `https://github.com/icesword0760/openclaw-wechat`
+  install: `openclaw plugins install @icesword760/openclaw-wechat`

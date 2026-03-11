@@ -1,6 +1,7 @@
 ---
-summary: "オンボーディング ウィザードと構成スキーマに関する RPC プロトコルのメモ"
-read_when: "Changing onboarding wizard steps or config schema endpoints"
+summary: "オンボーディングウィザードと構成スキーマに関する RPC プロトコルの仕様メモ"
+read_when:
+  - オンボーディングウィザードのステップや構成スキーマのエンドポイントを変更する場合
 title: "オンボーディングと構成プロトコル"
 x-i18n:
   source_hash: "0e324d71e0e7df239f146c3e3a47acfa8ad92f2afbf4370d42c248d55fc926d7"
@@ -8,15 +9,15 @@ x-i18n:
 
 # オンボーディング + 構成プロトコル
 
-目的: CLI、macOS アプリ、Web UI にわたる共有オンボーディング + 構成サーフェス。
+目的: CLI、macOS アプリ、および Web UI の間で共有される、オンボーディングと構成（Config）操作のための共通プロトコルを定義すること。
 
 ## コンポーネント
 
-- ウィザード エンジン (共有セッション + プロンプト + オンボーディング状態)。
-- CLI オンボーディングでは、UI クライアントと同じウィザード フローを使用します。
-- ゲートウェイ RPC は、ウィザード + 構成スキーマ エンドポイントを公開します。
-- macOS のオンボーディングでは、ウィザード ステップ モデルが使用されます。
-- Web UI は、JSON スキーマ + UI ヒントから構成フォームをレンダリングします。
+- ウィザードエンジン: 共有セッション、プロンプト、およびオンボーディング状態を管理します。
+- CLI オンボーディング: UI クライアント（アプリ等）と同じウィザードフローを使用します。
+- ゲートウェイ RPC: ウィザード操作および構成スキーマ取得用のエンドポイントを公開します。
+- macOS オンボーディング: ウィザードのステップモデルを採用しています。
+- Web UI: JSON スキーマと UI ヒント（UI Hints）を元に、構成設定用のフォームを自動生成します。
 
 ## ゲートウェイ RPC
 
@@ -26,20 +27,20 @@ x-i18n:
 - `wizard.status` パラメータ: `{ sessionId }`
 - `config.schema` パラメータ: `{}`
 - `config.schema.lookup` パラメータ: `{ path }`
-  - `path` は、標準の構成セグメントとスラッシュで区切られたプラグイン ID (`plugins.entries.pack/one.config` など) を受け入れます。
+  - `path` は標準の構成セグメントに加え、スラッシュ区切りのプラグイン ID（例: `plugins.entries.pack/one.config`）を受け入れます。
 
-応答（形状）
+レスポンスの構造:
 
 - ウィザード: `{ sessionId, done, step?, status?, error? }`
 - 構成スキーマ: `{ schema, uiHints, version, generatedAt }`
-- 構成スキーマのルックアップ: `{ path, schema, hint?, hintPath?, children[] }`
+- スキーマ検索 (lookup): `{ path, schema, hint?, hintPath?, children[] }`
 
-## UI ヒント
+## UI ヒント (UI Hints)
 
-- `uiHints` パスによってキー指定されます。オプションのメタデータ (label/help/group/order/advanced/sensitive/placeholder)。
-- 機密フィールドはパスワード入力として表示されます。墨消しレイヤーはありません。
-- サポートされていないスキーマ ノードは、生の JSON エディターにフォールバックします。
+- `uiHints` はパスをキーとした、オプションのメタデータ（`label`, `help`, `group`, `order`, `advanced`, `sensitive`, `placeholder`）です。
+- `sensitive`（機密）フィールドは、UI 上ではパスワード入力としてレンダリングされます。伏せ字処理のレイヤーは別途存在しません。
+- 未対応のスキーマノードは、生の JSON エディターにフォールバックして表示されます。
 
-## 注意事項
+## 補足事項
 
-- このドキュメントは、オンボーディング/構成のプロトコル リファクタリングを追跡するための単一の場所です。
+- 本ドキュメントは、オンボーディングおよび構成に関するプロトコルのリファクタリング状況を一元管理するためのものです。

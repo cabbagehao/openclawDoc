@@ -1,14 +1,14 @@
 ---
-summary: "ウェイクおよび分離されたエージェント実行のためのWebhook入力"
+summary: "ウェイクと分離されたエージェント実行のための webhook 受信"
 read_when:
-  - Webhookエンドポイントを追加または変更する場合
+  - webhook エンドポイントを追加または変更する場合
   - 外部システムをOpenClawに接続する場合
-title: "Webhooks"
+title: "webhook"
 ---
 
-# Webhooks
+# webhook
 
-Gateway は、外部からのトリガー用に小さなHTTP Webhookエンドポイントを公開できます。
+ゲートウェイは、外部トリガー向けに小さな HTTP webhook エンドポイントを公開できます。
 
 ## 有効化
 
@@ -79,7 +79,7 @@ Gateway は、外部からのトリガー用に小さなHTTP Webhookエンドポ
 
 - `message` **必須** (文字列): エージェントが処理するプロンプトまたはメッセージ。
 - `name` オプション (文字列): フックの人間が読める名前 (例: "GitHub")。セッションの要約でプレフィックスとして使用されます。
-- `agentId` オプション (文字列): このフックを特定のエージェントにルーティングします。不明なIDはデフォルトエージェントにフォールバックします。設定された場合、フックは解決されたエージェントのワークスペースと設定を使用して実行されます。
+- `agentId` オプション (文字列): このフックを特定のエージェントにルーティングします。不明な ID はデフォルトエージェントにフォールバックします。設定された場合、フックは解決済みエージェントのワークスペースと設定を使って実行されます。
 - `sessionKey` オプション (文字列): エージェントのセッションを識別するために使用されるキー。デフォルトでは、`hooks.allowRequestSessionKey=true` でない限り、このフィールドは拒否されます。
 - `wakeMode` オプション (`now` | `next-heartbeat`): 即座にハートビートをトリガーするか (デフォルト `now`)、次の定期チェックまで待つか。
 - `deliver` オプション (ブール値): `true` の場合、エージェントの応答はメッセージングチャンネルに送信されます。デフォルトは `true` です。ハートビートの確認のみの応答は自動的にスキップされます。
@@ -95,7 +95,7 @@ Gateway は、外部からのトリガー用に小さなHTTP Webhookエンドポ
 - 常に **main** セッションに要約を投稿します。
 - `wakeMode=now` の場合、即座にハートビートをトリガーします。
 
-## セッションキーポリシー (破壊的変更)
+## セッションキーポリシー（breaking change）
 
 `/hooks/agent` ペイロードの `sessionKey` オーバーライドはデフォルトで無効になっています。
 
@@ -129,7 +129,7 @@ Gateway は、外部からのトリガー用に小さなHTTP Webhookエンドポ
 }
 ```
 
-### `POST /hooks/<name>` (マップ済み)
+### `POST /hooks/<name>`（マッピング経由）
 
 カスタムフック名は `hooks.mappings` を介して解決されます (設定を参照)。マッピングにより、任意のペイロードをオプションのテンプレートやコード変換を使用して `wake` または `agent` アクションに変換できます。
 
@@ -137,11 +137,11 @@ Gateway は、外部からのトリガー用に小さなHTTP Webhookエンドポ
 
 - `hooks.presets: ["gmail"]` は組み込みのGmailマッピングを有効にします。
 - `hooks.mappings` により、設定で `match`、`action`、テンプレートを定義できます。
-- `hooks.transformsDir` + `transform.module` は、カスタムロジック用のJS/TSモジュールを読み込みます。
+- `hooks.transformsDir` + `transform.module` は、カスタムロジック用の JS / TS モジュールを読み込みます。
   - `hooks.transformsDir` (設定されている場合) は、OpenClaw設定ディレクトリ (通常は `~/.openclaw/hooks/transforms`) 下の変換ルート内に留まる必要があります。
   - `transform.module` は、有効な変換ディレクトリ内で解決される必要があります (トラバーサル/エスケープパスは拒否されます)。
 - `match.source` を使用して、汎用的な取り込みエンドポイントを維持します (ペイロード主導のルーティング)。
-- TS変換は、実行時にTSローダー (例: `bun` または `tsx`) または事前コンパイルされた `.js` を必要とします。
+- TS 変換は、実行時に TS ローダー（例: `bun` または `tsx`）または事前コンパイル済みの `.js` を必要とします。
 - マッピングに `deliver: true` + `channel`/`to` を設定して、応答をチャットサーフェスにルーティングします
   (`channel` のデフォルトは `last` で、WhatsAppにフォールバックします)。
 - `agentId` はフックを特定のエージェントにルーティングします。不明なIDはデフォルトエージェントにフォールバックします。
@@ -154,7 +154,7 @@ Gateway は、外部からのトリガー用に小さなHTTP Webhookエンドポ
 - `openclaw webhooks gmail setup` は `openclaw webhooks gmail run` 用の `hooks.gmail` 設定を書き込みます。
   完全なGmail監視フローについては [Gmail Pub/Sub](/automation/gmail-pubsub) を参照してください。
 
-## 応答
+## レスポンス
 
 - `/hooks/wake` の場合は `200`
 - `/hooks/agent` (非同期実行の受け入れ) の場合は `200`
@@ -179,9 +179,9 @@ curl -X POST http://127.0.0.1:18789/hooks/agent \
   -d '{"message":"Summarize inbox","name":"Email","wakeMode":"next-heartbeat"}'
 ```
 
-### 異なるモデルを使用する
+### 別のモデルを使う
 
-エージェントペイロード (またはマッピング) に `model` を追加して、その実行のモデルをオーバーライドします:
+エージェントペイロード（またはマッピング）に `model` を追加すると、その実行で使うモデルを上書きできます。
 
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
@@ -202,11 +202,11 @@ curl -X POST http://127.0.0.1:18789/hooks/gmail \
 ## セキュリティ
 
 - フックエンドポイントは、ループバック、tailnet、または信頼できるリバースプロキシの背後に配置してください。
-- 専用のフックトークンを使用してください。Gateway 認証トークンを再利用しないでください。
+- 専用のフックトークンを使用してください。ゲートウェイ認証トークンを再利用しないでください。
 - 度重なる認証失敗は、ブルートフォース試行を遅らせるためにクライアントアドレスごとにレート制限されます。
 - マルチエージェントルーティングを使用する場合、明示的な `agentId` の選択を制限するために `hooks.allowedAgentIds` を設定してください。
 - 呼び出し元が選択したセッションが必要な場合を除き、`hooks.allowRequestSessionKey=false` を維持してください。
 - リクエスト `sessionKey` を有効にする場合、`hooks.allowedSessionKeyPrefixes` を制限してください (例: `["hook:"]`)。
-- Webhookログに機密性の高い生のペイロードを含めないようにしてください。
+- webhook ログに機密性の高い生のペイロードを含めないようにしてください。
 - フックペイロードはデフォルトで信頼できないものとして扱われ、安全境界でラップされます。
   特定のフックでこれを無効にする必要がある場合は、そのフックのマッピングで `allowUnsafeExternalContent: true` を設定します (危険)。

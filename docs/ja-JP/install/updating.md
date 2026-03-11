@@ -35,10 +35,10 @@ curl -fsSL https://openclaw.ai/install.sh | bash
 ## アップデートの前に
 
 - インストール方法を確認してください：**グローバル** (npm/pnpm) か **ソースから** (git clone) か。
-- Gateway の実行方法を確認してください：**フォアグラウンドのターミナル** か **監視されたサービス** (launchd/systemd) か。
-- カスタマイズ内容のスナップショット（バックアップ）を取ってください：
-  - 設定：`~/.openclaw/openclaw.json`
-  - 資格情報：`~/.openclaw/credentials/`
+- ゲートウェイの実行方法を確認してください：**フォアグラウンドのターミナル** か **管理されたサービス** (launchd/systemd) か。
+- 現在の設定のスナップショット（バックアップ）を取ってください：
+  - 構成：`~/.openclaw/openclaw.json`
+  - 認証情報：`~/.openclaw/credentials/`
   - ワークスペース：`~/.openclaw/workspace`
 
 ## アップデート（グローバルインストール）
@@ -53,9 +53,9 @@ npm i -g openclaw@latest
 pnpm add -g openclaw@latest
 ```
 
-Gateway の実行環境として Bun は推奨しません（WhatsApp/Telegram のバグのため）。
+ゲートウェイの実行環境として Bun は推奨しません（WhatsApp/Telegram のバグのため）。
 
-アップデートチャンネルを切り替えるには（git + npm インストール）：
+アップデートチャンネルを切り替えるには（git または npm インストール）：
 
 ```bash
 openclaw update --channel beta
@@ -67,11 +67,11 @@ openclaw update --channel stable
 
 チャンネルの意味とリリースノートについては、[開発チャンネル](/install/development-channels) を参照してください。
 
-注意：npm インストールの場合、Gateway は起動時にアップデートのヒントをログに記録します（現在のチャンネルタグを確認します）。`update.checkOnStart: false` で無効化できます。
+注意：npm インストールの場合、ゲートウェイは起動時にアップデートのヒントをログに記録します（現在のチャンネルタグを確認します）。`update.checkOnStart: false` で無効化できます。
 
 ### コア自動アップデーター（オプション）
 
-自動アップデーターは**デフォルトでオフ**になっており、コア Gateway の機能です（プラグインではありません）。
+自動アップデーターは**デフォルトでオフ**になっており、コアゲートウェイの機能です（プラグインではありません）。
 
 ```json
 {
@@ -89,11 +89,11 @@ openclaw update --channel stable
 
 動作：
 
-- `stable`：新しいバージョンが検出されると、OpenClaw は `stableDelayHours` だけ待機し、その後 `stableJitterHours` 内でインストールごとの決定論的なジッター（ばらつき）を適用して適用します（段階的ロールアウト）。
+- `stable`：新しいバージョンがリリースされると、OpenClaw は `stableDelayHours` だけ待機し、その後 `stableJitterHours` 内でインストールごとの決定論的なジッター（ばらつき）を設けて適用します（段階的ロールアウト）。
 - `beta`：`betaCheckIntervalHours`（デフォルト：1時間）おきにチェックし、アップデートがあれば適用します。
 - `dev`：自動適用は行われません。手動で `openclaw update` を使用してください。
 
-自動化を有効にする前に、`openclaw update --dry-run` を使用してアップデートのアクションをプレビューしてください。
+自動化を有効にする前に、`openclaw update --dry-run` を使用してアップデート内容をプレビューしてください。
 
 その後：
 
@@ -105,7 +105,7 @@ openclaw health
 
 注意：
 
-- Gateway をサービスとして実行している場合は、PID を kill するよりも `openclaw gateway restart` を推奨します。
+- ゲートウェイをサービスとして実行している場合は、PID を kill するよりも `openclaw gateway restart` を推奨します。
 - 特定のバージョンに固定している場合は、下記の「ロールバック / バージョン固定」を参照してください。
 
 ## アップデート (`openclaw update`)
@@ -116,25 +116,25 @@ openclaw health
 openclaw update
 ```
 
-これは比較的安全なアップデートフローを実行します：
+これは安全性を考慮したアップデートフローを実行します：
 
 - クリーンなワークツリーが必要です。
 - 選択されたチャンネル（タグまたはブランチ）に切り替えます。
 - 設定されたアップストリーム（dev チャンネル）に対して fetch + rebase を行います。
-- 依存関係のインストール、ビルド、Control UI のビルドを実行し、`openclaw doctor` を実行します。
-- デフォルトで Gateway を再起動します（スキップするには `--no-restart` を使用）。
+- 依存関係のインストール、ビルド、コントロール UI のビルドを実行し、`openclaw doctor` を実行します。
+- デフォルトでゲートウェイを再起動します（スキップするには `--no-restart` を使用）。
 
 **npm/pnpm** 経由でインストールした場合（git メタデータがない場合）、`openclaw update` はパッケージマネージャーを介してアップデートを試みます。インストールを検出できない場合は、代わりに上記の「アップデート（グローバルインストール）」を使用してください。
 
-## アップデート（Control UI / RPC）
+## アップデート（コントロール UI / RPC）
 
-Control UI には「**Update & Restart**」（RPC: `update.run`）があります。これは：
+コントロール UI には「**Update & Restart**」（RPC: `update.run`）があります。これは：
 
 1. `openclaw update` と同じソースアップデートフローを実行します（git チェックアウトのみ）。
-2. 構造化されたレポート（stdout/stderr の末尾）と共に再起動のセンチネル（目印）を書き込みます。
-3. Gateway を再起動し、最後にアクティブだったセッションにレポートと共に通知を送ります。
+2. 再起動の目印（センチネル）を構造化されたレポート（stdout/stderr の末尾）と共に書き込みます。
+3. ゲートウェイを再起動し、最後にアクティブだったセッションにレポートと共に通知を送ります。
 
-rebase に失敗した場合、Gateway はアップデートを適用せずに中断して再起動します。
+rebase に失敗した場合、ゲートウェイはアップデートを適用せずに中断し、再起動します。
 
 ## アップデート（ソースから）
 

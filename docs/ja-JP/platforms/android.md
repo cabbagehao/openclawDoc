@@ -1,93 +1,94 @@
 ---
-summary: "Android アプリ (ノード): 接続 Runbook + Connect/Chat/Voice/Canvas コマンド サーフェス"
+summary: "Android アプリ（node）: 接続 runbook と Connect / Chat / Voice / Canvas の command surface"
 read_when:
-  - Android ノードのペアリングまたは再接続
-  - Android ゲートウェイの検出または認証のデバッグ
-  - クライアント間でのチャット履歴の同等性の検証
-title: "Androidアプリ"
+  - Android node をペアリングまたは再接続するとき
+  - Android 側の gateway discovery や認証を切り分けるとき
+  - クライアント間で chat history の整合性を確認するとき
+title: "Android App"
 x-i18n:
   source_hash: "39e9206a770d78adc09aa35c30cecfb07093605a7f432d942b68014332b3c56b"
 ---
 
-# Android アプリ (ノード)
+# Android App (Node)
 
-## スナップショットのサポート
+## サポート概要
 
-- 役割: コンパニオン ノード アプリ (Android はゲートウェイをホストしません)。
-- ゲートウェイが必要: はい (macOS、Linux、または Windows 上で WSL2 経由で実行します)。
-- インストール: [はじめに](/start/getting-started) + [ペアリング](/channels/pairing)。
-- ゲートウェイ: [ランブック](/gateway) + [構成](/gateway/configuration)。
-  - プロトコル: [ゲートウェイ プロトコル](/gateway/protocol) (ノード + コントロール プレーン)。
+- 役割: companion node app（Android 自体は Gateway をホストしません）
+- Gateway 必須: はい（macOS、Linux、または Windows + WSL2 上で実行）
+- install: [Getting Started](/start/getting-started) + [Pairing](/channels/pairing)
+- gateway: [Runbook](/gateway) + [Configuration](/gateway/configuration)
+  - protocol: [Gateway protocol](/gateway/protocol)（nodes + control plane）
 
-## システム制御
+## system 制御
 
-システム制御 (launchd/systemd) はゲートウェイ ホスト上にあります。 [ゲートウェイ](/gateway) を参照してください。
+system 制御（launchd / systemd）は Gateway host 側にあります。詳しくは [Gateway](/gateway) を参照してください。
 
-## 接続ランブック
+## 接続 runbook
 
-Android ノード アプリ ⇄ (mDNS/NSD + WebSocket) ⇄ **ゲートウェイ**
+Android node app ⇄（mDNS / NSD + WebSocket）⇄ **Gateway**
 
-Android は、ゲートウェイ WebSocket (デフォルト `ws://<host>:18789`) に直接接続し、デバイス ペアリング (`role: node`) を使用します。
+Android は Gateway WebSocket（デフォルト `ws://<host>:18789`）へ直接接続し、device pairing（`role: node`）を使います。
 
 ### 前提条件
 
-- 「マスター」マシン上でゲートウェイを実行できます。
-- Android デバイス/エミュレータはゲートウェイ WebSocket に到達できます。
-  - mDNS/NSD を使用した同じ LAN、**または**
-  - Wide-Area Bonjour / ユニキャスト DNS-SD を使用した同じ Tailscale テールネット (以下を参照)、**または**
-  - 手動ゲートウェイ ホスト/ポート (フォールバック)
-- ゲートウェイ マシン上で (または SSH 経由で) CLI (`openclaw`) を実行できます。
+- “master” マシン上で Gateway を実行できる
+- Android device / emulator から Gateway WebSocket へ到達できる
+  - 同一 LAN 上で mDNS / NSD を使う、**または**
+  - 同一 Tailscale tailnet 上で Wide-Area Bonjour / unicast DNS-SD を使う（後述）、**または**
+  - 手動で gateway host / port を指定する（fallback）
+- Gateway マシン上で `openclaw` CLI を使える（または SSH 越しに実行できる）
 
-### 1) ゲートウェイを開始します
+### 1) Gateway を起動する
 
 ```bash
 openclaw gateway --port 18789 --verbose
 ```
 
-ログに次のような内容が表示されることを確認します。
+ログに次のような表示が出ることを確認してください。
 
 - `listening on ws://0.0.0.0:18789`
 
-テールネットのみのセットアップ (ウィーン ⇄ ロンドンに推奨) の場合は、ゲートウェイをテールネット IP にバインドします。- ゲートウェイ ホストの `~/.openclaw/openclaw.json` に `gateway.bind: "tailnet"` を設定します。
+tailnet 専用構成（Vienna ⇄ London のような構成に推奨）では、gateway を tailnet IP に bind します。
 
-- Gateway / macOS メニューバー アプリを再起動します。
+- Gateway host 上の `~/.openclaw/openclaw.json` に `gateway.bind: "tailnet"` を設定する
+- Gateway / macOS menubar app を再起動する
 
-### 2) 検出の検証 (オプション)
+### 2) discovery を確認する（任意）
 
-ゲートウェイ マシンから:
+gateway machine 上で:
 
 ```bash
 dns-sd -B _openclaw-gw._tcp local.
 ```
 
-その他のデバッグ メモ: [Bonjour](/gateway/bonjour)。
+追加のデバッグメモは [Bonjour](/gateway/bonjour) を参照してください。
 
-#### ユニキャスト DNS-SD 経由のテールネット (ウィーン ⇄ ロンドン) 検出
+#### tailnet（Vienna ⇄ London）での unicast DNS-SD discovery
 
-Android NSD/mDNS 検出はネットワークを越えません。 Android ノードとゲートウェイが異なるネットワーク上にあるものの、Tailscale 経由で接続されている場合は、代わりに Wide-Area Bonjour / ユニキャスト DNS-SD を使用します。
+Android の NSD / mDNS discovery はネットワーク境界を越えません。Android node と gateway が別ネットワーク上にあり、Tailscale で接続している場合は、代わりに Wide-Area Bonjour / unicast DNS-SD を使います。
 
-1. ゲートウェイ ホスト上に DNS-SD ゾーン (例 `openclaw.internal.`) を設定し、`_openclaw-gw._tcp` レコードを公開します。
-2. その DNS サーバーを指す、選択したドメインの Tailscale スプリット DNS を構成します。
+1. gateway host 上に DNS-SD zone（例: `openclaw.internal.`）を設定し、`_openclaw-gw._tcp` record を公開する
+2. その DNS server を向くように、選んだ domain の Tailscale split DNS を設定する
 
-CoreDNS 構成の詳細と例: [Bonjour](/gateway/bonjour)。
+詳細と CoreDNS 設定例は [Bonjour](/gateway/bonjour) を参照してください。
 
 ### 3) Android から接続する
 
-Android アプリの場合:
+Android app 側では:
 
-- アプリは、**フォアグラウンド サービス** (永続的な通知) を介してゲートウェイ接続を維持します。
-- [**接続**] タブを開きます。
-- **セットアップ コード** または **手動** モードを使用します。
-- 検出がブロックされている場合は、**高度な制御**で手動のホスト/ポート (および必要に応じて TLS/トークン/パスワード) を使用します。
+- app は **foreground service**（永続 notification）により gateway connection を維持します
+- **Connect** タブを開く
+- **Setup Code** または **Manual** mode を使う
+- discovery が通らない場合は **Advanced controls** で手動 host / port を設定し、必要に応じて TLS / token / password も指定する
 
-最初のペアリングが成功すると、Android は起動時に自動的に再接続します。
+最初の pairing が成功した後は、Android は起動時に自動再接続します。
 
-- 手動エンドポイント (有効な場合)、それ以外の場合
-- 最後に検出されたゲートウェイ (ベストエフォート)。
+- manual endpoint が有効ならそれを使う
+- そうでなければ、最後に検出した gateway へ best-effort で再接続する
 
-### 4) ペアリングの承認 (CLI)
+### 4) pairing を承認する（CLI）
 
-ゲートウェイ マシン上で次のようにします。
+gateway machine 上で:
 
 ```bash
 openclaw devices list
@@ -95,68 +96,68 @@ openclaw devices approve <requestId>
 openclaw devices reject <requestId>
 ```
 
-ペアリングの詳細: [ペアリング](/channels/pairing)。
+pairing の詳細は [Pairing](/channels/pairing) を参照してください。
 
-### 5) ノードが接続されていることを確認します
+### 5) node が接続済みか確認する
 
-- ノード経由のステータス:
+- nodes status 経由:
 
   ```bash
   openclaw nodes status
   ```
 
-- ゲートウェイ経由:
+- Gateway 経由:
 
   ```bash
   openclaw gateway call node.list --params "{}"
   ```
 
-### 6) チャット + 履歴
+### 6) Chat と履歴
 
-Android の [チャット] タブでは、セッションの選択がサポートされています (デフォルトの `main` と他の既存のセッション)。
+Android の Chat タブでは session selection をサポートしています（デフォルトの `main` と、その他の既存 session を選択可能）。
 
 - 履歴: `chat.history`
 - 送信: `chat.send`
-- プッシュ更新 (ベストエフォート): `chat.subscribe` → `event:"chat"`
+- push update（best-effort）: `chat.subscribe` → `event:"chat"`
 
-### 7) キャンバス + カメラ
+### 7) Canvas と camera
 
-#### ゲートウェイ キャンバス ホスト (Web コンテンツに推奨)
+#### Gateway Canvas Host（Web コンテンツ向け推奨）
 
-エージェントがディスク上で編集できる実際の HTML/CSS/JS をノードに表示したい場合は、ノードをゲートウェイ キャンバス ホストにポイントします。
+agent が disk 上で編集できる本物の HTML / CSS / JS を node に表示したい場合は、node を Gateway canvas host へ向けます。
 
-注: ノードはゲートウェイ HTTP サーバー (`gateway.port` と同じポート、デフォルトは `18789`) からキャンバスをロードします。
+注: node は Gateway HTTP server（`gateway.port` と同じポート。デフォルト `18789`）から canvas を読み込みます。
 
-1. ゲートウェイ ホスト上に `~/.openclaw/workspace/canvas/index.html` を作成します。
+1. gateway host 上に `~/.openclaw/workspace/canvas/index.html` を作成する
 
-2. ノードをそのノード (LAN) に移動します。
+2. node をその URL へ移動する（LAN）
 
 ```bash
 openclaw nodes invoke --node "<Android Node>" --command canvas.navigate --params '{"url":"http://<gateway-hostname>.local:18789/__openclaw__/canvas/"}'
 ```
 
-テールネット (オプション): 両方のデバイスが Tailscale 上にある場合は、`.local` の代わりに MagicDNS 名またはテールネット IP を使用します。 `http://<gateway-magicdns>:18789/__openclaw__/canvas/`。
+tailnet（任意）: 両端末が Tailscale 上にある場合は、`.local` の代わりに MagicDNS 名または tailnet IP を使います。例: `http://<gateway-magicdns>:18789/__openclaw__/canvas/`
 
-このサーバーはライブ リロード クライアントを HTML に挿入し、ファイルの変更時にリロードします。
-A2UI ホストは `http://<gateway-host>:18789/__openclaw__/a2ui/` にあります。
+この server は HTML へ live-reload client を注入し、ファイル変更時に自動 reload します。A2UI host は `http://<gateway-host>:18789/__openclaw__/a2ui/` にあります。
 
-Canvas コマンド (前景のみ):
+Canvas command（foreground 限定）:
 
-- `canvas.eval`、`canvas.snapshot`、`canvas.navigate` (デフォルトのスキャフォールドに戻すには、`{"url":""}` または `{"url":"/"}` を使用します)。 `canvas.snapshot` は `{ format, base64 }` (デフォルトは `format="jpeg"`) を返します。
-- A2UI: `canvas.a2ui.push`、`canvas.a2ui.reset` (`canvas.a2ui.pushJSONL` レガシー エイリアス)
+- `canvas.eval`、`canvas.snapshot`、`canvas.navigate`
+  デフォルト scaffold へ戻すには `{"url":""}` または `{"url":"/"}` を使います。`canvas.snapshot` は `{ format, base64 }` を返し、デフォルトの `format` は `"jpeg"` です
+- A2UI: `canvas.a2ui.push`、`canvas.a2ui.reset`（legacy alias: `canvas.a2ui.pushJSONL`）
 
-カメラ コマンド (前景のみ、許可ゲート型):
+camera command（foreground 限定、権限ゲートあり）:
 
-- `camera.snap` (jpg)
-- `camera.clip` (mp4)
+- `camera.snap`（jpg）
+- `camera.clip`（mp4）
 
-パラメータと CLI ヘルパーについては、[カメラ ノード](/nodes/camera) を参照してください。
+パラメータや CLI helper は [Camera node](/nodes/camera) を参照してください。
 
-### 8) 音声 + 拡張された Android コマンド サーフェス
+### 8) Voice と拡張 Android command surface
 
-- 音声: Android は、トランスクリプト キャプチャと TTS 再生を備えた [音声] タブで単一のマイク オン/オフ フローを使用します (イレブンラボが構成されている場合、システム TTS フォールバック)。アプリがフォアグラウンドを離れると音声が停止します。
-- 音声ウェイク/トークモードの切り替えは現在、Android UX/ランタイムから削除されています。
-- 追加の Android コマンド ファミリ (利用できるかどうかはデバイスと権限によって異なります):
+- Voice: Android は Voice タブで単一の mic on / off フローを使い、transcript capture と TTS playback を行います（ElevenLabs が設定されていればそれを使用し、なければ system TTS へ fallback します）。app が foreground を離れると Voice は停止します
+- voice wake / talk-mode toggle は、現時点では Android の UX / runtime から削除されています
+- 追加の Android command family（利用可否は device と permission に依存）:
   - `device.status`、`device.info`、`device.permissions`、`device.health`
   - `notifications.list`、`notifications.actions`
   - `photos.latest`

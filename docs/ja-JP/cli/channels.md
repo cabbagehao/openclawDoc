@@ -1,23 +1,22 @@
 ---
-summary: "「openclaw チャネル」の CLI リファレンス (アカウント、ステータス、ログイン/ログアウト、ログ)"
+summary: "`openclaw channels` の CLI リファレンス (アカウント管理、ステータス確認、ログイン/ログアウト、ログ参照)"
 read_when:
-  - チャンネルアカウントを追加/削除したい（WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost（プラグイン）/Signal/iMessage）
-  - チャンネルのステータスやテールチャンネルのログを確認したい
-title: "チャンネル"
+  - チャネルアカウント (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost/Signal/iMessage など) を追加・削除したい場合
+  - チャネルの稼働状況を確認したり、ログを追跡したい場合
+title: "channels"
 x-i18n:
   source_hash: "b2b34e5aa73559fb9f670438881608ce735a4dfcf7f5b3299b34ae99a6a4f8d3"
 ---
 
 # `openclaw channels`
 
-ゲートウェイ上でチャット チャネル アカウントとその実行時ステータスを管理します。
+ゲートウェイにおけるチャットチャネルアカウントとその実行ステータスを管理します。
 
 関連ドキュメント:
-
-- チャンネルガイド: [チャンネル](/channels/index)
+- 各チャネルのガイド: [チャネル一覧](/channels/index)
 - ゲートウェイ構成: [構成](/gateway/configuration)
 
-## 共通コマンド
+## よく使われるコマンド
 
 ```bash
 openclaw channels list
@@ -28,35 +27,34 @@ openclaw channels resolve --channel slack "#general" "@jane"
 openclaw channels logs --channel all
 ```
 
-## アカウントの追加/削除
+## アカウントの追加と削除
 
 ```bash
 openclaw channels add --channel telegram --token <bot-token>
 openclaw channels remove --channel telegram --delete
 ```
 
-ヒント: `openclaw channels add --help` は、チャネルごとのフラグ (トークン、アプリ トークン、シグナル CLI パスなど) を示します。
+ヒント: `openclaw channels add --help` を実行すると、チャネルごとのフラグ（トークン、アプリトークン、signal-cli のパスなど）を確認できます。
 
-フラグを指定せずに `openclaw channels add` を実行すると、対話型ウィザードで次のプロンプトが表示されます。
+フラグを指定せずに `openclaw channels add` を実行すると、対話形式のウィザードが開始され、以下の入力を求められます:
+- 選択したチャネルごとのアカウント ID
+- 各アカウントの表示名（任意）
+- `Bind configured channel accounts to agents now?` (構成したアカウントを今すぐエージェントに紐付けますか？)
 
-- 選択したチャンネルごとのアカウント ID
-- それらのアカウントのオプションの表示名
-- `Bind configured channel accounts to agents now?`
+ここで紐付けを承認すると、各チャネルアカウントをどのエージェントが所有するかを尋ねられ、アカウントスコープのルーティングバインディングが書き込まれます。
 
-今すぐバインドすることを確認すると、ウィザードは、構成されている各チャネル アカウントをどのエージェントが所有するかを尋ね、アカウント スコープのルーティング バインディングを書き込みます。
+これらのルーティングルールは、後から `openclaw agents bindings`、`openclaw agents bind`、`openclaw agents unbind` コマンドで管理することも可能です（詳細は [agents](/cli/agents) を参照）。
 
-後で、`openclaw agents bindings`、`openclaw agents bind`、`openclaw agents unbind` を使用して同じルーティング ルールを管理することもできます ([エージェント](/cli/agents) を参照)。
+単一アカウント用のトップレベル設定（`channels.<channel>.accounts` エントリがまだない状態）を使用しているチャネルにデフォルト以外のアカウントを追加すると、OpenClaw は既存のアカウント設定を `channels.<channel>.accounts.default` に移動した上で、新しいアカウント情報を書き込みます。これにより、元のアカウントの動作を維持したままマルチアカウント構成へ移行できます。
 
-単一アカウントのトップレベル設定 (`channels.<channel>.accounts` エントリがまだない) をまだ使用しているチャネルにデフォルト以外のアカウントを追加すると、OpenClaw はアカウントスコープの単一アカウントのトップレベル値を `channels.<channel>.accounts.default` に移動し、新しいアカウントを書き込みます。これにより、マルチアカウント形態に移行する際に、元のアカウントの動作が維持されます。
+ルーティングの動作は一貫性が保たれます:
+- アカウント ID を指定しない既存のチャネルのみのバインディングは、引き続きデフォルトアカウントに一致します。
+- 非対話モードでは、`channels add` はバインディングの自動作成や書き換えを行いません。
+- 対話形式のセットアップでは、オプションでアカウントスコープのバインディングを追加できます。
 
-ルーティング動作の一貫性は維持されます。- 既存のチャネルのみのバインディング (`accountId` なし) は引き続きデフォルトのアカウントと一致します。
+もし構成がすでに混在した状態（名前付きアカウントがあるのに `default` が欠落し、トップレベルの設定が残っている状態）になっている場合は、`openclaw doctor --fix` を実行して設定を `accounts.default` に整理してください。
 
-- `channels add` は、非対話モードではバインディングを自動作成または再書き込みしません。
-- 対話型セットアップでは、オプションでアカウント スコープのバインディングを追加できます。
-
-構成がすでに混合状態になっている場合 (名前付きアカウントが存在し、`default` が欠落し、最上位の単一アカウント値がまだ設定されている)、`openclaw doctor --fix` を実行して、アカウント スコープの値を `accounts.default` に移動します。
-
-## ログイン/ログアウト (対話型)
+## ログイン / ログアウト (対話形式)
 
 ```bash
 openclaw channels login --channel whatsapp
@@ -65,28 +63,28 @@ openclaw channels logout --channel whatsapp
 
 ## トラブルシューティング
 
-- 広範囲のプローブに対して `openclaw status --deep` を実行します。
-- ガイド付き修正には `openclaw doctor` を使用します。
-- `openclaw channels list` は `Claude: HTTP 403 ... user:profile` を出力します。 → 使用状況スナップショットには `user:profile` スコープが必要です。 `--no-usage` を使用するか、claude.ai セッション キー (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`) を指定するか、Claude Code CLI 経由で再認証します。
-- `openclaw channels status` は、ゲートウェイに到達できない場合、構成のみのサマリーにフォールバックします。サポートされているチャネル認証情報が SecretRef 経由で設定されているが、現在のコマンド パスでは使用できない場合、そのアカウントは未設定として表示されるのではなく、劣化したメモを使用して設定済みとして報告されます。
+- 広範囲の診断を行うには `openclaw status --deep` を実行してください。
+- ガイド付きの修正には `openclaw doctor` を使用してください。
+- `openclaw channels list` で `Claude: HTTP 403 ... user:profile` と表示される場合、利用状況の取得に `user:profile` スコープが必要です。`--no-usage` を指定するか、claude.ai のセッションキー (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`) を提供するか、Claude Code CLI で再認証を行ってください。
+- ゲートウェイに到達できない場合、`openclaw channels status` は構成ファイルのみに基づくサマリーを表示します。SecretRef で設定された認証情報が現在のパスで利用できない場合、そのアカウントは「未設定」ではなく、注意書きと共に「設定済み（制限あり）」として報告されます。
 
-## 機能プローブ
+## 機能プローブ (Capabilities probe)
 
-プロバイダー機能のヒント (使用可能な場合はインテント/スコープ) と静的機能のサポートを取得します。
+プロバイダーの機能ヒント（利用可能なインテントやスコープ）および静的な機能サポート状況を取得します:
 
 ```bash
 openclaw channels capabilities
 openclaw channels capabilities --channel discord --target channel:123
 ```
 
-注:- `--channel` はオプションです。すべてのチャネル (拡張子を含む) をリストするには、これを省略します。
+補足:
+- `--channel` は任意です。省略すると、拡張機能を含むすべてのチャネルを一覧表示します。
+- `--target` は `channel:<id>` または数値のチャネル ID を受け入れ、Discord にのみ適用されます。
+- 取得できる情報はプロバイダーごとに異なります。Discord のインテントやチャネル権限、Slack のボットおよびユーザースコープ、Telegram ボットのフラグや Webhook 設定、Signal デーモンのバージョン、MS Teams アプリのトークンや Graph のロール/スコープ（判明しているもの）などが含まれます。プローブに対応していないチャネルは `Probe: unavailable` と表示されます。
 
-- `--target` は `channel:<id>` または生の数値チャネル ID を受け入れ、Discord にのみ適用されます。
-- プローブはプロバイダー固有です: Discord インテント + オプションのチャネル許可。 Slack ボット + ユーザー スコープ。 Telegram ボット フラグ + Webhook。シグナルデーモンのバージョン。 MS Teams アプリ トークン + グラフ ロール/スコープ (既知の場合は注釈付き)。プローブのないチャネルは `Probe: unavailable` を報告します。
+## 名前から ID への解決
 
-## 名前を ID に解決する
-
-プロバイダー ディレクトリを使用して、チャネル/ユーザー名を ID に解決します。
+プロバイダーのディレクトリを使用して、チャネル名やユーザー名を ID に解決します:
 
 ```bash
 openclaw channels resolve --channel slack "#general" "@jane"
@@ -94,8 +92,7 @@ openclaw channels resolve --channel discord "My Server/#support" "@someone"
 openclaw channels resolve --channel matrix "Project Room"
 ```
 
-注:
-
-- `--kind user|group|auto` を使用してターゲット タイプを強制します。
-- 複数のエントリが同じ名前を共有する場合、解決ではアクティブな一致が優先されます。
-- `channels resolve` は読み取り専用です。選択したアカウントが SecretRef 経由で構成されているが、その資格情報が現在のコマンド パスで使用できない場合、コマンドは実行全体を中止するのではなく、メモとともに劣化した未解決の結果を返します。
+補足:
+- `--kind user|group|auto` を使用して、対象のタイプを強制できます。
+- 同じ名前の候補が複数ある場合、アクティブな一致が優先されます。
+- `channels resolve` は読み取り専用の操作です。SecretRef で設定されたアカウントの認証情報が利用できない場合、コマンド全体を中止するのではなく、解決できなかった結果を注意書きと共に返します。

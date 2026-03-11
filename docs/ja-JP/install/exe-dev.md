@@ -1,33 +1,33 @@
 ---
-summary: "リモートアクセスのために exe.dev (VM + HTTPS プロキシ) 上で OpenClaw Gateway を実行する"
+summary: "リモートアクセス用に exe.dev（VM + HTTPS プロキシ）上で OpenClaw ゲートウェイを動かす"
 read_when:
-  - Gateway 用の安価な常時稼働 Linux ホストが必要な場合
-  - 独自の VPS を実行せずにリモートの Control UI アクセスが必要な場合
+  - ゲートウェイ用に安価で常時稼働する Linux ホストがほしい
+  - 自前の VPS を立てずにリモートの Control UI へアクセスしたい
 title: "exe.dev"
 ---
 
 # exe.dev
 
-目標: exe.dev の VM 上で OpenClaw Gateway を実行し、ラップトップから `https://<vm-name>.exe.xyz` 経由でアクセスできるようにすること。
+目的は、exe.dev の VM 上で OpenClaw ゲートウェイを動かし、手元の PC から `https://<vm-name>.exe.xyz` で到達できるようにすることです。
 
-このページは、exe.dev のデフォルトである **exeuntu** イメージを前提としています。別のディストリビューションを選択した場合は、それに応じてパッケージを読み替えてください。
+このページでは、exe.dev 既定の **exeuntu** イメージを前提にしています。別のディストリビューションを選んだ場合は、パッケージ名などを適宜読み替えてください。
 
-## 初心者向けのクイックパス
+## 初心者向けの最短ルート
 
-1. [https://exe.new/openclaw](https://exe.new/openclaw)
-2. 必要に応じて認証キー/トークンを入力します
-3. VM の横にある「Agent」をクリックして待ちます...
+1. [https://exe.new/openclaw](https://exe.new/openclaw) を開く
+2. 必要に応じて認証キーやトークンを入力する
+3. VM の横にある「Agent」をクリックして待つ
 4. ???
 5. 完了
 
 ## 必要なもの
 
 - exe.dev アカウント
-- [exe.dev](https://exe.dev) 仮想マシンへの `ssh exe.dev` アクセス (オプション)
+- [exe.dev](https://exe.dev) 仮想マシンへ `ssh exe.dev` できる環境（任意）
 
-## Shelley を使用した自動インストール
+## Shelley を使った自動インストール
 
-[exe.dev](https://exe.dev) のエージェントである Shelley は、プロンプトを使用して OpenClaw を即座にインストールできます。使用されるプロンプトは以下のとおりです:
+[exe.dev](https://exe.dev) のエージェントである Shelley は、次のプロンプトで OpenClaw をすぐにセットアップできます。
 
 ```
 Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-interactive and accept-risk flags for openclaw onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Pairing is done by "openclaw devices list" and "openclaw devices approve <request id>". Make sure the dashboard shows that OpenClaw's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
@@ -35,40 +35,40 @@ Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-inter
 
 ## 手動インストール
 
-## 1) VM を作成する
+## 1) VM を作成
 
-デバイスから:
+手元の端末から次を実行します。
 
 ```bash
 ssh exe.dev new
 ```
 
-次に接続します:
+その後、VM に接続します。
 
 ```bash
 ssh <vm-name>.exe.xyz
 ```
 
-ヒント: この VM を**ステートフル**に保ちます。OpenClaw は `~/.openclaw/` と `~/.openclaw/workspace/` の下に状態を保存します。
+補足: この VM は **stateful** のまま運用してください。OpenClaw は状態を `~/.openclaw/` と `~/.openclaw/workspace/` に保存します。
 
-## 2) 前提条件のインストール (VM 上)
+## 2) 前提パッケージをインストール（VM 上）
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y git curl jq ca-certificates openssl
 ```
 
-## 3) OpenClaw のインストール
+## 3) OpenClaw をインストール
 
-OpenClaw インストールスクリプトを実行します:
+OpenClaw のインストールスクリプトを実行します。
 
 ```bash
 curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
-## 4) OpenClaw をポート 8000 にプロキシするための nginx のセットアップ
+## 4) OpenClaw を port 8000 にプロキシする nginx を設定
 
-`/etc/nginx/sites-enabled/default` を以下のように編集します:
+`/etc/nginx/sites-enabled/default` を次の内容に編集します。
 
 ```
 server {
@@ -100,15 +100,22 @@ server {
 }
 ```
 
-## 5) OpenClaw へのアクセスと権限の付与
+## 5) OpenClaw にアクセスして権限を付与
 
-`https://<vm-name>.exe.xyz/` にアクセスします (オンボーディングからの Control UI の出力を参照)。認証を求められたら、VM 上の `gateway.auth.token` からトークンを貼り付けます (`openclaw config get gateway.auth.token` で取得するか、`openclaw doctor --generate-gateway-token` で生成します)。`openclaw devices list` と `openclaw devices approve <requestId>` を使用してデバイスを承認します。疑問がある場合は、ブラウザから Shelley を使用してください!
+`https://<vm-name>.exe.xyz/` にアクセスします。URL はオンボーディング中に表示される Control UI の出力を参照してください。
+
+認証を求められた場合は、VM 上の `gateway.auth.token` を貼り付けます。取得方法は次のいずれかです。
+
+- `openclaw config get gateway.auth.token`
+- `openclaw doctor --generate-gateway-token`
+
+デバイス承認は `openclaw devices list` と `openclaw devices approve <requestId>` で行います。迷った場合は、ブラウザから Shelley を使う方法でも構いません。
 
 ## リモートアクセス
 
-リモートアクセスは [exe.dev](https://exe.dev) の認証によって処理されます。デフォルトでは、ポート 8000 からの HTTP トラフィックは電子メール認証を使用して `https://<vm-name>.exe.xyz` に転送されます。
+リモートアクセス自体は [exe.dev](https://exe.dev) 側の認証で保護されます。既定では、port 8000 に来た HTTP トラフィックが、メール認証付きで `https://<vm-name>.exe.xyz` へ転送されます。
 
-## アップデート
+## 更新
 
 ```bash
 npm i -g openclaw@latest
@@ -117,4 +124,4 @@ openclaw gateway restart
 openclaw health
 ```
 
-ガイド: [アップデート](/install/updating)
+ガイド: [Updating](/install/updating)

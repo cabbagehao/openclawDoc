@@ -2,6 +2,14 @@
 
 This directory is a standalone workspace for running and maintaining the OpenClaw documentation site without the rest of the main repository.
 
+## Repository Scope
+
+This repository is for the public-facing OpenClaw documentation site.
+
+- `docs/` contains the user-facing documentation content served by the docs site.
+- Do not add development notes, debugging logs, migration scratchpads, or other process/internal working documents under `docs/`.
+- If you need temporary or internal documentation for development work, keep it outside `docs/`.
+
 ## Setup
 
 Runtime requirements:

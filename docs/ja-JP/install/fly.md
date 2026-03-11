@@ -9,13 +9,13 @@ read_when:
 
 # Fly.io へのデプロイ
 
-**目標:** 永続ストレージ、自動 HTTPS、および Discord/チャネルアクセスを備えた [Fly.io](https://fly.io) マシン上で OpenClaw Gateway を実行すること。
+**目標:** 永続ストレージ、自動 HTTPS、Discord などのチャネル接続を備えた [Fly.io](https://fly.io) マシン上で OpenClaw ゲートウェイを実行することです。
 
 ## 必要なもの
 
 - インストール済みの [flyctl CLI](https://fly.io/docs/hands-on/install-flyctl/)
 - Fly.io アカウント (無料枠で機能します)
-- モデル認証: 選択したモデルプロバイダの API キー
+- モデル認証: 使用するモデルプロバイダーの API キー
 - チャネル認証情報: Discord ボットトークン、Telegram トークンなど
 
 ## 初心者向けのクイックパス
@@ -215,7 +215,7 @@ exit
 fly machine restart <machine-id>
 ```
 
-## 6) Gateway へのアクセス
+## 6) ゲートウェイへのアクセス
 
 ### Control UI
 
@@ -227,7 +227,7 @@ fly open
 
 または `https://my-openclaw.fly.dev/` にアクセスします。
 
-Gateway トークン (`OPENCLAW_GATEWAY_TOKEN` の値) を貼り付けて認証します。
+ゲートウェイトークン (`OPENCLAW_GATEWAY_TOKEN` の値) を貼り付けて認証します。
 
 ### ログ
 
@@ -244,19 +244,19 @@ fly ssh console
 
 ## トラブルシューティング
 
-### "App is not listening on expected address" (アプリが予期されたアドレスでリッスンしていません)
+### "App is not listening on expected address"
 
-Gateway が `0.0.0.0` ではなく `127.0.0.1` にバインドしています。
+ゲートウェイが `0.0.0.0` ではなく `127.0.0.1` に bind しています。
 
 **修正:** `fly.toml` のプロセスコマンドに `--bind lan` を追加します。
 
-### ヘルスチェックの失敗 / connection refused (接続拒否)
+### ヘルスチェック失敗 / connection refused
 
-Fly が設定されたポートで Gateway に到達できません。
+Fly が設定ポート上のゲートウェイへ到達できません。
 
 **修正:** `internal_port` が Gateway のポートと一致していることを確認します (`--port 3000` または `OPENCLAW_GATEWAY_PORT=3000` を設定します)。
 
-### OOM / メモリの問題
+### OOM / メモリ不足
 
 コンテナが再起動を繰り返すか、強制終了されます。兆候: `SIGABRT`、`v8::internal::Runtime_AllocateInYoungGeneration`、またはサイレントな再起動。
 
@@ -275,7 +275,7 @@ fly machine update <machine-id> --vm-memory 2048 -y
 
 **注意:** 512MB では小さすぎます。1GB でも機能する可能性がありますが、負荷がかかったり、冗長なログ記録が行われたりすると OOM になる可能性があります。**2GB を推奨します。**
 
-### Gateway のロックの問題
+### ゲートウェイのロック問題
 
 「すでに実行中です (already running)」というエラーで Gateway が起動を拒否します。
 
@@ -366,7 +366,7 @@ fly machine update <machine-id> --vm-memory 2048 --command "node dist/index.js g
 
 - **アウトバウンド**の呼び出し/メッセージのみを行う場合 (インバウンドの Webhook なし)
 - Webhook コールバックに **ngrok または Tailscale** トンネルを使用する場合
-- ブラウザの代わりに **SSH、プロキシ、または WireGuard** 経由で Gateway にアクセスする場合
+- ブラウザの代わりに **SSH、プロキシ、または WireGuard** 経由でゲートウェイへアクセスする場合
 - **インターネットスキャナーからデプロイメントを隠したい**場合
 
 ### セットアップ
@@ -432,7 +432,7 @@ fly wireguard create
 fly ssh console -a my-openclaw
 ```
 
-### プライベートデプロイメントでの Webhook
+### プライベートデプロイメントでの webhook
 
 パブリックに公開せずに Webhook コールバック (Twilio、Telnyx など) が必要な場合:
 

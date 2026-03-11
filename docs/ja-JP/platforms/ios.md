@@ -1,74 +1,73 @@
 ---
-summary: "iOS ノード アプリ: ゲートウェイへの接続、ペアリング、キャンバス、トラブルシューティング"
+summary: "iOS node app: Gateway への接続、pairing、canvas、troubleshooting"
 read_when:
-  - iOS ノードのペアリングまたは再接続
-  - iOS アプリをソースから実行する
-  - ゲートウェイ検出またはキャンバス コマンドのデバッグ
-title: "iOSアプリ"
+  - iOS node をペアリングまたは再接続するとき
+  - iOS app を source から実行するとき
+  - gateway discovery や canvas command を切り分けるとき
+title: "iOS App"
 x-i18n:
   source_hash: "aa473aad6bd953b8489c752467c1e4c33532e7b325a992d836fefad449ff960c"
 ---
 
-# iOS アプリ (ノード)
+# iOS App (Node)
 
-利用可能状況: 内部プレビュー。 iOS アプリはまだ一般公開されていません。
+提供状況: internal preview。iOS app はまだ一般公開されていません。
 
-## 何をするのか
+## できること
 
-- WebSocket (LAN またはテールネット) 経由でゲートウェイに接続します。
-- ノード機能を公開します: キャンバス、画面スナップショット、カメラ キャプチャ、位置情報、トーク モード、音声ウェイク。
-- `node.invoke` コマンドを受信し、ノード ステータス イベントを報告します。
+- Gateway へ WebSocket（LAN または tailnet）で接続する
+- Canvas、Screen snapshot、Camera capture、Location、Talk mode、Voice wake などの node capability を公開する
+- `node.invoke` command を受信し、node status event を報告する
 
 ## 要件
 
-- 別のデバイス (macOS、Linux、または WSL2 経由の Windows) で実行されているゲートウェイ。
-- ネットワークパス:
-  - Bonjour経由の同じLAN、**または**
-  - ユニキャスト DNS-SD 経由のテールネット (ドメイン例: `openclaw.internal.`)、**または**
-  - 手動ホスト/ポート (フォールバック)。
+- 別デバイス上で動作する Gateway（macOS、Linux、または Windows + WSL2）
+- ネットワーク経路:
+  - Bonjour を使った同一 LAN、**または**
+  - unicast DNS-SD を使った tailnet（例: `openclaw.internal.`）、**または**
+  - manual host / port 指定（fallback）
 
-## クイックスタート (ペアリング + 接続)
+## クイックスタート（pairing + 接続）
 
-1. ゲートウェイを起動します。
+1. Gateway を起動する
 
 ```bash
 openclaw gateway --port 18789
 ```
 
-2. iOS アプリで、[設定] を開き、検出されたゲートウェイを選択します (または、手動ホストを有効にしてホスト/ポートを入力します)。
+2. iOS app で Settings を開き、検出された gateway を選ぶ（または Manual Host を有効にして host / port を入力する）
 
-3. ゲートウェイ ホストでペアリング要求を承認します。
+3. gateway host で pairing request を承認する
 
 ```bash
 openclaw devices list
 openclaw devices approve <requestId>
 ```
 
-4. 接続を確認します。
+4. 接続を確認する
 
 ```bash
 openclaw nodes status
 openclaw gateway call node.list --params "{}"
 ```
 
-## 検出パス
+## discovery 経路
 
-### ボンジュール (LAN)
+### Bonjour（LAN）
 
-ゲートウェイは `_openclaw-gw._tcp` を `local.` でアドバタイズします。 iOS アプリはこれらを自動的にリストします。
+Gateway は `local.` 上で `_openclaw-gw._tcp` を advertise します。iOS app はこれを自動で一覧表示します。
 
-### テールネット (クロスネットワーク)
+### tailnet（クロスネットワーク）
 
-mDNS がブロックされている場合は、ユニキャスト DNS-SD ゾーン (ドメインを選択します。例: `openclaw.internal.`) と Tailscale 分割 DNS を使用します。
-CoreDNS の例については、[Bonjour](/gateway/bonjour) を参照してください。
+mDNS が遮断されている場合は、unicast DNS-SD zone（例: `openclaw.internal.`）と Tailscale split DNS を使います。CoreDNS の例は [Bonjour](/gateway/bonjour) を参照してください。
 
-### 手動ホスト/ポート
+### manual host / port
 
-[設定] で、**手動ホスト** を有効にし、ゲートウェイのホストとポート (デフォルトは `18789`) を入力します。
+Settings で **Manual Host** を有効にし、gateway host と port（デフォルト `18789`）を入力します。
 
-## キャンバス + A2UI
+## Canvas + A2UI
 
-iOS ノードは WKWebView キャンバスをレンダリングします。 `node.invoke` を使用して駆動します:
+iOS node は WKWebView canvas を描画します。`node.invoke` で制御します。
 
 ```bash
 openclaw nodes invoke --node "iOS Node" --command canvas.navigate --params '{"url":"http://<gateway-host>:18789/__openclaw__/canvas/"}'
@@ -76,12 +75,12 @@ openclaw nodes invoke --node "iOS Node" --command canvas.navigate --params '{"ur
 
 注:
 
-- ゲートウェイ キャンバス ホストは、`/__openclaw__/canvas/` および `/__openclaw__/a2ui/` を提供します。
-- ゲートウェイ HTTP サーバーから提供されます (`gateway.port` と同じポート、デフォルトは `18789`)。
-- キャンバス ホスト URL がアドバタイズされると、iOS ノードは接続時に A2UI に自動的に移動します。
-- `canvas.navigate` と `{"url":""}` を使用して組み込み足場に戻ります。
+- Gateway canvas host は `/__openclaw__/canvas/` と `/__openclaw__/a2ui/` を提供します
+- これは Gateway HTTP server（`gateway.port` と同じポート。デフォルト `18789`）から配信されます
+- canvas host URL が advertise されている場合、iOS node は接続時に A2UI へ自動遷移します
+- 組み込み scaffold に戻すには `canvas.navigate` と `{"url":""}` を使います
 
-### キャンバスの評価/スナップショット
+### canvas eval / snapshot
 
 ```bash
 openclaw nodes invoke --node "iOS Node" --command canvas.eval --params '{"javaScript":"(() => { const {ctx} = window.__openclaw; ctx.clearRect(0,0,innerWidth,innerHeight); ctx.lineWidth=6; ctx.strokeStyle=\"#ff2d55\"; ctx.beginPath(); ctx.moveTo(40,40); ctx.lineTo(innerWidth-40, innerHeight-40); ctx.stroke(); return \"ok\"; })()"}'
@@ -91,20 +90,20 @@ openclaw nodes invoke --node "iOS Node" --command canvas.eval --params '{"javaSc
 openclaw nodes invoke --node "iOS Node" --command canvas.snapshot --params '{"maxWidth":900,"format":"jpeg"}'
 ```
 
-## 音声ウェイク + トーク モード
+## Voice wake + Talk mode
 
-- 音声ウェイクおよび通話モードは設定で利用できます。
-- iOS ではバックグラウンド オーディオが一時停止される場合があります。アプリがアクティブでないときは、音声機能をベストエフォートとして扱います。
+- Voice wake と Talk mode は Settings から利用できます
+- iOS は background audio を一時停止する場合があるため、app 非アクティブ時の voice 機能は best-effort と考えてください
 
 ## よくあるエラー
 
-- `NODE_BACKGROUND_UNAVAILABLE`: iOS アプリをフォアグラウンドに移動します (キャンバス/カメラ/スクリーン コマンドで必要です)。
-- `A2UI_HOST_NOT_CONFIGURED`: ゲートウェイはキャンバス ホスト URL をアドバタイズしませんでした。 [ゲートウェイ構成](/gateway/configuration) の `canvasHost` を確認してください。
-- ペアリング プロンプトが表示されない: `openclaw devices list` を実行し、手動で承認します。
-- 再インストール後に再接続が失敗する: キーチェーン ペアリング トークンがクリアされました。ノードを再ペアリングします。
+- `NODE_BACKGROUND_UNAVAILABLE`: iOS app を foreground に戻してください（canvas / camera / screen command に必要です）
+- `A2UI_HOST_NOT_CONFIGURED`: gateway が canvas host URL を advertise していません。[Gateway configuration](/gateway/configuration) の `canvasHost` を確認してください
+- pairing prompt が出ない: `openclaw devices list` を実行し、手動で承認してください
+- 再インストール後に再接続できない: Keychain 上の pairing token が消えているため、node を再ペアリングしてください
 
 ## 関連ドキュメント
 
-- [ペアリング](/channels/pairing)
-- [発見](/gateway/discovery)
-- [ボンジュール](/gateway/bonjour)
+- [Pairing](/channels/pairing)
+- [Discovery](/gateway/discovery)
+- [Bonjour](/gateway/bonjour)

@@ -1,150 +1,155 @@
 ---
-summary: "明示的な所有権、統一されたライフサイクル、決定論的なクリーンアップを備えた、信頼性の高い対話型プロセス監視 (PTY + 非 PTY) のための生産計画"
+summary: "明示的な所有権、統一されたライフサイクル、決定論的なクリーンアップを備えた、信頼性の高い対話型プロセス監視（PTY + 非 PTY）の実装計画"
 read_when:
-  - 実行/プロセスのライフサイクルの所有権とクリーンアップに取り組む
-  - PTY および非 PTY 監視動作のデバッグ
+  - exec / process のライフサイクル所有権とクリーンアップを扱うとき
+  - PTY および非 PTY の監視挙動をデバッグするとき
 owner: "openclaw"
 status: "in-progress"
 last_updated: "2026-02-15"
-title: "PTY およびプロセス監督計画"
+title: "PTY とプロセス監視の計画"
 x-i18n:
   source_hash: "cc45c8a9862d59261f3f3ef57a6a332f3b7691613bf338e1088c924c43dc103f"
 ---
 
-# PTY およびプロセス監督計画
+# PTY とプロセス監視の計画
 
 ## 1. 問題と目標
 
-以下の範囲で長時間コマンドを実行するには、信頼性の高い 1 つのライフサイクルが必要です。
+次の長時間コマンド実行をまたいで、単一で信頼できるライフサイクルが必要です。
 
-- `exec` フォアグラウンド実行
-- `exec` バックグラウンドで実行
-- `process` フォローアップ アクション (`poll`、`log`、`send-keys`、`paste`、`submit`、`kill`、 `remove`)
-- CLI エージェント ランナーのサブプロセス
+- `exec` のフォアグラウンド実行
+- `exec` のバックグラウンド実行
+- `process` の後続アクション（`poll`、`log`、`send-keys`、`paste`、`submit`、`kill`、`remove`）
+- CLI エージェントランナーのサブプロセス
 
-目標は PTY をサポートすることだけではありません。目標は、ヒューリスティックに一致する危険なプロセスを排除した、予測可能な所有権、キャンセル、タイムアウト、クリーンアップです。
+目標は単に PTY をサポートすることではありません。危険なプロセス照合ヒューリスティクスに頼らず、所有権、キャンセル、タイムアウト、クリーンアップを予測可能にすることが目的です。
 
-## 2. 範囲と境界
+## 2. スコープと境界
 
-- `src/process/supervisor` の内部実装を維持します。
-- これに対して新しいパッケージを作成しないでください。
-- 実用的な場合は、現在の動作の互換性を維持します。
-- ターミナルの再生や tmux スタイルのセッション永続化に範囲を広げないでください。
+- 実装は `src/process/supervisor` 内部に閉じる
+- このために新しい package は作らない
+- 実用上可能な範囲で現行挙動との互換性を維持する
+- terminal replay や tmux 風の session 永続化までスコープを広げない
 
-## 3. このブランチで実装されます
+## 3. このブランチで実装済みの内容
 
-### スーパーバイザーのベースラインはすでに存在します
+### すでに存在する supervisor の基盤
 
-- スーパーバイザ モジュールは `src/process/supervisor/*` の下に配置されます。
-- Exec ランタイムと CLI ランナーは、スーパーバイザの生成と待機を介してすでにルーティングされています。
-- レジストリのファイナライゼーションは冪等です。
+- supervisor モジュールは `src/process/supervisor/*` に配置済み
+- exec runtime と CLI runner は、すでに supervisor の spawn / wait を経由する構成になっている
+- registry の finalize は冪等である
 
-### このパスは完了しました
+### この実装パスで完了した項目
 
-1. 明示的な PTY コマンド コントラクト- `SpawnInput` は、`src/process/supervisor/types.ts` の区別共用体になりました。
+1. 明示的な PTY コマンド契約
 
-- PTY の実行には、汎用の `argv` を再利用するのではなく、`ptyCommand` が必要です。
-- スーパーバイザーは、`src/process/supervisor/supervisor.ts` の argv 結合から PTY コマンド文字列を再構築しなくなりました。
-- Exec ランタイムは `ptyCommand` を `src/agents/bash-tools.exec-runtime.ts` に直接渡すようになりました。
+- `SpawnInput` は `src/process/supervisor/types.ts` で判別共用体になった
+- PTY 実行では汎用 `argv` の再利用ではなく `ptyCommand` を必須とした
+- supervisor は `src/process/supervisor/supervisor.ts` で `argv` の join から PTY コマンド文字列を再構築しなくなった
+- exec runtime は `src/agents/bash-tools.exec-runtime.ts` から `ptyCommand` を直接渡すようになった
 
-2. プロセス層タイプのデカップリング
+2. process 層の型の分離
 
-- スーパーバイザー タイプは、エージェントから `SessionStdin` をインポートしなくなりました。
-- プロセス ローカル stdin コントラクトは `src/process/supervisor/types.ts` (`ManagedRunStdin`) にあります。
-- アダプターはプロセス レベルのタイプのみに依存するようになりました。
+- supervisor の型は agent 層から `SessionStdin` を import しなくなった
+- process ローカルの stdin 契約は `src/process/supervisor/types.ts` の `ManagedRunStdin` に置かれた
+- adapter は process 層の型だけに依存するようになった
   - `src/process/supervisor/adapters/child.ts`
   - `src/process/supervisor/adapters/pty.ts`
 
-3. プロセスツールのライフサイクルオーナーシップの向上
+3. process ツールのライフサイクル所有権の改善
 
-- `src/agents/bash-tools.process.ts` は、最初にスーパーバイザーを通じてキャンセルを要求するようになりました。
-- `process kill/remove` では、スーパーバイザーの検索が失敗した場合にプロセス ツリーのフォールバック終了を使用するようになりました。
-- `remove` は、終了が要求された直後に実行中のセッション エントリを削除することで、決定的な削除動作を維持します。
+- `src/agents/bash-tools.process.ts` は、まず supervisor 経由で cancel を要求するようになった
+- `process kill/remove` は、supervisor lookup に失敗した場合に process-tree ベースのフォールバック終了を使うようになった
+- `remove` は、終了要求を出した直後に実行中 session entry を削除することで、決定的な remove 動作を維持している
 
-4. 単一ソース ウォッチドッグのデフォルト
+4. watchdog デフォルトの単一ソース化
 
-- `src/agents/cli-watchdog-defaults.ts` に共有デフォルトを追加しました。
-- `src/agents/cli-backends.ts` は共有デフォルトを使用します。
-- `src/agents/cli-runner/reliability.ts` は同じ共有デフォルトを使用します。
+- `src/agents/cli-watchdog-defaults.ts` に共有デフォルトを追加した
+- `src/agents/cli-backends.ts` はその共有デフォルトを利用するようになった
+- `src/agents/cli-runner/reliability.ts` も同じ共有デフォルトを利用するようになった
 
-5. 死んだヘルパーのクリーンアップ
+5. 死んだ helper の削除
 
-- 未使用の `killSession` ヘルパー パスを `src/agents/bash-tools.shared.ts` から削除しました。
+- 未使用の `killSession` helper 経路を `src/agents/bash-tools.shared.ts` から削除した
 
-6. 直接スーパーバイザ パス テストを追加
+6. supervisor 直結経路のテスト追加
 
-- スーパーバイザのキャンセルによるルーティングの強制終了と削除をカバーする `src/agents/bash-tools.process.supervisor.test.ts` を追加しました。
+- supervisor cancel を経由した kill / remove のルーティングを確認する `src/agents/bash-tools.process.supervisor.test.ts` を追加した
 
-7. 信頼性ギャップの修正が完了しました- `src/agents/bash-tools.process.ts` は、スーパーバイザーの検索が失敗した場合に、実際の OS レベルのプロセス終了にフォールバックするようになりました。
+7. 信頼性ギャップの修正完了
 
-- `src/process/supervisor/adapters/child.ts` は、デフォルトのキャンセル/タイムアウト キル パスにプロセス ツリー終了セマンティクスを使用するようになりました。
-- `src/process/kill-tree.ts` に共有プロセス ツリー ユーティリティを追加しました。
+- `src/agents/bash-tools.process.ts` は、supervisor lookup に失敗したとき OS レベルの実プロセス終了へフォールバックするようになった
+- `src/process/supervisor/adapters/child.ts` は、標準の cancel / timeout kill 経路で process-tree 終了セマンティクスを使うようになった
+- 共通の process-tree utility を `src/process/kill-tree.ts` に追加した
 
-8. PTY契約のエッジケース補償を追加
+8. PTY 契約のエッジケース検証を追加
 
-- 逐語的な PTY コマンド転送と空のコマンド拒否のために `src/process/supervisor/supervisor.pty-command.test.ts` を追加しました。
-- 子アダプターのキャンセルにおけるプロセス ツリーの強制終了動作に `src/process/supervisor/adapters/child.test.ts` を追加しました。
+- `src/process/supervisor/supervisor.pty-command.test.ts` を追加し、PTY コマンドのそのまま転送と空コマンド拒否を検証した
+- `src/process/supervisor/adapters/child.test.ts` を追加し、child adapter cancel 時の process-tree kill 挙動を検証した
 
-## 4. 残りのギャップと決定
+## 4. 残るギャップと判断
 
-### 信頼性ステータス
+### 信頼性の状態
 
-このパスに必要な 2 つの信頼性ギャップが解消されました。
+この実装パスで必須だった 2 つの信頼性ギャップは解消済みです。
 
-- `process kill/remove` には、スーパーバイザ検索が失敗した場合の実際の OS 終了フォールバックが含まれるようになりました。
-- 子のキャンセル/タイムアウトは、デフォルトの Kill パスにプロセス ツリーの Kill セマンティクスを使用するようになりました。
-- 両方の動作に対して回帰テストが追加されました。
+- `process kill/remove` には、supervisor lookup miss 時の実プロセス終了フォールバックが入った
+- child cancel / timeout は、標準 kill 経路で process-tree kill を使うようになった
+- 両挙動に対する回帰テストも追加済み
 
-### 耐久性と起動時の調整
+### 永続性と起動時の整合
 
-再起動動作は、メモリ内ライフサイクルのみとして明示的に定義されるようになりました。
+再起動時の挙動は、明示的に「メモリ内ライフサイクルのみ」と定義されました。
 
-- `reconcileOrphans()` は、仕様により `src/process/supervisor/supervisor.ts` においても no-op のままです。
-- アクティブな実行はプロセスの再起動後に回復されません。
-- この境界は、部分的な永続化のリスクを回避するために、この実装パスで意図的に設けられています。
+- `reconcileOrphans()` は `src/process/supervisor/supervisor.ts` で設計上 no-op のまま維持する
+- プロセス再起動後に active run は復元しない
+- この境界は、中途半端な永続化によるリスクを避けるため、この実装パスでは意図的に残している
 
 ### 保守性のフォローアップ
 
-1. `src/agents/bash-tools.exec-runtime.ts` の `runExecProcess` は引き続き複数の責任を処理し、フォローアップでは焦点を絞ったヘルパーに分割できます。
+1. `src/agents/bash-tools.exec-runtime.ts` の `runExecProcess` は依然として複数責務を持っており、後続で責務ごとの helper に分割できる
 
-## 5. 実施計画必要な信頼性と契約項目の実装パスが完了しました
+## 5. 実装計画
 
-完了:
+必須だった信頼性項目と契約項目の実装は完了しています。
 
-- `process kill/remove` フォールバック実際の終了
-- 子アダプタのデフォルトのkillパスのプロセスツリーのキャンセル
-- フォールバックキルおよび子アダプタキルパスの回帰テスト
-- 明示的な `ptyCommand` に基づく PTY コマンドのエッジケース テスト
-- `reconcileOrphans()` の明示的なメモリ内再起動境界は設計により no-op です
+完了済み:
 
-オプションのフォローアップ:
+- `process kill/remove` のフォールバック実終了
+- child adapter の標準 kill 経路における process-tree cancel
+- フォールバック kill と child adapter kill 経路の回帰テスト
+- 明示的な `ptyCommand` に基づく PTY コマンドのエッジケーステスト
+- `reconcileOrphans()` を no-op とする、明示的なメモリ内再起動境界
 
-- `runExecProcess` を動作ドリフトのない焦点を絞ったヘルパーに分割します
+任意の後続作業:
+
+- `runExecProcess` を、挙動を変えずに責務別 helper へ分割する
 
 ## 6. ファイルマップ
 
-### プロセススーパーバイザー
+### process supervisor
 
-- `src/process/supervisor/types.ts` は、判別されたスポーン入力とプロセスのローカル stdin コントラクトで更新されました。
-- 明示的な `ptyCommand` を使用するように `src/process/supervisor/supervisor.ts` が更新されました。
-- `src/process/supervisor/adapters/child.ts` および `src/process/supervisor/adapters/pty.ts` はエージェント タイプから分離されました。
-- `src/process/supervisor/registry.ts` べき等ファイナライズは変更されずに保持されます。
+- `src/process/supervisor/types.ts` は、判別された spawn input と process ローカル stdin 契約を持つよう更新された
+- `src/process/supervisor/supervisor.ts` は、明示的な `ptyCommand` を使うよう更新された
+- `src/process/supervisor/adapters/child.ts` と `src/process/supervisor/adapters/pty.ts` は、agent 層の型から切り離された
+- `src/process/supervisor/registry.ts` の冪等 finalize は変更せず維持した
 
-### 実行とプロセスの統合
+### exec と process の統合
 
-- `src/agents/bash-tools.exec-runtime.ts` は、PTY コマンドを明示的に渡し、フォールバック パスを維持するように更新されました。
-- `src/agents/bash-tools.process.ts` は、実際のプロセス ツリーのフォールバック終了でスーパーバイザ経由でキャンセルするように更新されました。
-- `src/agents/bash-tools.shared.ts` は、直接 Kill ヘルパー パスを削除しました。
+- `src/agents/bash-tools.exec-runtime.ts` は、PTY コマンドを明示的に渡しつつフォールバック経路を維持するよう更新された
+- `src/agents/bash-tools.process.ts` は、supervisor 経由の cancel と、必要時の実 process-tree 終了フォールバックを使うよう更新された
+- `src/agents/bash-tools.shared.ts` から直接 kill helper 経路を削除した
 
 ### CLI の信頼性
 
-- `src/agents/cli-watchdog-defaults.ts` が共有ベースラインとして追加されました。
-- `src/agents/cli-backends.ts` と `src/agents/cli-runner/reliability.ts` は同じデフォルトを使用するようになりました。
+- `src/agents/cli-watchdog-defaults.ts` を共有ベースラインとして追加した
+- `src/agents/cli-backends.ts` と `src/agents/cli-runner/reliability.ts` は同じデフォルト値を参照するようになった
 
-## 7. このパスでの検証の実行
+## 7. この実装パスでの検証
 
-単体テスト:- `pnpm vitest src/process/supervisor/registry.test.ts`
+単体テスト:
 
+- `pnpm vitest src/process/supervisor/registry.test.ts`
 - `pnpm vitest src/process/supervisor/supervisor.test.ts`
 - `pnpm vitest src/process/supervisor/supervisor.pty-command.test.ts`
 - `pnpm vitest src/process/supervisor/adapters/child.test.ts`
@@ -154,38 +159,40 @@ x-i18n:
 - `pnpm vitest src/agents/bash-tools.process.supervisor.test.ts`
 - `pnpm vitest src/process/exec.test.ts`
 
-E2E のターゲット:
+E2E 対象:
 
 - `pnpm vitest src/agents/cli-runner.test.ts`
 - `pnpm vitest run src/agents/bash-tools.exec.pty-fallback.test.ts src/agents/bash-tools.exec.background-abort.test.ts src/agents/bash-tools.process.send-keys.test.ts`
 
-タイプチェックのメモ:
+型チェックに関する注意:
 
-- このリポジトリでは `pnpm build` (および完全な lint/docs ゲートには `pnpm check`) を使用します。 `pnpm tsgo` について言及している古いメモは廃止されました。
+- このリポジトリでは `pnpm build` を使います。lint / docs を含む完全なゲートには `pnpm check` を使ってください
+- `pnpm tsgo` に言及している古いメモは廃止済みです
 
-## 8. 動作保証は維持されます
+## 8. 維持される運用保証
 
-- Exec env の強化動作は変更されていません。
-- 承認と許可リストのフローは変更されません。
-- 出力のサニタイズと出力キャップは変更されません。
-- PTY アダプターは、強制終了およびリスナー破棄時の待機解決を引き続き保証します。
+- exec env の hardening 挙動は変わらない
+- 承認と allowlist のフローは変わらない
+- 出力のサニタイズと出力上限は変わらない
+- PTY adapter は、強制 kill 時の wait 完了と listener 解放を引き続き保証する
 
 ## 9. 完了の定義
 
-1. スーパーバイザーは、管理された実行のライフサイクル所有者です。
-2. PTY スポーンは、argv 再構築を行わない明示的なコマンド コントラクトを使用します。
-3. プロセス層には、スーパーバイザ標準入力コントラクトのエージェント層に対するタイプの依存関係がありません。
-4. ウォッチドッグのデフォルトは単一ソースです。
-5. 対象の単体テストと e2e テストは緑色のままです。
-6. 再起動耐久性の境界が明示的に文書化されているか、完全に実装されています。
+1. supervisor が managed run のライフサイクル所有者であること
+2. PTY spawn が、`argv` 再構築を行わない明示的なコマンド契約を使うこと
+3. process 層が、supervisor stdin 契約に関して agent 層へ型依存しないこと
+4. watchdog デフォルトが単一ソースであること
+5. 対象の unit / e2e テストが green を維持すること
+6. 再起動時の永続性境界が明示的に文書化されているか、完全に実装されていること
 
 ## 10. まとめ
 
-ブランチは現在、一貫性のあるより安全な監視形状を持っています。- 明示的なPTY契約
+このブランチの監視構成は、より一貫性があり安全な形になっています。
 
-- よりクリーンなプロセスの階層化
-- プロセス操作のスーパーバイザ主導のキャンセル パス
-- スーパーバイザ検索が失敗した場合の実際のフォールバック終了
-- 子実行のデフォルトのkillパスのプロセスツリーのキャンセル
-- 統合されたウォッチドッグのデフォルト
-- 明示的なメモリ内再起動境界 (このパスでは再起動間で孤立した調整は行われません)
+- 明示的な PTY 契約
+- より整理された process layering
+- process 操作に対する supervisor 主導の cancel 経路
+- supervisor lookup miss 時の実フォールバック終了
+- child run の標準 kill 経路における process-tree cancel
+- 単一化された watchdog デフォルト
+- 明示的なメモリ内再起動境界（この実装パスでは、再起動をまたぐ orphan reconcile は行わない）

@@ -1,67 +1,71 @@
 ---
-summary: "エージェント使用のためのカメラ キャプチャ (iOS/Android ノード + macOS アプリ): 写真 (jpg) および短いビデオ クリップ (mp4)"
+summary: "エージェント利用向けのカメラキャプチャ（iOS / Android ノード + macOS アプリ）: 写真（jpg）と短い動画クリップ（mp4）"
 read_when:
-  - iOS/Android ノードまたは macOS でのカメラ キャプチャの追加または変更
-  - エージェントがアクセス可能な MEDIA 一時ファイルのワークフローを拡張する
-title: "カメラキャプチャ"
+  - iOS / Android ノードや macOS でカメラキャプチャ機能を追加・変更するとき
+  - エージェントが利用できる MEDIA 一時ファイルワークフローを拡張するとき
+title: "Camera Capture"
 x-i18n:
   source_hash: "30b1beaac9602ff29733f72b953065f271928743c8fff03191a007e8b965c88d"
 ---
 
-# カメラキャプチャ (エージェント)
+# Camera capture (agent)
 
-OpenClaw は、エージェント ワークフローの **カメラ キャプチャ** をサポートしています。
+OpenClaw は、エージェントワークフロー向けに **camera capture** をサポートしています。
 
-- **iOS ノード** (ゲートウェイ経由でペアリング): `node.invoke` 経由で **写真** (`jpg`) または **短いビデオ クリップ** (`mp4`、オプションの音声付き) をキャプチャします。
-- **Android ノード** (ゲートウェイ経由でペアリング): `node.invoke` 経由で **写真** (`jpg`) または **短いビデオ クリップ** (`mp4`、オプションの音声付き) をキャプチャします。
-- **macOS アプリ** (ゲートウェイ経由のノード): `node.invoke` 経由で **写真** (`jpg`) または **短いビデオ クリップ** (`mp4`、オプションの音声付き) をキャプチャします。
+- **iOS node**（Gateway 経由でペアリング）: `node.invoke` で **写真**（`jpg`）または **短い動画クリップ**（`mp4`、音声は任意）を取得できます
+- **Android node**（Gateway 経由でペアリング）: `node.invoke` で **写真**（`jpg`）または **短い動画クリップ**（`mp4`、音声は任意）を取得できます
+- **macOS app**（Gateway 配下の node）: `node.invoke` で **写真**（`jpg`）または **短い動画クリップ**（`mp4`、音声は任意）を取得できます
 
-すべてのカメラへのアクセスは、**ユーザー制御の設定**の背後でゲートされます。
+カメラアクセスはすべて **ユーザーが制御する設定** の背後にあります。
 
-## iOS ノード
+## iOS node
 
-### ユーザー設定 (デフォルトはオン)
+### ユーザー設定（デフォルトでオン）
 
-- iOS 設定タブ → **カメラ** → **カメラを許可** (`camera.enabled`)
-  - デフォルト: **オン** (欠落しているキーは有効なものとして扱われます)。
-  - オフの場合: `camera.*` コマンドは `CAMERA_DISABLED` を返します。
+- iOS の Settings タブ → **Camera** → **Allow Camera**（`camera.enabled`）
+  - デフォルト: **on**（キー未設定でも有効として扱う）
+  - off の場合: `camera.*` コマンドは `CAMERA_DISABLED` を返す
 
-### コマンド (ゲートウェイ `node.invoke` 経由)
+### コマンド（Gateway の `node.invoke` 経由）
 
 - `camera.list`
   - 応答ペイロード:
-    - `devices`: `{ id, name, position, deviceType }` の配列- `camera.snap`
+    - `devices`: `{ id, name, position, deviceType }` の配列
+
+- `camera.snap`
   - パラメータ:
-    - `facing`: `front|back` (デフォルト: `front`)
-    - `maxWidth`: 数値 (オプション、iOS ノードのデフォルト `1600`)
-    - `quality`: `0..1` (オプション、デフォルトは `0.9`)
-    - `format`: 現在 `jpg`
-    - `delayMs`: 数値 (オプション、デフォルトは `0`)
-    - `deviceId`: 文字列 (オプション、`camera.list` から)
+    - `facing`: `front|back`（デフォルト: `front`）
+    - `maxWidth`: number（任意。iOS node のデフォルトは `1600`）
+    - `quality`: `0..1`（任意。デフォルトは `0.9`）
+    - `format`: 現在は `jpg`
+    - `delayMs`: number（任意。デフォルトは `0`）
+    - `deviceId`: string（任意。`camera.list` で取得）
   - 応答ペイロード:
     - `format: "jpg"`
     - `base64: "<...>"`
     - `width`、`height`
-  - ペイロード ガード: 写真は再圧縮されて、base64 ペイロードが 5 MB 未満に保たれます。
+  - ペイロード保護: 写真は base64 ペイロードが 5 MB 未満に収まるよう再圧縮される
 
 - `camera.clip`
   - パラメータ:
-    - `facing`: `front|back` (デフォルト: `front`)
-    - `durationMs`: 数値 (デフォルトは `3000`、最大値は `60000` に固定)
-    - `includeAudio`: ブール値 (デフォルトは `true`)
-    - `format`: 現在 `mp4`
-    - `deviceId`: 文字列 (オプション、`camera.list` から)
+    - `facing`: `front|back`（デフォルト: `front`）
+    - `durationMs`: number（デフォルト `3000`、最大 `60000` にクランプ）
+    - `includeAudio`: boolean（デフォルト `true`）
+    - `format`: 現在は `mp4`
+    - `deviceId`: string（任意。`camera.list` で取得）
   - 応答ペイロード:
     - `format: "mp4"`
     - `base64: "<...>"`
     - `durationMs`
     - `hasAudio`
 
-### フォアグラウンドの要件
+### フォアグラウンド要件
 
-`canvas.*` と同様、iOS ノードでは **フォアグラウンド** での `camera.*` コマンドのみが許可されます。バックグラウンド呼び出しは `NODE_BACKGROUND_UNAVAILABLE` を返します。
+`canvas.*` と同様に、iOS node では **foreground** 中のみ `camera.*` を実行できます。background から呼び出した場合は `NODE_BACKGROUND_UNAVAILABLE` を返します。
 
-### CLI ヘルパー (一時ファイル + メディア)添付ファイルを取得する最も簡単な方法は、デコードされたメディアを一時ファイルに書き込み、`MEDIA:<path>` を出力する CLI ヘルパーを使用することです
+### CLI helper（一時ファイル + MEDIA）
+
+添付ファイルとして扱う最も簡単な方法は、デコード済みメディアを一時ファイルへ書き込み、`MEDIA:<path>` を出力する CLI helper を使うことです。
 
 例:
 
@@ -74,51 +78,52 @@ openclaw nodes camera clip --node <id> --no-audio
 
 注:
 
-- `nodes camera snap` はデフォルトで **両方** を向き、エージェントに両方のビューを提供します。
-- 独自のラッパーを構築しない限り、出力ファイルは一時的 (OS 一時ディレクトリ内) になります。
+- `nodes camera snap` はデフォルトで **両方の向き** を取得し、エージェントに front / back 両方の視点を渡します
+- 自前のラッパーを作らない限り、出力ファイルは OS の一時ディレクトリ上のテンポラリファイルです
 
-## Android ノード
+## Android node
 
-### Android ユーザー設定 (デフォルトはオン)
+### Android のユーザー設定（デフォルトでオン）
 
-- Android 設定シート → **カメラ** → **カメラを許可** (`camera.enabled`)
-  - デフォルト: **オン** (欠落しているキーは有効なものとして扱われます)。
-  - オフの場合: `camera.*` コマンドは `CAMERA_DISABLED` を返します。
+- Android の Settings sheet → **Camera** → **Allow Camera**（`camera.enabled`）
+  - デフォルト: **on**（キー未設定でも有効として扱う）
+  - off の場合: `camera.*` コマンドは `CAMERA_DISABLED` を返す
 
 ### 権限
 
-- Android には実行時の権限が必要です。
-  - `camera.snap` と `camera.clip` の両方の場合は `CAMERA`。
-  - `includeAudio=true` の場合は、`RECORD_AUDIO`、`camera.clip`。
+- Android では実行時権限が必要です
+  - `camera.snap` と `camera.clip` の両方に `CAMERA`
+  - `camera.clip` で `includeAudio=true` の場合は `RECORD_AUDIO`
 
-権限が不足している場合、アプリは可能な場合にプロンプ​​トを表示します。拒否された場合、`camera.*` リクエストは失敗し、
-`*_PERMISSION_REQUIRED` エラー。
+権限が不足している場合、可能であればアプリが権限要求を出します。拒否された場合、`camera.*` リクエストは `*_PERMISSION_REQUIRED` で失敗します。
 
-### Android フォアグラウンド要件
+### Android の foreground 要件
 
-`canvas.*` と同様、Android ノードでは **フォアグラウンド** での `camera.*` コマンドのみが許可されます。バックグラウンド呼び出しは `NODE_BACKGROUND_UNAVAILABLE` を返します。
+`canvas.*` と同様に、Android node でも **foreground** 中のみ `camera.*` を実行できます。background からの呼び出しは `NODE_BACKGROUND_UNAVAILABLE` を返します。
 
-### Android コマンド (ゲートウェイ `node.invoke` 経由)
+### Android コマンド（Gateway の `node.invoke` 経由）
 
 - `camera.list`
   - 応答ペイロード:
     - `devices`: `{ id, name, position, deviceType }` の配列
 
-### ペイロードガード
+### ペイロード保護
 
-写真は、base64 ペイロードを 5 MB 未満に保つために再圧縮されます。
+写真は base64 ペイロードを 5 MB 未満に抑えるため再圧縮されます。
 
-## macOS アプリ
+## macOS app
 
-### ユーザー設定 (デフォルトはオフ)macOS コンパニオン アプリはチェックボックスを公開します
+### ユーザー設定（デフォルトでオフ）
 
-- **設定 → 一般 → カメラを許可** (`openclaw.cameraEnabled`)
-  - デフォルト: **オフ**
-  - オフの場合: カメラ要求は「ユーザーによってカメラが無効になっています」を返します。
+macOS companion app には次のチェックボックスがあります。
 
-### CLI ヘルパー (ノード呼び出し)
+- **Settings → General → Allow Camera**（`openclaw.cameraEnabled`）
+  - デフォルト: **off**
+  - off の場合: カメラ要求は “Camera disabled by user” を返す
 
-メインの `openclaw` CLI を使用して、macOS ノードでカメラ コマンドを呼び出します。
+### CLI helper（node invoke）
+
+メインの `openclaw` CLI を使って、macOS node に camera command を送れます。
 
 例:
 
@@ -136,18 +141,18 @@ openclaw nodes camera clip --node <id> --no-audio
 
 注:
 
-- `openclaw nodes camera snap` は、オーバーライドされない限り、デフォルトで `maxWidth=1600` になります。
-- macOS では、`camera.snap` は、ウォームアップ/露出が安定した後、キャプチャする前に `delayMs` (デフォルトは 2000 ミリ秒) 待機します。
-- 写真のペイロードは、base64 を 5 MB 未満に保つために再圧縮されます。
+- `openclaw nodes camera snap` は、未指定時 `maxWidth=1600` になります
+- macOS の `camera.snap` は、warm-up / 露出安定のあと `delayMs`（デフォルト 2000ms）だけ待ってから撮影します
+- 写真ペイロードは base64 が 5 MB 未満になるよう再圧縮されます
 
-## 安全性 + 実用的な制限
+## セーフティと実用上の制限
 
-- カメラとマイクにアクセスすると、通常の OS 許可プロンプトがトリガーされます (また、Info.plist 内の使用文字列が必要です)。
-- ノード ペイロードの過大化 (base64 オーバーヘッド + メッセージ制限) を回避するために、ビデオ クリップにはキャップが設定されています (現在 `<= 60s`)。
+- カメラおよびマイクの使用時には、通常の OS 権限プロンプトが表示されます（Info.plist の usage string も必要）
+- ノードペイロードの肥大化（base64 オーバーヘッド + メッセージ制限）を避けるため、動画クリップは現在 `<= 60s` に制限されています
 
-## macOS 画面ビデオ (OS レベル)
+## macOS の画面動画（OS レベル）
 
-_screen_ ビデオ (カメラではない) の場合は、macOS コンパニオンを使用します。
+_screen_ 動画（カメラではなく画面）については、macOS companion を使用します。
 
 ```bash
 openclaw nodes screen record --node <id> --duration 10s --fps 15   # prints MEDIA:<path>
@@ -155,4 +160,4 @@ openclaw nodes screen record --node <id> --duration 10s --fps 15   # prints MEDI
 
 注:
 
-- macOS **画面録画** 権限 (TCC) が必要です。
+- macOS の **Screen Recording** 権限（TCC）が必要です

@@ -1,21 +1,19 @@
 ---
-summary: "ゲートウェイ、チャネル、自動化、ノード、ブラウザーの詳細なトラブルシューティング ランブック"
+summary: "ゲートウェイ、チャネル、自動化、ノード、ブラウザに関する詳細なトラブルシューティング手順"
 read_when:
-  - トラブルシューティング ハブは、より詳細な診断のためにここを示しました
-  - 正確なコマンドを含む、安定した症状ベースの Runbook セクションが必要です
+  - トラブルシューティングハブから詳細な診断のために誘導された場合
+  - 症状に基づいた具体的な解決手順とコマンドが必要な場合
 title: "トラブルシューティング"
-x-i18n:
-  source_hash: "2016d75d24ea86d982fa11bbe05f8506d41dd1defbef8f3cf9864664fb01ecc4"
 ---
 
 # ゲートウェイのトラブルシューティング
 
-このページは詳細なランブックです。
-最初に迅速な優先順位付けフローが必要な場合は、[/help/troubleshooting](/help/troubleshooting) から開始してください。
+このページは詳細なトラブルシューティング手順をまとめたランブックです。
+まず迅速な診断を行いたい場合は、[/help/troubleshooting](/help/troubleshooting) を参照してください。
 
-## コマンドラダー
+## 基本的な確認手順
 
-最初にこれらを次の順序で実行します。
+まず、以下のコマンドを順番に実行してください。
 
 ```bash
 openclaw status
@@ -25,16 +23,15 @@ openclaw doctor
 openclaw channels status --probe
 ```
 
-予想される健全なシグナル:
+正常な状態を示すシグナル：
 
-- `openclaw gateway status` は、`Runtime: running` および `RPC probe: ok` を示します。
-- `openclaw doctor` は、ブロックする構成/サービスの問題を報告しません。
-- `openclaw channels status --probe` は、接続済み/準備完了のチャネルを示します。
+- `openclaw gateway status` で `Runtime: running` および `RPC probe: ok` と表示される。
+- `openclaw doctor` で、動作を妨げる設定やサービスの問題が報告されない。
+- `openclaw channels status --probe` で、チャネルが接続済み（connected）または準備完了（ready）と表示される。
 
-## 長いコンテキストには Anthropic 429 の追加使用が必要
+## Anthropic 429: 長いコンテキストには追加の利用枠が必要
 
-ログ/エラーに次のものが含まれる場合にこれを使用します。
-`HTTP 429: rate_limit_error: Extra usage is required for long context requests`。
+ログやエラーに `HTTP 429: rate_limit_error: Extra usage is required for long context requests` と表示される場合に使用します。
 
 ```bash
 openclaw logs --follow
@@ -42,27 +39,27 @@ openclaw models status
 openclaw config get agents.defaults.models
 ```
 
-探してください:
+確認事項：
 
-- 選択された Anthropic Opus/Sonnet モデルには `params.context1m: true` が含まれています。
-- 現在の Anthropic 資格情報は、ロングコンテキストでの使用には適していません。
-- リクエストは、1M ベータ パスを必要とする長いセッション/モデルの実行でのみ失敗します。
+- 選択された Anthropic Opus/Sonnet モデルで `params.context1m: true` が設定されているか。
+- 現在の Anthropic 認証情報が、長いコンテキスト（1Mコンテキスト）の利用資格を満たしているか。
+- 1Mコンテキストのベータパスを必要とする長いセッションやモデル実行でのみ失敗していないか。
 
-修正オプション:
+解決策：
 
-1. 通常のコンテキスト ウィンドウにフォールバックするには、そのモデルの `context1m` を無効にします。
-2. 課金で Anthropic API キーを使用するか、サブスクリプション アカウントで Anthropic Extra Use を有効にします。
-3. Anthropic のロングコンテキスト要求が拒否された場合でも実行が継続されるように、フォールバック モデルを構成します。
+1. そのモデルの `context1m` を無効化し、通常のコンテキストウィンドウにフォールバックさせる。
+2. 支払い設定済みの Anthropic API キーを使用するか、サブスクリプションアカウントで Anthropic Extra Usage を有効にする。
+3. Anthropic の長いコンテキスト要求が拒否された場合に備え、フォールバックモデルを設定して実行を継続できるようにする。
 
-関連:
+関連情報：
 
 - [/providers/anthropic](/providers/anthropic)
 - [/reference/token-use](/reference/token-use)
 - [/help/faq#why-am-i-seeing-http-429-ratelimiterror-from-anthropic](/help/faq#why-am-i-seeing-http-429-ratelimiterror-from-anthropic)
 
-## 返信はありません
+## 返信がない場合
 
-チャネルは稼働しているが応答がない場合は、再接続する前にルーティングとポリシーを確認してください。
+チャネルは稼働しているが応答がない場合は、再接続を試みる前にルーティングとポリシーを確認してください。
 
 ```bash
 openclaw status
@@ -72,26 +69,27 @@ openclaw config get channels
 openclaw logs --follow
 ```
 
-探してください:- DM 送信者のペアリングが保留中です。
+確認事項：
 
-- グループメンションゲート (`requireMention`、`mentionPatterns`)。
-- チャネル/グループの許可リストの不一致。
+- DM送信者のペアリングが保留中になっていないか。
+- グループチャットのメンション設定（`requireMention`, `mentionPatterns`）が正しく構成されているか。
+- チャネルやグループの許可リストの設定に不備がないか。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `drop guild message (mention required` → 言及されるまでグループ メッセージは無視されます。
-- `pairing request` → 送信者には承認が必要です。
-- `blocked` / `allowlist` → 送信者/チャネルはポリシーによってフィルタリングされました。
+- `drop guild message (mention required` → メンションされるまでグループメッセージを無視しています。
+- `pairing request` → 送信者に承認（ペアリング）が必要です。
+- `blocked` / `allowlist` → 送信者またはチャネルがポリシーによってフィルタリングされています。
 
-関連:
+関連情報：
 
 - [/channels/troubleshooting](/channels/troubleshooting)
 - [/channels/pairing](/channels/pairing)
 - [/channels/groups](/channels/groups)
 
-## ダッシュボード コントロール UI 接続
+## ダッシュボード/Control UI の接続エラー
 
-ダッシュボード/コントロール UI が接続できない場合は、URL、認証モード、および安全なコンテキストの前提条件を検証します。
+ダッシュボードやControl UIが接続できない場合は、URL、認証モード、およびセキュアコンテキストの前提条件を検証してください。
 
 ```bash
 openclaw gateway status
@@ -101,23 +99,21 @@ openclaw doctor
 openclaw gateway status --json
 ```
 
-探してください:
+確認事項：
 
-- プローブ URL とダッシュボード URL を修正します。
-- クライアントとゲートウェイ間の認証モード/トークンの不一致。
-- デバイス ID が必要な HTTP の使用。
+- プローブURLとダッシュボードURLが正しいか。
+- クライアントとゲートウェイ間で認証モードやトークンが一致しているか。
+- デバイス認証が必要な場面でHTTPを使用していないか。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `device identity required` → 安全でないコンテキストまたはデバイス認証がありません。
-- `device nonce required` / `device nonce mismatch` → クライアントが完了していません
-  チャレンジベースのデバイス認証フロー (`connect.challenge` + `device.nonce`)。
-- `device signature invalid` / `device signature expired` → クライアントは間違ったものに署名しました
-  現在のハンドシェイクのペイロード (または古いタイムスタンプ)。
-- `unauthorized` / ループ再接続 → トークン/パスワードの不一致。
-- `gateway connect failed:` → ホスト/ポート/URL ターゲットが間違っています。
+- `device identity required` → 非セキュアなコンテキスト、またはデバイス認証が欠落しています。
+- `device nonce required` / `device nonce mismatch` → クライアントがチャレンジベースのデバイス認証フロー（`connect.challenge` + `device.nonce`）を完了していません。
+- `device signature invalid` / `device signature expired` → クライアントが現在のハンドシェイクに対して誤ったペイロード（または古いタイムスタンプ）で署名しました。
+- `unauthorized` / 再接続のループ → トークンまたはパスワードが一致していません。
+- `gateway connect failed:` → ホスト、ポート、またはURLターゲットが誤っています。
 
-デバイス認証 v2 移行チェック:
+デバイス認証 v2 への移行チェック：
 
 ```bash
 openclaw --version
@@ -125,17 +121,21 @@ openclaw doctor
 openclaw gateway status
 ```
 
-ログに nonce/署名エラーが表示される場合は、接続しているクライアントを更新して確認します。1. `connect.challenge` を待ちます 2. チャレンジバインドされたペイロードに署名する 3. 同じチャレンジノンスを含む `connect.params.device.nonce` を送信します
+ログに nonce や署名のエラーが表示される場合は、接続クライアントを更新し、以下の手順を確認してください。
 
-関連:
+1. `connect.challenge` を待機する。
+2. チャレンジに紐付けられたペイロードに署名する。
+3. 同じチャレンジ nonce を含む `connect.params.device.nonce` を送信する。
+
+関連情報：
 
 - [/web/control-ui](/web/control-ui)
 - [/gateway/authentication](/gateway/authentication)
 - [/gateway/remote](/gateway/remote)
 
-## ゲートウェイ サービスが実行されていません
+## ゲートウェイサービスが起動しない
 
-サービスはインストールされているがプロセスが起動しない場合にこれを使用します。
+サービスはインストールされているが、プロセスが維持されない場合に使用します。
 
 ```bash
 openclaw gateway status
@@ -145,27 +145,27 @@ openclaw doctor
 openclaw gateway status --deep
 ```
 
-探してください:
+確認事項：
 
-- `Runtime: stopped` 終了ヒント付き。
-- サービス構成の不一致 (`Config (cli)` と `Config (service)`)。
-- ポート/リスナーの競合。
+- `Runtime: stopped` と表示され、終了時のヒントが出力されていないか。
+- サービスの構成設定に不一致がないか（`Config (cli)` vs `Config (service)`）。
+- ポートやリスナーの競合が発生していないか。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `Gateway start blocked: set gateway.mode=local` → ローカル ゲートウェイ モードが有効になっていません。修正: 構成で `gateway.mode="local"` を設定します (または `openclaw configure` を実行します)。専用の `openclaw` ユーザーを使用して Podman 経由で OpenClaw を実行している場合、構成は `~openclaw/.openclaw/openclaw.json` にあります。
-- `refusing to bind gateway ... without auth` → トークン/パスワードなしの非ループバック バインド。
-- `another gateway instance is already listening` / `EADDRINUSE` → ポートの競合。
+- `Gateway start blocked: set gateway.mode=local` → ローカルゲートウェイモードが有効になっていません。解決策：設定で `gateway.mode="local"` を指定してください（または `openclaw configure` を実行）。Podman等で専用の `openclaw` ユーザーを使用している場合、設定ファイルは `~openclaw/.openclaw/openclaw.json` にあります。
+- `refusing to bind gateway ... without auth` → トークンやパスワードの設定なしで、ループバック以外のインターフェースにバインドしようとしています。
+- `another gateway instance is already listening` / `EADDRINUSE` → ポートが競合しています。
 
-関連:
+関連情報：
 
 - [/gateway/background-process](/gateway/background-process)
 - [/gateway/configuration](/gateway/configuration)
 - [/gateway/doctor](/gateway/doctor)
 
-## チャネルに接続されたメッセージが流れない
+## チャネルは接続されているがメッセージが流れない
 
-チャネル状態は接続されているが、メッセージ フローが停止している場合は、ポリシー、アクセス許可、およびチャネル固有の配信ルールに注目してください。
+チャネルの状態は「connected」だがメッセージの送受信ができない場合は、ポリシー、権限、およびチャネル固有の配信ルールを確認してください。
 
 ```bash
 openclaw channels status --probe
@@ -175,27 +175,28 @@ openclaw logs --follow
 openclaw config get channels
 ```
 
-探してください:- DM ポリシー (`pairing`、`allowlist`、`open`、`disabled`)。
+確認事項：
 
-- グループの許可リストとメンション要件。
-- チャネル API 権限/スコープがありません。
+- DMポリシー（`pairing`, `allowlist`, `open`, `disabled`）の設定。
+- グループの許可リストとメンションの要件。
+- チャネルAPIの権限（スコープ）が不足していないか。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `mention required` → グループメンションポリシーによってメッセージが無視されました。
-- `pairing` / 保留中の承認トレース → 送信者は承認されていません。
-- `missing_scope`、`not_in_channel`、`Forbidden`、`401/403` → チャネル認証/権限の問題。
+- `mention required` → グループメンションポリシーによりメッセージが無視されました。
+- `pairing` / 承認待ちのトレース → 送信者が承認されていません。
+- `missing_scope`, `not_in_channel`, `Forbidden`, `401/403` → チャネルの認証または権限の問題です。
 
-関連:
+関連情報：
 
 - [/channels/troubleshooting](/channels/troubleshooting)
 - [/channels/whatsapp](/channels/whatsapp)
 - [/channels/telegram](/channels/telegram)
 - [/channels/discord](/channels/discord)
 
-## Cron とハートビートの配信
+## Cron および ハートビートの配信エラー
 
-cron またはハートビートが実行されなかった場合、または配信されなかった場合は、まずスケジューラーの状態を確認し、次に配信ターゲットを確認します。
+Cronやハートビートが実行されない、または配信されない場合は、まずスケジューラーの状態を確認し、次に配信ターゲットを確認してください。
 
 ```bash
 openclaw cron status
@@ -205,28 +206,29 @@ openclaw system heartbeat last
 openclaw logs --follow
 ```
 
-探してください:
+確認事項：
 
-- Cron が有効で、次のウェイクが存在します。
-- ジョブ実行履歴ステータス (`ok`、`skipped`、`error`)。
-- ハートビート スキップの理由 (`quiet-hours`、`requests-in-flight`、`alerts-disabled`)。
+- Cronが有効化されており、次の実行予定（next wake）が存在するか。
+- ジョブの実行履歴ステータス（`ok`, `skipped`, `error`）。
+- ハートビートがスキップされた理由（`quiet-hours`, `requests-in-flight`, `alerts-disabled`）。
 
-一般的な署名:- `cron: scheduler disabled; jobs will not run automatically` → cron が無効になりました。
+特徴的なログメッセージ：
 
-- `cron: timer tick failed` → スケジューラのティックが失敗しました。ファイル/ログ/ランタイムエラーをチェックしてください。
-- `heartbeat skipped` と `reason=quiet-hours` → アクティブ時間枠外。
-- `heartbeat: unknown accountId` → ハートビート配信ターゲットのアカウント ID が無効です。
-- `heartbeat skipped` と `reason=dm-blocked` → ハートビート ターゲットは DM スタイルの宛先に解決されますが、`agents.defaults.heartbeat.directPolicy` (またはエージェントごとのオーバーライド) は `block` に設定されます。
+- `cron: scheduler disabled; jobs will not run automatically` → Cronが無効になっています。
+- `cron: timer tick failed` → スケジューラーの動作に失敗しました。ファイル、ログ、実行環境のエラーを確認してください。
+- `heartbeat skipped` with `reason=quiet-hours` → アクティブな時間枠の外です。
+- `heartbeat: unknown accountId` → ハートビート配信ターゲットのアカウントIDが不正です。
+- `heartbeat skipped` with `reason=dm-blocked` → ハートビートのターゲットがDM形式の宛先になっていますが、`agents.defaults.heartbeat.directPolicy`（またはエージェントごとの上書き設定）が `block` になっています。
 
-関連:
+関連情報：
 
 - [/automation/troubleshooting](/automation/troubleshooting)
 - [/automation/cron-jobs](/automation/cron-jobs)
 - [/gateway/heartbeat](/gateway/heartbeat)
 
-## ノードペアリングツールが失敗する
+## ノードのペアリング済みツールの失敗
 
-ノードがペアになっているにもかかわらずツールが失敗した場合は、フォアグラウンド、権限、および承認の状態を分離します。
+ノードはペアリングされているがツールが失敗する場合は、フォアグラウンドの状態、権限、および承認状態を切り分けて確認してください。
 
 ```bash
 openclaw nodes status
@@ -236,28 +238,28 @@ openclaw logs --follow
 openclaw status
 ```
 
-探してください:
+確認事項：
 
-- 期待される機能を備えたオンラインのノード。
-- カメラ/マイク/位置/画面に対する OS 権限の付与。
-- 実行の承認と許可リストの状態。
+- ノードがオンラインであり、期待される機能を備えているか。
+- カメラ、マイク、位置情報、画面収録に対するOSレベルの権限が許可されているか。
+- 実行承認（Exec approvals）および許可リストの状態。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `NODE_BACKGROUND_UNAVAILABLE` → ノード アプリはフォアグラウンドにある必要があります。
-- `*_PERMISSION_REQUIRED` / `LOCATION_PERMISSION_REQUIRED` → OS 権限がありません。
-- `SYSTEM_RUN_DENIED: approval required` → 執行承認待ち。
+- `NODE_BACKGROUND_UNAVAILABLE` → ノードアプリがフォアグラウンドにある必要があります。
+- `*_PERMISSION_REQUIRED` / `LOCATION_PERMISSION_REQUIRED` → OSレベルの権限が不足しています。
+- `SYSTEM_RUN_DENIED: approval required` → 実行の承認待ちです。
 - `SYSTEM_RUN_DENIED: allowlist miss` → コマンドが許可リストによってブロックされました。
 
-関連:
+関連情報：
 
 - [/nodes/troubleshooting](/nodes/troubleshooting)
 - [/nodes/index](/nodes/index)
 - [/tools/exec-approvals](/tools/exec-approvals)
 
-## ブラウザツールが失敗する
+## ブラウザツールの失敗
 
-ゲートウェイ自体は正常であってもブラウザ ツールのアクションが失敗する場合にこれを使用します。
+ゲートウェイ自体は正常だが、ブラウザツールの操作が失敗する場合に使用します。
 
 ```bash
 openclaw browser status
@@ -267,29 +269,30 @@ openclaw logs --follow
 openclaw doctor
 ```
 
-探してください:- 有効なブラウザ実行可能パス。
+確認事項：
 
-- CDP プロファイルの到達可能性。
-- `profile="chrome"`用の拡張リレータブアタッチメント。
+- ブラウザの実行ファイルパスが正しいか。
+- CDPプロファイルにアクセス可能か。
+- `profile="chrome"` の場合、拡張機能リレーのタブがアタッチされているか。
 
-一般的な署名:
+特徴的なログメッセージ：
 
 - `Failed to start Chrome CDP on port` → ブラウザプロセスの起動に失敗しました。
 - `browser.executablePath not found` → 設定されたパスが無効です。
-- `Chrome extension relay is running, but no tab is connected` → 増設リレーは付属しておりません。
-- `Browser attachOnly is enabled ... not reachable` → 添付専用プロファイルには到達可能なターゲットがありません。
+- `Chrome extension relay is running, but no tab is connected` → 拡張機能リレーがアタッチされていません。
+- `Browser attachOnly is enabled ... not reachable` → アタッチ専用プロファイルでターゲットが見つかりません。
 
-関連:
+関連情報：
 
 - [/tools/browser-linux-troubleshooting](/tools/browser-linux-troubleshooting)
 - [/tools/chrome-extension](/tools/chrome-extension)
 - [/tools/browser](/tools/browser)
 
-## アップグレードして何かが突然壊れた場合
+## アップグレード後に問題が発生した場合
 
-アップグレード後の破損のほとんどは、構成のドリフト、または現在適用されているより厳格なデフォルトです。
+アップグレード後のトラブルの多くは、設定の不整合や、より厳格になったデフォルト設定の適用によるものです。
 
-### 1) 認証および URL オーバーライドの動作が変更されました
+### 1) 認証およびURLの上書き挙動の変更
 
 ```bash
 openclaw gateway status
@@ -298,17 +301,17 @@ openclaw config get gateway.remote.url
 openclaw config get gateway.auth.mode
 ```
 
-確認すべき内容:
+確認内容：
 
-- `gateway.mode=remote` の場合、ローカル サービスは正常であるにもかかわらず、CLI 呼び出しがリモートをターゲットにしている可能性があります。
-- 明示的な `--url` 呼び出しは、保存された資格情報にフォールバックしません。
+- `gateway.mode=remote` になっている場合、ローカルサービスが正常でも、CLIがリモートをターゲットにしている可能性があります。
+- 明示的な `--url` 指定での呼び出しは、保存された認証情報にフォールバックしません。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `gateway connect failed:` → URL ターゲットが間違っています。
-- `unauthorized` → エンドポイントは到達可能ですが、認証が間違っています。
+- `gateway connect failed:` → URLターゲットが誤っています。
+- `unauthorized` → エンドポイントには到達していますが、認証情報が誤っています。
 
-### 2) バインドと認証のガードレールがより厳格になりました
+### 2) バインドおよび認証の制限強化
 
 ```bash
 openclaw config get gateway.bind
@@ -317,16 +320,17 @@ openclaw gateway status
 openclaw logs --follow
 ```
 
-確認すべき内容:
+確認内容：
 
-- 非ループバック バインド (`lan`、`tailnet`、`custom`) には認証の設定が必要です。
+- ループバック以外（`lan`, `tailnet`, `custom`）にバインドする場合、認証の設定が必須です。
 - `gateway.token` のような古いキーは `gateway.auth.token` を置き換えません。
 
-一般的な署名:- `refusing to bind gateway ... without auth` → バインドと認証の不一致。
+特徴的なログメッセージ：
 
-- `RPC probe: failed` ランタイム実行中 → ゲートウェイは動作していますが、現在の認証/URL ではアクセスできません。
+- `refusing to bind gateway ... without auth` → バインド設定と認証設定が一致していません。
+- `RPC probe: failed` （ランタイムは稼働中） → ゲートウェイは起動していますが、現在の認証設定またはURLではアクセスできません。
 
-### 3) ペアリングとデバイス ID の状態が変更されました
+### 3) ペアリングおよびデバイス認証の状態変更
 
 ```bash
 openclaw devices list
@@ -335,24 +339,24 @@ openclaw logs --follow
 openclaw doctor
 ```
 
-確認すべき内容:
+確認内容：
 
-- ダッシュボード/ノードのデバイス承認が保留中です。
-- ポリシーまたはアイデンティティの変更後の DM ペアリングの承認が保留されています。
+- ダッシュボードやノードに対するデバイス承認が保留されていないか。
+- ポリシーやIDの変更後、DMのペアリング承認が再度必要になっていないか。
 
-一般的な署名:
+特徴的なログメッセージ：
 
-- `device identity required` → デバイス認証が満たされていません。
-- `pairing required` → 送信者/デバイスは承認される必要があります。
+- `device identity required` → デバイス認証の条件を満たしていません。
+- `pairing required` → 送信者またはデバイスの承認が必要です。
 
-チェック後もサービス構成とランタイムが一致しない場合は、同じプロファイル/状態ディレクトリからサービス メタデータを再インストールします。
+確認を行っても設定と実行状態が一致しない場合は、同じプロファイル/状態ディレクトリからサービスのメタデータを再インストールしてください。
 
 ```bash
 openclaw gateway install --force
 openclaw gateway restart
 ```
 
-関連:
+関連情報：
 
 - [/gateway/pairing](/gateway/pairing)
 - [/gateway/authentication](/gateway/authentication)

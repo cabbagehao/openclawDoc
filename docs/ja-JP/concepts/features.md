@@ -1,54 +1,53 @@
 ---
-summary: "チャネル、ルーティング、メディア、UX にわたる OpenClaw 機能。"
+summary: "チャネル、ルーティング、メディア、UX にわたる OpenClaw の主要機能一覧"
 read_when:
-  - OpenClaw がサポートするものの完全なリストが必要です
-title: "特徴"
+  - OpenClaw がサポートしている機能の全体像を把握したい場合
+title: "機能一覧"
 x-i18n:
   source_hash: "709ea22218ffb9c5435af0ecfef105cb6350754ede0f99094abe18afb8e4e119"
 ---
 
+# 機能一覧
+
 ## ハイライト
 
 <Columns>
-  <Card title="チャンネル" icon="message-square">
-    WhatsApp、Telegram、Discord、iMessage を 1 つのゲートウェイで利用可能。
+  <Card title="チャネル" icon="message-square">
+    WhatsApp, Telegram, Discord, iMessage を 1 つのゲートウェイで統合管理。
   </Card>
   <Card title="プラグイン" icon="plug">
-    拡張機能を使用して Mattermost などを追加します。
+    拡張機能を使用して Mattermost などのチャネルを自由に追加。
   </Card>
   <Card title="ルーティング" icon="route">
-    分離されたセッションによるマルチエージェント ルーティング。
+    分離されたセッションによる高度なマルチエージェントルーティング。
   </Card>
   <Card title="メディア" icon="image">
-    画像、音声、ドキュメントの入出力。
+    画像、音声、ドキュメントの送受信と解析に対応。
   </Card>
-  <Card title="アプリとUI" icon="monitor">
-    Web コントロール UI および macOS コンパニオン アプリ。
+  <Card title="アプリと UI" icon="monitor">
+    ウェブベースのコントロール UI と macOS 用コンパニオンアプリ。
   </Card>
   <Card title="モバイルノード" icon="smartphone">
-    ペアリング、音声/チャット、および豊富なデバイス コマンドを備えた iOS および Android ノード。
+    iOS/Android ノードとのペアリング、音声/チャット、豊富なデバイスコマンド。
   </Card>
 </Columns>
 
-## 完全なリスト- WhatsApp Web (ベイリーズ) を介した WhatsApp 統合
+## 全機能リスト
 
-- テレグラムボットのサポート (grammY)
-- Discord ボットのサポート (channels.discord.js)
-- Mattermost ボットのサポート (プラグイン)
-- ローカル imsg CLI を介した iMessage の統合 (macOS)
-- ツール ストリーミングを使用した RPC モードの Pi 用エージェント ブリッジ
-- 長い応答のストリーミングとチャンク化
-- ワークスペースまたは送信者ごとに分離されたセッションのためのマルチエージェントルーティング
-- OAuth 経由の Anthropic および OpenAI のサブスクリプション認証
-- セッション: 直接チャットは共有 `main` に折りたたまれます。グループが孤立している
-- メンションベースのアクティベーションによるグループチャットサポート
-- 画像、音声、ドキュメントのメディアサポート
-- オプションの音声メモ書き起こしフック
-- WebChat および macOS メニュー バー アプリ
-- ペアリング、キャンバス、カメラ、画面録画、位置情報、音声機能を備えた iOS ノード
-- ペアリング付き Android ノード、「接続」タブ、チャット セッション、音声タブ、キャンバス/カメラ、デバイス、通知、連絡先/カレンダー、モーション、写真、SMS コマンド
+- **チャネル連携**: WhatsApp Web (Baileys), Telegram (grammY), Discord (discord.js), iMessage (imsg CLI) を標準サポート。
+- **拡張性**: プラグインによるチャネル追加（Mattermost 等）。
+- **エージェントブリッジ**: RPC モードによる Pi (pi-mono) 連携とツールストリーミング。
+- **ストリーミング**: 長い応答をリアルタイムで送信するストリーミングとチャンク化。
+- **マルチエージェント**: ワークスペースや送信者ごとに分離されたセッションルーティング。
+- **サブスクリプション認証**: OAuth 経由の Anthropic および OpenAI 認証。
+- **セッション管理**: ダイレクトチャットは `main` セッションへ集約、グループチャットは個別に分離。
+- **グループチャット**: メンション（言及）ベースの応答トリガー。
+- **メディア対応**: 画像、音声、ドキュメントの双方向サポート。
+- **音声メモ**: オプションの音声メッセージ書き起こしフック。
+- **ユーザーインターフェース**: WebChat および macOS メニューバーアプリ。
+- **iOS ノード**: ペアリング、Canvas、カメラ、画面収録、位置情報、音声通信。
+- **Android ノード**: ペアリング、接続タブ、チャットセッション、音声タブ、Canvas/カメラ、およびデバイス制御（通知、連絡先、カレンダー、センサー、写真、SMS）。
 
 <Note>
-従来の Claude、Codex、Gemini、および Opencode パスは削除されました。パイだけだよ
-コーディングエージェントのパス。
+レガシーな Claude, Codex, Gemini, Opencode パスは削除されました。現在は Pi が唯一のコーディングエージェントパスです。
 </Note>

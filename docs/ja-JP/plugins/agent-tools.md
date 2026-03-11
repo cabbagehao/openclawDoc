@@ -1,24 +1,20 @@
 ---
-summary: "プラグインでエージェント ツールを作成する (スキーマ、オプション ツール、ホワイトリスト)"
+summary: "プラグインで agent tool を作成する方法（schema、optional tool、allowlist）"
 read_when:
-  - プラグインに新しいエージェント ツールを追加したい
-  - ホワイトリスト経由でツールをオプトインする必要がある
-title: "プラグインエージェントツール"
+  - プラグインに新しい agent tool を追加したいとき
+  - allowlist 経由でツールを opt-in にしたいとき
+title: "プラグイン エージェント ツール"
 x-i18n:
   source_hash: "4479462e9d8b17b664bf6b5f424f2efc8e7bedeaabfdb6a93126e051e635c659"
 ---
 
-# プラグインエージェントツール
+# Plugin agent tools
 
-OpenClaw プラグインは、公開されている **エージェント ツール** (JSON スキーマ関数) を登録できます
-エージェントの実行中に LLM に送信されます。ツールは **必須** (常に利用可能) または
-**オプション** (オプトイン)。
+OpenClaw のプラグインは、エージェント実行時に LLM へ公開される **agent tool**（JSON Schema ベースの関数）を登録できます。ツールは **required**（常に利用可能）にも **optional**（opt-in）にもできます。
 
-エージェント ツールは、メイン設定の `tools` で、またはエージェントごとに設定されます。
-`agents.list[].tools`。ホワイトリスト/拒否リストポリシーは、エージェントがどのツールを使用するかを制御します。
-電話することができます。
+agent tool は、メイン設定の `tools`、またはエージェントごとの `agents.list[].tools` で制御します。どのツールをエージェントが呼び出せるかは、allowlist / denylist ポリシーによって決まります。
 
-## 基本ツール
+## 基本的なツール
 
 ```ts
 import { Type } from "@sinclair/typebox";
@@ -37,10 +33,9 @@ export default function (api) {
 }
 ```
 
-## オプションのツール (オプトイン)
+## Optional tool（opt-in）
 
-オプションのツールは**決して**自動で有効になりません。ユーザーはエージェントを追加する必要があります
-許可リスト。
+optional tool は **自動では有効になりません**。利用者がエージェントの allowlist へ明示的に追加する必要があります。
 
 ```ts
 export default function (api) {
@@ -64,7 +59,7 @@ export default function (api) {
 }
 ```
 
-`agents.list[].tools.allow` (またはグローバル `tools.allow`) でオプションのツールを有効にします。
+optional tool は `agents.list[].tools.allow`（またはグローバルの `tools.allow`）で有効化します。
 
 ```json5
 {
@@ -85,17 +80,15 @@ export default function (api) {
 }
 ```
 
-ツールの可用性に影響を与えるその他の設定ノブ:
+ツールの可用性に影響する他の設定項目:
 
-- プラグイン ツールのみを指定する許可リストは、プラグイン オプトインとして扱われます。コアツールは残る
-  コア ツールまたはグループも許可リストに含めない限り、有効になります。
-- `tools.profile` / `agents.list[].tools.profile` (基本許可リスト)
-- `tools.byProvider` / `agents.list[].tools.byProvider` (プロバイダー固有の許可/拒否)
-- `tools.sandbox.tools.*` (サンドボックス化された場合のサンドボックス ツール ポリシー)
+- プラグイン ツールだけを列挙した allowlist は、plugin opt-in として扱われます。core tool を制限したい場合は、allowlist に core tool または group も含めてください。
+- `tools.profile` / `agents.list[].tools.profile`（基本 allowlist）
+- `tools.byProvider` / `agents.list[].tools.byProvider`（provider ごとの allow / deny）
+- `tools.sandbox.tools.*`（サンドボックス実行時のツール ポリシー）
 
 ## ルールとヒント
 
-- ツール名はコア ツール名と**衝突してはなりません**。競合するツールはスキップされます。
-- ホワイトリストで使用されるプラグイン ID は、コア ツール名と衝突してはなりません。
-- 副作用を引き起こすツールや追加のものが必要なツールには、`optional: true` を優先します。
-  バイナリ/認証情報。
+- ツール名は core tool 名と **衝突してはいけません**。衝突したツールはスキップされます。
+- allowlist で使う plugin id も、core tool 名と衝突してはいけません。
+- 副作用を持つツールや、追加のバイナリ / 認証情報を必要とするツールでは、`optional: true` を優先してください。

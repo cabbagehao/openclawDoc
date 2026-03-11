@@ -1,24 +1,23 @@
 ---
 summary: "OpenClaw でサポートされるモデル プロバイダー (LLM)"
 read_when:
-  - モデルプロバイダーを選択したい
-  - サポートされている LLM バックエンドの概要を簡単に理解する必要がある
-title: "モデルプロバイダー"
+  - モデル プロバイダーを選びたいとき
+  - サポートされている LLM backend を手早く確認したいとき
+title: "モデル プロバイダー"
 x-i18n:
   source_hash: "4d17e6399e5b0a8c7e4cb3b4678ec75aa61225a37c65bf3d6884c1d35d229466"
 ---
 
-# モデルプロバイダー
+# Model Providers
 
-OpenClaw は多くの LLM プロバイダーを使用できます。プロバイダーを選択し、認証してから、
-デフォルトのモデルは `provider/model` です。
+OpenClaw は多数の LLM provider を利用できます。provider を選び、認証を済ませたうえで、既定モデルを `provider/model` 形式で設定します。
 
-チャット チャネル ドキュメント (WhatsApp/Telegram/Discord/Slack/Mattermost (プラグイン)/など) をお探しですか? [チャネル](/channels) を参照してください。
+チャット用 channel の説明 (WhatsApp / Telegram / Discord / Slack / Mattermost (plugin) など) を探している場合は、[Channels](/channels) を参照してください。
 
 ## クイックスタート
 
-1. プロバイダーで認証します (通常は `openclaw onboard` 経由)。
-2. デフォルトのモデルを設定します。
+1. provider で認証します (通常は `openclaw onboard` を使います)。
+2. 既定モデルを設定します。
 
 ```json5
 {
@@ -26,37 +25,38 @@ OpenClaw は多くの LLM プロバイダーを使用できます。プロバイ
 }
 ```
 
-## プロバイダーのドキュメント
+## Provider ドキュメント
 
 - [Amazon Bedrock](/providers/bedrock)
-- [人類 (API + クロード コード CLI)](/providers/anthropic)
-- [Cloudflare AI ゲートウェイ](/providers/cloudflare-ai-gateway)
-- [GLMモデル](/providers/glm)
-- [抱き合う顔(推測)](/providers/huggingface)
-- [キロコード](/providers/kilocode)
-- [LiteLLM (統合ゲートウェイ)](/providers/litellm)
-- [ミニマックス](/providers/minimax)
-- [ミストラル](/providers/mistral)
-- [ムーンショット AI (キミ + キミ コーディング)](/providers/moonshot)
+- [Anthropic (API + Claude Code CLI)](/providers/anthropic)
+- [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
+- [GLM models](/providers/glm)
+- [Hugging Face (Inference)](/providers/huggingface)
+- [Kilocode](/providers/kilocode)
+- [LiteLLM (unified gateway)](/providers/litellm)
+- [MiniMax](/providers/minimax)
+- [Mistral](/providers/mistral)
+- [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 - [NVIDIA](/providers/nvidia)
-- [オラマ (ローカルモデル)](/providers/ollama)
-- [OpenAI (API + コーデックス)](/providers/openai)
+- [Ollama (local models)](/providers/ollama)
+- [OpenAI (API + Codex)](/providers/openai)
 - [OpenCode Zen](/providers/opencode)
-- [オープンルーター](/providers/openrouter)
-- [チェンファン](/providers/qianfan)
-- [クウェン (OAuth)](/providers/qwen)
-- [一緒にAI](/providers/together)
-- [Vercel AI ゲートウェイ](/providers/vercel-ai-gateway)
-- [ヴェニス (ヴェニス AI、プライバシー重視)](/providers/venice)
-- [vLLM (ローカル モデル)](/providers/vllm)
+- [OpenRouter](/providers/openrouter)
+- [Qianfan](/providers/qianfan)
+- [Qwen (OAuth)](/providers/qwen)
+- [Together AI](/providers/together)
+- [Vercel AI Gateway](/providers/vercel-ai-gateway)
+- [Venice (Venice AI, privacy-focused)](/providers/venice)
+- [vLLM (local models)](/providers/vllm)
 - [Xiaomi](/providers/xiaomi)
 - [Z.AI](/providers/zai)
 
-## 文字起こしプロバイダー
+## 文字起こし provider
 
-- [ディープグラム (音声転写)](/providers/deepgram)
+- [Deepgram (audio transcription)](/providers/deepgram)
 
-## コミュニティツール- [Claude Max API プロキシ](/providers/claude-max-api-proxy) - Claude サブスクリプション資格情報のコミュニティ プロキシ (使用前に Anthropic ポリシー/条件を確認してください)
+## コミュニティ ツール
 
-完全なプロバイダー カタログ (xAI、Groq、Mistral など) と高度な構成については、
-[モデルプロバイダー](/concepts/model-providers) を参照してください。
+- [Claude Max API Proxy](/providers/claude-max-api-proxy) - Claude subscription の認証情報を使うコミュニティ製 proxy です。使用前に Anthropic の policy / terms を確認してください。
+
+完全な provider catalog (xAI、Groq、Mistral など) や高度な設定については、[Model providers](/concepts/model-providers) を参照してください。

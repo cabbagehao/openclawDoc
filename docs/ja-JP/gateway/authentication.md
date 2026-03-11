@@ -1,42 +1,33 @@
 ---
-summary: "モデル認証: OAuth、API キー、セットアップ トークン"
+summary: "モデル認証の仕組み: OAuth、API キー、および setup-token"
 read_when:
-  - モデル認証または OAuth の有効期限のデバッグ
-  - 認証または資格情報の保管を文書化する
+  - モデル認証や OAuth の有効期限の問題をデバッグする場合
+  - 認証方式や認証情報の保存レイアウトを確認したい場合
 title: "認証"
-x-i18n:
-  source_hash: "fdf91bdcd861d2d3ed2ef89c78f28ba018c8247ca46a5aea5c2221d92cfe2777"
 ---
 
 # 認証
 
-OpenClaw は、モデル プロバイダーの OAuth キーと API キーをサポートします。常時接続ゲートウェイの場合
-ホストの場合、通常は API キーが最も予測可能なオプションです。サブスクリプション/OAuth
-プロバイダー アカウント モデルと一致するフローもサポートされます。
+OpenClaw は、モデルプロバイダー向けの OAuth 認証と API キー認証をサポートしています。常時稼働させるゲートウェイホストにおいては、通常、API キー認証が最も挙動が予測しやすく安定した選択肢となります。プロバイダーのアカウントモデルに応じて、サブスクリプションベースの OAuth フローも利用可能です。
 
-完全な OAuth フローとストレージについては、[/concepts/oauth](/concepts/oauth) を参照してください。
-レイアウト。
-SecretRef ベースの認証 (`env`/`file`/`exec` プロバイダー) については、[シークレット管理](/gateway/secrets) を参照してください。
-`models status --probe` で使用される資格情報の資格/理由コードのルールについては、を参照してください。
-[認証資格情報セマンティクス](/auth-credential-semantics)。
+OAuth の詳細なフローと保存レイアウトについては、[/concepts/oauth](/concepts/oauth) を参照してください。
+SecretRef ベースの認証（`env`/`file`/`exec` プロバイダー）については、[シークレット管理](/gateway/secrets) を参照してください。
+`models status --probe` で使用される、認証情報の適格性や理由コードの判定ルールについては、[認証情報のセマンティクス](/auth-credential-semantics) を参照してください。
 
-## 推奨設定 (API キー、任意のプロバイダー)
+## 推奨されるセットアップ (API キー、全プロバイダー共通)
 
-有効期間の長いゲートウェイを実行している場合は、選択したゲートウェイの API キーから始めます。
-プロバイダー。
-特に Anthropic の場合、API キー認証が安全なパスであり、推奨されます。
-サブスクリプションセットアップトークン認証を介して。
+長期間ゲートウェイを運用する場合は、選択したプロバイダーの API キーを使用することから始めてください。
+特に Anthropic に関しては、API キーによる認証が安全な経路であり、サブスクリプションベースの setup-token 認証よりも推奨されます。
 
-1. プロバイダー コンソールで API キーを作成します。
-2. **ゲートウェイ ホスト** (`openclaw gateway` を実行しているマシン) に配置します。
+1. プロバイダーの管理コンソールで API キーを作成します。
+2. そのキーを **ゲートウェイホスト**（`openclaw gateway` を実行しているマシン）に設定します。
 
 ```bash
 export <PROVIDER>_API_KEY="..."
 openclaw models status
 ```
 
-3. ゲートウェイが systemd/launchd で実行されている場合は、キーを
-   `~/.openclaw/.env` なので、デーモンがそれを読み取ることができます。
+3. ゲートウェイを systemd や launchd 下で実行している場合は、デーモンが読み込めるように `~/.openclaw/.env` にキーを記述することを推奨します:
 
 ```bash
 cat >> ~/.openclaw/.env <<'EOF'
@@ -44,133 +35,128 @@ cat >> ~/.openclaw/.env <<'EOF'
 EOF
 ```
 
-次に、デーモンを再起動し (またはゲートウェイ プロセスを再起動し)、以下を再確認します。
+その後、デーモン（またはゲートウェイプロセス）を再起動して確認します:
 
 ```bash
 openclaw models status
 openclaw doctor
 ```
 
-環境変数を自分で管理したくない場合は、オンボーディング ウィザードで環境変数を保存できます。
-デーモン使用の API キー: `openclaw onboard`。環境継承の詳細については、[ヘルプ](/help) を参照してください (`env.shellEnv`、
-`~/.openclaw/.env`、systemd/launchd)。
+環境変数を手動で管理したくない場合は、オンボーディングウィザードを使用して、デーモン用の API キーを保存できます: `openclaw onboard`。
 
-## Anthropic: セットアップ トークン (サブスクリプション認証)
+環境変数の継承（`env.shellEnv`, `~/.openclaw/.env`, systemd/launchd）に関する詳細は、[ヘルプ](/help) を参照してください。
 
-Claude サブスクリプションを使用している場合、セットアップ トークン フローがサポートされます。走る
-**ゲートウェイ ホスト**上にあります:
+## Anthropic: setup-token (サブスクリプション認証)
+
+Claude のサブスクリプション（個人・プロ）を利用している場合は、setup-token フローを使用できます。**ゲートウェイホスト**上で以下を実行してください:
 
 ```bash
 claude setup-token
 ```
 
-次に、それを OpenClaw に貼り付けます。
+表示された内容を OpenClaw に貼り付けます:
 
 ```bash
 openclaw models auth setup-token --provider anthropic
 ```
 
-トークンが別のマシンで作成された場合は、手動で貼り付けます。
+トークンを別のマシンで生成済みの場合は、手動で貼り付けることも可能です:
 
 ```bash
 openclaw models auth paste-token --provider anthropic
 ```
 
-次のような Anthropic エラーが表示された場合:
+もし、以下のような Anthropic のエラーが表示された場合:
 
 ```
 This credential is only authorized for use with Claude Code and cannot be used for other API requests.
 ```
 
-…代わりに Anthropic API キーを使用してください。
+…サブスクリプションではなく、Anthropic の API キーを使用してください。
 
 <Warning>
-Anthropic セットアップ トークンのサポートは技術的な互換性のみです。 Anthropic がブロックしました
-過去にクロード コード以外でサブスクリプションを使用したことがある。自分が決めた場合のみ使用してください
-ポリシーのリスクは許容できるので、Anthropic の現在の条件をご自身で確認してください。
+Anthropic setup-token のサポートは、技術的な互換性維持のためのものです。過去に Anthropic が Claude Code 以外からのサブスクリプション利用を一部制限した事例があります。リスクを考慮した上で、自己責任で利用してください。また、最新の Anthropic の利用規約をご自身で確認してください。
 </Warning>
 
-手動トークン入力 (任意のプロバイダー、`auth-profiles.json` の書き込み + 構成の更新):
+手動でのトークン入力（全プロバイダー共通。`auth-profiles.json` への書き込みと構成の更新を行います）:
 
 ```bash
 openclaw models auth paste-token --provider anthropic
 openclaw models auth paste-token --provider openrouter
 ```
 
-認証プロファイル参照は、静的認証情報でもサポートされています。
+静的な認証情報に対しては、認証プロファイル参照（Auth profile refs）もサポートされています:
+- `api_key` 認証情報では `keyRef: { source, provider, id }` を使用可能。
+- `token` 認証情報では `tokenRef: { source, provider, id }` を使用可能。
 
-- `api_key` 認証情報では `keyRef: { source, provider, id }` を使用できます
-- `token` 認証情報では `tokenRef: { source, provider, id }` を使用できます
-
-自動化に適したチェック (期限切れまたは欠落している場合は `1` を終了し、期限切れの場合は `2` を終了します):
+自動化に適したチェック（期限切れ/欠落時は `1`、期限間近は `2` で終了します）:
 
 ```bash
 openclaw models status --check
 ```
 
-オプションの ops スクリプト (systemd/Termux) はここに記載されています。
+運用に便利なスクリプト（systemd/Termux 用）のドキュメントはこちらです:
 [/automation/auth-monitoring](/automation/auth-monitoring)
 
-> `claude setup-token` には対話型 TTY が必要です。
+> `claude setup-token` の実行には対話型の TTY 端末が必要です。
 
 ## モデル認証ステータスの確認
 
-````bash
+```bash
 openclaw models status
 openclaw doctor
-```## API キーのローテーション動作 (ゲートウェイ)
+```
 
-一部のプロバイダーは、API 呼び出し時の代替キーによるリクエストの再試行をサポートしています。
-プロバイダーのレート制限に達します。
+## API キーのローテーション挙動 (ゲートウェイ)
+
+一部のプロバイダーにおいて、API 呼び出しがレート制限に達した際、別のキーを使用してリクエストを再試行する機能をサポートしています。
 
 - 優先順位:
-  - `OPENCLAW_LIVE_<PROVIDER>_KEY` (単一オーバーライド)
-  - `<PROVIDER>_API_KEYS`
-  - `<PROVIDER>_API_KEY`
-  - `<PROVIDER>_API_KEY_*`
-- Google プロバイダーには、追加のフォールバックとして `GOOGLE_API_KEY` も含まれています。
-- 同一キーリストは使用前に重複排除されます。
-- OpenClaw は、レート制限エラーの場合にのみ、次のキーを使用して再試行します (たとえば、
-  `429`、`rate_limit`、`quota`、`resource exhausted`)。
-- レート制限以外のエラーは、代替キーを使用して再試行されません。
-- すべてのキーが失敗した場合、最後の試行の最終エラーが返されます。
+  - `OPENCLAW_LIVE_<PROVIDER>_KEY` (単一の上書き設定。最優先)
+  - `<PROVIDER>_API_KEYS` (カンマ区切り等のリスト)
+  - `<PROVIDER>_API_KEY` (メインのキー)
+  - `<PROVIDER>_API_KEY_*` (連番付きのリスト)
+- Google プロバイダーの場合は、`GOOGLE_API_KEY` も追加のフォールバックとして含まれます。
+- キーリストは使用前に重複排除されます。
+- レート制限エラー（例: `429`, `rate_limit`, `quota`, `resource exhausted`）が発生した場合にのみ、次のキーを使用して再試行します。
+- レート制限以外のエラー（認証失敗、リクエスト不正など）では、別のキーによる再試行は行われません。
+- すべてのキーを試しても失敗した場合は、最後の試行時に発生したエラーが返されます。
 
-## 使用する資格情報の制御
+## 使用する認証情報の制御
 
-### セッションごと (チャット コマンド)
+### セッション単位 (チャットコマンド)
 
-`/model <alias-or-id>@<profileId>` を使用して、現在のセッションの特定のプロバイダー資格情報を固定します (プロファイル ID の例: `anthropic:default`、`anthropic:work`)。
+`/model <alias-or-id>@<profileId>` を使用して、現在のセッションで使用する特定の認証プロファイルを固定できます（例: `anthropic:default`, `anthropic:work`）。
 
-コンパクトなピッカーには `/model` (または `/model list`) を使用します。完全なビュー (候補 + 次の認証プロファイル、および構成されている場合はプロバイダー エンドポイントの詳細) には `/model status` を使用してください。
+コンパクトな選択メニューには `/model` (または `/model list`) を、詳細な情報の確認（候補リスト、次に使用されるプロファイル、プロバイダーのエンドポイント詳細など）には `/model status` を使用してください。
 
-### エージェントごと (CLI オーバーライド)
+### エージェント単位 (CLI による上書き)
 
-エージェントの明示的な認証プロファイル順序オーバーライドを設定します (そのエージェントの `auth-profiles.json` に保存されます)。
+特定のエージェントに対して、明示的な認証プロファイルの優先順位を設定できます（該当エージェントの `auth-profiles.json` に保存されます）:
 
 ```bash
 openclaw models auth order get --provider anthropic
 openclaw models auth order set --provider anthropic anthropic:default
 openclaw models auth order clear --provider anthropic
-````
+```
 
-特定のエージェントをターゲットにするには、`--agent <id>` を使用します。構成されたデフォルトのエージェントを使用するには、これを省略します。
+特定の対象を指定するには `--agent <id>` を使用してください。省略した場合は構成済みのデフォルトエージェントが対象となります。
 
 ## トラブルシューティング
 
-### 「資格情報が見つかりません」Anthropic トークン プロファイルが見つからない場合は、上で `claude setup-token` を実行します
+### 「No credentials found」
 
-**ゲートウェイ ホスト**、次に再確認します:
+Anthropic のトークンプロファイルが見つからない場合は、**ゲートウェイホスト**上で `claude setup-token` を再実行し、ステータスを確認してください:
 
 ```bash
 openclaw models status
 ```
 
-### トークンの有効期限が切れています/期限切れです
+### トークンの期限切れ (Expiring/Expired)
 
-`openclaw models status` を実行して、どのプロファイルの有効期限が切れているかを確認します。プロフィールの場合
-が見つからない場合は、`claude setup-token` を再実行し、トークンを再度貼り付けます。
+`openclaw models status` を実行して、どのプロファイルが期限切れ（あるいは間近）かを確認してください。プロファイルが不足している場合は、再度 `claude setup-token` を実行してトークンを貼り付け直してください。
 
-## 要件
+## 必要条件
 
-- Anthropic サブスクリプション アカウント (`claude setup-token` 用)
-- Claude Code CLI がインストールされています (`claude` コマンドが利用可能)
+- Anthropic のサブスクリプションアカウント (`claude setup-token` の利用に必要)
+- Claude Code CLI がインストール済みであること (`claude` コマンドが利用可能なこと)

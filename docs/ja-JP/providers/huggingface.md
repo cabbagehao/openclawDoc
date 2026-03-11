@@ -1,33 +1,33 @@
 ---
-summary: "ハグ顔推論設定 (認証 + モデル選択)"
+summary: "Hugging Face Inference の設定（認証とモデル選択）"
 read_when:
-  - OpenClaw でハグ顔推論を使用したい
-  - HF トークン環境変数または CLI 認証の選択が必要です
-title: "抱き合う顔（推測）"
+  - OpenClaw で Hugging Face Inference を使いたいとき
+  - HF token の環境変数や CLI 認証方法を確認したいとき
+title: "Hugging Face（Inference）"
 x-i18n:
   source_hash: "e7ba5cb533f652ba9bb514ab8c5ffbd50170077ac0005555915405c109198a4f"
 ---
 
-＃抱き顔（推測）
+# Hugging Face（Inference）
 
-[ハグ顔推論プロバイダー](https://huggingface.co/docs/inference-providers) は、単一のルーター API を通じて OpenAI 互換のチャット完了を提供します。 1 つのトークンで多くのモデル (DeepSeek、Llama など) にアクセスできます。 OpenClaw は **OpenAI 互換エンドポイント** を使用します (チャット完了のみ)。テキストから画像への変換、埋め込み、または音声の場合は、[HF 推論クライアント](https://huggingface.co/docs/api-inference/quicktour) を直接使用します。
+[Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers) は、単一の router API を通じて OpenAI 互換の chat completions を提供します。1 つの token で DeepSeek、Llama など多数のモデルへアクセスできます。OpenClaw は **OpenAI 互換 endpoint** を利用します（chat completions のみ）。text-to-image、embeddings、speech を使いたい場合は、[HF inference clients](https://huggingface.co/docs/api-inference/quicktour) を直接利用してください。
 
-- プロバイダー: `huggingface`
-- 認証: `HUGGINGFACE_HUB_TOKEN` または `HF_TOKEN` (**推論プロバイダーへの呼び出し**を備えたきめ細かいトークン)
-- API: OpenAI 互換 (`https://router.huggingface.co/v1`)
-- 請求: 単一の HF トークン。 [価格設定](https://huggingface.co/docs/inference-providers/pricing) は、無料利用枠のプロバイダー料金に従います。
+- Provider: `huggingface`
+- Auth: `HUGGINGFACE_HUB_TOKEN` または `HF_TOKEN`（**Make calls to Inference Providers** 権限を持つ fine-grained token）
+- API: OpenAI-compatible（`https://router.huggingface.co/v1`）
+- Billing: 単一の HF token。料金は [pricing](https://huggingface.co/docs/inference-providers/pricing) に従い、無料枠もあります。
 
-## クイックスタート
+## Quick start
 
-1. [ハグフェイス → 設定 → トークン](https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained) で、**推論プロバイダーへの呼び出し** 権限を持つ詳細なトークンを作成します。
-2. オンボーディングを実行し、プロバイダーのドロップダウンで **Hugging Face** を選択し、プロンプトが表示されたら API キーを入力します。
+1. [Hugging Face → Settings → Tokens](https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained) で fine-grained token を作成し、**Make calls to Inference Providers** 権限を付けます。
+2. onboarding を実行し、provider のドロップダウンで **Hugging Face** を選び、求められたら API key を入力します。
 
 ```bash
 openclaw onboard --auth-choice huggingface-api-key
 ```
 
-3. **デフォルトの抱き顔モデル** ドロップダウンで、必要なモデルを選択します (有効なトークンがある場合、リストは推論 API からロードされます。そうでない場合は、組み込みリストが表示されます)。選択したモデルはデフォルトのモデルとして保存されます。
-4. 後で設定でデフォルトのモデルを設定または変更することもできます。
+3. **Default Hugging Face model** ドロップダウンで使いたいモデルを選びます。token が有効であれば Inference API から一覧を取得し、失敗した場合は組み込みリストを表示します。選択したモデルは既定モデルとして保存されます。
+4. 後から設定で既定モデルを変更することもできます。
 
 ```json5
 {
@@ -39,7 +39,7 @@ openclaw onboard --auth-choice huggingface-api-key
 }
 ```
 
-## 非対話型の例
+## 非対話モードの例
 
 ```bash
 openclaw onboard --non-interactive \
@@ -48,27 +48,28 @@ openclaw onboard --non-interactive \
   --huggingface-api-key "$HF_TOKEN"
 ```
 
-これにより、`huggingface/deepseek-ai/DeepSeek-R1` がデフォルトのモデルとして設定されます。## 環境に関する注意事項
+これにより、`huggingface/deepseek-ai/DeepSeek-R1` が既定モデルとして設定されます。
 
-ゲートウェイがデーモン (launchd/systemd) として実行されている場合は、`HUGGINGFACE_HUB_TOKEN` または `HF_TOKEN` であることを確認してください。
-そのプロセスで利用できます (たとえば、`~/.openclaw/.env` または経由)
-`env.shellEnv`)。
+## 環境変数に関する注意
 
-## モデルの検出とオンボーディングのドロップダウン
+ゲートウェイを daemon（launchd / systemd）として動かす場合は、`HUGGINGFACE_HUB_TOKEN` または `HF_TOKEN` がそのプロセスから参照できるようにしてください。たとえば `~/.openclaw/.env` や `env.shellEnv` を使用します。
 
-OpenClaw は、**推論エンドポイントを直接**呼び出してモデルを検出します。
+## モデル検出と onboarding のドロップダウン
+
+OpenClaw は **Inference endpoint を直接** 呼び出してモデルを検出します。
 
 ```bash
 GET https://router.huggingface.co/v1/models
 ```
 
-(オプション: 完全なリストについては `Authorization: Bearer $HUGGINGFACE_HUB_TOKEN` または `$HF_TOKEN` を送信します。一部のエンドポイントは認証なしでサブセットを返します。) 応答は OpenAI スタイルの `{ "object": "list", "data": [ { "id": "Qwen/Qwen3-8B", "owned_by": "Qwen", ... }, ... ] }` です。
+（必要に応じて `Authorization: Bearer $HUGGINGFACE_HUB_TOKEN` または `$HF_TOKEN` を付けると完全な一覧を取得できます。認証なしでは一部だけ返す endpoint もあります。）response は OpenAI 形式の `{ "object": "list", "data": [ { "id": "Qwen/Qwen3-8B", "owned_by": "Qwen", ... }, ... ] }` です。
 
-Hugging Face API キーを設定すると (オンボーディング、`HUGGINGFACE_HUB_TOKEN`、または `HF_TOKEN` 経由)、OpenClaw はこの GET を使用して、利用可能なチャット完了モデルを検出します。 **インタラクティブなオンボーディング**中、トークンを入力すると、そのリスト (またはリクエストが失敗した場合は組み込みカタログ) から入力された **デフォルトのハグ顔モデル** ドロップダウンが表示されます。実行時 (例: ゲートウェイの起動時)、キーが存在する場合、OpenClaw は再び **GET** `https://router.huggingface.co/v1/models` を呼び出してカタログを更新します。このリストは、組み込みカタログ (コンテキスト ウィンドウやコストなどのメタデータ用) とマージされます。リクエストが失敗した場合、またはキーが設定されていない場合は、組み込みカタログのみが使用されます。
+Hugging Face API key を設定すると（onboarding、`HUGGINGFACE_HUB_TOKEN`、`HF_TOKEN` のいずれか）、OpenClaw はこの GET を使って利用可能な chat-completion model を検出します。**対話式 onboarding** では token 入力後に **Default Hugging Face model** ドロップダウンが表示され、この一覧、または request が失敗した場合は組み込み catalog から選択できます。実行時（例: ゲートウェイ起動時）も、key があれば OpenClaw は再度 **GET** `https://router.huggingface.co/v1/models` を呼び出して catalog を更新します。この一覧は、context window や cost などの metadata を持つ組み込み catalog とマージされます。request に失敗した場合、または key が無い場合は、組み込み catalog のみを使用します。
 
-## モデル名と編集可能なオプション- **API からの名前:** API が `name`、`title`、または `display_name` を返すと、モデルの表示名は **GET /v1/models** から取得されます。それ以外の場合は、モデル ID から派生します (例: `deepseek-ai/DeepSeek-R1` → 「DeepSeek R1」)
+## モデル名と編集可能なオプション
 
-- **表示名を上書きする:** 設定でモデルごとにカスタム ラベルを設定できるため、CLI と UI で希望どおりに表示されます。
+- **API 由来の名前:** API が `name`、`title`、`display_name` を返す場合、モデル表示名は **GET /v1/models** から取得します。そうでなければ model id から派生します（例: `deepseek-ai/DeepSeek-R1` → `DeepSeek R1`）。
+- **表示名の上書き:** 設定で model ごとのカスタム label を指定できます。CLI や UI にその名前で表示されます。
 
 ```json5
 {
@@ -83,35 +84,39 @@ Hugging Face API キーを設定すると (オンボーディング、`HUGGINGFA
 }
 ```
 
-- **プロバイダー/ポリシーの選択:** **モデル ID** にサフィックスを追加して、ルーターがバックエンドを選択する方法を選択します。
-  - **`:fastest`** - 最高のスループット (ルーター選択、プロバイダーの選択は **ロック** - インタラクティブなバックエンド ピッカーなし)。
-  - **`:cheapest`** — 出力トークンあたりの最低コスト (ルーターが選択します。プロバイダーの選択は **ロック**)。
-  - **`:provider`** — 特定のバックエンドを強制します (例: `:sambanova`、`:together`)。
+- **provider / policy の選択:** **model id** に suffix を付けると、router が backend を選ぶ方法を指定できます。
+  - **`:fastest`** — 最大スループット（router が選択。provider は **固定** され、対話式 backend picker は出ません）
+  - **`:cheapest`** — 出力 token あたり最低コスト（router が選択。provider は **固定**）
+  - **`:provider`** — 特定 backend を強制（例: `:sambanova`、`:together`）
 
-  **:cheapest** または **:fastest** (オンボーディング モデルのドロップダウンなど) を選択すると、プロバイダーはロックされます。ルーターはコストまたは速度によって決定し、オプションの「特定のバックエンドを優先する」ステップは表示されません。これらを `models.providers.huggingface.models` に個別のエントリとして追加することも、接尾辞を付けて `model.primary` を設定することもできます。 [推論プロバイダーの設定](https://hf.co/settings/inference-providers) でデフォルトの順序を設定することもできます (サフィックスなし = その順序を使用します)。- **構成のマージ:** `models.providers.huggingface.models` (例: `models.json`) の既存のエントリは、構成がマージされるときに保持されます。したがって、そこで設定したカスタム `name`、`alias`、またはモデル オプションは保持されます。
+  **`:cheapest`** や **`:fastest`** を選ぶと、provider は router がコストまたは速度で決めます。そのため、追加の「特定 backend を優先する」手順は表示されません。これらは `models.providers.huggingface.models` に個別エントリとして追加することも、suffix 付きで `model.primary` に設定することもできます。既定の順序は [Inference Provider settings](https://hf.co/settings/inference-providers) で設定できます（suffix を付けない場合は、その順序を使います）。
 
-## モデル ID と構成例
+- **設定のマージ:** `models.providers.huggingface.models`（例: `models.json`）に既存のエントリがある場合、設定マージ時も保持されます。そこに定義した `name`、`alias`、各種 model option も維持されます。
 
-モデル参照は、`huggingface/<org>/<model>` (ハブ スタイル ID) の形式を使用します。以下のリストは **GET** `https://router.huggingface.co/v1/models` からのものです。カタログにはさらに多くの情報が含まれる可能性があります。
+## モデル ID と設定例
 
-**ID の例 (推論エンドポイントから):**
+model ref は `huggingface/<org>/<model>` の形式を使います（Hub スタイル ID）。以下の一覧は **GET** `https://router.huggingface.co/v1/models` から取得した例であり、実際の catalog にはさらに多くのモデルが含まれる場合があります。
 
-| モデル                | 参照 (接頭辞 `huggingface/`)        |
-| --------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ディープシーク R1     | `deepseek-ai/DeepSeek-R1`           |
-| ディープシーク V3.2   | `deepseek-ai/DeepSeek-V3.2`         |
-| クウェン3 8B          | `Qwen/Qwen3-8B`                     |
-| Qwen2.5 7B 指示する   | `Qwen/Qwen2.5-7B-Instruct`          |
-| クウェン3 32B         | `Qwen/Qwen3-32B`                    |
-| ラマ 3.3 70B 指示する | `meta-llama/Llama-3.3-70B-Instruct` |
-| ラマ 3.1 8B 命令      | `meta-llama/Llama-3.1-8B-Instruct`  |
-| GPT-OSS 120B          | `openai/gpt-oss-120b`               |
-| GLM 4.7               | `zai-org/GLM-4.7`                   |
-| キミK2.5              | `moonshotai/Kimi-K2.5`              | `:fastest`、`:cheapest`、または `:provider` (例: `:together`、`:sambanova`) をモデル ID に追加できます。 [推論プロバイダーの設定](https://hf.co/settings/inference-providers) でデフォルトの順序を設定します。完全なリストについては、[推論プロバイダー](https://huggingface.co/docs/inference-providers) および **GET** `https://router.huggingface.co/v1/models` を参照してください。 |
+**例となる ID（inference endpoint より）:**
 
-### 完全な構成例
+| Model                  | Ref（`huggingface/` を前置）      |
+| ---------------------- | --------------------------------- |
+| DeepSeek R1            | `deepseek-ai/DeepSeek-R1`         |
+| DeepSeek V3.2          | `deepseek-ai/DeepSeek-V3.2`       |
+| Qwen3 8B               | `Qwen/Qwen3-8B`                   |
+| Qwen2.5 7B Instruct    | `Qwen/Qwen2.5-7B-Instruct`        |
+| Qwen3 32B              | `Qwen/Qwen3-32B`                  |
+| Llama 3.3 70B Instruct | `meta-llama/Llama-3.3-70B-Instruct` |
+| Llama 3.1 8B Instruct  | `meta-llama/Llama-3.1-8B-Instruct` |
+| GPT-OSS 120B           | `openai/gpt-oss-120b`             |
+| GLM 4.7                | `zai-org/GLM-4.7`                 |
+| Kimi K2.5              | `moonshotai/Kimi-K2.5`            |
 
-**Qwen フォールバックを備えたプライマリ DeepSeek R1:**
+model id には `:fastest`、`:cheapest`、`:provider`（例: `:together`、`:sambanova`）を追加できます。完全な一覧は [Inference Providers](https://huggingface.co/docs/inference-providers) と **GET** `https://router.huggingface.co/v1/models` を参照してください。
+
+### 完全な設定例
+
+**Primary を DeepSeek R1、fallback を Qwen にする場合:**
 
 ```json5
 {
@@ -130,7 +135,7 @@ Hugging Face API キーを設定すると (オンボーディング、`HUGGINGFA
 }
 ```
 
-**デフォルトとしての Qwen、:cheapest および :fastest のバリアント:**
+**Qwen を既定にし、`:cheapest` と `:fastest` の派生を持たせる場合:**
 
 ```json5
 {
@@ -147,7 +152,7 @@ Hugging Face API キーを設定すると (オンボーディング、`HUGGINGFA
 }
 ```
 
-**DeepSeek + Llama + GPT-OSS とエイリアス:**
+**DeepSeek + Llama + GPT-OSS を alias 付きで使う場合:**
 
 ```json5
 {
@@ -170,7 +175,7 @@ Hugging Face API キーを設定すると (オンボーディング、`HUGGINGFA
 }
 ```
 
-**:provider:** を使用して特定のバックエンドを強制する
+**`:provider` で特定 backend を強制する場合:**
 
 ```json5
 {
@@ -185,7 +190,7 @@ Hugging Face API キーを設定すると (オンボーディング、`HUGGINGFA
 }
 ```
 
-**ポリシー サフィックスを持つ複数の Qwen および DeepSeek モデル:**
+**複数の Qwen / DeepSeek モデルに policy suffix を付ける場合:**
 
 ```json5
 {

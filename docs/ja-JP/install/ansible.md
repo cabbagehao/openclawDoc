@@ -1,160 +1,162 @@
 ---
-summary: "Ansible、Tailscale VPN、およびファイアウォール分離を使用した、自動化され、強化された OpenClaw のインストール"
+summary: "Ansible、Tailscale VPN、ファイアウォール分離を使った、自動化された堅牢な OpenClaw インストール"
 read_when:
-  - セキュリティを強化した自動サーバーデプロイを求めている場合
-  - VPN アクセスを備えたファイアウォール分離セットアップが必要な場合
-  - リモートの Debian/Ubuntu サーバーにデプロイする場合
+  - セキュリティを考慮した自動サーバーデプロイを行いたいとき
+  - VPN 経由のみで到達できる、ファイアウォール分離構成が必要なとき
+  - リモートの Debian / Ubuntu サーバーへデプロイするとき
 title: "Ansible"
+x-i18n:
+  source_hash: "b1e1e1ea13bff37b22bc58dad4b15a2233c6492771403dff364c738504aa7159"
 ---
 
 # Ansible インストール
 
-本番サーバーに OpenClaw をデプロイするための推奨される方法は、**[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** (セキュリティファーストのアーキテクチャを備えた自動インストーラー) を介することです。
+OpenClaw を本番サーバーへデプロイする推奨手段は、**[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** を使う方法です。これは、セキュリティを優先した設計の自動インストーラーです。
 
 ## クイックスタート
 
-ワンコマンドインストール:
+1 コマンドでインストールできます。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw-ansible/main/install.sh | bash
 ```
 
-> **📦 完全なガイド: [github.com/openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible)**
+> **完全ガイド: [github.com/openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible)**
 >
-> openclaw-ansible リポジトリは、Ansible デプロイの信頼できる情報源です。このページは簡単な概要です。
+> Ansible デプロイに関する一次情報は `openclaw-ansible` リポジトリです。このページは概要だけをまとめています。
 
-## 得られるもの
+## 導入されるもの
 
-- 🔒 **ファイアウォールファーストのセキュリティ**: UFW + Docker の分離 (SSH + Tailscale のみアクセス可能)
-- 🔐 **Tailscale VPN**: サービスを公開せずに安全なリモートアクセス
-- 🐳 **Docker**: 分離されたサンドボックスコンテナ、localhost のみのバインディング
-- 🛡️ **多層防御**: 4層のセキュリティアーキテクチャ
-- 🚀 **ワンコマンドセットアップ**: 数分でデプロイ完了
-- 🔧 **Systemd 統合**: 強化を伴う起動時の自動開始
+- **ファイアウォール優先のセキュリティ**: UFW + Docker 分離により、外部公開は SSH と Tailscale のみ
+- **Tailscale VPN**: サービスを公開せずに安全なリモートアクセスを確保
+- **Docker**: 分離されたサンドボックスコンテナを提供し、localhost バインドを維持
+- **多層防御**: 4 層のセキュリティアーキテクチャ
+- **1 コマンドセットアップ**: 数分で一式をデプロイ
+- **systemd 統合**: ハードニング付きで起動時に自動起動
 
 ## 要件
 
-- **OS**: Debian 11+ または Ubuntu 20.04+
-- **アクセス**: Root または sudo 権限
-- **ネットワーク**: パッケージインストール用のインターネット接続
-- **Ansible**: 2.14+ (クイックスタートスクリプトによって自動的にインストールされます)
+- **OS**: Debian 11 以降、または Ubuntu 20.04 以降
+- **権限**: root または sudo 権限
+- **ネットワーク**: パッケージを取得できるインターネット接続
+- **Ansible**: 2.14 以降 (クイックスタートスクリプトが自動で導入)
 
-## インストールされるもの
+## インストールされる内容
 
-Ansible Playbook は以下をインストールおよび設定します:
+Ansible playbook では、次をインストールして設定します。
 
 1. **Tailscale** (安全なリモートアクセス用のメッシュ VPN)
-2. **UFW ファイアウォール** (SSH + Tailscale ポートのみ)
-3. **Docker CE + Compose V2** (エージェントサンドボックス用)
-4. **Node.js 22.x + pnpm** (ランタイムの依存関係)
-5. **OpenClaw** (コンテナ化されていない、ホストベース)
-6. **Systemd サービス** (セキュリティ強化を伴う自動起動)
+2. **UFW firewall** (SSH + Tailscale のポートのみ許可)
+3. **Docker CE + Compose V2** (エージェント用サンドボックスで使用)
+4. **Node.js 22.x + pnpm** (実行に必要な依存関係)
+5. **OpenClaw** (コンテナ化せず、ホスト上で実行)
+6. **systemd service** (セキュリティ強化付きの自動起動)
 
-注意: Gateway は (**Docker 内ではなく**) **ホスト上で直接**実行されますが、エージェントのサンドボックスは分離のために Docker を使用します。詳細については、[サンドボックス化](/gateway/sandboxing)を参照してください。
+補足: ゲートウェイ自体は **Docker ではなくホスト上で直接動作** します。一方で、エージェントのサンドボックスは Docker を使って分離します。詳細は [Sandboxing](/gateway/sandboxing) を参照してください。
 
 ## インストール後のセットアップ
 
-インストールが完了したら、openclaw ユーザーに切り替えます:
+インストールが完了したら、`openclaw` ユーザーへ切り替えます。
 
 ```bash
 sudo -i -u openclaw
 ```
 
-インストール後スクリプトがガイドします:
+post-install スクリプトの案内に従って、次を進めます。
 
-1. **オンボーディングウィザード**: OpenClaw の設定
-2. **プロバイダのログイン**: WhatsApp/Telegram/Discord/Signal の接続
-3. **Gateway テスト**: インストールの確認
-4. **Tailscale セットアップ**: VPN メッシュへの接続
+1. **オンボーディングウィザード**: OpenClaw の基本設定
+2. **プロバイダーログイン**: WhatsApp / Telegram / Discord / Signal の接続
+3. **ゲートウェイテスト**: インストール結果の確認
+4. **Tailscale セットアップ**: VPN メッシュへの参加
 
-### クイックコマンド
+### よく使うコマンド
 
 ```bash
-# サービスのステータスを確認
+# サービス状態の確認
 sudo systemctl status openclaw
 
-# ライブログを表示
+# ライブログの確認
 sudo journalctl -u openclaw -f
 
-# Gateway を再起動
+# ゲートウェイの再起動
 sudo systemctl restart openclaw
 
-# プロバイダログイン (openclaw ユーザーとして実行)
+# プロバイダーログイン (openclaw ユーザーで実行)
 sudo -i -u openclaw
 openclaw channels login
 ```
 
 ## セキュリティアーキテクチャ
 
-### 4層防御
+### 4 層防御
 
-1. **ファイアウォール (UFW)**: パブリックに公開されるのは SSH (22) と Tailscale (41641/udp) のみ
-2. **VPN (Tailscale)**: Gateway は VPN メッシュ経由でのみアクセス可能
-3. **Docker の分離**: DOCKER-USER iptables チェーンは外部ポートの公開を防ぎます
-4. **Systemd の強化**: NoNewPrivileges、PrivateTmp、非特権ユーザー
+1. **Firewall (UFW)**: 公開されるのは SSH (22) と Tailscale (41641/udp) のみ
+2. **VPN (Tailscale)**: ゲートウェイには VPN メッシュ経由でのみ到達可能
+3. **Docker isolation**: `DOCKER-USER` iptables チェーンで外部ポート公開を防止
+4. **Systemd hardening**: `NoNewPrivileges`、`PrivateTmp`、非特権ユーザーで実行
 
 ### 検証
 
-外部アタックサーフェスのテスト:
+外部から見える攻撃面は次で確認できます。
 
 ```bash
 nmap -p- YOUR_SERVER_IP
 ```
 
-**ポート 22 のみ** (SSH) が開いていることを確認する必要があります。他のすべてのサービス (Gateway、Docker) はロックダウンされています。
+**開いているのは 22 番ポート (SSH) のみ** であるべきです。その他のサービス (ゲートウェイ、Docker) はすべて閉じられている想定です。
 
-### Docker の可用性
+### Docker の位置づけ
 
-Docker は、Gateway 自体を実行するためではなく、**エージェントのサンドボックス** (分離されたツールの実行) のためにインストールされます。Gateway は localhost のみにバインドされ、Tailscale VPN 経由でアクセスできます。
+Docker は **エージェント用サンドボックス** (隔離されたツール実行環境) のために導入されます。ゲートウェイ本体は Docker 上では動かず、localhost のみにバインドされ、Tailscale VPN 経由でアクセスします。
 
-サンドボックスの設定については、[マルチエージェント サンドボックスとツール](/tools/multi-agent-sandbox-tools)を参照してください。
+サンドボックス設定の詳細は [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) を参照してください。
 
 ## 手動インストール
 
-自動化よりも手動での制御を好む場合:
+自動化ではなく、手順を手元で制御したい場合は次の流れでも導入できます。
 
 ```bash
-# 1. 前提条件のインストール
+# 1. 前提パッケージを導入
 sudo apt update && sudo apt install -y ansible git
 
-# 2. リポジトリのクローン
+# 2. リポジトリを clone
 git clone https://github.com/openclaw/openclaw-ansible.git
 cd openclaw-ansible
 
-# 3. Ansible コレクションのインストール
+# 3. Ansible collections を導入
 ansible-galaxy collection install -r requirements.yml
 
-# 4. Playbook の実行
+# 4. Playbook を実行
 ./run-playbook.sh
 
-# または直接実行します (その後、手動で /tmp/openclaw-setup.sh を実行します)
+# あるいは直接実行 (その場合は後で /tmp/openclaw-setup.sh を手動実行)
 # ansible-playbook playbook.yml --ask-become-pass
 ```
 
-## OpenClaw のアップデート
+## OpenClaw の更新
 
-Ansible インストーラーは、手動アップデート用に OpenClaw をセットアップします。標準のアップデートフローについては、[アップデート](/install/updating)を参照してください。
+Ansible インストーラーで構築した環境では、OpenClaw 本体の更新は手動運用になります。標準の更新手順は [Updating](/install/updating) を参照してください。
 
-(設定の変更などのために) Ansible Playbook を再実行するには:
+設定変更などで Ansible playbook を再実行したい場合は、次を使います。
 
 ```bash
 cd openclaw-ansible
 ./run-playbook.sh
 ```
 
-注意: これは冪等性があり、複数回実行しても安全です。
+補足: この処理は冪等であり、複数回実行しても安全です。
 
 ## トラブルシューティング
 
-### ファイアウォールが接続をブロックする
+### Firewall によって接続できない
 
-ロックアウトされた場合:
+接続できなくなった場合は、次を確認してください。
 
-- 最初に Tailscale VPN 経由でアクセスできることを確認してください
-- SSH アクセス (ポート 22) は常に許可されています
-- 設計上、Gateway は Tailscale 経由で**のみ**アクセス可能です
+- まず Tailscale VPN 経由で入れることを確認する
+- SSH (22 番ポート) は常に許可されている
+- ゲートウェイは設計上 **Tailscale 経由でのみ** 到達可能
 
-### サービスが開始しない
+### Service が起動しない
 
 ```bash
 # ログを確認
@@ -163,29 +165,29 @@ sudo journalctl -u openclaw -n 100
 # 権限を確認
 sudo ls -la /opt/openclaw
 
-# 手動起動をテスト
+# 手動起動を試す
 sudo -i -u openclaw
 cd ~/openclaw
 pnpm start
 ```
 
-### Docker サンドボックスの問題
+### Docker サンドボックスに問題がある
 
 ```bash
-# Docker が実行されていることを確認
+# Docker の状態を確認
 sudo systemctl status docker
 
 # サンドボックスイメージを確認
 sudo docker images | grep openclaw-sandbox
 
-# ない場合はサンドボックスイメージをビルド
+# イメージがなければビルド
 cd /opt/openclaw/openclaw
 sudo -u openclaw ./scripts/sandbox-setup.sh
 ```
 
-### プロバイダのログインが失敗する
+### プロバイダーログインが失敗する
 
-`openclaw` ユーザーとして実行していることを確認してください:
+`openclaw` ユーザーとして実行していることを確認してください。
 
 ```bash
 sudo -i -u openclaw
@@ -194,15 +196,15 @@ openclaw channels login
 
 ## 高度な設定
 
-詳細なセキュリティアーキテクチャとトラブルシューティングについて:
+セキュリティアーキテクチャや詳細な調査手順は、次の資料を参照してください。
 
-- [セキュリティアーキテクチャ](https://github.com/openclaw/openclaw-ansible/blob/main/docs/security.md)
-- [技術詳細](https://github.com/openclaw/openclaw-ansible/blob/main/docs/architecture.md)
-- [トラブルシューティングガイド](https://github.com/openclaw/openclaw-ansible/blob/main/docs/troubleshooting.md)
+- [Security Architecture](https://github.com/openclaw/openclaw-ansible/blob/main/docs/security.md)
+- [Technical Details](https://github.com/openclaw/openclaw-ansible/blob/main/docs/architecture.md)
+- [Troubleshooting Guide](https://github.com/openclaw/openclaw-ansible/blob/main/docs/troubleshooting.md)
 
-## 関連
+## 関連項目
 
 - [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) — 完全なデプロイガイド
-- [Docker](/install/docker) — コンテナ化された Gateway セットアップ
-- [サンドボックス化](/gateway/sandboxing) — エージェントサンドボックスの設定
-- [マルチエージェント サンドボックスとツール](/tools/multi-agent-sandbox-tools) — エージェントごとの分離
+- [Docker](/install/docker) — コンテナ化したゲートウェイ構成
+- [Sandboxing](/gateway/sandboxing) — エージェントサンドボックス設定
+- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — エージェント単位の分離

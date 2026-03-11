@@ -1,44 +1,43 @@
 ---
-summary: "Linux サポート + コンパニオン アプリのステータス"
+summary: "Linux support と companion app の現状"
 read_when:
-  - Linux コンパニオン アプリのステータスを確認する場合
-  - プラットフォームの対象範囲または貢献の計画
-title: "Linux アプリ"
+  - Linux companion app の状況を確認したいとき
+  - platform coverage や contribution を検討するとき
+title: "Linux App"
 x-i18n:
   source_hash: "93b8250cd1267004a3342c8119462d0442af96704f9b3be250d8ee1eeeb7d4cd"
 ---
 
-# Linux アプリ
+# Linux App
 
-ゲートウェイは Linux で完全にサポートされています。 **ノードは推奨ランタイムです**。
-Bun はゲートウェイには推奨されません (WhatsApp/Telegram のバグ)。
+Gateway は Linux で完全サポートされています。**推奨ランタイムは Node** です。Bun は Gateway には推奨されません（WhatsApp / Telegram 周りに既知の不具合があります）。
 
-ネイティブ Linux コンパニオン アプリも計画されています。構築を支援したい場合は、貢献を歓迎します。
+native Linux companion app は今後対応予定です。構築に協力したい場合は contribution を歓迎します。
 
-## 初心者向けクイック パス (VPS)
+## 初学者向けクイックパス（VPS）
 
-1. ノード 22+ をインストールする
+1. Node 22+ をインストールする
 2. `npm i -g openclaw@latest`
 3. `openclaw onboard --install-daemon`
-4. ラップトップから: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
-5. `http://127.0.0.1:18789/` を開いてトークンを貼り付けます
+4. 手元の laptop から `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>` を実行する
+5. `http://127.0.0.1:18789/` を開き、token を貼り付ける
 
-ステップバイステップの VPS ガイド: [exe.dev](/install/exe-dev)
+手順付きの VPS ガイドは [exe.dev](/install/exe-dev) を参照してください。
 
 ## インストール
 
-- [はじめに](/start/getting-started)
-- [インストールとアップデート](/install/updating)
-- オプションのフロー: [Bun (実験的)](/install/bun)、[Nix](/install/nix)、[Docker](/install/docker)
+- [Getting Started](/start/getting-started)
+- [Install & updates](/install/updating)
+- 任意のフロー: [Bun (experimental)](/install/bun)、[Nix](/install/nix)、[Docker](/install/docker)
 
-## ゲートウェイ
+## Gateway
 
-- [ゲートウェイ ランブック](/gateway)
-- [構成](/gateway/configuration)
+- [Gateway runbook](/gateway)
+- [Configuration](/gateway/configuration)
 
-## ゲートウェイ サービスのインストール (CLI)
+## Gateway service のインストール（CLI）
 
-次のいずれかを使用します。
+次のいずれかを使います。
 
 ```
 openclaw onboard --install-daemon
@@ -56,21 +55,19 @@ openclaw gateway install
 openclaw configure
 ```
 
-プロンプトが表示されたら、**ゲートウェイ サービス** を選択します。
+prompt が出たら **Gateway service** を選択してください。
 
-修復/移行:
+修復 / 移行:
 
 ```
 openclaw doctor
 ```
 
-## システム制御 (systemd ユーザーユニット)
+## system 制御（systemd user unit）
 
-OpenClaw は、デフォルトで systemd **user** サービスをインストールします。 **システム**を使用する
-共有サーバーまたは常時接続サーバー用のサービス。完全な単元の例とガイダンス
-[ゲートウェイ Runbook](/gateway) に存在します。
+OpenClaw はデフォルトで systemd の **user** service としてインストールされます。共有サーバーや常時稼働サーバーでは、必要に応じて **system** service を使ってください。完全な unit 例と運用ガイドは [Gateway runbook](/gateway) にあります。
 
-最小限のセットアップ:
+最小構成:
 
 `~/.config/systemd/user/openclaw-gateway[-<profile>].service` を作成します。
 
@@ -89,7 +86,7 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-有効にします:
+有効化:
 
 ```
 systemctl --user enable --now openclaw-gateway[-<profile>].service

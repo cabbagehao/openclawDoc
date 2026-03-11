@@ -1,5 +1,5 @@
 ---
-summary: "OpenClaw macOS アプリを開発する開発者向けのセットアップ ガイド"
+summary: "OpenClaw macOS アプリを開発するためのセットアップ ガイド"
 read_when:
   - macOS 開発環境のセットアップ
 title: "macOS 開発セットアップ"
@@ -9,18 +9,18 @@ x-i18n:
 
 # macOS 開発者セットアップ
 
-このガイドでは、OpenClaw macOS アプリケーションをソースからビルドして実行するために必要な手順について説明します。
+このガイドでは、OpenClaw の macOS アプリをソースコードからビルドし、実行するまでの手順を説明します。
 
 ## 前提条件
 
-アプリを構築する前に、以下がインストールされていることを確認してください。
+アプリをビルドする前に、次の環境が整っていることを確認してください。
 
-1. **Xcode 26.2+**: Swift 開発に必要です。
-2. **Node.js 22+ および pnpm**: ゲートウェイ、CLI、およびパッケージ化スクリプトに必要です。
+1. **Xcode 26.2 以降**: Swift 開発に必要です。
+2. **Node.js 22 以降と pnpm**: ゲートウェイ、CLI、パッケージング用スクリプトに必要です。
 
 ## 1. 依存関係をインストールする
 
-プロジェクト全体の依存関係をインストールします。
+まず、プロジェクト全体の依存関係をインストールします。
 
 ```bash
 pnpm install
@@ -28,30 +28,30 @@ pnpm install
 
 ## 2. アプリをビルドしてパッケージ化する
 
-macOS アプリをビルドして `dist/OpenClaw.app` にパッケージ化するには、次のコマンドを実行します。
+macOS アプリをビルドし、`dist/OpenClaw.app` として出力するには、次を実行します。
 
 ```bash
 ./scripts/package-mac-app.sh
 ```
 
-Apple Developer ID 証明書をお持ちでない場合、スクリプトは自動的に **アドホック署名** (`-`) を使用します。
+Apple Developer ID 証明書がない場合、このスクリプトは自動的に **ad-hoc signing**（`-`）を使用します。
 
-開発実行モード、署名フラグ、チーム ID のトラブルシューティングについては、macOS アプリの README を参照してください。
+開発実行モード、署名フラグ、Team ID 関連のトラブルシューティングについては、macOS アプリの README を参照してください。
 [https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md](https://github.com/openclaw/openclaw/blob/main/apps/macos/README.md)
 
-> **注意**: アドホック署名されたアプリはセキュリティ プロンプトをトリガーする場合があります。アプリが「トラップ 6 の中止」ですぐにクラッシュする場合は、[トラブルシューティング](#troubleshooting) セクションを参照してください。
+> **注意**: ad-hoc 署名のアプリではセキュリティ警告が表示されることがあります。アプリが `"Abort trap 6"` ですぐ終了する場合は、[トラブルシューティング](#troubleshooting) を参照してください。
 
 ## 3. CLI をインストールする
 
-macOS アプリでは、バックグラウンド タスクを管理するためにグローバル `openclaw` CLI のインストールが必要です。
+macOS アプリは、バックグラウンド タスクの管理にグローバルの `openclaw` CLI を利用します。
 
-**インストールするには (推奨):**
+**推奨されるインストール手順:**
 
 1. OpenClaw アプリを開きます。
-2. [**一般**] 設定タブに移動します。
-3. **「CLI のインストール」** をクリックします。
+2. **General** 設定タブを開きます。
+3. **Install CLI** をクリックします。
 
-あるいは、手動でインストールします。
+手動でインストールすることもできます。
 
 ```bash
 npm install -g openclaw@<version>
@@ -59,46 +59,48 @@ npm install -g openclaw@<version>
 
 ## トラブルシューティング
 
-### ビルド失敗: ツールチェーンまたは SDK の不一致macOS アプリのビルドには、最新の macOS SDK および Swift 6.2 ツールチェーンが必要です
+### ビルドに失敗する: ツールチェーンまたは SDK の不一致
 
-**システムの依存関係 (必須):**
+macOS アプリのビルドには、最新の macOS SDK と Swift 6.2 ツールチェーンが必要です。
 
-- **ソフトウェア アップデートで利用可能な最新の macOS バージョン** (Xcode 26.2 SDK に必要)
-- **Xcode 26.2** (Swift 6.2 ツールチェーン)
+**必要なシステム依存関係:**
 
-**チェック:**
+- **Software Update で提供される最新の macOS**
+- **Xcode 26.2**（Swift 6.2 ツールチェーン）
+
+**確認コマンド:**
 
 ```bash
 xcodebuild -version
 xcrun swift --version
 ```
 
-バージョンが一致しない場合は、macOS/Xcode を更新し、ビルドを再実行します。
+バージョンが一致しない場合は、macOS と Xcode を更新してから再度ビルドしてください。
 
-### 権限付与時にアプリがクラッシュする
+### 権限を許可するとアプリがクラッシュする
 
-**音声認識**または**マイク**のアクセスを許可しようとしたときにアプリがクラッシュする場合は、TCC キャッシュの破損または署名の不一致が原因である可能性があります。
+**Speech Recognition** または **Microphone** へのアクセスを許可した際にアプリがクラッシュする場合、TCC キャッシュの破損や署名の不一致が原因の可能性があります。
 
-**修正:**
+**対処方法:**
 
-1. TCC 権限をリセットします。
+1. TCC の権限をリセットします。
 
    ```bash
    tccutil reset All ai.openclaw.mac.debug
    ```
 
-2. これが失敗した場合は、[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) の `BUNDLE_ID` を一時的に変更して、macOS を強制的に「白紙の状態」にします。
+2. それでも解決しない場合は、[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) の `BUNDLE_ID` を一時的に変更し、macOS 側の権限状態を初期化してください。
 
-### ゲートウェイ「開始中...」が無期限に表示される
+### ゲートウェイが "Starting..." のままになる
 
-ゲートウェイのステータスが「開始中...」のままの場合は、ゾンビ プロセスがポートを保持しているかどうかを確認します。
+ゲートウェイのステータスが `"Starting..."` のまま変わらない場合は、ゾンビ プロセスがポートを保持していないか確認してください。
 
 ```bash
 openclaw gateway status
 openclaw gateway stop
 
-# If you’re not using a LaunchAgent (dev mode / manual runs), find the listener:
+# LaunchAgent を使っていない場合（開発モード / 手動実行）は、待ち受けプロセスを確認します。
 lsof -nP -iTCP:18789 -sTCP:LISTEN
 ```
 
-手動実行によりポートが保持されている場合は、そのプロセスを停止します (Ctrl+C)。最後の手段として、上記で見つけた PID を強制終了します。
+手動実行したプロセスがポートを保持している場合は、そのプロセスを停止してください（`Ctrl+C`）。どうしても解消しない場合のみ、確認した PID を強制終了します。

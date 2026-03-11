@@ -1,53 +1,53 @@
 ---
-summary: "ノードの位置コマンド (location.get)、権限モード、および Android フォアグラウンド動作"
+summary: "ノード向け location command（location.get）、権限モード、Android の foreground 挙動"
 read_when:
-  - ロケーションノードのサポートまたは権限UIの追加
-  - Android の位置情報の許可またはフォアグラウンド動作の設計
-title: "位置コマンド"
+  - location node サポートや権限 UI を追加するとき
+  - Android の位置情報権限や foreground 挙動を設計するとき
+title: "Location Command"
 x-i18n:
   source_hash: "5c691cfe147b0b9b16b3a4984d544c168a46b37f91d55b82b2507407d2011529"
 ---
 
-# 位置コマンド (ノード)
+# Location command (nodes)
 
 ## TL;DR
 
-- `location.get` はノード コマンドです (`node.invoke` 経由)。
-- デフォルトではオフです。
-- Android アプリの設定では、セレクターを使用します: オフ / 使用中。
-- 個別のトグル: 正確な位置。
+- `location.get` は node command（`node.invoke` 経由）
+- デフォルトでは off
+- Android アプリ設定は selector 方式: Off / While Using
+- 別 toggle として Precise Location がある
 
-## なぜセレクターなのか (単なるスイッチではない)
+## なぜ selector なのか（単なる switch ではない）
 
-OS のアクセス許可は複数レベルです。アプリ内でセレクターを公開できますが、実際の許可は OS が決定します。
+OS の権限モデルは多段階です。アプリ内では selector を提示できますが、実際にどの権限が付与されるかは OS 側が最終的に決定します。
 
-- iOS/macOS では、システム プロンプト/設定で **使用中** または **常時** が表示される場合があります。
-- Android アプリは現在、前景位置のみをサポートしています。
-- 正確な位置情報は別個に許可されます (iOS 14 以降では「正確」、Android では「細かい」と「粗い」)。
+- iOS / macOS では system prompt や Settings に **While Using** または **Always** が出ることがある
+- Android アプリは現時点では foreground location のみをサポートする
+- precise location は独立した権限である（iOS 14+ の “Precise”、Android の “fine” / “coarse”）
 
-UI のセレクターは、要求されたモードを駆動します。実際の許可は OS 設定にあります。
+UI の selector は要求モードを決めるものであり、実際の grant 状態は OS Settings にあります。
 
 ## 設定モデル
 
-ノードデバイスごと:
+node device ごとの設定:
 
 - `location.enabledMode`: `off | whileUsing`
-- `location.preciseEnabled`: ブール値
+- `location.preciseEnabled`: bool
 
-UI の動作:
+UI 挙動:
 
-- `whileUsing` を選択すると、フォアグラウンド権限が要求されます。
-- OS が要求されたレベルを拒否した場合、許可された最高のレベルに戻り、ステータスを表示します。
+- `whileUsing` を選ぶと foreground permission を要求する
+- OS が要求レベルを拒否した場合は、実際に許可された最上位レベルへ戻し、状態を表示する
 
-## 権限マッピング (node.permissions)
+## 権限マッピング（node.permissions）
 
-オプション。 macOS ノードは、権限マップを介して `location` を報告します。 iOS/Androidでは省略される場合があります。
+任意です。macOS node は permissions map で `location` を返しますが、iOS / Android では省略される場合があります。
 
 ## コマンド: `location.get`
 
-`node.invoke` 経由で呼び出されます。
+`node.invoke` 経由で呼び出します。
 
-パラメータ (推奨):
+パラメータ（推奨）:
 
 ```json
 {
@@ -73,27 +73,28 @@ UI の動作:
 }
 ```
 
-エラー (安定したコード):- `LOCATION_DISABLED`: セレクターがオフです。
+エラー（安定コード）:
 
-- `LOCATION_PERMISSION_REQUIRED`: 要求されたモードに対する権限がありません。
-- `LOCATION_BACKGROUND_UNAVAILABLE`: アプリはバックグラウンドですが、使用中のみ許可されます。
-- `LOCATION_TIMEOUT`: 修正が間に合いません。
-- `LOCATION_UNAVAILABLE`: システム障害 / プロバイダーがありません。
+- `LOCATION_DISABLED`: selector が off
+- `LOCATION_PERMISSION_REQUIRED`: 要求モードに必要な権限がない
+- `LOCATION_BACKGROUND_UNAVAILABLE`: アプリが background だが、While Using しか許可されていない
+- `LOCATION_TIMEOUT`: 規定時間内に位置 fix が得られない
+- `LOCATION_UNAVAILABLE`: system failure または provider 不在
 
-## バックグラウンドの動作
+## バックグラウンド挙動
 
-- Android アプリはバックグラウンド中に `location.get` を拒否します。
-- Android で位置情報をリクエストするときは、OpenClaw を開いたままにしてください。
-- 他のノードのプラットフォームは異なる場合があります。
+- Android アプリは background 中の `location.get` を拒否する
+- Android で位置情報を取得する際は OpenClaw を foreground のままにする
+- 他の node platform では挙動が異なる可能性がある
 
-## モデル/ツールの統合
+## モデル / ツール統合
 
-- ツール サーフェス: `nodes` ツールは `location_get` アクションを追加します (ノードが必要)。
-- CLI: `openclaw nodes location get --node <id>`。
-- エージェントのガイドライン: ユーザーが位置情報を有効にし、範囲を理解している場合にのみ呼び出します。
+- tool surface: `nodes` tool に `location_get` action を追加する（node 必須）
+- CLI: `openclaw nodes location get --node <id>`
+- agent guideline: ユーザーが location を有効化し、共有範囲を理解している場合にのみ呼び出す
 
-## UX コピー (推奨)
+## UX 文言案
 
-- オフ: 「位置情報の共有は無効になっています。」
-- 使用中：「OpenClaw が開いているときのみ」。
-- 正確: 「正確な GPS 位置を使用します。おおよその位置を共有するにはオフに切り替えます。」
+- Off: 「位置情報の共有は無効です。」
+- While Using: 「OpenClaw を開いている間だけ共有します。」
+- Precise: 「高精度な GPS 位置を使用します。おおよその位置だけを共有したい場合はオフにしてください。」

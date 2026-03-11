@@ -1,35 +1,34 @@
 ---
-summary: "サーフェス間でのグループ チャットの動作 (WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams/Zalo)"
+summary: "各サーフェスにおけるグループチャットの挙動"
 read_when:
-  - グループチャットの動作またはメンションゲートの変更
-title: "グループ"
+  - グループチャットの挙動やメンション制御を変更する場合
+title: "Groups"
 x-i18n:
   source_hash: "3464d9d4f283ea437a6e4ac3984df163f44715c51469e449241bf7a4d9ba6332"
 ---
 
-# グループ
+# Groups
 
-OpenClaw は、WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams、Zalo などのサーフェス間でグループ チャットを一貫して処理します。
+OpenClaw は、WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams、Zalo など、複数のサーフェスにまたがってグループチャットを一貫した考え方で扱います。
 
-## 初心者入門 (2 分)
+## Beginner intro (2 minutes)
 
-OpenClaw は、ユーザー自身のメッセージング アカウント上に「存在」します。個別の WhatsApp ボット ユーザーは存在しません。
-**あなた**がグループに属している場合、OpenClaw はそのグループを確認し、そこで応答できます。
+OpenClaw は、利用者自身のメッセージングアカウント上で動作します。WhatsApp 専用の別ボットユーザーが存在するわけではありません。利用者がグループに参加していれば、OpenClaw もそのグループを認識し、そこで応答できます。
 
-デフォルトの動作:
+デフォルトの挙動は次のとおりです。
 
-- グループは制限されています (`groupPolicy: "allowlist"`)。
-- メンション ゲートを明示的に無効にしない限り、返信にはメンションが必要です。
+- グループは制限付きです (`groupPolicy: "allowlist"`)。
+- 明示的に無効化しない限り、返信にはメンションが必要です。
 
-翻訳: ホワイトリストに登録された送信者は、OpenClaw に言及することで OpenClaw をトリガーできます。
+つまり、allowlist に登録された送信者がメンションしたときに OpenClaw が反応します。
 
 > TL;DR
 >
-> - **DM アクセス** は `*.allowFrom` によって制御されます。
-> - **グループ アクセス**は、`*.groupPolicy` + 許可リスト (`*.groups`、`*.groupAllowFrom`) によって制御されます。
-> - **返信トリガー**はメンション ゲーティング (`requireMention`、`/activation`) によって制御されます。
+> - **DM access** は `*.allowFrom` で制御されます。
+> - **Group access** は `*.groupPolicy` と allowlist (`*.groups`, `*.groupAllowFrom`) で制御されます。
+> - **Reply triggering** はメンション制御 (`requireMention`, `/activation`) で制御されます。
 
-簡単なフロー (グループ メッセージに何が起こるか):
+グループメッセージは概ね次の順序で処理されます。
 
 ```
 groupPolicy? disabled -> drop
@@ -38,34 +37,38 @@ requireMention? yes -> mentioned? no -> store for context only
 otherwise -> reply
 ```
 
-![グループメッセージフロー](/images/groups-flow.svg)
+![Group message flow](/images/groups-flow.svg)
 
-| ご希望であれば...                                           | 目標                                                       | 何を設定するか |
-| ----------------------------------------------------------- | ---------------------------------------------------------- | -------------- |
-| すべてのグループを許可しますが、@メンションにのみ返信します | `groups: { "*": { requireMention: true } }`                |
-| すべてのグループ返信を無効にする                            | `groupPolicy: "disabled"`                                  |
-| 特定のグループのみ                                          | `groups: { "<group-id>": { ... } }` (`"*"` キーなし)       |
-| グループ内でトリガーできるのは自分だけです                  | `groupPolicy: "allowlist"`、`groupAllowFrom: ["+1555..."]` |
+よくある目的と設定例:
 
-## セッションキー
+| Goal                                         | What to set                                                |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| Allow all groups but only reply on @mentions | `groups: { "*": { requireMention: true } }`                |
+| Disable all group replies                    | `groupPolicy: "disabled"`                                  |
+| Only specific groups                         | `groups: { "<group-id>": { ... } }` (no `"*"` key)         |
+| Only you can trigger in groups               | `groupPolicy: "allowlist"`, `groupAllowFrom: ["+1555..."]` |
 
-- グループ セッションは `agent:<agentId>:<channel>:group:<id>` セッション キーを使用します (ルーム/チャネルは `agent:<agentId>:<channel>:channel:<id>` を使用します)。
-- Telegram フォーラムのトピックでは、グループ ID に `:topic:<threadId>` が追加されるため、各トピックには独自のセッションが存在します。
-- ダイレクト チャットはメイン セッション (または構成されている場合は送信者ごと) を使用します。
-- グループセッションではハートビートはスキップされます。
+## Session keys
 
-## パターン: 個人 DM + 公開グループ (単一エージェント)
+- グループセッションには `agent:<agentId>:<channel>:group:<id>` 形式のセッションキーを使います。ルームやチャンネルでは `agent:<agentId>:<channel>:channel:<id>` を使います。
+- Telegram のフォーラムトピックでは、グループ ID に `:topic:<threadId>` が追加されるため、トピックごとに独立したセッションになります。
+- ダイレクトチャットはメインセッションを使います。構成によっては送信者ごとに分けることもできます。
+- ハートビートはグループセッションでは実行されません。
 
-はい。「個人」トラフィックが **DM** で、「パブリック」トラフィックが **グループ**の場合、これはうまく機能します。
+## Pattern: personal DMs + public groups (single agent)
 
-理由: シングルエージェント モードでは、DM は通常 **メイン** セッション キー (`agent:main:main`) に到達しますが、グループは常に **非メイン** セッション キー (`agent:main:<channel>:group:<id>`) を使用します。 `mode: "non-main"` でサンドボックスを有効にすると、メインの DM セッションがホスト上に留まりながら、それらのグループ セッションが Docker で実行されます。これにより、エージェントの「頭脳」 (共有ワークスペース + メモリ) が 1 つになりますが、実行姿勢は 2 つになります。
+「個人用」は **DM**、「公開用」は **グループ** という使い分けであれば、単一エージェント構成でもうまく運用できます。
 
-- **DM**: フルツール (ホスト)
-- **グループ**: サンドボックス + 制限付きツール (Docker)
+理由は、シングルエージェント構成では DM が通常 **main** セッションキー (`agent:main:main`) に入り、グループは常に **non-main** セッションキー (`agent:main:<channel>:group:<id>`) を使うためです。`mode: "non-main"` でサンドボックスを有効にすると、DM のメインセッションはホスト上に残しつつ、グループセッションだけを Docker 内で動かせます。
 
-> 本当に別々のワークスペース/ペルソナが必要な場合 (「個人」と「パブリック」を決して混在させてはなりません)、2 番目のエージェント + バインディングを使用します。 [マルチエージェント ルーティング](/concepts/multi-agent) を参照してください。
+これにより、ワークスペースやメモリは 1 つの「頭脳」として共有しながら、実行形態だけを分けられます。
 
-例 (ホスト上の DM、サンドボックス化されたグループ + メッセージング専用ツール):
+- **DMs**: フルツールをホスト上で実行
+- **Groups**: 制限付きツールをサンドボックス内で実行
+
+> 「個人用」と「公開用」を完全に分離し、ワークスペースや人格を絶対に混在させたくない場合は、2 つ目のエージェントと bindings を使ってください。詳しくは [Multi-Agent Routing](/concepts/multi-agent) を参照してください。
+
+例: DM はホスト上、グループはサンドボックス化し、メッセージング系ツールだけを許可する構成です。
 
 ```json5
 {
@@ -90,7 +93,7 @@ otherwise -> reply
 }
 ```
 
-「ホストアクセスなし」ではなく「グループはフォルダー X のみを表示できる」ようにしたいですか? `workspaceAccess: "none"` を保持し、許可リストに登録されたパスのみをサンドボックスにマウントします。
+「ホストへ一切アクセスさせない」代わりに、「グループでは特定フォルダだけ見せたい」場合は、`workspaceAccess: "none"` を維持したまま、許可するパスだけをサンドボックスへ bind mount します。
 
 ```json5
 {
@@ -115,19 +118,19 @@ otherwise -> reply
 関連:
 
 - 構成キーとデフォルト: [ゲートウェイ構成](/gateway/configuration#agentsdefaultssandbox)
-- ツールがブロックされる理由のデバッグ: [サンドボックス vs ツール ポリシー vs 昇格](/gateway/sandbox-vs-tool-policy-vs-elevated)
-- バインドマウントの詳細: [サンドボックス](/gateway/sandboxing#custom-bind-mounts)
+- ツールがブロックされる理由の調査: [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)
+- bind mount の詳細: [Sandboxing](/gateway/sandboxing#custom-bind-mounts)
 
-## ラベルを表示する
+## Display labels
 
-- UI ラベルは、利用可能な場合は `displayName` を使用し、`<channel>:<token>` としてフォーマットされます。
-- `#room` はルーム/チャンネル用に予約されています。グループ チャットでは `g-<slug>` (小文字、スペース -> `-`、`#@+._-` のまま) を使用します。
+- UI ラベルでは、利用できる場合は `displayName` を使い、`<channel>:<token>` 形式で表示します。
+- `#room` はルーム / チャンネル用に予約されています。グループチャットでは `g-<slug>` を使います。小文字化し、空白は `-` に変換し、`#@+._-` は保持されます。
 
-## グループポリシー
+## Group policy
 
-グループ/ルーム メッセージをチャネルごとに処理する方法を制御します。
+チャンネルごとに、グループ / ルームメッセージをどう扱うかを制御します。
 
-````json5
+```json5
 {
   channels: {
     whatsapp: {
@@ -170,32 +173,38 @@ otherwise -> reply
     },
   },
 }
-```|ポリシー |行動 |
-| ------------- | -------------------------------------------------------------- |
-| `"open"` |グループは許可リストをバイパスします。メンションゲートは引き続き適用されます。      |
-| `"disabled"` |すべてのグループメッセージを完全にブロックします。                           |
-| `"allowlist"` |設定された許可リストに一致するグループ/ルームのみを許可します。 |
+```
 
-注:- `groupPolicy` は、メンションゲート (@メンションが必要) とは別のものです。
-- WhatsApp/Telegram/Signal/iMessage/Microsoft Teams/Zalo: `groupAllowFrom` を使用します (フォールバック: 明示的な `allowFrom`)。
-- DM ペアリングの承認 (`*-allowFrom` ストア エントリ) は DM アクセスにのみ適用されます。グループ送信者の承認は、グループ許可リストに対して明示的なままになります。
-- Discord: 許可リストは `channels.discord.guilds.<id>.channels` を使用します。
-- Slack: 許可リストは `channels.slack.channels` を使用します。
-- マトリックス: ホワイトリストは `channels.matrix.groups` (ルーム ID、エイリアス、または名前) を使用します。 `channels.matrix.groupAllowFrom` を使用して送信者を制限します。部屋ごとの `users` 許可リストもサポートされています。
-- グループ DM は個別に制御されます (`channels.discord.dm.*`、`channels.slack.dm.*`)。
-- Telegram ホワイトリストはユーザー ID (`"123456789"`、`"telegram:123456789"`、`"tg:123456789"`) またはユーザー名 (`"@alice"` または `"alice"`) と一致します。接頭辞は大文字と小文字が区別されません。
-- デフォルトは `groupPolicy: "allowlist"` です。グループの許可リストが空の場合、グループ メッセージはブロックされます。
-- 実行時の安全性: プロバイダー ブロックが完全に欠落している (`channels.<provider>` が存在しない) 場合、グループ ポリシーは `channels.defaults.groupPolicy` を継承するのではなく、フェールクローズ モード (通常は `allowlist`) に戻ります。
+| Policy        | Behavior                                                     |
+| ------------- | ------------------------------------------------------------ |
+| `"open"`      | グループは allowlist を迂回しますが、メンション制御は引き続き適用されます。 |
+| `"disabled"`  | すべてのグループメッセージを完全に拒否します。                           |
+| `"allowlist"` | 設定済み allowlist に一致するグループ / ルームだけを許可します。         |
 
-クイックメンタルモデル (グループメッセージの評価順序):
+補足:
 
-1. `groupPolicy` (オープン/無効/許可リスト)
-2. グループ許可リスト (`*.groups`、`*.groupAllowFrom`、チャネル固有の許可リスト)
-3. ゲーティングについての言及 (`requireMention`、`/activation`)## メンションゲート (デフォルト)
+- `groupPolicy` はメンション制御とは別物です。メンション制御は @メンション必須かどうかを決めます。
+- WhatsApp、Telegram、Signal、iMessage、Microsoft Teams、Zalo では `groupAllowFrom` を使います。未設定時は明示的な `allowFrom` へフォールバックします。
+- DM のペアリング承認 (`*-allowFrom` ストアエントリ) は DM アクセスにだけ適用されます。グループ送信者の認可は、グループ allowlist 側で明示的に管理されます。
+- Discord の allowlist は `channels.discord.guilds.<id>.channels` を使います。
+- Slack の allowlist は `channels.slack.channels` を使います。
+- Matrix の allowlist は `channels.matrix.groups` を使います。ルーム ID、エイリアス、名前に対応します。送信者制限には `channels.matrix.groupAllowFrom` を使い、ルームごとの `users` allowlist も利用できます。
+- グループ DM は別系統で制御されます (`channels.discord.dm.*`, `channels.slack.dm.*`)。
+- Telegram の allowlist は、ユーザー ID (`"123456789"`, `"telegram:123456789"`, `"tg:123456789"`) またはユーザー名 (`"@alice"` または `"alice"`) に一致できます。プレフィックスの大文字小文字は区別されません。
+- デフォルトは `groupPolicy: "allowlist"` です。グループ allowlist が空なら、グループメッセージはブロックされます。
+- 実行時の安全策として、プロバイダーブロック自体が存在しない (`channels.<provider>` がない) 場合は、`channels.defaults.groupPolicy` を継承せず、フェイルクローズ動作として通常 `allowlist` にフォールバックします。
 
-グループごとにオーバーライドしない限り、グループ メッセージにはメンションが必要です。デフォルトは、サブシステムごとに `*.groups."*"` で有効です。
+グループメッセージの評価順序は、概ね次のとおりです。
 
-ボット メッセージへの返信は、暗黙的なメンションとしてカウントされます (チャネルが返信メタデータをサポートしている場合)。これは、Telegram、WhatsApp、Slack、Discord、および Microsoft Teams に適用されます。
+1. `groupPolicy` (`open`, `disabled`, `allowlist`)
+2. グループ allowlist (`*.groups`, `*.groupAllowFrom`, チャンネル固有の allowlist)
+3. メンション制御 (`requireMention`, `/activation`)
+
+## Mention gating (default)
+
+グループメッセージは、グループごとに上書きしない限りメンション必須です。既定値はサブシステムごとの `*.groups."*"` にあります。
+
+チャネルが返信メタデータをサポートしている場合、ボットのメッセージへ返信することも暗黙のメンションとして扱われます。これは Telegram、WhatsApp、Slack、Discord、Microsoft Teams に適用されます。
 
 ```json5
 {
@@ -231,34 +240,36 @@ otherwise -> reply
     ],
   },
 }
-````
+```
 
-注:
+補足:
 
-- `mentionPatterns` は、大文字と小文字を区別しない正規表現です。
-- 明示的な言及を提供する表面は引き続き合格します。パターンはフォールバックです。
-- エージェントごとのオーバーライド: `agents.list[].groupChat.mentionPatterns` (複数のエージェントがグループを共有する場合に便利)。
-- メンション ゲートは、メンション検出が可能な場合 (ネイティブ メンションまたは `mentionPatterns` が設定されている場合) にのみ適用されます。
-- Discord のデフォルトは `channels.discord.guilds."*"` にあります (ギルド/チャンネルごとに上書き可能)。
-- グループ履歴コンテキストはチャネル全体で均一にラップされ、**保留専用** (メンション ゲートによりメッセージがスキップされます)。グローバルデフォルトには `messages.groupChat.historyLimit` を使用し、オーバーライドには `channels.<channel>.historyLimit` (または `channels.<channel>.accounts.*.historyLimit`) を使用します。 `0` を無効に設定します。
+- `mentionPatterns` は大文字小文字を区別しない正規表現です。
+- 明示的なメンションを提供するサーフェスでは、その仕組みが優先されます。パターンはフォールバックです。
+- エージェント単位で上書きする場合は `agents.list[].groupChat.mentionPatterns` を使います。複数エージェントが同じグループを共有する場合に便利です。
+- メンション制御は、ネイティブメンションまたは `mentionPatterns` によってメンション検出が可能な場合にだけ適用されます。
+- Discord の既定値は `channels.discord.guilds."*"` にあります。ギルド単位やチャンネル単位で上書きできます。
+- グループ履歴コンテキストはチャネル間で共通の形式に包まれ、**pending-only** です。つまり、メンション制御によってスキップされたメッセージだけが対象です。グローバル既定値には `messages.groupChat.historyLimit`、個別上書きには `channels.<channel>.historyLimit` または `channels.<channel>.accounts.*.historyLimit` を使います。`0` にすると無効化できます。
 
-## グループ/チャネルツールの制限 (オプション)
+## Group/channel tool restrictions (optional)
 
-一部のチャネル構成は、**特定のグループ/ルーム/チャネル**内で使用できるツールの制限をサポートしています。- `tools`: グループ全体に対してツールを許可/拒否します。
+一部のチャンネル設定では、**特定のグループ / ルーム / チャンネル内** で使えるツールを制限できます。
 
-- `toolsBySender`: グループ内の送信者ごとのオーバーライド。
-  明示的なキープレフィックスを使用します。
-  `id:<senderId>`、`e164:<phone>`、`username:<handle>`、`name:<displayName>`、および `"*"` ワイルドカード。
-  従来のプレフィックスのないキーは引き続き受け入れられ、`id:` としてのみ照合されます。
+- `tools`: グループ全体に対する allow / deny 設定です。
+- `toolsBySender`: グループ内の送信者ごとの上書き設定です。
+  使うキーには明示的なプレフィックスを付けます。
+  `id:<senderId>`, `e164:<phone>`, `username:<handle>`, `name:<displayName>`, および `"*"` ワイルドカードです。
 
-解決順序 (最も具体的な優先順位):
+プレフィックスのない従来形式のキーも引き続き受け付けますが、`id:` としてのみ照合されます。
 
-1. グループ/チャンネル `toolsBySender` の一致
-2. グループ/チャンネル `tools`
-3. デフォルト (`"*"`) `toolsBySender` 一致
-4. デフォルト (`"*"`) `tools`
+評価順序は、より具体的なものが優先されます。
 
-例（Telegram）：
+1. グループ / チャンネルの `toolsBySender`
+2. グループ / チャンネルの `tools`
+3. デフォルト (`"*"`) の `toolsBySender`
+4. デフォルト (`"*"`) の `tools`
+
+例 (Telegram):
 
 ```json5
 {
@@ -278,18 +289,18 @@ otherwise -> reply
 }
 ```
 
-注:
+補足:
 
-- グローバル/エージェント ツール ポリシーに加えて、グループ/チャネル ツールの制限が適用されます (拒否しても優先されます)。
-- 一部のチャネルでは、ルーム/チャネルに異なるネストが使用されます (例: Discord `guilds.*.channels.*`、Slack `channels.*`、MS Teams `teams.*.channels.*`)。
+- グループ / チャンネル単位のツール制限は、グローバルまたはエージェント単位のツールポリシーに追加で適用されます。`deny` が競合した場合は `deny` が優先されます。
+- 一部のチャンネルでは、ルームやチャンネルのネスト構造が異なります。たとえば Discord は `guilds.*.channels.*`、Slack は `channels.*`、MS Teams は `teams.*.channels.*` を使います。
 
-## グループ許可リスト
+## Group allowlists
 
-`channels.whatsapp.groups`、`channels.telegram.groups`、または `channels.imessage.groups` が構成されている場合、キーはグループ許可リストとして機能します。 `"*"` を使用して、デフォルトのメンション動作を設定しながらすべてのグループを許可します。
+`channels.whatsapp.groups`、`channels.telegram.groups`、`channels.imessage.groups` を設定すると、そのキー自体がグループ allowlist として機能します。`"*"` を使えば、全グループを許可しつつ既定のメンション挙動も設定できます。
 
-共通のインテント (コピー/ペースト):
+よくある設定例:
 
-1. すべてのグループ返信を無効にする
+1. すべてのグループ返信を無効化する
 
 ```json5
 {
@@ -297,7 +308,7 @@ otherwise -> reply
 }
 ```
 
-2. 特定のグループのみを許可する (WhatsApp)
+2. 特定のグループだけを許可する (WhatsApp)
 
 ```json5
 {
@@ -312,7 +323,7 @@ otherwise -> reply
 }
 ```
 
-3. すべてのグループを許可しますが、言及が必要です (明示的)
+3. すべてのグループを許可しつつ、メンション必須にする
 
 ```json5
 {
@@ -324,7 +335,7 @@ otherwise -> reply
 }
 ```
 
-4. グループ内でトリガーできるのは所有者だけです (WhatsApp)
+4. グループ内で起動できるのをオーナーだけにする (WhatsApp)
 
 ```json5
 {
@@ -338,31 +349,33 @@ otherwise -> reply
 }
 ```
 
-## アクティベーション (所有者のみ)グループ所有者は、グループごとのアクティブ化を切り替えることができます
+## Activation (owner-only)
+
+グループオーナーは、グループごとの起動モードを切り替えられます。
 
 - `/activation mention`
 - `/activation always`
 
-所有者は `channels.whatsapp.allowFrom` (または設定されていない場合はボット自身の E.164) によって決定されます。コマンドをスタンドアロン メッセージとして送信します。他のサーフェスは現在、`/activation` を無視します。
+オーナーは `channels.whatsapp.allowFrom` によって決まります。未設定の場合は、ボット自身の E.164 が使われます。コマンドは単独メッセージとして送ってください。現在、他のサーフェスでは `/activation` は無視されます。
 
-## コンテキストフィールド
+## Context fields
 
-グループ受信ペイロードセット:
+グループの受信ペイロードでは、次のフィールドが設定されます。
 
 - `ChatType=group`
-- `GroupSubject` (既知の場合)
-- `GroupMembers` (既知の場合)
-- `WasMentioned` (ゲート結果について言及)
-- Telegram フォーラムのトピックには、`MessageThreadId` および `IsForum` も含まれます。
+- `GroupSubject` (分かる場合)
+- `GroupMembers` (分かる場合)
+- `WasMentioned` (メンション制御の結果)
+- Telegram のフォーラムトピックでは `MessageThreadId` と `IsForum` も含まれます。
 
-エージェント システム プロンプトには、新しいグループ セッションの最初のターンにグループの紹介が含まれます。これにより、モデルは人間のように応答し、Markdown テーブルを避け、リテラルの `\n` シーケンスの入力を避けるようになります。
+新しいグループセッションの最初のターンでは、エージェントのシステムプロンプトにグループ用の導入文が追加されます。そこでは、人間らしく応答すること、Markdown テーブルを避けること、リテラルの `\n` をそのまま出力しないことなどが案内されます。
 
-## iMessage の詳細
+## iMessage specifics
 
-- ルーティングまたは許可リストに登録する場合は、`chat_id:<id>` を優先します。
-- チャットのリスト: `imsg chats --limit 20`。
-- グループの返信は常に同じ `chat_id` に戻ります。
+- ルーティングや allowlist では `chat_id:<id>` を優先してください。
+- チャット一覧は `imsg chats --limit 20` で確認できます。
+- グループ返信は常に同じ `chat_id` へ返されます。
 
-## WhatsApp の詳細
+## WhatsApp specifics
 
-WhatsApp のみの動作 (履歴挿入、メンション処理の詳細) については、[グループ メッセージ](/channels/group-messages) を参照してください。
+WhatsApp 固有の挙動、たとえば履歴注入やメンション処理の詳細については [Group messages](/channels/group-messages) を参照してください。

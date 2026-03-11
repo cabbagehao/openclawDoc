@@ -1,33 +1,33 @@
 ---
-title: "Cloudflare AI ゲートウェイ"
-summary: "Cloudflare AI Gatewayのセットアップ（認証+モデルの選択）"
+title: "Cloudflare AI Gateway"
+summary: "Cloudflare AI Gateway のセットアップ (認証 + モデル選択)"
 read_when:
-  - OpenClaw で Cloudflare AI Gateway を使用したい
-  - アカウント ID、ゲートウェイ ID、または API キー環境変数が必要です
+  - OpenClaw で Cloudflare AI Gateway を使いたいとき
+  - account ID、gateway ID、または API key の環境変数を確認したいとき
 x-i18n:
   source_hash: "db77652c37652ca20f7c50f32382dbaeaeb50ea5bdeaf1d4fd17dc394e58950c"
 ---
 
-# Cloudflare AI ゲートウェイ
+# Cloudflare AI Gateway
 
-Cloudflare AI Gateway はプロバイダー API の前に位置し、分析、キャッシュ、コントロールを追加できます。 Anthropic の場合、OpenClaw はゲートウェイ エンドポイントを通じて Anthropic Messages API を使用します。
+Cloudflare AI Gateway は provider API の前段に置かれ、分析、キャッシュ、各種制御を追加できます。Anthropic については、OpenClaw はゲートウェイ endpoint を通して Anthropic Messages API を利用します。
 
-- プロバイダー: `cloudflare-ai-gateway`
-- ベース URL: `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
-- デフォルトのモデル: `cloudflare-ai-gateway/claude-sonnet-4-5`
-- API キー: `CLOUDFLARE_AI_GATEWAY_API_KEY` (ゲートウェイ経由のリクエスト用のプロバイダー API キー)
+- Provider: `cloudflare-ai-gateway`
+- Base URL: `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
+- Default model: `cloudflare-ai-gateway/claude-sonnet-4-5`
+- API key: `CLOUDFLARE_AI_GATEWAY_API_KEY` (ゲートウェイ経由で request を送る際の provider API key)
 
-Anthropic モデルの場合は、Anthropic API キーを使用します。
+Anthropic モデルを使う場合は、Anthropic API key を使用してください。
 
 ## クイックスタート
 
-1. プロバイダー API キーとゲートウェイの詳細を設定します。
+1. provider API key と Gateway 情報を設定します。
 
 ```bash
 openclaw onboard --auth-choice cloudflare-ai-gateway-api-key
 ```
 
-2. デフォルトのモデルを設定します。
+2. 既定モデルを設定します。
 
 ```json5
 {
@@ -50,9 +50,9 @@ openclaw onboard --non-interactive \
   --cloudflare-ai-gateway-api-key "$CLOUDFLARE_AI_GATEWAY_API_KEY"
 ```
 
-## 認証されたゲートウェイ
+## 認証付き Gateway
 
-Cloudflareでゲートウェイ認証を有効にした場合は、`cf-aig-authorization`ヘッダーを追加します(これはプロバイダーAPIキーに追加されます)。
+Cloudflare 側で Gateway 認証を有効化している場合は、provider API key に加えて `cf-aig-authorization` header も設定します。
 
 ```json5
 {
@@ -68,6 +68,6 @@ Cloudflareでゲートウェイ認証を有効にした場合は、`cf-aig-autho
 }
 ```
 
-## 環境に関する注意事項
+## 環境に関する注意
 
-ゲートウェイがデーモン (launchd/systemd) として実行されている場合は、`CLOUDFLARE_AI_GATEWAY_API_KEY` がそのプロセスで利用可能であることを確認してください (たとえば、`~/.openclaw/.env` 内または `env.shellEnv` 経由)。
+ゲートウェイが daemon (launchd / systemd) として動作している場合は、`CLOUDFLARE_AI_GATEWAY_API_KEY` がその process から参照できることを確認してください。たとえば `~/.openclaw/.env` や `env.shellEnv` 経由で設定します。

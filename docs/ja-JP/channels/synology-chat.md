@@ -1,24 +1,23 @@
 ---
-summary: "Synology Chat Webhook のセットアップと OpenClaw 設定"
+summary: "Synology Chat webhook のセットアップと OpenClaw 構成"
 read_when:
-  - OpenClaw を使用した Synology Chat のセットアップ
-  - Synology Chat Webhook ルーティングのデバッグ
-title: "Synology チャット"
+  - OpenClaw で Synology Chat をセットアップする場合
+  - Synology Chat webhook ルーティングをデバッグする場合
+title: "Synology Chat"
 x-i18n:
   source_hash: "65cdf3be3fbf0652e201428d71e0ebd00dc6ab41f7e54c60b8f8019b4aeb12cf"
 ---
 
 # Synology Chat (プラグイン)
 
-ステータス: Synology Chat Webhook を使用したダイレクト メッセージ チャネルとしてプラグイン経由でサポートされています。
-プラグインは、Synology Chat 発信 Webhook からの受信メッセージを受け入れ、応答を送信します。
-Synology Chat の受信 Webhook を通じて。
+ステータス: Synology Chat webhook を使用したダイレクトメッセージチャネルとして、プラグイン経由でサポートされています。
+このプラグインは、Synology Chat の送信（Outgoing）webhook からのインバウンドメッセージを受け取り、Synology Chat の受信（Incoming）webhook を介して返信を送信します。
 
-## プラグインが必要です
+## プラグインが必要
 
-Synology Chat はプラグインベースであり、デフォルトのコア チャネル インストールの一部ではありません。
+Synology Chat はプラグインベースであり、デフォルトのコアチャネルには含まれていません。
 
-ローカル チェックアウトからインストールします。
+ローカルチェックアウトからインストールする場合:
 
 ```bash
 openclaw plugins install ./extensions/synology-chat
@@ -29,14 +28,14 @@ openclaw plugins install ./extensions/synology-chat
 ## クイックセットアップ
 
 1. Synology Chat プラグインをインストールして有効にします。
-2. Synology Chat 統合の場合:
-   - 受信 Webhook を作成し、その URL をコピーします。
-   - シークレット トークンを使用して送信 Webhook を作成します。
-3. 送信 Webhook URL を OpenClaw ゲートウェイに向けます。
-   - デフォルトでは `https://gateway-host/webhook/synology`。
-   - またはカスタム `channels.synology-chat.webhookPath`。
-4. OpenClaw で `channels.synology-chat` を構成します。
-5. ゲートウェイを再起動し、Synology Chat ボットに DM を送信します。
+2. Synology Chat の「統合」設定で以下の操作を行います:
+   - **受信（Incoming）webhook** を作成し、その URL をコピーします。
+   - **送信（Outgoing）webhook** を作成し、トークンをコピーします。
+3. 送信 webhook の URL を OpenClaw ゲートウェイに向けます:
+   - デフォルト: `https://gateway-host/webhook/synology`
+   - または、カスタム設定した `channels.synology-chat.webhookPath`。
+4. OpenClaw の `channels.synology-chat` セクションを構成します。
+5. ゲートウェイを再起動し、Synology Chat ボットにメッセージを送信します。
 
 最小限の構成:
 
@@ -59,7 +58,7 @@ openclaw plugins install ./extensions/synology-chat
 
 ## 環境変数
 
-デフォルトのアカウントの場合は、環境変数を使用できます。
+デフォルトアカウントでは、環境変数を使用することもできます:
 
 - `SYNOLOGY_CHAT_TOKEN`
 - `SYNOLOGY_CHAT_INCOMING_URL`
@@ -68,35 +67,36 @@ openclaw plugins install ./extensions/synology-chat
 - `SYNOLOGY_RATE_LIMIT`
 - `OPENCLAW_BOT_NAME`
 
-構成値は環境変数をオーバーライドします。
+構成ファイル内の値は、環境変数を上書きします。
 
-## DM ポリシーとアクセス制御- `dmPolicy: "allowlist"` が推奨されるデフォルトです
+## DM ポリシーとアクセス制御
 
-- `allowedUserIds` は、Synology ユーザー ID のリスト (またはカンマ区切りの文字列) を受け入れます。
-- `allowlist` モードでは、空の `allowedUserIds` リストは構成ミスとして扱われ、Webhook ルートは開始されません (allow-all には `dmPolicy: "open"` を使用します)。
-- `dmPolicy: "open"` は任意の送信者を許可します。
+- 推奨設定は `dmPolicy: "allowlist"` です。
+- `allowedUserIds` には、Synology のユーザー ID のリスト（またはカンマ区切りの文字列）を指定します。
+- `allowlist` モードで `allowedUserIds` が空の場合、構成エラーとみなされ webhook ルートは開始されません（全員を許可する場合は `dmPolicy: "open"` を使用してください）。
+- `dmPolicy: "open"` はすべての送信者を許可します。
 - `dmPolicy: "disabled"` は DM をブロックします。
-- ペアリングの承認は以下と連携します。
+- ペアリング承認は以下のコマンドで操作できます:
   - `openclaw pairing list synology-chat`
   - `openclaw pairing approve synology-chat <CODE>`
 
-## アウトバウンド配送
+## アウトバウンド配信
 
-数値の Synology Chat ユーザー ID をターゲットとして使用します。
+数値形式の Synology Chat ユーザー ID をターゲットとして使用します。
 
 例:
 
 ```bash
-openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
-openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
+openclaw message send --channel synology-chat --target 123456 --text "OpenClaw からのメッセージです"
+openclaw message send --channel synology-chat --target synology-chat:123456 --text "再送テスト"
 ```
 
-メディア送信は、URL ベースのファイル配信によってサポートされます。
+メディア送信は、URL ベースのファイル配信としてサポートされています。
 
 ## マルチアカウント
 
-複数の Synology Chat アカウントは `channels.synology-chat.accounts` でサポートされています。
-各アカウントは、トークン、受信 URL、Webhook パス、DM ポリシー、および制限をオーバーライドできます。
+`channels.synology-chat.accounts` 配下で、複数の Synology Chat アカウントを運用できます。
+各アカウントでトークン、受信 URL、webhook パス、DM ポリシー、制限値を上書き可能です。
 
 ```json5
 {
@@ -121,9 +121,9 @@ openclaw message send --channel synology-chat --target synology-chat:123456 --te
 }
 ```
 
-## セキュリティに関する注意事項
+## セキュリティに関する注意
 
-- `token` は秘密にし、漏洩した場合はローテーションします。
-- 自己署名ローカル NAS 証明書を明示的に信頼する場合を除き、`allowInsecureSsl: false` を保持します。
-- 受信 Webhook リクエストはトークン検証され、送信者ごとにレートが制限されます。
-- 本番環境では `dmPolicy: "allowlist"` を優先します。
+- `token` は秘密に保ち、漏洩した場合は速やかにローテーションしてください。
+- 自己署名の NAS 証明書を明示的に信頼する場合を除き、`allowInsecureSsl: false` のままにしてください。
+- インバウンドの webhook リクエストはトークンで検証され、送信者ごとにレート制限が適用されます。
+- 本番環境では `dmPolicy: "allowlist"` の使用を推奨します。

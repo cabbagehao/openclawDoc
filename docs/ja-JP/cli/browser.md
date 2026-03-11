@@ -1,32 +1,31 @@
 ---
-summary: "「openclaw ブラウザ」の CLI リファレンス (プロファイル、タブ、アクション、拡張機能リレー)"
+summary: "`openclaw browser` の CLI リファレンス (プロファイル、タブ、アクション、拡張機能リレー)"
 read_when:
-  - 「openclaw ブラウザ」を使用しており、一般的なタスクの例が必要です
-  - 別のマシンで実行されているブラウザをノードホスト経由で制御したい
-  - Chrome 拡張機能リレーを使用したい（ツールバー ボタンによるアタッチ/デタッチ）
-title: "ブラウザ"
+  - `openclaw browser` コマンドを使用しており、よくあるタスクの実行例を確認したい場合
+  - ノードホストを介して別のマシンで実行されているブラウザを制御したい場合
+  - Chrome 拡張機能リレーを使用したい（ツールバーのボタンによるアタッチ/デタッチ）場合
+title: "browser"
 x-i18n:
   source_hash: "af35adfd68726fd519c704d046451effd330458c2b8305e713137fb07b2571fd"
 ---
 
 # `openclaw browser`
 
-OpenClaw のブラウザ コントロール サーバーを管理し、ブラウザ アクション (タブ、スナップショット、スクリーンショット、ナビゲーション、クリック、入力) を実行します。
+OpenClaw のブラウザ制御サーバーを管理し、ブラウザ操作（タブ管理、スナップショット取得、スクリーンショット、ナビゲーション、クリック、入力など）を実行します。
 
-関連:
-
+関連ドキュメント:
 - ブラウザツール + API: [ブラウザツール](/tools/browser)
 - Chrome 拡張機能リレー: [Chrome 拡張機能](/tools/chrome-extension)
 
-## 共通フラグ
+## よく使われるフラグ
 
-- `--url <gatewayWsUrl>`: ゲートウェイ WebSocket URL (デフォルトは config)。
-- `--token <token>`: ゲートウェイ トークン (必要な場合)。
+- `--url <gatewayWsUrl>`: ゲートウェイの WebSocket URL (デフォルトは構成に従います)。
+- `--token <token>`: ゲートウェイの認証トークン (必要な場合)。
 - `--timeout <ms>`: リクエストのタイムアウト (ミリ秒)。
-- `--browser-profile <name>`: ブラウザー プロファイルを選択します (構成からのデフォルト)。
-- `--json`: 機械可読出力 (サポートされている場合)。
+- `--browser-profile <name>`: ブラウザプロファイルを選択 (デフォルトは構成に従います)。
+- `--json`: 機械可読な形式で出力。
 
-## クイックスタート (ローカル)
+## クイックスタート (ローカル環境)
 
 ```bash
 openclaw browser --browser-profile chrome tabs
@@ -37,10 +36,10 @@ openclaw browser --browser-profile openclaw snapshot
 
 ## プロファイル
 
-プロファイルにはブラウザー ルーティング構成という名前が付けられます。実際には:
+プロファイルはブラウザのルーティング設定に名前を付けたものです。主なものは以下の通りです:
 
-- `openclaw`: OpenClaw が管理する専用の Chrome インスタンス (分離されたユーザー データ ディレクトリ) を起動/接続します。
-- `chrome`: Chrome 拡張機能リレーを介して既存の Chrome タブを制御します。
+- `openclaw`: OpenClaw が管理する専用の Chrome インスタンス (分離されたユーザーデータディレクトリを使用) を起動または接続します。
+- `chrome`: Chrome 拡張機能リレーを介して、既存の Chrome タブを制御します。
 
 ```bash
 openclaw browser profiles
@@ -48,13 +47,13 @@ openclaw browser create-profile --name work --color "#FF5A36"
 openclaw browser delete-profile --name work
 ```
 
-特定のプロファイルを使用します。
+特定のプロファイルを使用する場合:
 
 ```bash
 openclaw browser --browser-profile work tabs
 ```
 
-## タブ
+## タブ操作
 
 ```bash
 openclaw browser tabs
@@ -65,19 +64,19 @@ openclaw browser close <targetId>
 
 ## スナップショット / スクリーンショット / アクション
 
-スナップショット:
+スナップショットの取得:
 
 ```bash
 openclaw browser snapshot
 ```
 
-スクリーンショット:
+スクリーンショットの取得:
 
 ```bash
 openclaw browser screenshot
 ```
 
-移動/クリック/入力 (参照ベースの UI オートメーション):
+ナビゲーション / クリック / 入力 (参照ベースの UI 自動化):
 
 ```bash
 openclaw browser navigate https://example.com
@@ -85,24 +84,25 @@ openclaw browser click <ref>
 openclaw browser type <ref> "hello"
 ```
 
-## Chrome 拡張機能リレー (ツールバー ボタンを使用して接続)
+## Chrome 拡張機能リレー (ツールバーのボタンで接続)
 
-このモードでは、手動で接続した既存の Chrome タブをエージェントが制御できます (自動接続はされません)。
+このモードでは、手動でアタッチ（接続）した既存の Chrome タブをエージェントが制御できます（自動的にアタッチされることはありません）。
 
-解凍された拡張機能を安定したパスにインストールします。
+ビルド済みの拡張機能を安定したパスに配置します:
 
-````bash
+```bash
 openclaw browser extension install
 openclaw browser extension path
-```次に、Chrome → `chrome://extensions` → 「開発者モード」を有効にする → 「解凍してロード」 → 印刷されたフォルダーを選択します。
+```
 
-完全ガイド: [Chrome 拡張機能](/tools/chrome-extension)
+次に、Chrome で `chrome://extensions` を開き、「デベロッパー モード」を有効にしてから「パッケージ化されていない拡張機能を読み込む」を選択し、表示されたフォルダを選択してください。
 
-## リモートブラウザ制御 (ノードホストプロキシ)
+詳細ガイド: [Chrome 拡張機能](/tools/chrome-extension)
 
-ゲートウェイがブラウザとは別のマシンで実行されている場合は、Chrome/Brave/Edge/Chromium がインストールされているマシンで **ノード ホスト**を実行します。ゲートウェイは、ブラウザーのアクションをそのノードにプロキシします (別個のブラウザー制御サーバーは必要ありません)。
+## リモートブラウザ制御 (ノードホスト経由のプロキシ)
 
-自動ルーティングを制御するには `gateway.nodes.browser.mode` を使用し、複数が接続されている場合に特定のノードを固定するには `gateway.nodes.browser.node` を使用します。
+ゲートウェイがブラウザとは別のマシンで動作している場合は、Chrome、Brave、Edge、Chromium 等がインストールされているマシンで**ノードホスト**を実行してください。ゲートウェイはブラウザ操作をそのノードにプロキシ（中継）します（別途ブラウザ制御サーバーを用意する必要はありません）。
 
-セキュリティ + リモート設定: [ブラウザ ツール](/tools/browser)、[リモート アクセス](/gateway/remote)、[テールスケール](/gateway/tailscale)、[セキュリティ](/gateway/security)
-````
+自動ルーティングの設定には `gateway.nodes.browser.mode` を、特定のノードに固定する場合は `gateway.nodes.browser.node` を使用します。
+
+セキュリティとリモート設定の詳細: [ブラウザツール](/tools/browser), [リモートアクセス](/gateway/remote), [Tailscale](/gateway/tailscale), [セキュリティ](/gateway/security)

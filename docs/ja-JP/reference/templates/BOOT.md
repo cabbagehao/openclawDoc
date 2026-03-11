@@ -1,13 +1,13 @@
 ---
-title: "BOOT.md テンプレート"
-summary: "BOOT.md のワークスペース テンプレート"
+title: "BOOT.md Template"
+summary: "BOOT.md 用のワークスペーステンプレート"
 read_when:
-  - BOOT.md チェックリストの追加
+  - BOOT.md のチェックリストを追加するとき
 x-i18n:
   source_hash: "d65cfe833ef6826ef9cddafd6499b6dce55c5d0bb56088434a54f77054f5430e"
 ---
 
-# ブート.md
+# BOOT.md
 
-OpenClaw が起動時に行うべきことについての短く明示的な指示を追加します (`hooks.internal.enabled` を有効にする)。
-タスクがメッセージを送信する場合は、メッセージ ツールを使用して、NO_REPLY で応答します。
+起動時に OpenClaw が実行すべき内容を、短く明確な指示として書いてください（`hooks.internal.enabled` を有効にします）。
+タスクがメッセージ送信を伴う場合は message tool を使い、その後 `NO_REPLY` を返してください。

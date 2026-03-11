@@ -1,7 +1,7 @@
 ---
 summary: "Mac アプリにゲートウェイ WebChat を埋め込む方法とそれをデバッグする方法"
 read_when:
-  - Mac WebChat ビューまたはループバック ポートのデバッグ
+  - Mac の WebChat ビューや loopback port をデバッグするとき
 title: "ウェブチャット"
 x-i18n:
   source_hash: "6e72893255fa01cafa1252c4d5accf76e87f9b7720158c14442b99b60753363e"
@@ -9,37 +9,32 @@ x-i18n:
 
 # WebChat (macOS アプリ)
 
-macOS メニュー バー アプリには、WebChat UI がネイティブ SwiftUI ビューとして埋め込まれています。それ
-ゲートウェイに接続し、選択したセッションの **メイン セッション**をデフォルトとします。
-エージェント (他のセッション用のセッションスイッチャーを使用)。
+macOS のメニュー バー アプリは、WebChat UI をネイティブの SwiftUI view として埋め込んでいます。ゲートウェイへ接続し、選択中エージェントの **main session** を既定対象とします。必要に応じて他 session へ切り替える UI も備えています。
 
-- **ローカル モード**: ローカル ゲートウェイ WebSocket に直接接続します。
-- **リモート モード**: SSH 経由でゲートウェイ制御ポートを転送し、それを使用します。
-  トンネルをデータプレーンとして使用します。
+- **Local mode**: ローカルのゲートウェイ WebSocket へ直接接続します。
+- **Remote mode**: ゲートウェイの control port を SSH で転送し、そのトンネルを data plane として使います。
 
 ## 起動とデバッグ
 
-- マニュアル: ロブスターメニュー → 「オープンチャット」。
-- テストのために自動で開きます:
+- 手動起動: Lobster menu → "Open Chat"
+- テスト用に自動起動:
 
   ```bash
   dist/OpenClaw.app/Contents/MacOS/OpenClaw --webchat
   ```
 
-- ログ: `./scripts/clawlog.sh` (サブシステム `ai.openclaw`、カテゴリ `WebChatSwiftUI`)。
+- ログ: `./scripts/clawlog.sh` (subsystem `ai.openclaw`、category `WebChatSwiftUI`)
 
-## 配線方法
+## 配線構成
 
-- データ プレーン: ゲートウェイ WS メソッド `chat.history`、`chat.send`、`chat.abort`、
-  `chat.inject` およびイベント `chat`、`agent`、`presence`、`tick`、`health`。
-- セッション: デフォルトはプライマリ セッション (スコープが の場合は `main`、または `global`)
-  グローバル）。 UI はセッション間を切り替えることができます。
-- オンボーディングでは専用セッションを使用して、初回実行セットアップを分離します。
+- Data plane: ゲートウェイ WS の `chat.history`、`chat.send`、`chat.abort`、`chat.inject` と、イベント `chat`、`agent`、`presence`、`tick`、`health`
+- Session: 既定では primary session (`main`、または scope が global の場合は `global`) を使います。UI から session を切り替えられます。
+- オンボーディングでは専用 session を使い、初回セットアップの対話を通常のチャット session から分離します。
 
 ## セキュリティ面
 
-- リモート モードは、SSH 経由でゲートウェイ WebSocket 制御ポートのみを転送します。
+- Remote mode では、SSH 経由で転送するのはゲートウェイ WebSocket の control port だけです。
 
-## 既知の制限事項
+## 既知の制限
 
-- UI はチャット セッション用に最適化されています (完全なブラウザー サンドボックスではありません)。
+- UI はチャット session 向けに最適化されており、完全なブラウザー サンドボックスではありません。

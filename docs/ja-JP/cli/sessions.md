@@ -1,15 +1,15 @@
 ---
-summary: "「openclaw セッション」の CLI リファレンス (保存されたセッションと使用状況のリスト)"
+summary: "`openclaw sessions` の CLI リファレンス (保存されたセッションの一覧表示とメンテナンス)"
 read_when:
-  - 保存されたセッションを一覧表示し、最近のアクティビティを確認したい
-title: "セッション"
+  - 保存されている会話セッションの一覧を確認したり、最近のアクティビティを見たい場合
+title: "sessions"
 x-i18n:
   source_hash: "e609bd7f303cc74977d12caae6a8af9fa4c16537fae6294c970bb80e3e472f18"
 ---
 
 # `openclaw sessions`
 
-保存されている会話セッションをリストします。
+保存されている会話セッションを一覧表示します。
 
 ```bash
 openclaw sessions
@@ -19,16 +19,16 @@ openclaw sessions --active 120
 openclaw sessions --json
 ```
 
-範囲の選択:
+## 範囲（スコープ）の選択
 
-- デフォルト: 設定されたデフォルトのエージェント ストア
-- `--agent <id>`: 1 つの構成済みエージェント ストア
-- `--all-agents`: 構成されているすべてのエージェント ストアを集約します。
-- `--store <path>`: 明示的なストア パス (`--agent` または `--all-agents` と組み合わせることはできません)
+- デフォルト: 構成済みのデフォルトエージェントのストア
+- `--agent <id>`: 指定したエージェントのストアのみ
+- `--all-agents`: 構成されているすべてのエージェントのストアを集約
+- `--store <パス>`: 明示的に指定したストアファイル（`--agent` や `--all-agents` との併用はできません）
 
-JSON の例:
+## JSON 出力の例
 
-`openclaw sessions --all-agents --json`:
+`openclaw sessions --all-agents --json` 実行時:
 
 ```json
 {
@@ -47,9 +47,11 @@ JSON の例:
 }
 ```
 
-## クリーンアップメンテナンス
+---
 
-(次の書き込みサイクルを待たずに) 今すぐメンテナンスを実行します。
+## クリーンアップメンテナンス (`cleanup`)
+
+次の自動クリーンアップサイクルを待たずに、今すぐメンテナンス（古いセッションの削除など）を実行します。
 
 ```bash
 openclaw sessions cleanup --dry-run
@@ -60,18 +62,21 @@ openclaw sessions cleanup --enforce --active-key "agent:main:telegram:dm:123"
 openclaw sessions cleanup --json
 ```
 
-`openclaw sessions cleanup` は、構成の `session.maintenance` 設定を使用します。
+`openclaw sessions cleanup` は、構成ファイル内の `session.maintenance` 設定を使用します。
 
-- スコープに関する注記: `openclaw sessions cleanup` はセッション ストア/トランスクリプトのみを維持します。 cron 実行ログ (`cron/runs/<jobId>.jsonl`) は削除されません。これらは、[Cron 構成](/automation/cron-jobs#configuration) の `cron.runLog.maxBytes` および `cron.runLog.keepLines` によって管理され、[Cron メンテナンス](/automation/cron-jobs#maintenance) で説明されています。- `--dry-run`: 書き込みなしでプルーニング/キャップされるエントリの数をプレビューします。
-  - テキスト モードでは、ドライランによりセッションごとのアクション テーブル (`Action`、`Key`、`Age`、`Model`、`Flags`) が出力されるため、何が保持されるのか、何が削除されるのかを確認できます。
-- `--enforce`: `session.maintenance.mode` が `warn` の場合でもメンテナンスを適用します。
-- `--active-key <key>`: 特定のアクティブ キーをディスク バジェットのエビクションから保護します。
-- `--agent <id>`: 構成されている 1 つのエージェント ストアに対してクリーンアップを実行します。
-- `--all-agents`: 構成されているすべてのエージェント ストアのクリーンアップを実行します。
-- `--store <path>`: 特定の `sessions.json` ファイルに対して実行します。
-- `--json`: JSON 概要を出力します。 `--all-agents` の場合、出力にはストアごとに 1 つの概要が含まれます。
+- 補足: このコマンドはセッションストアとトランスクリプト（会話履歴）ファイルのみを対象とします。Cron の実行ログ (`cron/runs/<jobId>.jsonl`) は対象外です（Cron ログは [Cron 構成](/automation/cron-jobs#configuration) 内の `cron.runLog` 設定によって管理されます）。
 
-`openclaw sessions cleanup --all-agents --dry-run --json`:
+オプション:
+- `--dry-run`: 実際に削除は行わず、削除対象となるエントリ数などをプレビューします。
+  - テキストモードでのドライランでは、セッションごとのアクション表 (`Action`, `Key`, `Age`, `Model`, `Flags`) が表示され、何が保持され何が削除されるかを確認できます。
+- `--enforce`: `session.maintenance.mode` が `warn` (警告のみ) に設定されている場合でも、強制的に削除を適用します。
+- `--active-key <キー>`: 特定のセッションキーを、ディスク容量制限による自動削除から保護します。
+- `--agent <id>`: 特定のエージェントのストアに対してクリーンアップを実行します。
+- `--all-agents`: すべてのエージェントのストアに対してクリーンアップを実行します。
+- `--store <パス>`: 特定の `sessions.json` ファイルを指定して実行します。
+- `--json`: クリーンアップ結果のサマリーを JSON 形式で出力します。`--all-agents` 指定時はストアごとのサマリーが含まれます。
+
+`openclaw sessions cleanup --all-agents --dry-run --json` 実行時の出力例:
 
 ```json
 {
@@ -99,6 +104,5 @@ openclaw sessions cleanup --json
 }
 ```
 
-関連:
-
-- セッション構成: [構成リファレンス](/gateway/configuration-reference#session)
+関連ドキュメント:
+- セッション構成: [構成リファレンス - Session](/gateway/configuration-reference#session)

@@ -1,46 +1,45 @@
 ---
-summary: "OpenClawが接続できるメッセージングプラットフォーム"
+summary: "OpenClaw が接続できるメッセージングプラットフォーム"
 read_when:
   - OpenClaw用のチャットチャンネルを選択したい場合
   - サポートされているメッセージングプラットフォームの概要が必要な場合
-title: "チャットチャンネル"
+title: "Chat Channels"
 ---
 
-# チャットチャンネル
+# Chat Channels
 
-OpenClawは、すでに使用している任意のチャットアプリで会話できます。各チャンネルはGateway経由で接続します。
-テキストはすべての場所でサポートされています。メディアとリアクションはチャンネルによって異なります。
+OpenClaw は、すでに使っているチャットアプリの上で会話できます。各チャンネルはゲートウェイ経由で接続されます。テキストはすべてのチャンネルで利用できますが、メディアやリアクションの対応状況はチャンネルごとに異なります。
 
 ## サポートされているチャンネル
 
-- [BlueBubbles](/channels/bluebubbles) — **iMessage推奨**; BlueBubbles macOSサーバーREST APIを使用し、フル機能をサポート（編集、送信取り消し、エフェクト、リアクション、グループ管理 — 編集は現在macOS 26 Tahoeで動作しません）
-- [Discord](/channels/discord) — Discord Bot API + Gateway; サーバー、チャンネル、DMをサポート
-- [Feishu](/channels/feishu) — WebSocket経由のFeishu/Larkボット（プラグイン、別途インストール）
-- [Google Chat](/channels/googlechat) — HTTPウェブフック経由のGoogle Chat APIアプリ
-- [iMessage (レガシー)](/channels/imessage) — imsg CLI経由のレガシーmacOS統合（非推奨、新規セットアップにはBlueBubblesを使用）
-- [IRC](/channels/irc) — クラシックIRCサーバー; ペアリング/許可リスト制御付きのチャンネル + DM
-- [LINE](/channels/line) — LINE Messaging APIボット（プラグイン、別途インストール）
-- [Matrix](/channels/matrix) — Matrixプロトコル（プラグイン、別途インストール）
-- [Mattermost](/channels/mattermost) — Bot API + WebSocket; チャンネル、グループ、DM（プラグイン、別途インストール）
-- [Microsoft Teams](/channels/msteams) — Bot Framework; エンタープライズサポート（プラグイン、別途インストール）
-- [Nextcloud Talk](/channels/nextcloud-talk) — Nextcloud Talk経由のセルフホスト型チャット（プラグイン、別途インストール）
-- [Nostr](/channels/nostr) — NIP-04経由の分散型DM（プラグイン、別途インストール）
-- [Signal](/channels/signal) — signal-cli; プライバシー重視
-- [Synology Chat](/channels/synology-chat) — 送信+受信ウェブフック経由のSynology NAS Chat（プラグイン、別途インストール）
-- [Slack](/channels/slack) — Bolt SDK; ワークスペースアプリ
-- [Telegram](/channels/telegram) — grammY経由のBot API; グループをサポート
-- [Tlon](/channels/tlon) — Urbitベースのメッセンジャー（プラグイン、別途インストール）
-- [Twitch](/channels/twitch) — IRC接続経由のTwitchチャット（プラグイン、別途インストール）
-- [WebChat](/web/webchat) — WebSocket経由のGateway WebChat UI
-- [WhatsApp](/channels/whatsapp) — 最も人気; Baileysを使用し、QRペアリングが必要
-- [Zalo](/channels/zalo) — Zalo Bot API; ベトナムの人気メッセンジャー（プラグイン、別途インストール）
-- [Zalo Personal](/channels/zalouser) — QRログイン経由のZalo個人アカウント（プラグイン、別途インストール）
+- [BlueBubbles](/channels/bluebubbles) — **iMessage には推奨**。BlueBubbles の macOS サーバー REST API を使い、編集、送信取り消し、エフェクト、リアクション、グループ管理まで含めて広く対応しています。なお、編集機能は現在 macOS 26 Tahoe では動作しません。
+- [Discord](/channels/discord) — Discord Bot API と Gateway を利用します。サーバー、チャンネル、DM に対応しています。
+- [Feishu](/channels/feishu) — WebSocket 経由の Feishu/Lark ボットです。プラグインとして別途インストールします。
+- [Google Chat](/channels/googlechat) — HTTP webhook 経由で動作する Google Chat API アプリです。
+- [iMessage (レガシー)](/channels/imessage) — `imsg` CLI を使う従来の macOS 連携です。非推奨のため、新規構成では BlueBubbles の利用を推奨します。
+- [IRC](/channels/irc) — 従来型の IRC サーバーに対応します。チャンネルと DM の両方を扱え、ペアリングや allowlist による制御もできます。
+- [LINE](/channels/line) — LINE Messaging API ボットです。プラグインとして別途インストールします。
+- [Matrix](/channels/matrix) — Matrix プロトコル対応です。プラグインとして別途インストールします。
+- [Mattermost](/channels/mattermost) — Bot API と WebSocket を使います。チャンネル、グループ、DM に対応しています。プラグインとして別途インストールします。
+- [Microsoft Teams](/channels/msteams) — Bot Framework ベースで、エンタープライズ向けの利用を想定しています。プラグインとして別途インストールします。
+- [Nextcloud Talk](/channels/nextcloud-talk) — Nextcloud Talk を使うセルフホスト型チャットです。プラグインとして別途インストールします。
+- [Nostr](/channels/nostr) — NIP-04 ベースの分散型 DM に対応します。プラグインとして別途インストールします。
+- [Signal](/channels/signal) — `signal-cli` ベースで、プライバシー重視の運用に向いています。
+- [Synology Chat](/channels/synology-chat) — 送受信 webhook を使う Synology NAS Chat 連携です。プラグインとして別途インストールします。
+- [Slack](/channels/slack) — Bolt SDK ベースで、ワークスペースアプリとして動作します。
+- [Telegram](/channels/telegram) — grammY 経由の Bot API を使い、グループにも対応しています。
+- [Tlon](/channels/tlon) — Urbit ベースのメッセンジャーです。プラグインとして別途インストールします。
+- [Twitch](/channels/twitch) — IRC 接続経由で Twitch チャットに参加します。プラグインとして別途インストールします。
+- [WebChat](/web/webchat) — WebSocket 経由で動作するゲートウェイの WebChat UI です。
+- [WhatsApp](/channels/whatsapp) — 最も利用者の多いチャンネルです。Baileys を使い、QR ペアリングが必要です。
+- [Zalo](/channels/zalo) — Zalo Bot API 対応です。ベトナムで広く使われているメッセンジャーです。プラグインとして別途インストールします。
+- [Zalo Personal](/channels/zalouser) — QR ログインを使う Zalo 個人アカウント連携です。プラグインとして別途インストールします。
 
 ## 注意事項
 
-- チャンネルは同時に実行可能。複数を設定すると、OpenClawがチャットごとにルーティングします
-- 最速のセットアップは通常**Telegram**（シンプルなボットトークン）。WhatsAppはQRペアリングが必要で、ディスク上により多くの状態を保存します
-- グループの動作はチャンネルによって異なります。[グループ](/channels/groups)を参照してください
-- DMペアリングと許可リストは安全のために強制されます。[セキュリティ](/gateway/security)を参照してください
-- トラブルシューティング: [チャンネルトラブルシューティング](/channels/troubleshooting)
-- モデルプロバイダーは別途文書化されています。[モデルプロバイダー](/providers/models)を参照してください
+- 複数のチャンネルは同時に有効化できます。複数設定した場合でも、OpenClaw はチャットごとに適切にルーティングします。
+- 最も手早く始めやすいのは通常 **Telegram** です。ボットトークンだけで始めやすいためです。WhatsApp は QR ペアリングが必要で、ディスク上に保持する状態も多くなります。
+- グループの挙動はチャンネルごとに異なります。詳しくは [Groups](/channels/groups) を参照してください。
+- DM のペアリングと allowlist は安全のため必須です。詳しくは [Security](/gateway/security) を参照してください。
+- トラブルシューティングは [Channel troubleshooting](/channels/troubleshooting) を参照してください。
+- モデルプロバイダーについては別ページで説明しています。[Model Providers](/providers/models) を参照してください。

@@ -1,7 +1,7 @@
 ---
 summary: "ウェイクワードとプッシュトゥトークが重複する場合の音声オーバーレイのライフサイクル"
 read_when:
-  - 音声オーバーレイの動作を調整する
+  - 音声オーバーレイの挙動を調整するとき
 title: "音声オーバーレイ"
 x-i18n:
   source_hash: "1efcc26ec05d2f421cb2cf462077d002381995b338d00db77d5fdba9b8d938b6"
@@ -9,53 +9,54 @@ x-i18n:
 
 # 音声オーバーレイのライフサイクル (macOS)
 
-対象者: macOS アプリの寄稿者。目標: ウェイクワードとプッシュトゥトークが重なったときに、音声オーバーレイを予測可能な状態に保ちます。
+対象読者は macOS アプリのコントリビューターです。目的は、ウェイクワードとプッシュトゥトークが重なった場合でも、音声オーバーレイの挙動を予測可能に保つことです。
 
-## 現在のインテント
+## 現在の意図
 
-- オーバーレイがウェイクワードからすでに表示されており、ユーザーがホットキーを押すと、ホットキー セッションは既存のテキストをリセットする代わりに*採用*します。ホットキーを押している間、オーバーレイは表示されたままになります。ユーザーが手を放したとき: トリミングされたテキストがある場合は送信し、そうでない場合は無視します。
-- ウェイクワードのみが沈黙時に自動送信されます。プッシュツートークはリリースと同時に送信します。
+- オーバーレイがウェイクワードで既に表示されている状態でユーザーがホットキーを押した場合、ホットキー セッションは既存テキストをリセットせず、その内容を引き継ぎます。ホットキーを押している間はオーバーレイを維持し、キーを離したときに、トリミング後のテキストがあれば送信し、なければ閉じます。
+- ウェイクワード単体では無音時に自動送信し、プッシュトゥトークはキーを離した時点で即送信します。
 
-## 実装 (2025 年 12 月 9 日)
+## 実装済み (2025-12-09)
 
-- オーバーレイ セッションでは、キャプチャごとにトークンが送信されるようになりました (ウェイクワードまたはプッシュ トゥ トーク)。トークンが一致しない場合、部分/最終/送信/拒否/レベルの更新は破棄され、古いコールバックが回避されます。
-- プッシュ トゥ トークでは、表示されているオーバーレイ テキストをプレフィックスとして採用します (そのため、ウェイク オーバーレイが起動しているときにホットキーを押すと、テキストが保持され、新しい音声が追加されます)。現在のテキストに戻る前に、最終的なトランスクリプトが作成されるまで最大 1.5 秒待機します。
-- チャイム/オーバーレイ ログは、カテゴリ `voicewake.overlay`、`voicewake.ptt`、および `voicewake.chime` の `info` で発行されます (セッション開始、部分的、最終、送信、終了、チャイム理由)。
+- オーバーレイ セッションは、各キャプチャ (ウェイクワードまたはプッシュトゥトーク) ごとにトークンを持つようになりました。トークンが一致しない partial / final / send / dismiss / level の更新は破棄されるため、古いコールバックが残って誤動作するのを防げます。
+- プッシュトゥトークは、表示中のオーバーレイ テキストを prefix として引き継ぎます。つまり、ウェイク オーバーレイが表示されている間にホットキーを押すと、既存テキストを保持したまま新しい発話を追加できます。最終 transcript を待つ時間は最大 1.5 秒で、それを過ぎた場合は現在のテキストへフォールバックします。
+- chime / overlay のログは、`voicewake.overlay`、`voicewake.ptt`、`voicewake.chime` の各 category で `info` レベル出力されます。対象は session start、partial、final、send、dismiss、chime reason です。
 
-## 次のステップ1. **VoiceSessionCoordinator (アクター)**
+## 次のステップ
 
-- 一度に `VoiceSession` を 1 つだけ所有します。
-- API (トークンベース): `beginWakeCapture`、`beginPushToTalk`、`updatePartial`、`endCapture`、`cancel`、`applyCooldown`。
-- 古いトークンを運ぶコールバックを削除します (古い認識エンジンがオーバーレイを再度開くのを防ぎます)。
-
-2. **VoiceSession (モデル)**
-   - フィールド: `token`、`source` (wakeWord|pushToTalk)、コミット済み/揮発性テキスト、チャイム フラグ、タイマー (自動送信、アイドル)、`overlayMode` (表示|編集|送信)、クールダウン期限。
-3. **オーバーレイバインディング**
-   - `VoiceSessionPublisher` (`ObservableObject`) は、アクティブなセッションを SwiftUI にミラーリングします。
-   - `VoiceWakeOverlayView` はパブリッシャー経由でのみレンダリングします。グローバル シングルトンを直接変更することはありません。
-   - オーバーレイ ユーザー アクション (`sendNow`、`dismiss`、`edit`) は、セッション トークンを使用してコーディネーターにコールバックします。
-4. **統合された送信パス**
-   - `endCapture` の場合: トリミングされたテキストが空の場合 → 却下。 else `performSend(session:)` (送信チャイムを 1 回再生し、転送し、消去します)。
-   - プッシュツートーク: 遅延なし。ウェイクワード: 自動送信のオプションの遅延。
-   - プッシュ トゥ トークの終了後にウェイク ランタイムに短いクールダウンを適用し、ウェイク ワードがすぐに再トリガーされないようにします。
+1. **VoiceSessionCoordinator (actor)**
+   - 常に 1 つの `VoiceSession` だけを管理します。
+   - API はトークン ベースで、`beginWakeCapture`、`beginPushToTalk`、`updatePartial`、`endCapture`、`cancel`、`applyCooldown` を提供します。
+   - 古いトークンを伴うコールバックは破棄し、古い recognizer がオーバーレイを再表示するのを防ぎます。
+2. **VoiceSession (model)**
+   - `token`、`source` (`wakeWord|pushToTalk`)、確定 / 未確定テキスト、chime flags、timer (auto-send、idle)、`overlayMode` (`display|editing|sending`)、cooldown deadline を持ちます。
+3. **オーバーレイの binding**
+   - `VoiceSessionPublisher` (`ObservableObject`) が active session を SwiftUI へ反映します。
+   - `VoiceWakeOverlayView` は publisher 経由でのみ描画し、global singleton を直接変更しません。
+   - オーバーレイのユーザー操作 (`sendNow`、`dismiss`、`edit`) は、session token とともに coordinator へ戻します。
+4. **統一された送信パス**
+   - `endCapture` 時に、トリミング後のテキストが空なら dismiss し、そうでなければ `performSend(session:)` を呼びます。ここで send chime を 1 回だけ鳴らし、転送後に閉じます。
+   - プッシュトゥトークでは遅延なし、ウェイクワードでは auto-send 用の任意の遅延を許可します。
+   - プッシュトゥトーク完了後は、ウェイク runtime に短い cooldown を適用し、ウェイクワードが直後に再トリガーされないようにします。
 5. **ロギング**
-   - コーディネーターは、サブシステム `ai.openclaw`、カテゴリ `voicewake.overlay` および `voicewake.chime` に `.info` ログを発行します。- 主要なイベント: `session_started`、`adopted_by_push_to_talk`、`partial`、`finalized`、`send`、`dismiss`、`cancel`、 `cooldown`。
+   - coordinator は subsystem `ai.openclaw`、category `voicewake.overlay` と `voicewake.chime` に `.info` ログを出力します。
+   - 主なイベントは `session_started`、`adopted_by_push_to_talk`、`partial`、`finalized`、`send`、`dismiss`、`cancel`、`cooldown` です。
 
-## デバッグチェックリスト
+## デバッグ チェックリスト
 
-- スティッキー オーバーレイを再生しながらログをストリーミングします。
+- オーバーレイが張り付く問題を再現しながら、次のログを流します。
 
   ```bash
   sudo log stream --predicate 'subsystem == "ai.openclaw" AND category CONTAINS "voicewake"' --level info --style compact
   ```
 
-- アクティブなセッション トークンを 1 つだけ検証します。古いコールバックはコーディネーターによって削除される必要があります。
-- プッシュツートークリリースが常にアクティブなトークンを使用して `endCapture` を呼び出すようにします。テキストが空の場合は、チャイムまたは送信なしの `dismiss` が期待されます。
+- active な session token が 1 つしか存在しないことを確認します。古いコールバックは coordinator により破棄されるはずです。
+- プッシュトゥトークを離したとき、常に active token を使って `endCapture` が呼ばれていることを確認します。テキストが空なら、chime も送信も行わず `dismiss` になるのが期待動作です。
 
 ## 移行手順 (推奨)
 
-1. `VoiceSessionCoordinator`、`VoiceSession`、および `VoiceSessionPublisher` を追加します。
-2. `VoiceWakeOverlayController` を直接操作するのではなく、`VoiceWakeRuntime` をリファクタリングしてセッションを作成/更新/終了します。
-3. `VoicePushToTalk` をリファクタリングして既存のセッションを採用し、リリース時に `endCapture` を呼び出します。ランタイムクールダウンを適用します。
-4. `VoiceWakeOverlayController` を発行者にTelegramします。ランタイム/PTT からの直接呼び出しを削除します。
-5. セッションの導入、クールダウン、および空のテキストの終了のための統合テストを追加します。
+1. `VoiceSessionCoordinator`、`VoiceSession`、`VoiceSessionPublisher` を追加します。
+2. `VoiceWakeRuntime` をリファクタリングし、`VoiceWakeOverlayController` を直接操作せずに session を作成 / 更新 / 終了するようにします。
+3. `VoicePushToTalk` をリファクタリングし、既存 session を引き継ぎ、キーを離したときに `endCapture` を呼ぶようにします。あわせて runtime cooldown も適用します。
+4. `VoiceWakeOverlayController` を publisher に接続し、runtime / PTT からの直接呼び出しを取り除きます。
+5. session adoption、cooldown、空テキスト時の dismiss を対象とした統合テストを追加します。

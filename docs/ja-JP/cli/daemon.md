@@ -1,18 +1,18 @@
 ---
-summary: "「openclaw デーモン」 (ゲートウェイ サービス管理のレガシー エイリアス) の CLI リファレンス"
+summary: "`openclaw daemon` の CLI リファレンス (ゲートウェイサービス管理用のレガシーな別名)"
 read_when:
-  - スクリプトではまだ「openclaw daemon ...」を使用しています
-  - サービスのライフサイクル コマンド (インストール/開始/停止/再起動/ステータス) が必要です
-title: "デーモン"
+  - スクリプト等で `openclaw daemon ...` を引き続き使用している場合
+  - サービスのライフサイクル管理コマンド（インストール/起動/停止/再起動/ステータス）が必要な場合
+title: "daemon"
 x-i18n:
   source_hash: "b67f116e565b9f69967d95e5eac8ddc8d818f195b0d7d610e0997cf504edcfb7"
 ---
 
 # `openclaw daemon`
 
-ゲートウェイ サービス管理コマンドのレガシー エイリアス。
+ゲートウェイのサービス管理コマンド用のレガシーな別名（エイリアス）です。
 
-`openclaw daemon ...` は、`openclaw gateway ...` サービス コマンドと同じサービス コントロール サーフェスにマップされます。
+`openclaw daemon ...` は、`openclaw gateway ...` のサービス制御コマンドと同じ機能を実行します。
 
 ## 使用法
 
@@ -27,26 +27,26 @@ openclaw daemon uninstall
 
 ## サブコマンド
 
-- `status`: サービスのインストール状態を表示し、ゲートウェイの健全性を調査します
-- `install`: サービスのインストール (`launchd`/`systemd`/`schtasks`)
-- `uninstall`: サービスを削除します
-- `start`: サービスの開始
-- `stop`: サービスを停止します
-- `restart`: サービスを再起動します
+- `status`: サービスのインストール状態を表示し、ゲートウェイの稼働状況を確認します。
+- `install`: サービスをインストールします (`launchd`, `systemd`, `schtasks`)。
+- `uninstall`: サービスを削除します。
+- `start`: サービスを起動します。
+- `stop`: サービスを停止します。
+- `restart`: サービスを再起動します。
 
-## 共通オプション
+## よく使われるオプション
 
-- `status`: `--url`、`--token`、`--password`、`--timeout`、`--no-probe`、`--deep`、 `--json`
-- `install`: `--port`、`--runtime <node|bun>`、`--token`、`--force`、`--json`
-- ライフサイクル (`uninstall|start|stop|restart`): `--json`
+- `status`: `--url`, `--token`, `--password`, `--timeout`, `--no-probe`, `--deep`, `--json`
+- `install`: `--port`, `--runtime <node|bun>`, `--token`, `--force`, `--json`
+- ライフサイクル管理 (`uninstall`, `start`, `stop`, `restart`): `--json`
 
-注:- `status` は、可能な場合、プローブ認証用に構成された認証 SecretRef を解決します。
+注意事項:
+- `status` は、可能であれば構成された認証用 SecretRef を解決して診断に使用します。
+- Linux の systemd 環境では、`status` によるトークンの不一致チェックは、ユニットファイルの `Environment=` および `EnvironmentFile=` の両方を対象とします。
+- トークン認証が必要な状況で、`gateway.auth.token` が SecretRef で管理されている場合、`install` は SecretRef が解決可能か検証しますが、解決されたトークン自体をサービスの環境メタデータに永続化させることはありません。
+- トークン認証が必要な状況で、構成されたトークン用の SecretRef が解決できない場合、インストールは行われません。
+- `gateway.auth.token` と `gateway.auth.password` の両方が構成され、かつ `gateway.auth.mode` が未設定の場合、モードが明示的に設定されるまでインストールはブロックされます。
 
-- Linux systemd インストールでは、`status` トークン ドリフト チェックに `Environment=` と `EnvironmentFile=` の両方のユニット ソースが含まれます。
-- トークン認証にトークンが必要で、`gateway.auth.token` が SecretRef で管理されている場合、`install` は SecretRef が解決可能であることを検証しますが、解決されたトークンをサービス環境メタデータに保持しません。
-- トークン認証にトークンが必要で、構成されたトークン SecretRef が解決されない場合、インストールは失敗して終了します。
-- `gateway.auth.token` と `gateway.auth.password` の両方が構成され、`gateway.auth.mode` が設定されていない場合、モードが明示的に設定されるまでインストールはブロックされます。
+## 推奨事項
 
-## 優先する
-
-現在のドキュメントと例には [`openclaw gateway`](/cli/gateway) を使用してください。
+最新のドキュメントや実行例については [`openclaw gateway`](/cli/gateway) を参照してください。

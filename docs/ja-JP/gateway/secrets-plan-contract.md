@@ -1,23 +1,23 @@
 ---
-summary: "「secrets apply」プランの契約: ターゲット検証、パス照合、および「auth-profiles.json」ターゲット スコープ"
+summary: "`secrets apply` 実行プランの仕様: ターゲットの検証、パスの一致ルール、および `auth-profiles.json` の対象範囲"
 read_when:
-  - 「openclaw Secrets apply」計画の生成またはレビュー
-  - 「無効なプラン ターゲット パス」エラーのデバッグ
-  - ターゲットの種類とパスの検証動作を理解する
-title: "秘密適用プラン契約書"
+  - `openclaw secrets apply` 用のプランを生成またはレビューする場合
+  - 「Invalid plan target path」エラーをデバッグする場合
+  - ターゲットの種類やパスの検証ルールを理解したい場合
+title: "シークレット適用プランの仕様"
 x-i18n:
   source_hash: "6fcbec7fbbe8d35fa6b9ef354d8aff83183c9f174097ff7a31b42498203f021b"
 ---
 
-# シークレット適用プラン契約
+# シークレット適用プランの仕様 (Contract)
 
-このページでは、`openclaw secrets apply` によって強制される厳密な契約を定義します。
+このページでは、`openclaw secrets apply` コマンドが強制する厳格な仕様（コントラクト）について定義します。
 
-ターゲットがこれらのルールに一致しない場合、構成を変更する前に適用は失敗します。
+指定されたターゲットが以下のルールに一致しない場合、構成設定を変更する前に処理は失敗します。
 
-## ファイルの形状を計画する
+## プランファイルの形式
 
-`openclaw secrets apply --from <plan.json>` は、計画ターゲットの `targets` 配列を想定しています。
+`openclaw secrets apply --from <plan.json>` は、以下のような `targets` 配列を含む JSON を想定しています:
 
 ```json5
 {
@@ -42,65 +42,65 @@ x-i18n:
 }
 ```
 
-## サポートされるターゲット スコープ
+## サポートされる対象範囲
 
-プラン ターゲットは、以下のサポートされている資格情報パスに対して受け入れられます。
+プランのターゲットとして受け入れられる認証情報のパスについては、以下を参照してください:
 
-- [SecretRef 資格情報サーフェス](/reference/secretref-credential-surface)
+- [SecretRef 認証情報サーフェス](/reference/secretref-credential-surface)
 
-## ターゲットタイプの動作
+## ターゲット型 (Target type) の挙動
 
-一般規則:
+一般原則:
+- `target.type` は既知の種類である必要があり、正規化された `target.path` の形状と一致していなければなりません。
 
-- `target.type` が認識され、正規化された `target.path` 形状と一致する必要があります。
-
-互換性エイリアスは、既存のプランに対して引き続き受け入れられます。
-
+既存のプランとの互換性のために、以下のエイリアスも引き続き受け入れられます:
 - `models.providers.apiKey`
 - `skills.entries.apiKey`
 - `channels.googlechat.serviceAccount`
 
 ## パス検証ルール
 
-各ターゲットは次のすべてで検証されます。
+各ターゲットは、以下のすべての項目で検証されます:
 
-- `type` は認識されたターゲット タイプである必要があります。
-- `path` は空でないドット パスでなければなりません。
-- `pathSegments`は省略可能です。指定した場合は、`path` とまったく同じパスに正規化する必要があります。
-- 禁止されたセグメントは拒否されます: `__proto__`、`prototype`、`constructor`。
-- 正規化されたパスは、ターゲット タイプの登録されたパス形状と一致する必要があります。
-- `providerId` または `accountId` が設定されている場合は、パス内でエンコードされた ID と一致する必要があります。
-- `auth-profiles.json` ターゲットには `agentId` が必要です。
-- 新しい `auth-profiles.json` マッピングを作成する場合は、`authProfileProvider` を含めます。
+- `type` は既知のターゲット型であること。
+- `path` は空でないドット区切りのパスであること。
+- `pathSegments` は省略可能ですが、指定された場合は `path` と全く同じパスに正規化されること。
+- 禁止されたセグメント（`__proto__`, `prototype`, `constructor`）が含まれていないこと。
+- 正規化されたパスが、そのターゲット型に対して登録済みの形状と一致すること。
+- `providerId` や `accountId` が指定されている場合、パス内に埋め込まれた ID と一致すること。
+- `auth-profiles.json` を対象とする場合は `agentId` が必須であること。
+- 新しい `auth-profiles.json` のマッピングを作成する場合は `authProfileProvider` を含めること。
 
-## 失敗時の動作ターゲットが検証に失敗した場合、適用は次のようなエラーで終了します
+## 失敗時の挙動
+
+ターゲットの検証に失敗した場合、コマンドは以下のようなエラーを出力して終了します:
 
 ```text
 Invalid plan target path for models.providers.apiKey: models.providers.openai.baseUrl
 ```
 
-無効なプランに対して書き込みはコミットされません。
+プランが不正な場合、一切の書き込み（構成の変更）は行われません。
 
-## 実行時および監査範囲のメモ
+## 実行時および監査に関する補足
 
-- 参照専用の `auth-profiles.json` エントリ (`keyRef`/`tokenRef`) は、実行時解決および監査カバレッジに含まれます。
-- `secrets apply` は、サポートされている `openclaw.json` ターゲット、サポートされている `auth-profiles.json` ターゲット、およびオプションのスクラブ ターゲットを書き込みます。
+- SecretRef のみで構成された `auth-profiles.json` のエントリ（`keyRef` / `tokenRef`）は、実行時の解決プロセスおよび監査（Audit）の対象に含まれます。
+- `secrets apply` は、サポートされている `openclaw.json` および `auth-profiles.json` のターゲットへの書き込み、およびオプションでの平文の消去（Scrub）を行います。
 
-## オペレーターのチェック
+## 運用チェック
 
 ```bash
-# Validate plan without writes
+# 書き込みを行わずにプランを検証
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
 
-# Then apply for real
+# 実際に適用
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
 ```
 
-適用が無効なターゲット パス メッセージで失敗した場合は、`openclaw secrets configure` を使用してプランを再生成するか、ターゲット パスを上記のサポートされている形状に修正します。
+「Invalid target path」というメッセージで適用に失敗した場合は、`openclaw secrets configure` でプランを再生成するか、サポートされている形状に合わせてターゲットパスを修正してください。
 
 ## 関連ドキュメント
 
-- [機密管理](/gateway/secrets)
-- [CLI `secrets`](/cli/secrets)
-- [SecretRef 資格情報サーフェス](/reference/secretref-credential-surface)
+- [シークレット管理](/gateway/secrets)
+- [CLI: secrets](/cli/secrets)
+- [SecretRef 認証情報サーフェス](/reference/secretref-credential-surface)
 - [構成リファレンス](/gateway/configuration-reference)

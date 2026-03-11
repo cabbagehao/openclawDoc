@@ -1,8 +1,8 @@
 ---
-summary: "「openclaw qr」の CLI リファレンス (iOS ペアリング QR + セットアップ コードの生成)"
+summary: "`openclaw qr` の CLI リファレンス (iOS ペアリング用 QR コードとセットアップコードの生成)"
 read_when:
-  - iOS アプリをゲートウェイとすばやくペアリングしたい
-  - リモート/手動共有にはセットアップコード出力が必要です
+  - iOS アプリをゲートウェイと素早くペアリングしたい場合
+  - リモート環境や手動共有のためにセットアップコードを表示したい場合
 title: "qr"
 x-i18n:
   source_hash: "1ca1f1bd3812f105a7fd62d90004ecbdeeaa5894470e6d981e4fc7534157c1d6"
@@ -10,7 +10,7 @@ x-i18n:
 
 # `openclaw qr`
 
-現在のゲートウェイ構成から iOS ペアリング QR とセットアップ コードを生成します。
+現在のゲートウェイ構成に基づいて、iOS アプリのペアリング用 QR コードとセットアップコードを生成します。
 
 ## 使用法
 
@@ -24,23 +24,24 @@ openclaw qr --url wss://gateway.example/ws --token '<token>'
 
 ## オプション
 
-- `--remote`: `gateway.remote.url` と構成からのリモート トークン/パスワードを使用します
-- `--url <url>`: ペイロードで使用されるゲートウェイ URL を上書きします
-- `--public-url <url>`: ペイロードで使用されるパブリック URL をオーバーライドします。
-- `--token <token>`: ペイロードのゲートウェイ トークンを上書きします
-- `--password <password>`: ペイロードのゲートウェイ パスワードを上書きします
-- `--setup-code-only`: セットアップ コードのみを出力します
-- `--no-ascii`: ASCII QR レンダリングをスキップします
-- `--json`: JSON を出力します (`setupCode`、`gatewayUrl`、`auth`、`urlSource`)
+- `--remote`: 構成ファイル内の `gateway.remote.url` およびリモート用トークン/パスワードを使用します。
+- `--url <url>`: ペイロードに含めるゲートウェイ URL を上書きします。
+- `--public-url <url>`: ペイロードに含めるパブリック URL を上書きします。
+- `--token <token>`: ペイロードに使用するゲートウェイのトークンを上書きします。
+- `--password <password>`: ペイロードに使用するゲートウェイのパスワードを上書きします。
+- `--setup-code-only`: セットアップコードのみを表示します。
+- `--no-ascii`: ターミナルへの ASCII アートによる QR コード表示をスキップします。
+- `--json`: `setupCode`, `gatewayUrl`, `auth`, `urlSource` を含む JSON 形式で出力します。
 
-## 注意事項- `--token` と `--password` は相互に排他的です
+## 補足事項
 
-- `--remote` では、事実上アクティブなリモート資格情報が SecretRef として構成されており、`--token` または `--password` を渡さない場合、コマンドはアクティブなゲートウェイ スナップショットからそれらを解決します。ゲートウェイが使用できない場合、コマンドはすぐに失敗します。
-- `--remote` がない場合、CLI 認証オーバーライドが渡されない場合、ローカル ゲートウェイ認証 SecretRef は解決されます。
-  - `gateway.auth.token` は、トークン認証が勝てる場合に解決されます (明示的な `gateway.auth.mode="token"` またはパスワード ソースが勝てない推論モード)。
-  - `gateway.auth.password` は、パスワード認証が勝利できる場合に解決されます (明示的な `gateway.auth.mode="password"` または auth/env からの勝利トークンのない推論モード)。
-- `gateway.auth.token` と `gateway.auth.password` の両方が構成され (SecretRefs を含む)、`gateway.auth.mode` が設定されていない場合、モードが明示的に設定されるまでセットアップ コードの解決は失敗します。
-- ゲートウェイのバージョンに関する注意: このコマンド パスには、`secrets.resolve` をサポートするゲートウェイが必要です。古いゲートウェイは、不明なメソッドのエラーを返します。
-- スキャン後、次のデバイスとのペアリングを承認します。
+- `--token` と `--password` は同時には指定できません。
+- `--remote` を指定し、かつ有効なリモート認証情報が SecretRef として構成されている場合、CLI 上でトークンやパスワードを直接指定しなければ、稼働中のゲートウェイのスナップショットから値が解決されます。ゲートウェイが利用できない場合は即座にエラーとなります。
+- `--remote` を指定しない場合、CLI での認証情報上書きがなければ、ローカルゲートウェイの認証用 SecretRef が解決されます:
+  - `gateway.auth.token` は、トークン認証が有効（明示的に `gateway.auth.mode="token"` が設定されているか、他のパスワードソースがない場合）であれば解決されます。
+  - `gateway.auth.password` は、パスワード認証が有効（明示的に `gateway.auth.mode="password"` が設定されているか、有効なトークンがない場合）であれば解決されます。
+- `gateway.auth.token` と `gateway.auth.password` の両方が構成（SecretRef を含む）されており、かつ `gateway.auth.mode` が未設定の場合、モードが明示的に設定されるまでセットアップコードの解決は行われません。
+- ゲートウェイのバージョンに関する注意: このパスを使用するには、`secrets.resolve` メソッドをサポートするゲートウェイが必要です。古いバージョンのゲートウェイでは、メソッド未定義エラーが返されます。
+- QR コードをスキャンした後は、以下のコマンドでデバイスのペアリングを承認してください:
   - `openclaw devices list`
   - `openclaw devices approve <requestId>`

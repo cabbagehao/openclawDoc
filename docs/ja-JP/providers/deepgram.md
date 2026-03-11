@@ -1,34 +1,31 @@
 ---
-summary: "受信音声メモのディープグラム文字起こし"
+summary: "受信音声メモ向け Deepgram 文字起こし"
 read_when:
-  - 音声添付ファイルに Deepgram の音声テキスト変換が必要な場合
-  - 簡単な Deepgram 構成例が必要です
-title: "ディープグラム"
+  - 音声添付ファイルに Deepgram の speech-to-text を使いたいとき
+  - Deepgram の簡単な設定例を確認したいとき
+title: "Deepgram"
 x-i18n:
   source_hash: "dabd1f6942c339fbd744fbf38040b6a663b06ddf4d9c9ee31e3ac034de9e79d9"
 ---
 
-# ディープグラム (音声文字起こし)
+# Deepgram (Audio Transcription)
 
-Deepgram は音声テキスト変換 API です。 OpenClaw では、**受信音声/音声メモに使用されます
-`tools.media.audio` 経由の転写**。
+Deepgram は speech-to-text API です。OpenClaw では、`tools.media.audio` を通じて **受信した音声 / ボイスノートの文字起こし** に使われます。
 
-有効にすると、OpenClaw は音声ファイルを Deepgram にアップロードし、トランスクリプトを挿入します。
-応答パイプライン (`{{Transcript}}` + `[Audio]` ブロック) に追加されます。これは**ストリーミングではありません**。
-事前に記録された転写エンドポイントを使用します。
+有効化すると、OpenClaw は音声ファイルを Deepgram へアップロードし、その transcript を返信パイプラインへ挿入します (`{{Transcript}}` + `[Audio]` block)。これは **ストリーミングではなく**、録音済み音声向けの transcription endpoint を使います。
 
-ウェブサイト: [https://deepgram.com](https://deepgram.com)  
-ドキュメント: [https://developers.deepgram.com](https://developers.deepgram.com)
+Website: [https://deepgram.com](https://deepgram.com)
+Docs: [https://developers.deepgram.com](https://developers.deepgram.com)
 
 ## クイックスタート
 
-1. API キーを設定します。
+1. API key を設定します。
 
 ```
 DEEPGRAM_API_KEY=dg_...
 ```
 
-2. プロバイダーを有効にします。
+2. provider を有効化します。
 
 ```json5
 {
@@ -45,13 +42,13 @@ DEEPGRAM_API_KEY=dg_...
 
 ## オプション
 
-- `model`: ディープグラム モデル ID (デフォルト: `nova-3`)
-- `language`: 言語のヒント (オプション)
-- `tools.media.audio.providerOptions.deepgram.detect_language`: 言語検出を有効にする (オプション)
-- `tools.media.audio.providerOptions.deepgram.punctuate`: 句読点を有効にする (オプション)
-- `tools.media.audio.providerOptions.deepgram.smart_format`: スマート フォーマットを有効にする (オプション)
+- `model`: Deepgram の model id (既定値: `nova-3`)
+- `language`: 言語ヒント (任意)
+- `tools.media.audio.providerOptions.deepgram.detect_language`: 言語検出を有効化 (任意)
+- `tools.media.audio.providerOptions.deepgram.punctuate`: 句読点を有効化 (任意)
+- `tools.media.audio.providerOptions.deepgram.smart_format`: smart formatting を有効化 (任意)
 
-言語の例:
+言語を指定する例:
 
 ```json5
 {
@@ -66,7 +63,7 @@ DEEPGRAM_API_KEY=dg_...
 }
 ```
 
-ディープグラム オプションを使用した例:
+Deepgram 固有オプションを使う例:
 
 ```json5
 {
@@ -88,8 +85,8 @@ DEEPGRAM_API_KEY=dg_...
 }
 ```
 
-## 注意事項
+## 補足
 
-- 認証は標準のプロバイダー認証順序に従います。 `DEEPGRAM_API_KEY` は最も単純なパスです。
-- プロキシを使用する場合は、エンドポイントまたはヘッダーを `tools.media.audio.baseUrl` および `tools.media.audio.headers` でオーバーライドします。
-- 出力は、他のプロバイダーと同じオーディオ ルール (サイズの上限、タイムアウト、トランスクリプトの挿入) に従います。
+- 認証は標準の provider 認証順に従います。`DEEPGRAM_API_KEY` を使うのが最も簡単です。
+- proxy を使う場合は、`tools.media.audio.baseUrl` と `tools.media.audio.headers` で endpoint や header を上書きできます。
+- 出力は他 provider と同じ audio ルール (サイズ上限、timeout、transcript 注入) に従います。

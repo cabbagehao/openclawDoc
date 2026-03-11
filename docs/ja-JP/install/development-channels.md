@@ -1,8 +1,8 @@
 ---
-summary: "安定版、ベータ版、開発版チャネル: セマンティクス、切り替え、タグ付け"
+summary: "stable / beta / dev 各チャネルの意味、切り替え方法、タグ運用"
 read_when:
-  - stable/beta/dev 間を切り替えたい場合
-  - プレリリースのタグ付けや公開を行う場合
+  - stable / beta / dev を切り替えたい
+  - プレリリースのタグ付けや公開ルールを確認したい
 title: "開発チャネル"
 ---
 
@@ -10,18 +10,17 @@ title: "開発チャネル"
 
 最終更新: 2026-01-21
 
-OpenClaw は3つのアップデートチャネルを提供しています:
+OpenClaw には、3 つの更新チャネルがあります。
 
-- **stable**: npm dist-tag `latest`。
-- **beta**: npm dist-tag `beta` (テスト中のビルド)。
-- **dev**: `main` (git) の最新のヘッド。npm dist-tag: `dev` (公開されている場合)。
+- **stable**: npm dist-tag は `latest`
+- **beta**: npm dist-tag は `beta`（検証中のビルド）
+- **dev**: `main` ブランチの最新 head（git）。npm dist-tag は `dev`（公開されている場合）
 
-私たちはビルドを **beta** に提供し、テストした後、バージョン番号を変更することなく **検証済みのビルドを `latest` に昇格させます**
-— npm インストールの場合、dist-tag が信頼できる情報源となります。
+OpenClaw では、まず **beta** にビルドを出し、検証が終わったものを **同じバージョン番号のまま `latest` に昇格** させます。npm install において正本になるのはバージョン番号ではなく dist-tag です。
 
 ## チャネルの切り替え
 
-Git チェックアウト:
+Git checkout 版:
 
 ```bash
 openclaw update --channel stable
@@ -29,10 +28,10 @@ openclaw update --channel beta
 openclaw update --channel dev
 ```
 
-- `stable`/`beta` は、一致する最新のタグをチェックアウトします (多くの場合、同じタグになります)。
-- `dev` は `main` に切り替え、アップストリームでリベースします。
+- `stable` / `beta` は、条件に合う最新タグを checkout します（同じタグを指すこともよくあります）
+- `dev` は `main` に切り替え、upstream に対して rebase します
 
-npm/pnpm グローバルインストール:
+npm / pnpm のグローバルインストール版:
 
 ```bash
 openclaw update --channel stable
@@ -40,36 +39,36 @@ openclaw update --channel beta
 openclaw update --channel dev
 ```
 
-これは、対応する npm dist-tag (`latest`, `beta`, `dev`) を介して更新されます。
+この場合は、対応する npm dist-tag（`latest`、`beta`、`dev`）を使って更新されます。
 
-`--channel` を使用して**明示的に**チャネルを切り替えると、OpenClaw はインストール方法も調整します:
+`--channel` で **明示的に** チャネルを切り替えると、OpenClaw はインストール方式も自動で揃えます。
 
-- `dev` は git チェックアウトを確実にし (デフォルトは `~/openclaw`、`OPENCLAW_GIT_DIR` で上書き可能)、それを更新し、そのチェックアウトからグローバル CLI をインストールします。
-- `stable`/`beta` は、一致する dist-tag を使用して npm からインストールします。
+- `dev` は git checkout を確実に用意し（既定は `~/openclaw`、`OPENCLAW_GIT_DIR` で変更可能）、それを更新したうえで、その checkout からグローバル CLI を再インストールします
+- `stable` / `beta` は、対応する dist-tag を使って npm からインストールします
 
-ヒント: stable と dev を並行して使いたい場合は、2つのクローンを保持し、Gateway が stable の方を指すようにします。
+補足: stable と dev を並行運用したい場合は clone を 2 つ用意し、ゲートウェイは stable 側を向けると扱いやすくなります。
 
 ## プラグインとチャネル
 
-`openclaw update` でチャネルを切り替えると、OpenClaw はプラグインのソースも同期します:
+`openclaw update` でチャネルを切り替えると、プラグインの取得元も同期されます。
 
-- `dev` は、git チェックアウトからバンドルされたプラグインを優先します。
-- `stable` と `beta` は、npm でインストールされたプラグインパッケージを復元します。
+- `dev` は git checkout に同梱されたプラグインを優先します
+- `stable` と `beta` は npm でインストールしたプラグインパッケージへ戻します
 
-## タグ付けのベストプラクティス
+## タグ運用のベストプラクティス
 
-- git チェックアウトが着地させたいリリースにタグを付けます (stable は `vYYYY.M.D`、beta は `vYYYY.M.D-beta.N`)。
-- 互換性のために `vYYYY.M.D.beta.N` も認識されますが、`-beta.N` を推奨します。
-- 従来の `vYYYY.M.D-<patch>` タグは、引き続き stable (非 beta) として認識されます。
-- タグは不変に保ちます: タグを移動したり再利用したりしないでください。
-- npm dist-tag は引き続き npm インストールの信頼できる情報源です:
+- Git checkout が着地すべきリリースにはタグを打ちます（stable は `vYYYY.M.D`、beta は `vYYYY.M.D-beta.N`）
+- 互換性のため `vYYYY.M.D.beta.N` も認識されますが、推奨は `-beta.N` です
+- 旧形式の `vYYYY.M.D-<patch>` タグも、引き続き stable（非 beta）として扱われます
+- タグは不変に保ち、移動や再利用はしないでください
+- npm install における正本は dist-tag のままです:
   - `latest` → stable
   - `beta` → 候補ビルド
-  - `dev` → main スナップショット (オプション)
+  - `dev` → `main` のスナップショット（任意）
 
-## macOS アプリの可用性
+## macOS アプリの提供状況
 
-Beta と dev ビルドには、macOS アプリのリリースが含まれて**いない**場合があります。それで問題ありません:
+beta や dev のビルドには、macOS アプリのリリースが **含まれない** 場合があります。これは問題ありません。
 
-- git タグと npm dist-tag は引き続き公開できます。
-- リリースノートまたは変更ログで「この beta には macOS ビルドはありません」と明記してください。
+- Git tag と npm dist-tag はそのまま公開できます
+- リリースノートや changelog に「この beta には macOS ビルドがない」ことを明記してください

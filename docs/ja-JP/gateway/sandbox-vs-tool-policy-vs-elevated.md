@@ -1,23 +1,24 @@
 ---
-title: "サンドボックス vs ツール ポリシー vs 昇格"
-summary: "ツールがブロックされる理由: サンドボックス ランタイム、ツールの許可/拒否ポリシー、および昇格された実行ゲート"
-read_when: "You hit 'sandbox jail' or see a tool/elevated refusal and want the exact config key to change."
+title: "サンドボックス vs ツールポリシー vs 昇格（Elevated）"
+summary: "ツールがブロックされる原因の切り分け: サンドボックス環境、ツールの許可/拒否ポリシー、および exec ツールの昇格ゲート"
+read_when:
+  - 「サンドボックス獄（jail）」に陥った場合や、ツール/昇格の拒否が発生した際、どの構成キーを変更すべきか知りたい場合
 status: active
 x-i18n:
   source_hash: "863ea5e6d137dfb61f12bd686b9557d6df1fd0c13ba5f15861bf72248bc975f1"
 ---
 
-# サンドボックス vs ツール ポリシー vs 昇格
+# サンドボックス vs ツールポリシー vs 昇格（Elevated）
 
-OpenClaw には 3 つの関連する (しかし異なる) コントロールがあります。
+OpenClaw には、互いに関連しつつも異なる役割を持つ 3 つの制御機能があります:
 
-1. **サンドボックス** (`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`) は、**ツールが実行される場所** (Docker かホストか) を決定します。
-2. **ツール ポリシー** (`tools.*`、`tools.sandbox.tools.*`、`agents.list[].tools.*`) は、**どのツールが使用可能/許可されるか**を決定します。
-3. **昇格** (`tools.elevated.*`、`agents.list[].tools.elevated.*`) は、サンドボックス化されているときにホスト上で実行する **実行専用のエスケープ ハッチ**です。
+1. **サンドボックス** (`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`): ツールを **どこで実行するか**（Docker コンテナ内か、ホスト上か）を決定します。
+2. **ツールポリシー** (`tools.*`, `tools.sandbox.tools.*`, `agents.list[].tools.*`): **どのツールが利用可能 / 許可されるか** を決定します。
+3. **昇格 (Elevated)** (`tools.elevated.*`, `agents.list[].tools.elevated.*`): サンドボックス環境から **ホスト上で直接実行するための、exec ツール専用のエスケープハッチ（脱出口）** です。
 
 ## クイックデバッグ
 
-インスペクターを使用して、OpenClaw が実際に何を行っているかを確認します。
+インスペクター（調査ツール）を使用して、OpenClaw が実際にどのように判断しているかを確認できます:
 
 ```bash
 openclaw sandbox explain
@@ -26,50 +27,50 @@ openclaw sandbox explain --agent work
 openclaw sandbox explain --json
 ```
 
-出力されます:
+このコマンドは以下を出力します:
+- 適用されているサンドボックスモード / スコープ / ワークスペースへのアクセス権。
+- 現在のセッションがサンドボックス化されているかどうか（メインか非メインか）。
+- 適用されているサンドボックスツールの許可 / 拒否状態（エージェント設定、グローバル設定、デフォルトのどこに由来するか）。
+- 昇格用ゲートの状態と、修正すべき構成キーのパス。
 
-- 効果的なサンドボックス モード/スコープ/ワークスペース アクセス
-- セッションが現在サンドボックス化されているかどうか (メインか非メインか)
-- 効果的なサンドボックス ツールの許可/拒否 (およびエージェント/グローバル/デフォルトからのものかどうか)
-- 高架ゲートとフィックスイットキーパス
+## サンドボックス: ツールの実行場所
 
-## サンドボックス: ツールが実行される場所
-
-サンドボックスは `agents.defaults.sandbox.mode` によって制御されます。
+サンドボックス化は `agents.defaults.sandbox.mode` によって制御されます:
 
 - `"off"`: すべてがホスト上で実行されます。
-- `"non-main"`: メイン以外のセッションのみがサンドボックス化されます (グループ/チャネルの一般的な「サプライズ」)。
-- `"all"`: すべてがサンドボックス化されています。
+- `"non-main"`: 非メイン（non-main）セッションのみがサンドボックス化されます。グループチャットやチャネル経由の通信で「なぜか制限されている」と感じる場合の多くはこれが原因です。
+- `"all"`: すべてのセッションがサンドボックス内で実行されます。
 
-完全なマトリクス (スコープ、ワークスペース マウント、イメージ) については、[サンドボックス](/gateway/sandboxing) を参照してください。
+詳細なマトリクス（スコープ、ワークスペースのマウント、イメージ設定）については、[サンドボックス](/gateway/sandboxing) を参照してください。
 
-### バインドマウント (セキュリティクイックチェック)- `docker.binds` サンドボックス ファイルシステムを _pierces_ します。マウントしたものはすべて、設定したモード (`:ro` または `:rw`) でコンテナー内に表示されます
+### バインドマウントに関するセキュリティ上の注意
 
-- モードを省略した場合、デフォルトは読み取り/書き込みです。ソース/シークレットについては `:ro` を使用してください。
-- `scope: "shared"` は、エージェントごとのバインドを無視します (グローバル バインドのみが適用されます)。
-- `/var/run/docker.sock` をバインドすると、ホスト制御が効果的にサンドボックスに渡されます。これは意図的に行うだけです。
-- ワークスペース アクセス (`workspaceAccess: "ro"`/`"rw"`) はバインド モードから独立しています。
+- `docker.binds` は、サンドボックスのファイルシステムを **貫通（pierce）** させます。マウントしたディレクトリは、指定したモード（`:ro` または `:rw`）でコンテナ内から見えてしまいます。
+- モードを省略した場合はデフォルトで読み書き可能（read-write）となります。ソースコードやシークレット情報をマウントする場合は `:ro`（読み取り専用）を推奨します。
+- `scope: "shared"` の場合、エージェントごとの個別のバインド設定は無視されます（グローバル設定のみが適用されます）。
+- `/var/run/docker.sock` をバインドすると、サンドボックス内からホストの Docker 制御が可能になります。意図的な場合を除き、行わないでください。
+- ワークスペースへのアクセス設定 (`workspaceAccess: "ro"`/`"rw"`) は、このバインドマウント設定とは独立して機能します。
 
-## ツール ポリシー: どのツールが存在するか、どのツールを呼び出し可能か
+## ツールポリシー: ツールの存在と呼び出し可否
 
-2 つの層が重要です:
+以下の 2 つのレイヤーが重要です:
 
-- **ツール プロファイル**: `tools.profile` および `agents.list[].tools.profile` (基本許可リスト)
-- **プロバイダー ツール プロファイル**: `tools.byProvider[provider].profile` および `agents.list[].tools.byProvider[provider].profile`
-- **グローバル/エージェントごとのツール ポリシー**: `tools.allow`/`tools.deny` および `agents.list[].tools.allow`/`agents.list[].tools.deny`
-- **プロバイダー ツール ポリシー**: `tools.byProvider[provider].allow/deny` および `agents.list[].tools.byProvider[provider].allow/deny`
-- **サンドボックス ツール ポリシー** (サンドボックスの場合にのみ適用): `tools.sandbox.tools.allow`/`tools.sandbox.tools.deny` および `agents.list[].tools.sandbox.tools.*`
+- **ツールプロファイル**: `tools.profile` および `agents.list[].tools.profile`（基本となる許可リスト）。
+- **プロバイダー別ツールプロファイル**: `tools.byProvider[provider].profile` など。
+- **グローバル / エージェント別ポリシー**: `tools.allow`/`tools.deny` および `agents.list[].tools.allow`/`deny`。
+- **プロバイダー別ポリシー**: `tools.byProvider[provider].allow/deny`。
+- **サンドボックス内ツールポリシー** (サンドボックス実行時のみ適用): `tools.sandbox.tools.allow`/`deny` および `agents.list[].tools.sandbox.tools.*`。
 
-経験則:- `deny` が常に勝ちます。
+鉄則:
+- **`deny`（拒否）が常に優先されます。**
+- `allow`（許可）リストが空でない場合、そこに記載されていないツールはすべてブロックされます。
+- ツールポリシーは「絶対的な停止」を意味します。`/exec` コマンドで設定を変えても、ポリシーで拒否されている `exec` ツールを動かすことはできません。
+- `/exec` は、認可された送信者に対して「セッション内でのデフォルト挙動」を変更するだけであり、ツールの実行権限そのものを与えるものではありません。
+- プロバイダー指定のキーには、`provider`（例: `google-antigravity`）または `provider/model`（例: `openai/gpt-5.2`）のいずれかを使用できます。
 
-- `allow` が空でない場合、他のすべてはブロックされたものとして扱われます。
-- ツール ポリシーはハード ストップです: `/exec` は、拒否された `exec` ツールをオーバーライドできません。
-- `/exec` は、承認された送信者のセッションのデフォルトのみを変更します。ツールへのアクセスは許可されません。
-  プロバイダー ツール キーは、`provider` (例: `google-antigravity`) または `provider/model` (例: `openai/gpt-5.2`) のいずれかを受け入れます。
+### ツールグループ (短縮記法)
 
-### ツールグループ (略記)
-
-ツール ポリシー (グローバル、エージェント、サンドボックス) は、複数のツールに拡張される `group:*` エントリをサポートします。
+ツールポリシー（グローバル、エージェント、サンドボックス）では、複数のツールをまとめて指定できる `group:*` 形式をサポートしています:
 
 ```json5
 {
@@ -84,44 +85,42 @@ openclaw sandbox explain --json
 ```
 
 利用可能なグループ:
-
-- `group:runtime`: `exec`、`bash`、`process`
-- `group:fs`: `read`、`write`、`edit`、`apply_patch`
-- `group:sessions`: `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`session_status`
-- `group:memory`: `memory_search`、`memory_get`
-- `group:ui`: `browser`、`canvas`
-- `group:automation`: `cron`、`gateway`
+- `group:runtime`: `exec`, `bash`, `process`
+- `group:fs`: `read`, `write`, `edit`, `apply_patch`
+- `group:sessions`: `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
+- `group:memory`: `memory_search`, `memory_get`
+- `group:ui`: `browser`, `canvas`
+- `group:automation`: `cron`, `gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
-- `group:openclaw`: すべての組み込み OpenClaw ツール (プロバイダー プラグインを除く)
+- `group:openclaw`: すべての組み込みツール（外部プロバイダープラグインを除く）
 
-## 昇格: 実行のみ「ホスト上で実行」
+## 昇格 (Elevated): exec ツールのみ「ホストで実行」
 
-昇格では追加のツールは**許可されません**。 `exec` にのみ影響します。- サンドボックス化されている場合、`/elevated on` (または `exec` と `elevated: true`) がホスト上で実行されます (承認が引き続き適用される場合があります)。
+昇格（Elevated）は、追加のツールを使えるようにするものではなく、あくまで `exec` の実行場所にのみ影響します。
 
-- `/elevated full` を使用して、セッションの幹部承認をスキップします。
-- すでに直接実行している場合、昇格は事実上何も操作しません (ゲートされたままです)。
-- 昇格はスキルスコープではなく**、ツールの許可/拒否をオーバーライドしません**。
-- `/exec` は高架とは別のものです。承認された送信者のセッションごとの実行デフォルトのみを調整します。
+- サンドボックス化されている場合、`/elevated on`（または `exec` 時に `elevated: true` を指定）することで、そのコマンドをホスト上で実行できます（承認ステップが必要な場合は引き続き適用されます）。
+- `/elevated full` を使用すると、そのセッションにおいて `exec` の承認ステップもスキップします。
+- 最初からホスト上で直接ツールを動かしている（サンドボックスオフ）場合、昇格設定は実質的に何もしません（ただしゲートのチェックは行われます）。
+- 昇格は **スキル（skill）のスコープ内には収まりません**。また、ツールポリシーの許可/拒否を上書きすることもありません。
+- `/exec` は昇格とは別の設定です。認可された送信者からのセッションごとの `exec` のデフォルト設定を調整するだけのものです。
 
-ゲート:
+制限（ゲート）の構成:
+- 有効化設定: `tools.elevated.enabled` (およびオプションで `agents.list[].tools.elevated.enabled`)。
+- 送信者許可リスト: `tools.elevated.allowFrom.<provider>` (およびオプションでエージェント別設定)。
 
-- 有効化: `tools.elevated.enabled` (およびオプションで `agents.list[].tools.elevated.enabled`)
-- 送信者の許可リスト: `tools.elevated.allowFrom.<provider>` (およびオプションで `agents.list[].tools.elevated.allowFrom.<provider>`)
+詳細は [昇格（Elevated）モード](/tools/elevated) を参照してください。
 
-[昇格モード](/tools/elevated) を参照してください。
+## よくある「サンドボックス獄」の修正方法
 
-## 一般的な「サンドボックス刑務所」の修正
+### 「Tool X blocked by sandbox tool policy」と表示される
 
-### 「ツール X はサンドボックス ツール ポリシーによってブロックされました」
+以下のいずれかで修正します:
+- サンドボックスを無効にする: `agents.defaults.sandbox.mode=off` (またはエージェント別に設定)。
+- サンドボックス内での実行を許可する:
+  - `tools.sandbox.tools.deny` からそのツールを削除する。
+  - または、`tools.sandbox.tools.allow` にそのツールを追加する。
 
-Fix-it キー (1 つ選択):
+### 「これはメイン（main）セッションのはずなのに、なぜサンドボックス化されているのか？」
 
-- サンドボックスを無効にする: `agents.defaults.sandbox.mode=off` (またはエージェントごとの `agents.list[].sandbox.mode=off`)
-- サンドボックス内でのツールの使用を許可します。
-  - `tools.sandbox.tools.deny` (またはエージェントごとの `agents.list[].tools.sandbox.tools.deny`) から削除します。
-  - または `tools.sandbox.tools.allow` に追加します (またはエージェントごとの許可)
-
-### 「これがメインだと思っていたのに、なぜサンドボックス化されているのですか?」
-
-`"non-main"` モードでは、グループ/チャンネル キーはメインではありません。メイン セッション キー (`sandbox explain` で表示) を使用するか、モードを `"off"` に切り替えます。
+`"non-main"` モードにおいて、グループチャットや各チャネルのキーは「メイン」とはみなされません。`sandbox explain` で表示されるメインセッションのキーを使用するか、あるいはモードを `"off"` に切り替えてください。

@@ -33,9 +33,9 @@ openclaw models status --check
 
 ## オプションのスクリプト（運用 / スマートフォン向けワークフロー）
 
-これらは `scripts/` 配下にあり、**オプション**です。Gateway ホストへの SSH アクセスを前提としており、systemd + Termux 向けに調整されています。
+これらは `scripts/` 配下にあり、**オプション**です。ゲートウェイホストへの SSH アクセスを前提としており、systemd + Termux 向けに調整されています。
 
-- `scripts/claude-auth-status.sh` は現在、`openclaw models status --json` を正とする情報源として使います（CLI が利用できない場合は、直接ファイルを読み取る方式にフォールバックします）。そのため、タイマー環境でも `openclaw` が `PATH` 上にあるようにしてください。
+- `scripts/claude-auth-status.sh` は現在、`openclaw models status --json` を正本の情報源として使います（CLI が利用できない場合は、直接ファイルを読み取る方式にフォールバックします）。そのため、タイマー環境でも `openclaw` が `PATH` 上にあるようにしてください。
 - `scripts/auth-monitor.sh`: cron/systemd タイマーの実行対象。アラートを送信します（ntfy またはスマートフォン）。
 - `scripts/systemd/openclaw-auth-monitor.{service,timer}`: systemd ユーザータイマー。
 - `scripts/claude-auth-status.sh`: Claude Code + OpenClaw の認証チェッカー（full/json/simple）。

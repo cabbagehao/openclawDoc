@@ -1,51 +1,51 @@
 ---
-summary: "チャネルに依存しないセッション バインディング アーキテクチャとイテレーション 1 の配信範囲"
+summary: "チャネル非依存のセッションバインディング設計と、Iteration 1 で実装する範囲"
 read_when:
-  - チャネルに依存しないセッションのルーティングとバインディングのリファクタリング
-  - チャネル間でのセッション配信の重複、古い、または欠落を調査する
+  - チャネル非依存のセッションルーティングとバインディングをリファクタリングするとき
+  - チャネル間でのセッション配信の重複、古い状態、欠落を調査するとき
 owner: "onutc"
 status: "in-progress"
 last_updated: "2026-02-21"
-title: "セッション バインディング チャネルに依存しないプラン"
+title: "Session Binding Channel Agnostic 計画"
 x-i18n:
   source_hash: "9bf79098053da3d7a28ec4f7fe8289b5c39462c23b5ca1420a83ffb02191c7cd"
 ---
 
-# セッション バインディング チャネルに依存しないプラン
+# Session Binding Channel Agnostic 計画
 
 ## 概要
 
-この文書は、長期的なチャネルに依存しないセッション バインディング モデルと、次の実装反復の具体的な範囲を定義します。
+この文書では、長期的に採用するチャネル非依存の session binding モデルと、次の実装イテレーションで扱う具体的な範囲を定義します。
 
 目標:
 
-- サブエージェントにバインドされたセッションルーティングをコア機能にする
-- アダプター内でチャネル固有の動作を維持する
-- 通常の Discord の動作における回帰を回避します
+- subagent にバインドされた session routing をコア機能にする
+- チャネル固有の挙動は adapter 側に閉じ込める
+- 通常の Discord 挙動で回帰を起こさない
 
-## これが存在する理由
+## この文書が必要な理由
 
-現在の動作は次のとおりです。
+現行挙動では、次の関心事が混在しています。
 
-- 完了コンテンツポリシー
-- 宛先ルーティングポリシー
-- Discord固有の詳細
+- completion content policy
+- destination routing policy
+- Discord 固有の詳細
 
-これにより、次のような特殊なケースが発生しました。
+その結果、次のようなエッジケースが発生していました。
 
-- 同時実行時のメインとスレッドの配信の重複
-- 再利用されたバインディング マネージャーでの古いトークンの使用
-- Webhook 送信を考慮したアクティビティが欠落しています
+- 並行実行時に main と thread の両方へ重複配信される
+- 再利用した binding manager で古いトークンを使ってしまう
+- webhook 送信時の activity 記録が欠落する
 
-## 反復 1 のスコープ
+## Iteration 1 の範囲
 
-この反復は意図的に制限されています。
+このイテレーションは意図的に限定しています。
 
-### 1. チャネルに依存しないコア インターフェイスを追加する
+### 1. チャネル非依存のコアインターフェースを追加する
 
-バインディングとルーティング用のコア タイプとサービス インターフェイスを追加します。
+binding と routing のためのコア型および service interface を追加します。
 
-提案されているコアのタイプ:
+提案するコア型:
 
 ```ts
 export type BindingTargetKind = "subagent" | "session";
@@ -70,7 +70,7 @@ export type SessionBindingRecord = {
 };
 ```
 
-コアサービス契約:
+コア service 契約:
 
 ```ts
 export interface SessionBindingService {
@@ -93,11 +93,11 @@ export interface SessionBindingService {
 }
 ```
 
-### 2. サブエージェント完了用のコア配信ルーターを 1 つ追加します
+### 2. subagent completion 用のコア配信ルーターを 1 つ追加する
 
-完了イベントに対して単一の宛先解決パスを追加します。
+completion event に対して、単一の宛先解決経路を追加します。
 
-ルーター契約：
+router 契約:
 
 ```ts
 export interface BoundDeliveryRouter {
@@ -114,112 +114,115 @@ export interface BoundDeliveryRouter {
 }
 ```
 
-この反復の場合:
+このイテレーションでは:
 
-- `task_completion` のみがこの新しいパスを経由してルーティングされます
-- 他のイベント種類の既存のパスはそのまま残ります
+- 新経路を通すのは `task_completion` のみ
+- 他の event kind の既存経路はそのまま残す
 
-### 3. Discord をアダプターとして維持する
+### 3. Discord は adapter のまま維持する
 
-Discord は依然として最初のアダプター実装です。
+最初の adapter 実装は引き続き Discord とします。
 
-アダプターの責任:- スレッドの会話を作成/再利用する
+adapter の責務:
 
-- Webhook またはチャネル送信経由でバインドされたメッセージを送信する
-- スレッドの状態を検証します (アーカイブ/削除)
-- マップアダプターのメタデータ (Webhook ID、スレッド ID)
+- thread conversation を作成または再利用する
+- webhook または channel send によって bound message を送る
+- thread の状態（archive / delete）を検証する
+- adapter metadata（webhook identity、thread ID など）を扱う
 
-### 4. 現在知られている正確性の問題を修正する
+### 4. 既知の正確性問題を修正する
 
-この反復では次のことが必要です。
+このイテレーションで必須とする項目:
 
-- 既存のスレッド バインディング マネージャーを再利用する場合のリフレッシュ トークンの使用法
-- Webhook ベースの Discord 送信のアウトバウンドアクティビティを記録します
-- セッションモードの完了にバインドされたスレッド宛先が選択された場合、暗黙的なメインチャネルフォールバックを停止します。
+- 既存の thread binding manager を再利用する際に、最新トークンを使うようにする
+- webhook ベースの Discord 送信で outbound activity を記録する
+- session mode completion で bound thread destination が選ばれた場合、暗黙の main channel フォールバックを止める
 
-### 5. 現在のランタイムの安全性のデフォルトを保持する
+### 5. 現在のランタイム安全デフォルトを維持する
 
-スレッド バインド スポーンが無効になっているユーザーの動作は変わりません。
+thread-bound spawn を無効化しているユーザーには、挙動変更を発生させません。
 
-デフォルトのまま:
+デフォルトは維持:
 
 - `channels.discord.threadBindings.spawnSubagentSessions = false`
 
 結果:
 
-- 通常の Discord ユーザーは現在の動作を維持します
-- 新しいコア パスは、有効になっているバインドされたセッション完了ルーティングにのみ影響します。
+- 通常の Discord ユーザーは現行挙動のままになる
+- 新しいコア経路が影響するのは、有効化された bound session completion routing のみ
 
-## 反復 1 には含まれていません
+## Iteration 1 に含めないもの
 
-明示的に延期される:
+明示的に後回しにする項目:
 
-- ACP バインディング ターゲット (`targetKind: "acp"`)
-- Discordを超えた新しいチャネルアダプター
-- すべての配信パスのグローバル置換 (`spawn_ack`、将来の `subagent_message`)
-- プロトコルレベルの変更
-- すべてのバインディング永続性のためのストアの移行/バージョン管理の再設計
+- ACP binding target（`targetKind: "acp"`）
+- Discord 以外の新しい channel adapter
+- すべての配信経路の全面置換（`spawn_ack`、将来の `subagent_message`）
+- protocol レベルの変更
+- すべての binding persistence に対する store migration / versioning の再設計
 
-ACP に関する注意事項:
+ACP に関する注記:
 
-- インターフェイス設計は ACP のための余地を確保します
-- この反復では ACP 実装は開始されません
+- interface 設計上は ACP を拡張できる余地を残す
+- ACP 実装自体はこのイテレーションでは開始しない
 
-## ルーティングの不変条件
+## ルーティング不変条件
 
-これらの不変式は反復 1 では必須です。- 宛先の選択とコンテンツの生成は別のステップです
+Iteration 1 では、次の不変条件を必須とします。
 
-- セッション モードの完了がアクティブなバインドされた宛先に解決される場合、配信はその宛先をターゲットにする必要があります
-- バインドされた宛先からメインチャネルへの非表示のリルートはありません
-- フォールバック動作は明示的かつ観察可能でなければなりません
+- 宛先選択とコンテンツ生成は別ステップであること
+- session mode completion が active な bound destination に解決された場合、配信は必ずその宛先へ送られること
+- bound destination から main channel への隠れた reroute を行わないこと
+- fallback 挙動は明示的で観測可能であること
 
-## 互換性と展開
+## 互換性とロールアウト
 
-互換性ターゲット:
+互換性目標:
 
-- スレッドバウンドの生成がオフになっているユーザーに対する回帰なし
-- このイテレーションでは非 Discord チャンネルに変更はありません
+- thread-bound spawn がオフのユーザーに回帰がないこと
+- このイテレーションでは非 Discord チャンネルに変更を入れないこと
 
 ロールアウト:
 
-1. インターフェイスとルーターを現在の機能ゲートの背後に配置します。
-2. Discord 完了モードのバウンド配信をルーター経由でルーティングします。
-3. 非バインド フローのレガシー パスを保持します。
-4. 対象のテストとカナリア ランタイム ログを使用して検証します。
+1. interface と router を既存の feature gate の背後で導入する
+2. Discord の completion mode における bound delivery を router 経由にする
+3. 非 bound flow には従来経路を残す
+4. 対象テストと canary runtime log で検証する
 
-## 反復 1 で必要なテスト
+## Iteration 1 で必要なテスト
 
-必要なユニットと統合の範囲:
+必要な unit / integration カバレッジ:
 
-- マネージャーのトークンのローテーションでは、マネージャーの再利用後に最新のトークンが使用されます。
-- Webhook は更新チャネルアクティビティのタイムスタンプを送信します
-- 同じリクエスター チャネル内の 2 つのアクティブなバインドされたセッションは、メイン チャネルに複製されません。
-- バインドされたセッション モードの実行の完了は、スレッドの宛先のみに解決されます。
-- スポーンフラグを無効にすると、従来の動作が変更されません。
+- manager の token rotation が、manager 再利用後も最新トークンを使うこと
+- webhook 送信が channel activity timestamp を更新すること
+- 同一 requester channel に 2 つの active bound session があっても main channel に重複配信しないこと
+- bound session mode run の completion が thread destination のみに解決されること
+- spawn flag を無効化した場合、従来挙動が変わらないこと
 
-## 提案された実装ファイル
+## 提案する実装ファイル
 
-コア:
+Core:
 
-- `src/infra/outbound/session-binding-service.ts` (新規)
-- `src/infra/outbound/bound-delivery-router.ts` (新規)
-- `src/agents/subagent-announce.ts` (完了宛先解決統合)
+- `src/infra/outbound/session-binding-service.ts`（新規）
+- `src/infra/outbound/bound-delivery-router.ts`（新規）
+- `src/agents/subagent-announce.ts`（completion destination 解決の統合）
 
-Discord アダプターとランタイム:
+Discord adapter と runtime:
 
 - `src/discord/monitor/thread-bindings.manager.ts`
 - `src/discord/monitor/reply-delivery.ts`
 - `src/discord/send.outbound.ts`
 
-テスト:- `src/discord/monitor/provider*.test.ts`
+Tests:
 
+- `src/discord/monitor/provider*.test.ts`
 - `src/discord/monitor/reply-delivery.test.ts`
 - `src/agents/subagent-announce.format.test.ts`
 
-## 反復 1 の完了基準
+## Iteration 1 の完了条件
 
-- コア インターフェイスが存在し、完了ルーティング用に配線されている
-- 上記の正確性の修正はテストにマージされます
-- セッションモードバウンド実行ではメインとスレッドの重複完了配信はありません
-- 無効化されたバウンドスポーンデプロイメントの動作は変更されません
-- ACP は明示的に延期されたままになります
+- コア interface が存在し、completion routing に接続されていること
+- 上記の正確性修正がテスト付きでマージされていること
+- session mode の bound run で main と thread の completion 配信が重複しないこと
+- bound spawn を無効化したデプロイメントで挙動変更がないこと
+- ACP が明示的に deferred のままであること

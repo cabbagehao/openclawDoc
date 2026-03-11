@@ -1,81 +1,83 @@
 ---
-summary: "メニュー バーのステータス ロジックとユーザーに表示される内容"
+summary: "メニュー バーのステータス ロジックとユーザーに表示される情報"
 read_when:
-  - Mac メニュー UI またはステータス ロジックの微調整
-title: "メニューバー"
+  - Mac のメニュー UI またはステータス ロジックを調整するとき
+title: "メニュー バー"
 x-i18n:
   source_hash: "8eb73c0e671a76aae4ebb653c65147610bf3e6d3c9c0943d150e292e7761d16d"
 ---
 
-# メニューバーのステータスロジック
+# メニュー バーのステータス ロジック
 
-## 表示される内容
+## 表示内容
 
-- 現在のエージェントの作業状態がメニュー バー アイコンとメニューの最初のステータス行に表示されます。
-- 作業がアクティブな間、健康状態は非表示になります。すべてのセッションがアイドル状態になると戻ります。
-- メニューの「ノード」ブロックには、クライアント/プレゼンスのエントリではなく、**デバイス** (`node.list` を介してペアリングされたノード) のみがリストされます。
-- プロバイダーの使用状況スナップショットが利用可能な場合、「コンテキスト」の下に「使用状況」セクションが表示されます。
+- 現在のエージェント作業状態は、メニューバー アイコンと、メニュー先頭のステータス行に表示されます。
+- 作業中はヘルス状態を非表示にし、すべてのセッションがアイドルへ戻ると再表示します。
+- メニュー内の `Nodes` ブロックには、クライアントや presence エントリではなく、**デバイス** のみを表示します。対象は `node.list` でペアリング済みのノードです。
+- プロバイダー利用状況のスナップショットがある場合は、Context の下に `Usage` セクションが表示されます。
 
 ## 状態モデル
 
-- セッション: イベントは、ペイロードに `runId` (実行ごと) と `sessionKey` を付けて到着します。 「メイン」セッションはキー `main` です。存在しない場合は、最後に更新されたセッションに戻ります。
-- 優先順位: メインが常に優先されます。 main がアクティブな場合、その状態がすぐに表示されます。メインがアイドル状態の場合、最近アクティブな非メイン セッションが表示されます。私たちは活動中にフリップフロップをしません。現在のセッションがアイドル状態になった場合、またはメインがアクティブになった場合にのみ切り替えられます。
-- アクティビティの種類:
-  - `job`: 高レベルのコマンド実行 (`state: started|streaming|done|error`)。
-  - `tool`: `phase: start|result` と `toolName` および `meta/args`。
+- Sessions: イベントには実行単位の `runId` と、ペイロード内の `sessionKey` が含まれます。`main` セッションは `main` キーで識別し、存在しない場合は最後に更新されたセッションへフォールバックします。
+- Priority: 常に main を優先します。main がアクティブならその状態を即座に表示し、main がアイドルなら、直近でアクティブだった non-main セッションを表示します。動作中に表示が頻繁に入れ替わることはなく、現在のセッションがアイドルになるか、main がアクティブになったときだけ切り替えます。
+- Activity kinds:
+  - `job`: 高レベルのコマンド実行（`state: started|streaming|done|error`）
+  - `tool`: `phase: start|result` と `toolName`、`meta/args`
 
-## IconState 列挙型 (Swift)
+## `IconState` 列挙型（Swift）
 
 - `idle`
 - `workingMain(ActivityKind)`
 - `workingOther(ActivityKind)`
-- `overridden(ActivityKind)` (デバッグオーバーライド)
+- `overridden(ActivityKind)`（デバッグ用オーバーライド）
 
-### アクティビティの種類 → グリフ
+### `ActivityKind` → glyph
 
 - `exec` → 💻
 - `read` → 📄
 - `write` → ✍️
 - `edit` → 📝
 - `attach` → 📎
-- デフォルト → 🛠️
+- default → 🛠️
 
-### 視覚的なマッピング- `idle`: 通常の生き物
+### 視覚表現
 
-- `workingMain`: グリフ付きのバッジ、完全な色合い、脚の「動作」アニメーション。
-- `workingOther`: グリフ付きのバッジ、落ち着いた色合い、慌ただしさなし。
-- `overridden`: アクティビティに関係なく、選択したグリフ/色合いを使用します。
+- `idle`: 通常の critter を表示します。
+- `workingMain`: glyph 付きバッジ、フルの tint、脚の `working` アニメーションを表示します。
+- `workingOther`: glyph 付きバッジを muted tint で表示し、scurry は行いません。
+- `overridden`: 実際のアクティビティに関係なく、選択した glyph と tint を使います。
 
-## ステータス行のテキスト (メニュー)
+## ステータス行の文言（メニュー）
 
 - 作業中: `<Session role> · <activity label>`
-  - 例: `Main · exec: pnpm test`、`Other · read: apps/macos/Sources/OpenClaw/AppState.swift`。
-- アイドル時: ヘルスサマリーに戻ります。
+  - 例: `Main · exec: pnpm test`、`Other · read: apps/macos/Sources/OpenClaw/AppState.swift`
+- アイドル時: ヘルス サマリー表示に戻ります。
 
-## イベントの取り込み
+## イベント取り込み
 
-- ソース: 制御チャネル `agent` イベント (`ControlChannel.handleAgentEvent`)。
-- 解析されたフィールド:
-  - `stream: "job"` と `data.state` の開始/停止。
-  - `stream: "tool"` と `data.phase`、`name`、オプションの `meta`/`args`。
-- ラベル:
-  - `exec`: `args.command` の最初の行。
-  - `read`/`write`: 短縮されたパス。
-  - `edit`: パスと `meta`/diff カウントから推測された変更の種類。
-  - フォールバック: ツール名。
+- Source: control-channel の `agent` イベント（`ControlChannel.handleAgentEvent`）
+- 解析対象フィールド:
+  - `stream: "job"` と `data.state` による開始 / 停止
+  - `stream: "tool"` と `data.phase`、`name`、任意の `meta` / `args`
+- Labels:
+  - `exec`: `args.command` の 1 行目
+  - `read` / `write`: 短縮したパス
+  - `edit`: パスと `meta` / diff 件数から推測した変更種別
+  - fallback: ツール名
 
-## デバッグオーバーライド
+## デバッグ用オーバーライド
 
-- 設定 ▸ デバッグ ▸ 「アイコン オーバーライド」ピッカー:
-  - `System (auto)` (デフォルト)
-  - `Working: main` (ツールの種類ごと)
-  - `Working: other` (ツールの種類ごと)
+- Settings ▸ Debug ▸ `Icon override` picker:
+  - `System (auto)`（既定）
+  - `Working: main`（ツール種別ごと）
+  - `Working: other`（ツール種別ごと）
   - `Idle`
-- `@AppStorage("iconOverride")` 経由で保存。 `IconState.overridden` にマッピングされます。
+- 値は `@AppStorage("iconOverride")` で保存され、`IconState.overridden` に対応付けられます。
 
-## テストチェックリスト- メイン セッション ジョブをトリガーします。アイコンがすぐに切り替わり、ステータス行にメイン ラベルが表示されることを確認します
+## テスト チェックリスト
 
-- メインがアイドル状態のときに非メイン セッション ジョブをトリガーします。アイコン/ステータスは非メインを示します。終了するまで安定しています。
-- 他のアクティブな状態でメインを開始: アイコンが即座にメインに切り替わります。
-- 高速ツールバースト: バッジがちらつかないようにします (ツール結果の TTL 猶予)。
-- すべてのセッションがアイドル状態になると、ヘルス行が再び表示されます。
+- main セッションの job を発火し、アイコンが即座に切り替わり、ステータス行に main ラベルが出ることを確認します。
+- main がアイドルの状態で non-main セッションの job を発火し、アイコンとステータスが non-main を示し、終了まで安定していることを確認します。
+- 他セッションが動作中に main を開始し、アイコンがすぐ main に切り替わることを確認します。
+- ツール実行が短時間に連続しても、バッジがちらつかないことを確認します（tool result に TTL の猶予を設けます）。
+- すべてのセッションがアイドルに戻ったら、ヘルス行が再表示されることを確認します。

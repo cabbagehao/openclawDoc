@@ -1,56 +1,54 @@
 ---
-summary: "ネットワーク ハブ: ゲートウェイ サーフェス、ペアリング、検出、セキュリティ"
+summary: "ネットワークハブ: ゲートウェイの接続面、ペアリング、検出、セキュリティ"
 read_when:
-  - ネットワーク アーキテクチャとセキュリティの概要が必要です
-  - ローカルとテールネットのアクセスまたはペアリングをデバッグしています
-  - ネットワーキング ドキュメントの正規リストが必要な場合
-title: "ネットワーク"
+  - ネットワーク構成とセキュリティの概要を把握したいとき
+  - ローカルアクセスと tailnet アクセス、またはペアリングを切り分けるとき
+  - ネットワーク関連ドキュメントの正規一覧を確認したいとき
+title: "Network"
 x-i18n:
   source_hash: "6a0d5080db73de4c21d9bf376059f6c4a26ab129c8280ce6b1f54fa9ace48beb"
 ---
 
 # ネットワークハブ
 
-このハブは、OpenClaw の接続、ペアリング、セキュリティの確保方法に関するコア ドキュメントにリンクしています。
-ローカルホスト、LAN、テールネット上のデバイス。
+このハブでは、OpenClaw が localhost、LAN、tailnet をまたいでデバイスと接続し、ペアリングし、安全性を確保するための中核ドキュメントをまとめています。
 
 ## コアモデル
 
-- [ゲートウェイ アーキテクチャ](/concepts/architecture)
+- [ゲートウェイアーキテクチャ](/concepts/architecture)
 - [ゲートウェイプロトコル](/gateway/protocol)
-- [ゲートウェイ ランブック](/gateway)
-- [Web サーフェス + バインド モード](/web)
+- [ゲートウェイランブック](/gateway)
+- [Web サーフェスと bind mode](/web)
 
-## ペアリング + ID
+## ペアリングと識別
 
-- [ペアリングの概要 (DM + ノード)](/channels/pairing)
-- [ゲートウェイ所有ノードのペアリング](/gateway/pairing)
-- [デバイス CLI (ペアリング + トークン ローテーション)](/cli/devices)
-- [CLI のペアリング (DM 承認)](/cli/pairing)
+- [ペアリング概要（DM + ノード）](/channels/pairing)
+- [ゲートウェイ管理ノードのペアリング](/gateway/pairing)
+- [Devices CLI（ペアリング + トークンローテーション）](/cli/devices)
+- [Pairing CLI（DM 承認）](/cli/pairing)
 
-ローカルの信頼:
+ローカルトラスト:
 
-- ローカル接続 (ループバックまたはゲートウェイ ホスト自身のテールネット アドレス) は、
-  ペアリングが自動承認されるため、同じホストの UX がスムーズに保たれます。
-- 非ローカル テールネット/LAN クライアントでも、明示的なペアリングの承認が必要です。
+- ローカル接続（loopback、またはゲートウェイホスト自身の tailnet アドレス）は、同一ホスト上の UX を損なわないよう、ペアリングが自動承認される場合があります
+- 非ローカルの tailnet / LAN クライアントでは、引き続き明示的なペアリング承認が必要です
 
-## ディスカバリー + トランスポート
+## 検出とトランスポート
 
-- [発見と輸送](/gateway/discovery)
+- [Discovery と transports](/gateway/discovery)
 - [Bonjour / mDNS](/gateway/bonjour)
-- [リモートアクセス(SSH)](/gateway/remote)
-- [尾鱗](/gateway/tailscale)
+- [リモートアクセス（SSH）](/gateway/remote)
+- [Tailscale](/gateway/tailscale)
 
-## ノード + トランスポート
+## ノードとトランスポート
 
-- [ノードの概要](/nodes)
-- [ブリッジプロトコル(レガシーノード)](/gateway/bridge-protocol)
-- [ノード ランブック: iOS](/platforms/ios)
-- [ノード ランブック: Android](/platforms/android)
+- [ノード概要](/nodes)
+- [Bridge protocol（legacy ノード）](/gateway/bridge-protocol)
+- [ノードランブック: iOS](/platforms/ios)
+- [ノードランブック: Android](/platforms/android)
 
 ## セキュリティ
 
-- [セキュリティの概要](/gateway/security)
-- [ゲートウェイ構成リファレンス](/gateway/configuration)
+- [セキュリティ概要](/gateway/security)
+- [ゲートウェイ設定リファレンス](/gateway/configuration)
 - [トラブルシューティング](/gateway/troubleshooting)
-- [博士](/gateway/doctor)
+- [Doctor](/gateway/doctor)

@@ -1,32 +1,33 @@
 ---
-summary: "macOS 上の OpenClaw のメニュー バー アイコンの状態とアニメーション"
+summary: "macOS 上の OpenClaw のメニューバー アイコン状態とアニメーション"
 read_when:
-  - メニューバーアイコンの動作の変更
-title: "メニューバーアイコン"
+  - メニュー バー アイコンの動作を変更するとき
+title: "メニュー バー アイコン"
 x-i18n:
   source_hash: "a67a6e6bbdc2b611ba365d3be3dd83f9e24025d02366bc35ffcce9f0b121872b"
 ---
 
-# メニューバーアイコンの状態
+# メニューバー アイコンの状態
 
-著者: sreipete · 更新日: 2025-12-06 · 対象範囲: macOS アプリ (`apps/macos`)
+Author: steipete · Updated: 2025-12-06 · Scope: macOS app (`apps/macos`)
 
-- **アイドル:** 通常のアイコンのアニメーション (点滅、時折小刻みに動く)。
-- **一時停止:** ステータス項目は `appearsDisabled` を使用します。動きはありません。
-- **音声トリガー (大きな耳):** ウェイク ワードが聞こえると音声ウェイク検出器が `AppState.triggerVoiceEars(ttl: nil)` を呼び出し、発話がキャプチャされている間 `earBoostActive=true` を維持します。耳が拡大 (1.9 倍) され、読みやすいように円形の耳穴が得られ、1 秒の沈黙の後に `stopVoiceEars()` 経由でドロップされます。アプリ内の音声パイプラインからのみ起動されます。
-- **作業中 (エージェント実行中):** `AppState.isWorking=true` は、「尻尾/脚の急ぎ足」の微動を駆動します。作業中は脚の動きが速くなり、わずかにオフセットします。現在、WebChat エージェントの実行を中心に切り替えられています。他の長いタスクを配線するときに、同じ切り替えを追加します。
+- **Idle:** 通常時のアイコン アニメーションです。まばたきを行い、ときどき軽く揺れます。
+- **Paused:** ステータス項目は `appearsDisabled` を使い、動きは停止します。
+- **Voice trigger（big ears）:** ウェイク ワードを検出すると、音声ウェイク検出器が `AppState.triggerVoiceEars(ttl: nil)` を呼び出します。発話を取り込んでいる間は `earBoostActive=true` を維持し、耳は 1.9 倍に拡大され、視認性向上のため `earHoles` が有効になります。1 秒間無音が続くと `stopVoiceEars()` により元へ戻ります。この挙動はアプリ内の音声パイプラインからのみ発火します。
+- **Working（agent running）:** `AppState.isWorking=true` により、しっぽと脚が慌ただしく動くマイクロアニメーションが有効になります。処理中は脚の揺れが速くなり、位置もわずかに変化します。現在は WebChat のエージェント実行に合わせて切り替えており、他の長時間タスクでも同じトグルを追加してください。
 
-配線ポイント
+Wiring points
 
-- 音声ウェイク: ランタイム/テスターはトリガー時に `AppState.triggerVoiceEars(ttl: nil)` を呼び出し、キャプチャ ウィンドウに一致するように 1 秒の沈黙の後に `stopVoiceEars()` を呼び出します。
-- エージェント アクティビティ: 作業範囲の周りに `AppStateStore.shared.setWorking(true/false)` を設定します (WebChat エージェント コールですでに行われています)。アニメーションのスタックを避けるために、スパンを短くし、`defer` ブロックでリセットしてください。
+- Voice wake: runtime / tester は、トリガー時に `AppState.triggerVoiceEars(ttl: nil)` を呼び出し、キャプチャ ウィンドウに合わせて 1 秒の無音後に `stopVoiceEars()` を呼び出します。
+- Agent activity: 作業区間の前後で `AppStateStore.shared.setWorking(true/false)` を設定します。これは WebChat のエージェント呼び出しではすでに実装されています。アニメーションが戻らなくなるのを防ぐため、区間は短く保ち、`defer` ブロックで必ず解除してください。
 
-形状とサイズ- `CritterIconRenderer.makeIcon(blink:legWiggle:earWiggle:earScale:earHoles:)` で描かれたベース アイコン。
+Shapes & sizes
 
-- イヤースケールのデフォルトは `1.0` です。音声ブーストは、フレーム全体を変更せずに `earScale=1.9` を設定し、`earHoles=true` を切り替えます (18×18pt のテンプレート画像が 36×36px Retina バッキング ストアにレンダリングされます)。
-- Scurry は、水平方向に小さな揺れを伴う最大 ~1.0 までの脚の揺れを使用します。既存のアイドル状態の動きに追加されます。
+- ベース アイコンは `CritterIconRenderer.makeIcon(blink:legWiggle:earWiggle:earScale:earHoles:)` で描画されます。
+- 耳のスケール既定値は `1.0` です。音声ブースト時はフレーム全体の大きさを変えずに `earScale=1.9` と `earHoles=true` を設定します。テンプレート画像は 18×18 pt で、36×36 px の Retina バッキング ストアへ描画されます。
+- Scurry では脚の揺れが最大でおよそ 1.0 まで増え、水平方向の小さな揺れも加わります。これは既存の Idle アニメーションに加算されます。
 
-行動メモ
+Behavioral notes
 
-- 耳/作業用の外部 CLI/ブローカー切り替えはありません。偶発的なフラッピングを避けるために、アプリ自体の信号の内部に保持してください。
-- ジョブがハングした場合にアイコンがすぐにベースラインに戻るように、TTL を短く (10 秒未満) にしてください。
+- 耳や作業中アニメーションを外部 CLI や broker から切り替える仕組みはありません。意図しない過剰な切り替えを避けるため、アプリ内部のシグナルだけで制御してください。
+- ジョブがハングした場合でもアイコンが速やかに通常状態へ戻るよう、TTL は短く保ってください（10 秒未満）。

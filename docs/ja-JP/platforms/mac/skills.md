@@ -1,8 +1,8 @@
 ---
 summary: "macOS スキル設定 UI とゲートウェイ支援ステータス"
 read_when:
-  - macOS スキル設定 UI の更新
-  - スキルゲーティングまたはインストール動作の変更
+  - macOS の Skills 設定 UI を更新するとき
+  - skills の gating や install 動作を変更するとき
 title: "スキル"
 x-i18n:
   source_hash: "ecd5286bbe49eed89319686c4f7d6da55ef7b0d3952656ba98ef5e769f3fbf79"
@@ -10,26 +10,25 @@ x-i18n:
 
 # スキル (macOS)
 
-macOS アプリは、ゲートウェイ経由で OpenClaw スキルを表示します。ローカルでスキルを解析しません。
+macOS アプリは、OpenClaw のスキル情報をゲートウェイ経由で表示します。ローカルで `SKILL.md` を解析することはありません。
 
-## データソース
+## データ ソース
 
-- `skills.status` (ゲートウェイ) は、すべてのスキルに加え、適格性と不足している要件を返します。
-  (バンドルされたスキルの許可リスト ブロックを含む)。
-- 要件は、各 `SKILL.md` の `metadata.openclaw.requires` から派生します。
+- `skills.status` (ゲートウェイ) は、すべてのスキルと、その利用可否、欠けている要件を返します。
+  バンドル済みスキルに対する allowlist block もここに含まれます。
+- 要件は、各 `SKILL.md` にある `metadata.openclaw.requires` から導出されます。
 
-## インストールアクション
+## インストール操作
 
-- `metadata.openclaw.install` はインストール オプション (brew/node/go/uv) を定義します。
-- アプリは `skills.install` を呼び出して、ゲートウェイ ホスト上でインストーラーを実行します。
-- 複数のインストーラーが提供されている場合、ゲートウェイは優先インストーラーを 1 つだけ表示します。
-  (利用可能な場合は brew、それ以外の場合は `skills.install` のノード マネージャー、デフォルトの npm)。
+- `metadata.openclaw.install` が install option (brew / node / go / uv) を定義します。
+- アプリは `skills.install` を呼び出して、ゲートウェイ ホスト上で installer を実行します。
+- 複数の installer が指定されている場合でも、ゲートウェイが返すのは優先度の高い 1 件だけです。brew が使えるなら brew、そうでなければ `skills.install` の node manager、それもなければ既定の npm を使います。
 
-## 環境/API キー
+## 環境変数 / API キー
 
-- アプリはキーを `skills.entries.<skillKey>` の下の `~/.openclaw/openclaw.json` に保存します。
-- `skills.update` パッチ `enabled`、`apiKey`、および `env`。
+- アプリはキーを `~/.openclaw/openclaw.json` の `skills.entries.<skillKey>` 配下に保存します。
+- `skills.update` は `enabled`、`apiKey`、`env` を更新します。
 
-## リモートモード
+## リモート モード
 
-- インストールと構成の更新は、(ローカル Mac ではなく) ゲートウェイ ホストで行われます。
+- install と設定更新は、ローカル Mac ではなくゲートウェイ ホスト側で実行されます。

@@ -9,11 +9,11 @@ title: "Nix"
 
 # Nix インストール
 
-Nix で OpenClaw を実行するための推奨される方法は、**[nix-openclaw](https://github.com/openclaw/nix-openclaw)** (必要なものがすべて揃った Home Manager モジュール) を介することです。
+Nix で OpenClaw を使う場合の推奨手段は、**[nix-openclaw](https://github.com/openclaw/nix-openclaw)** を利用する方法です。必要なものが一通り揃った Home Manager モジュールとして提供されています。
 
 ## クイックスタート
 
-これを AI エージェント (Claude、Cursor など) に貼り付けてください:
+次の内容を AI エージェント (Claude、Cursor など) に貼り付けてください。
 
 ```text
 I want to set up nix-openclaw on my Mac.
@@ -47,8 +47,7 @@ Reference the nix-openclaw README for module options.
 
 `OPENCLAW_NIX_MODE=1` が設定されている場合 (nix-openclaw では自動):
 
-OpenClaw は、設定を決定論的にし、自動インストールフローを無効にする **Nix モード** をサポートしています。
-エクスポートして有効にします:
+OpenClaw には、設定を決定論的に保ち、自動インストール系のフローを無効にする **Nix モード** があります。次を export して有効にします。
 
 ```bash
 OPENCLAW_NIX_MODE=1
@@ -70,13 +69,13 @@ OpenClaw は `OPENCLAW_CONFIG_PATH` から JSON5 設定を読み取り、`OPENCL
 - `OPENCLAW_STATE_DIR` (デフォルト: `~/.openclaw`)
 - `OPENCLAW_CONFIG_PATH` (デフォルト: `$OPENCLAW_STATE_DIR/openclaw.json`)
 
-Nix の下で実行する場合は、ランタイムの状態と設定が不変のストアから外れるように、これらを明示的に Nix 管理の場所に設定してください。
+Nix 環境で実行する場合は、ランタイム状態や設定が不変ストアの外に出るよう、これらのパスを Nix 管理下の適切な場所へ明示的に向けてください。
 
 ### Nix モードでのランタイムの動作
 
-- 自動インストールと自己変異フローは無効になります
+- 自動インストールや自己変更系フローは無効になります
 - 依存関係が不足している場合、Nix 固有の修復メッセージが表示されます
-- 存在する場合、UI に読み取り専用の Nix モードバナーが表示されます
+- 対応 UI では、読み取り専用の Nix モードバナーが表示されます
 
 ## パッケージングに関する注意 (macOS)
 

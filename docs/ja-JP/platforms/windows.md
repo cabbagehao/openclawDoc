@@ -1,37 +1,33 @@
 ---
-summary: "Windows (WSL2) サポート + コンパニオン アプリのステータス"
+summary: "Windows（WSL2）サポートとコンパニオン アプリの現状"
 read_when:
-  - Windows への OpenClaw のインストール
-  - Windows コンパニオン アプリのステータスを確認する場合
+  - Windows に OpenClaw をインストールするとき
+  - Windows companion app の状況を確認したいとき
 title: "Windows（WSL2）"
 x-i18n:
   source_hash: "0732bb1719830ea088a86d9f4e2662d693fd6b3e256dcd3034d5ccdf3413035c"
 ---
 
-# Windows (WSL2)
+# Windows（WSL2）
 
-Windows 上の OpenClaw は **WSL2** 経由で推奨されます (Ubuntu を推奨)。の
-CLI + ゲートウェイは Linux 内で実行されるため、ランタイムの一貫性が維持され、
-ツールの互換性が大幅に向上しました (Node/Bun/pnpm、Linux バイナリ、スキル)。ネイティブ
-Windows のほうが難しいかもしれません。 WSL2 は、コマンド 1 つで完全な Linux エクスペリエンスを提供します
-インストールするには: `wsl --install`。
+Windows 上の OpenClaw は、**WSL2 経由での利用を推奨**します（Ubuntu 推奨）。CLI とゲートウェイを Linux 内で動かすことで、ランタイムの整合性を保ちやすくなり、Node / Bun / pnpm、Linux バイナリ、skills などの互換性も高くなります。ネイティブ Windows より扱いやすく、`wsl --install` の 1 コマンドで完全な Linux 環境を導入できます。
 
-ネイティブ Windows コンパニオン アプリも計画されています。
+ネイティブ Windows companion app は今後対応予定です。
 
-## インストール (WSL2)
+## インストール（WSL2）
 
-- [はじめに](/start/getting-started) (WSL 内で使用)
-- [インストールとアップデート](/install/updating)
-- 公式 WSL2 ガイド (Microsoft): [https://learn.microsoft.com/windows/wsl/install](https://learn.microsoft.com/windows/wsl/install)
+- [Getting Started](/start/getting-started)（WSL 内で実行）
+- [Install & updates](/install/updating)
+- Microsoft の公式 WSL2 ガイド: [https://learn.microsoft.com/windows/wsl/install](https://learn.microsoft.com/windows/wsl/install)
 
 ## ゲートウェイ
 
-- [ゲートウェイ ランブック](/gateway)
-- [構成](/gateway/configuration)
+- [Gateway runbook](/gateway)
+- [Configuration](/gateway/configuration)
 
-## ゲートウェイ サービスのインストール (CLI)
+## ゲートウェイ サービスのインストール（CLI）
 
-WSL2 内:
+WSL2 内で次を実行します。
 
 ```
 openclaw onboard --install-daemon
@@ -49,66 +45,62 @@ openclaw gateway install
 openclaw configure
 ```
 
-プロンプトが表示されたら、**ゲートウェイ サービス** を選択します。
+プロンプトが表示されたら **Gateway service** を選択します。
 
-修復/移行:
+修復 / 移行:
 
 ```
 openclaw doctor
 ```
 
-## Windows ログイン前のゲートウェイ自動起動
+## Windows ログイン前にゲートウェイを自動起動する
 
-ヘッドレス セットアップの場合は、誰もログインしていない場合でも完全なブート チェーンが実行されるようにします。
-ウィンドウズ。
+ヘッドレス運用では、誰も Windows にログインしていなくても起動チェーン全体が実行されるようにしておきます。
 
-### 1) ログインせずにユーザー サービスを実行し続ける
+### 1) ログインなしでもユーザー サービスを維持する
 
-WSL 内:
+WSL 内で:
 
 ```bash
 sudo loginctl enable-linger "$(whoami)"
 ```
 
-### 2) OpenClaw ゲートウェイ ユーザー サービスをインストールする
+### 2) OpenClaw ゲートウェイのユーザー サービスをインストールする
 
-WSL 内:
+WSL 内で:
 
 ```bash
 openclaw gateway install
 ```
 
-### 3) Windows 起動時に WSL を自動的に開始する
+### 3) Windows 起動時に WSL を自動起動する
 
-PowerShell で管理者として:
+PowerShell を管理者として開き、次を実行します。
 
 ```powershell
 schtasks /create /tn "WSL Boot" /tr "wsl.exe -d Ubuntu --exec /bin/true" /sc onstart /ru SYSTEM
 ```
 
-`Ubuntu` を次のディストリビューション名に置き換えます。
+`Ubuntu` は、次で確認できる実際のディストリビューション名に置き換えてください。
 
 ```powershell
 wsl --list --verbose
 ```
 
-### スタートアップ チェーンを確認する
+### 起動チェーンを確認する
 
-再起動後 (Windows サインイン前)、WSL から確認します:
+再起動後（Windows サインイン前）に、WSL から次を確認します。
 
 ```bash
 systemctl --user is-enabled openclaw-gateway
 systemctl --user status openclaw-gateway --no-pager
 ```
 
-## 詳細: WSL サービスを LAN (ポートプロキシ) 経由で公開します
+## 詳細: WSL 内サービスを LAN へ公開する（portproxy）
 
-WSL には独自の仮想ネットワークがあります。別のマシンがサービスにアクセスする必要がある場合
-**WSL 内** (SSH、ローカル TTS サーバー、またはゲートウェイ) で実行する場合は、次のことを行う必要があります。
-Windows ポートを現在の WSL IP に転送します。 WSL IPは再起動後に変更されます。
-そのため、転送ルールを更新する必要がある場合があります。
+WSL には独自の仮想ネットワークがあります。別マシンから **WSL 内** のサービス（SSH、ローカル TTS サーバー、ゲートウェイなど）へ到達させたい場合は、Windows 側のポートを現在の WSL IP へ転送する必要があります。WSL IP は再起動で変わるため、転送ルールを更新し直す必要が出ることがあります。
 
-例 (PowerShell **管理者**):
+例（PowerShell を **管理者** で実行）:
 
 ```powershell
 $Distro = "Ubuntu-24.04"
@@ -122,14 +114,14 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=$ListenPor
   connectaddress=$WslIp connectport=$TargetPort
 ```
 
-Windows ファイアウォールを通過するポートを許可します (1 回限り):
+Windows Firewall でこのポートを許可します（初回のみ）。
 
 ```powershell
 New-NetFirewallRule -DisplayName "WSL SSH $ListenPort" -Direction Inbound `
   -Protocol TCP -LocalPort $ListenPort -Action Allow
 ```
 
-WSL の再起動後にポートプロキシを更新します。
+WSL 再起動後に portproxy を更新するには:
 
 ```powershell
 netsh interface portproxy delete v4tov4 listenport=$ListenPort listenaddress=0.0.0.0 | Out-Null
@@ -139,18 +131,16 @@ netsh interface portproxy add v4tov4 listenport=$ListenPort listenaddress=0.0.0.
 
 注:
 
-- 別のマシンからの SSH は **Windows ホスト IP** をターゲットとします (例: `ssh user@windows-host -p 2222`)。
-- リモート ノードは、**到達可能な** ゲートウェイ URL (`127.0.0.1` ではない) を指している必要があります。使う
-  `openclaw status --all` を確認してください。
-- LAN アクセスには `listenaddress=0.0.0.0` を使用します。 `127.0.0.1` はローカルのみに保持します。
-- これを自動的に実行したい場合は、スケジュールされたタスクを登録して更新を実行します。
-  ログイン時のステップ。
+- 別マシンからの SSH 接続先は **Windows ホスト IP** です（例: `ssh user@windows-host -p 2222`）。
+- リモート ノードは、到達可能なゲートウェイ URL を指している必要があります（`127.0.0.1` は不可）。`openclaw status --all` で確認してください。
+- LAN 公開には `listenaddress=0.0.0.0` を使います。`127.0.0.1` にするとローカル専用になります。
+- 自動化したい場合は、ログイン時に更新処理を実行する Scheduled Task を追加してください。
 
 ## WSL2 の段階的なインストール
 
 ### 1) WSL2 + Ubuntu をインストールする
 
-PowerShell を開きます (管理者):
+PowerShell を管理者として開きます。
 
 ```powershell
 wsl --install
@@ -159,9 +149,9 @@ wsl --list --online
 wsl --install -d Ubuntu-24.04
 ```
 
-Windows が要求した場合は再起動します。
+Windows に再起動を求められた場合は再起動します。
 
-### 2) systemd を有効にする (ゲートウェイのインストールに必要)
+### 2) systemd を有効にする（ゲートウェイ インストールに必須）
 
 WSL ターミナルで:
 
@@ -172,33 +162,33 @@ systemd=true
 EOF
 ```
 
-次に、PowerShell から次のようにします。
+その後、PowerShell で:
 
 ```powershell
 wsl --shutdown
 ```
 
-Ubuntu を再度開き、次のことを確認します。
+Ubuntu を再度開き、次で確認します。
 
 ```bash
 systemctl --user status
 ```
 
-### 3) OpenClaw をインストールします (WSL 内)
+### 3) OpenClaw をインストールする（WSL 内）
 
-WSL 内の Linux Getting Started フローに従います。```bash
+WSL 内では Linux 向け Getting Started フローに従います。
+
+```bash
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 pnpm install
 pnpm ui:build # auto-installs UI deps on first run
 pnpm build
 openclaw onboard
-
 ```
 
-完全ガイド: [はじめに](/start/getting-started)
+完全なガイド: [Getting Started](/start/getting-started)
 
-## Windows コンパニオン アプリ
+## Windows companion app
 
-Windows コンパニオン アプリはまだありません。実現のための貢献を歓迎します。
-```
+現時点では Windows companion app はまだありません。必要であれば、実現に向けたコントリビューションは歓迎されています。

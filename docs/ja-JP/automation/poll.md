@@ -1,8 +1,8 @@
 ---
-summary: "Gateway + CLI 経由の投票送信"
+summary: "ゲートウェイ + CLI 経由の投票送信"
 read_when:
   - 投票サポートの追加または変更時
-  - CLI や Gateway からの投票送信のデバッグ時
+  - CLI やゲートウェイからの投票送信をデバッグする場合
 title: "投票"
 x-i18n:
   source_path: "automation/poll.md"
@@ -57,7 +57,7 @@ openclaw message poll --channel msteams --target conversation:19:abc@thread.tacv
 - `--poll-duration-seconds`: Telegram 専用（5〜600 秒）
 - `--poll-anonymous` / `--poll-public`: Telegram 専用の投票公開設定
 
-## Gateway RPC
+## ゲートウェイ RPC
 
 メソッド: `poll`
 
@@ -89,4 +89,4 @@ Telegram の場合、ツールは `pollDurationSeconds`、`pollAnonymous`、`pol
 投票作成には `action: "poll"` を使用する。`action: "send"` で投票フィールドを渡すと拒否される。
 
 注意: Discord には「ちょうど N 個を選択」するモードがなく、`pollMulti` は複数選択にマッピングされる。
-Teams の投票は Adaptive Cards としてレンダリングされ、投票を `~/.openclaw/msteams-polls.json` に記録するために Gateway がオンラインである必要がある。
+Teams の投票は Adaptive Cards としてレンダリングされ、投票を `~/.openclaw/msteams-polls.json` に記録するため、ゲートウェイがオンラインである必要があります。
