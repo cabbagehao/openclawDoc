@@ -1,5 +1,4 @@
 ---
-description: "Browse supported OpenClaw model providers, authentication options, and quick links for OpenAI, Anthropic, OpenRouter, Ollama, Bedrock, and more."
 summary: "Model providers (LLMs) supported by OpenClaw"
 read_when:
   - You want to choose a model provider

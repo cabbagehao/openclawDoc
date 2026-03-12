@@ -1,5 +1,4 @@
 ---
-description: "Compare OpenClaw install methods including the installer script, npm, Docker, cloud hosts, updates, migration, and uninstall."
 summary: "Install OpenClaw — installer script, npm/pnpm, from source, Docker, and more"
 read_when:
   - You need an install method other than the Getting Started quickstart

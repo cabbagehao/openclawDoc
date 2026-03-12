@@ -1,5 +1,4 @@
 ---
-description: "Choose the right chat channel for OpenClaw, including WhatsApp, Telegram, Discord, iMessage, Slack, and other supported platforms."
 summary: "Messaging platforms OpenClaw can connect to"
 read_when:
   - You want to choose a chat channel for OpenClaw
@@ -45,4 +44,4 @@ Text is supported everywhere; media and reactions vary by channel.
 - Group behavior varies by channel; see [Groups](/channels/groups).
 - DM pairing and allowlists are enforced for safety; see [Security](/gateway/security).
 - Troubleshooting: [Channel troubleshooting](/channels/troubleshooting).
-- Model providers are documented separately; see [Model Providers](/providers).
+- Model providers are documented separately; see [Model Providers](/providers/models).

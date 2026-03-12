@@ -1,5 +1,4 @@
 ---
-description: "Start here for OpenClaw troubleshooting, install sanity checks, gateway diagnostics, logs, and the fastest path to common fixes."
 summary: "Help hub: common fixes, install sanity, and where to look when something breaks"
 read_when:
   - You’re new and want the “what do I click/run” guide

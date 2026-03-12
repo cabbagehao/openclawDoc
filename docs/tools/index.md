@@ -1,5 +1,4 @@
 ---
-description: "Learn the built-in OpenClaw agent tools for browser, canvas, nodes, messaging, automation, and other first-class capabilities."
 summary: "Agent tool surface for OpenClaw (browser, canvas, nodes, message, cron) replacing legacy `openclaw-*` skills"
 read_when:
   - Adding or modifying agent tools

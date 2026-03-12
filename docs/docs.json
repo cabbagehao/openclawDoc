@@ -360,18 +360,6 @@
       "destination": "/start/getting-started"
     },
     {
-      "source": "/providers/models",
-      "destination": "/providers"
-    },
-    {
-      "source": "/ja-JP/start/quickstart",
-      "destination": "/ja-JP/start/getting-started"
-    },
-    {
-      "source": "/ja-JP/providers/models",
-      "destination": "/ja-JP/providers"
-    },
-    {
       "source": "/gmail-pubsub",
       "destination": "/automation/gmail-pubsub"
     },
@@ -540,6 +528,10 @@
       "destination": "/start/onboarding"
     },
     {
+      "source": "/onboarding-config-protocol",
+      "destination": "/experiments/onboarding-config-protocol"
+    },
+    {
       "source": "/pairing",
       "destination": "/channels/pairing"
     },
@@ -560,6 +552,10 @@
       "destination": "/concepts/presence"
     },
     {
+      "source": "/proposals/model-config",
+      "destination": "/experiments/proposals/model-config"
+    },
+    {
       "source": "/provider-routing",
       "destination": "/channels/channel-routing"
     },
@@ -578,6 +574,10 @@
     {
       "source": "/remote-gateway-readme",
       "destination": "/gateway/remote-gateway-readme"
+    },
+    {
+      "source": "/research/memory",
+      "destination": "/experiments/research/memory"
     },
     {
       "source": "/rpc",
@@ -818,21 +818,15 @@
             "groups": [
               {
                 "group": "Home",
-                "pages": [
-                  "index"
-                ]
+                "pages": ["index"]
               },
               {
                 "group": "Overview",
-                "pages": [
-                  "start/showcase"
-                ]
+                "pages": ["start/showcase"]
               },
               {
                 "group": "Core concepts",
-                "pages": [
-                  "concepts/features"
-                ]
+                "pages": ["concepts/features"]
               },
               {
                 "group": "First steps",
@@ -858,10 +852,7 @@
             "groups": [
               {
                 "group": "Install overview",
-                "pages": [
-                  "install/index",
-                  "install/installer"
-                ]
+                "pages": ["install/index", "install/installer"]
               },
               {
                 "group": "Other install methods",
@@ -875,11 +866,7 @@
               },
               {
                 "group": "Maintenance",
-                "pages": [
-                  "install/updating",
-                  "install/migrating",
-                  "install/uninstall"
-                ]
+                "pages": ["install/updating", "install/migrating", "install/uninstall"]
               },
               {
                 "group": "Hosting and deployment",
@@ -897,9 +884,7 @@
               },
               {
                 "group": "Advanced",
-                "pages": [
-                  "install/development-channels"
-                ]
+                "pages": ["install/development-channels"]
               }
             ]
           },
@@ -908,9 +893,7 @@
             "groups": [
               {
                 "group": "Overview",
-                "pages": [
-                  "channels/index"
-                ]
+                "pages": ["channels/index"]
               },
               {
                 "group": "Messaging platforms",
@@ -970,9 +953,7 @@
               },
               {
                 "group": "Bootstrapping",
-                "pages": [
-                  "start/bootstrapping"
-                ]
+                "pages": ["start/bootstrapping"]
               },
               {
                 "group": "Sessions and memory",
@@ -986,10 +967,7 @@
               },
               {
                 "group": "Multi-agent",
-                "pages": [
-                  "concepts/multi-agent",
-                  "concepts/presence"
-                ]
+                "pages": ["concepts/multi-agent", "concepts/presence"]
               },
               {
                 "group": "Messages and delivery",
@@ -1007,9 +985,7 @@
             "groups": [
               {
                 "group": "Overview",
-                "pages": [
-                  "tools/index"
-                ]
+                "pages": ["tools/index"]
               },
               {
                 "group": "Built-in tools",
@@ -1051,7 +1027,7 @@
                 ]
               },
               {
-                "group": "スキル",
+                "group": "Skills",
                 "pages": [
                   "tools/creating-skills",
                   "tools/slash-commands",
@@ -1107,22 +1083,15 @@
             "groups": [
               {
                 "group": "Overview",
-                "pages": [
-                  "providers/index"
-                ]
+                "pages": ["providers/index", "providers/models"]
               },
               {
                 "group": "Model concepts",
-                "pages": [
-                  "concepts/models"
-                ]
+                "pages": ["concepts/models"]
               },
               {
                 "group": "Configuration",
-                "pages": [
-                  "concepts/model-providers",
-                  "concepts/model-failover"
-                ]
+                "pages": ["concepts/model-providers", "concepts/model-failover"]
               },
               {
                 "group": "Providers",
@@ -1261,30 +1230,20 @@
               },
               {
                 "group": "Remote access",
-                "pages": [
-                  "gateway/remote",
-                  "gateway/remote-gateway-readme",
-                  "gateway/tailscale"
-                ]
+                "pages": ["gateway/remote", "gateway/remote-gateway-readme", "gateway/tailscale"]
               },
               {
                 "group": "Security",
                 "pages": [
                   "security/formal-verification",
-                  "security/index",
+                  "security/README",
                   "security/THREAT-MODEL-ATLAS",
                   "security/CONTRIBUTING-THREAT-MODEL"
                 ]
               },
               {
                 "group": "Web interfaces",
-                "pages": [
-                  "web/index",
-                  "web/control-ui",
-                  "web/dashboard",
-                  "web/webchat",
-                  "web/tui"
-                ]
+                "pages": ["web/index", "web/control-ui", "web/dashboard", "web/webchat", "web/tui"]
               }
             ]
           },
@@ -1344,10 +1303,7 @@
               },
               {
                 "group": "RPC and API",
-                "pages": [
-                  "reference/rpc",
-                  "reference/device-models"
-                ]
+                "pages": ["reference/rpc", "reference/device-models"]
               },
               {
                 "group": "Templates",
@@ -1387,21 +1343,25 @@
               },
               {
                 "group": "Project",
-                "pages": [
-                  "reference/credits"
-                ]
+                "pages": ["reference/credits"]
               },
               {
                 "group": "Release notes",
-                "pages": [
-                  "reference/RELEASING",
-                  "reference/test"
-                ]
+                "pages": ["reference/RELEASING", "reference/test"]
               },
               {
                 "group": "Experiments",
                 "pages": [
-                  "design/kilo-gateway-integration"
+                  "design/kilo-gateway-integration",
+                  "experiments/onboarding-config-protocol",
+                  "experiments/plans/acp-thread-bound-agents",
+                  "experiments/plans/acp-unified-streaming-refactor",
+                  "experiments/plans/browser-evaluate-cdp-refactor",
+                  "experiments/plans/openresponses-gateway",
+                  "experiments/plans/pty-process-supervision",
+                  "experiments/plans/session-binding-channel-agnostic",
+                  "experiments/research/memory",
+                  "experiments/proposals/model-config"
                 ]
               }
             ]
@@ -1411,17 +1371,11 @@
             "groups": [
               {
                 "group": "Help",
-                "pages": [
-                  "help/index",
-                  "help/troubleshooting",
-                  "help/faq"
-                ]
+                "pages": ["help/index", "help/troubleshooting", "help/faq"]
               },
               {
                 "group": "Community",
-                "pages": [
-                  "start/lore"
-                ]
+                "pages": ["start/lore"]
               },
               {
                 "group": "Environment and debugging",
@@ -1436,35 +1390,608 @@
               },
               {
                 "group": "Node runtime",
-                "pages": [
-                  "install/node"
-                ]
+                "pages": ["install/node"]
               },
               {
                 "group": "Compaction internals",
-                "pages": [
-                  "reference/session-management-compaction"
-                ]
+                "pages": ["reference/session-management-compaction"]
               },
               {
                 "group": "Developer setup",
-                "pages": [
-                  "start/setup",
-                  "pi-dev"
-                ]
+                "pages": ["start/setup", "pi-dev"]
               },
               {
                 "group": "Contributing",
-                "pages": [
-                  "ci"
-                ]
+                "pages": ["ci"]
               },
               {
                 "group": "Docs meta",
+                "pages": ["start/hubs", "start/docs-directory"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh-Hans",
+        "tabs": [
+          {
+            "tab": "快速开始",
+            "groups": [
+              {
+                "group": "首页",
+                "pages": ["zh-CN/index"]
+              },
+              {
+                "group": "概览",
+                "pages": ["zh-CN/start/showcase"]
+              },
+              {
+                "group": "核心概念",
+                "pages": ["zh-CN/concepts/features"]
+              },
+              {
+                "group": "第一步",
                 "pages": [
-                  "start/hubs",
-                  "start/docs-directory"
+                  "zh-CN/start/getting-started",
+                  "zh-CN/start/wizard",
+                  "zh-CN/start/onboarding"
                 ]
+              },
+              {
+                "group": "指南",
+                "pages": ["zh-CN/start/openclaw"]
+              }
+            ]
+          },
+          {
+            "tab": "安装",
+            "groups": [
+              {
+                "group": "安装概览",
+                "pages": ["zh-CN/install/index", "zh-CN/install/installer"]
+              },
+              {
+                "group": "安装方式",
+                "pages": [
+                  "zh-CN/install/docker",
+                  "zh-CN/install/nix",
+                  "zh-CN/install/ansible",
+                  "zh-CN/install/bun"
+                ]
+              },
+              {
+                "group": "维护",
+                "pages": [
+                  "zh-CN/install/updating",
+                  "zh-CN/install/migrating",
+                  "zh-CN/install/uninstall"
+                ]
+              },
+              {
+                "group": "托管与部署",
+                "pages": [
+                  "zh-CN/vps",
+                  "zh-CN/install/fly",
+                  "zh-CN/install/hetzner",
+                  "zh-CN/install/gcp",
+                  "zh-CN/install/macos-vm",
+                  "zh-CN/install/exe-dev",
+                  "zh-CN/install/railway",
+                  "zh-CN/install/render",
+                  "zh-CN/install/northflank"
+                ]
+              },
+              {
+                "group": "高级",
+                "pages": ["zh-CN/install/development-channels"]
+              }
+            ]
+          },
+          {
+            "tab": "消息渠道",
+            "groups": [
+              {
+                "group": "概览",
+                "pages": ["zh-CN/channels/index"]
+              },
+              {
+                "group": "消息平台",
+                "pages": [
+                  "zh-CN/channels/bluebubbles",
+                  "zh-CN/channels/discord",
+                  "zh-CN/channels/feishu",
+                  "zh-CN/channels/grammy",
+                  "zh-CN/channels/googlechat",
+                  "zh-CN/channels/imessage",
+                  "zh-CN/channels/line",
+                  "zh-CN/channels/matrix",
+                  "zh-CN/channels/mattermost",
+                  "zh-CN/channels/msteams",
+                  "zh-CN/channels/nextcloud-talk",
+                  "zh-CN/channels/nostr",
+                  "zh-CN/channels/signal",
+                  "zh-CN/channels/slack",
+                  "zh-CN/channels/telegram",
+                  "zh-CN/channels/tlon",
+                  "zh-CN/channels/twitch",
+                  "zh-CN/channels/whatsapp",
+                  "zh-CN/channels/zalo",
+                  "zh-CN/channels/zalouser"
+                ]
+              },
+              {
+                "group": "配置",
+                "pages": [
+                  "zh-CN/channels/pairing",
+                  "zh-CN/channels/group-messages",
+                  "zh-CN/channels/groups",
+                  "zh-CN/channels/broadcast-groups",
+                  "zh-CN/channels/channel-routing",
+                  "zh-CN/channels/location",
+                  "zh-CN/channels/troubleshooting"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "代理",
+            "groups": [
+              {
+                "group": "基础",
+                "pages": [
+                  "zh-CN/pi",
+                  "zh-CN/concepts/architecture",
+                  "zh-CN/concepts/agent",
+                  "zh-CN/concepts/agent-loop",
+                  "zh-CN/concepts/system-prompt",
+                  "zh-CN/concepts/context",
+                  "zh-CN/concepts/agent-workspace",
+                  "zh-CN/concepts/oauth"
+                ]
+              },
+              {
+                "group": "引导",
+                "pages": ["zh-CN/start/bootstrapping"]
+              },
+              {
+                "group": "会话与记忆",
+                "pages": [
+                  "zh-CN/concepts/session",
+                  "zh-CN/concepts/session-pruning",
+                  "zh-CN/concepts/session-tool",
+                  "zh-CN/concepts/memory",
+                  "zh-CN/concepts/compaction"
+                ]
+              },
+              {
+                "group": "多代理",
+                "pages": ["zh-CN/concepts/multi-agent", "zh-CN/concepts/presence"]
+              },
+              {
+                "group": "消息与投递",
+                "pages": [
+                  "zh-CN/concepts/messages",
+                  "zh-CN/concepts/streaming",
+                  "zh-CN/concepts/retry",
+                  "zh-CN/concepts/queue"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "工具",
+            "groups": [
+              {
+                "group": "概览",
+                "pages": ["zh-CN/tools/index"]
+              },
+              {
+                "group": "内置工具",
+                "pages": [
+                  "zh-CN/tools/apply-patch",
+                  "zh-CN/brave-search",
+                  "zh-CN/perplexity",
+                  "zh-CN/tools/diffs",
+                  "zh-CN/tools/elevated",
+                  "zh-CN/tools/exec",
+                  "zh-CN/tools/exec-approvals",
+                  "zh-CN/tools/firecrawl",
+                  "zh-CN/tools/llm-task",
+                  "zh-CN/tools/lobster",
+                  "zh-CN/tools/reactions",
+                  "zh-CN/tools/thinking",
+                  "zh-CN/tools/web"
+                ]
+              },
+              {
+                "group": "浏览器",
+                "pages": [
+                  "zh-CN/tools/browser",
+                  "zh-CN/tools/browser-login",
+                  "zh-CN/tools/chrome-extension",
+                  "zh-CN/tools/browser-linux-troubleshooting"
+                ]
+              },
+              {
+                "group": "代理协作",
+                "pages": [
+                  "zh-CN/tools/agent-send",
+                  "zh-CN/tools/subagents",
+                  "zh-CN/tools/multi-agent-sandbox-tools"
+                ]
+              },
+              {
+                "group": "技能",
+                "pages": [
+                  "zh-CN/tools/creating-skills",
+                  "zh-CN/tools/slash-commands",
+                  "zh-CN/tools/skills",
+                  "zh-CN/tools/skills-config",
+                  "zh-CN/tools/clawhub",
+                  "zh-CN/tools/plugin"
+                ]
+              },
+              {
+                "group": "扩展",
+                "pages": [
+                  "zh-CN/plugins/voice-call",
+                  "zh-CN/plugins/zalouser",
+                  "zh-CN/plugins/manifest",
+                  "zh-CN/plugins/agent-tools",
+                  "zh-CN/prose"
+                ]
+              },
+              {
+                "group": "自动化",
+                "pages": [
+                  "zh-CN/automation/hooks",
+                  "zh-CN/automation/cron-jobs",
+                  "zh-CN/automation/cron-vs-heartbeat",
+                  "zh-CN/automation/troubleshooting",
+                  "zh-CN/automation/webhook",
+                  "zh-CN/automation/gmail-pubsub",
+                  "zh-CN/automation/poll",
+                  "zh-CN/automation/auth-monitoring"
+                ]
+              },
+              {
+                "group": "媒体与设备",
+                "pages": [
+                  "zh-CN/nodes/index",
+                  "zh-CN/nodes/troubleshooting",
+                  "zh-CN/nodes/media-understanding",
+                  "zh-CN/nodes/images",
+                  "zh-CN/nodes/audio",
+                  "zh-CN/nodes/camera",
+                  "zh-CN/nodes/talk",
+                  "zh-CN/nodes/voicewake",
+                  "zh-CN/nodes/location-command",
+                  "zh-CN/tts"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "模型",
+            "groups": [
+              {
+                "group": "概览",
+                "pages": ["zh-CN/providers/index", "zh-CN/providers/models"]
+              },
+              {
+                "group": "模型概念",
+                "pages": ["zh-CN/concepts/models"]
+              },
+              {
+                "group": "配置",
+                "pages": ["zh-CN/concepts/model-providers", "zh-CN/concepts/model-failover"]
+              },
+              {
+                "group": "提供商",
+                "pages": [
+                  "zh-CN/providers/anthropic",
+                  "zh-CN/providers/bedrock",
+                  "zh-CN/providers/claude-max-api-proxy",
+                  "zh-CN/providers/deepgram",
+                  "zh-CN/providers/github-copilot",
+                  "zh-CN/providers/glm",
+                  "zh-CN/providers/moonshot",
+                  "zh-CN/providers/minimax",
+                  "zh-CN/providers/opencode",
+                  "zh-CN/providers/ollama",
+                  "zh-CN/providers/openai",
+                  "zh-CN/providers/openrouter",
+                  "zh-CN/providers/qianfan",
+                  "zh-CN/providers/qwen",
+                  "zh-CN/providers/synthetic",
+                  "zh-CN/providers/venice",
+                  "zh-CN/providers/vercel-ai-gateway",
+                  "zh-CN/providers/xiaomi",
+                  "zh-CN/providers/zai"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "平台",
+            "groups": [
+              {
+                "group": "平台概览",
+                "pages": [
+                  "zh-CN/platforms/index",
+                  "zh-CN/platforms/macos",
+                  "zh-CN/platforms/linux",
+                  "zh-CN/platforms/windows",
+                  "zh-CN/platforms/android",
+                  "zh-CN/platforms/ios",
+                  "zh-CN/platforms/digitalocean",
+                  "zh-CN/platforms/oracle",
+                  "zh-CN/platforms/raspberry-pi"
+                ]
+              },
+              {
+                "group": "macOS 配套应用",
+                "pages": [
+                  "zh-CN/platforms/mac/dev-setup",
+                  "zh-CN/platforms/mac/menu-bar",
+                  "zh-CN/platforms/mac/voicewake",
+                  "zh-CN/platforms/mac/voice-overlay",
+                  "zh-CN/platforms/mac/webchat",
+                  "zh-CN/platforms/mac/canvas",
+                  "zh-CN/platforms/mac/child-process",
+                  "zh-CN/platforms/mac/health",
+                  "zh-CN/platforms/mac/icon",
+                  "zh-CN/platforms/mac/logging",
+                  "zh-CN/platforms/mac/permissions",
+                  "zh-CN/platforms/mac/remote",
+                  "zh-CN/platforms/mac/signing",
+                  "zh-CN/platforms/mac/release",
+                  "zh-CN/platforms/mac/bundled-gateway",
+                  "zh-CN/platforms/mac/xpc",
+                  "zh-CN/platforms/mac/skills",
+                  "zh-CN/platforms/mac/peekaboo"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "网关与运维",
+            "groups": [
+              {
+                "group": "网关",
+                "pages": [
+                  "zh-CN/gateway/index",
+                  {
+                    "group": "配置与运维",
+                    "pages": [
+                      "zh-CN/gateway/configuration",
+                      "zh-CN/gateway/configuration-examples",
+                      "zh-CN/gateway/authentication",
+                      "zh-CN/gateway/health",
+                      "zh-CN/gateway/heartbeat",
+                      "zh-CN/gateway/doctor",
+                      "zh-CN/gateway/logging",
+                      "zh-CN/gateway/gateway-lock",
+                      "zh-CN/gateway/background-process",
+                      "zh-CN/gateway/multiple-gateways",
+                      "zh-CN/gateway/troubleshooting"
+                    ]
+                  },
+                  {
+                    "group": "安全与沙箱",
+                    "pages": [
+                      "zh-CN/gateway/security/index",
+                      "zh-CN/gateway/sandboxing",
+                      "zh-CN/gateway/sandbox-vs-tool-policy-vs-elevated"
+                    ]
+                  },
+                  {
+                    "group": "协议与 API",
+                    "pages": [
+                      "zh-CN/gateway/protocol",
+                      "zh-CN/gateway/bridge-protocol",
+                      "zh-CN/gateway/openai-http-api",
+                      "zh-CN/gateway/openresponses-http-api",
+                      "zh-CN/gateway/tools-invoke-http-api",
+                      "zh-CN/gateway/cli-backends",
+                      "zh-CN/gateway/local-models"
+                    ]
+                  },
+                  {
+                    "group": "网络与发现",
+                    "pages": [
+                      "zh-CN/gateway/network-model",
+                      "zh-CN/gateway/pairing",
+                      "zh-CN/gateway/discovery",
+                      "zh-CN/gateway/bonjour"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "远程访问",
+                "pages": [
+                  "zh-CN/gateway/remote",
+                  "zh-CN/gateway/remote-gateway-readme",
+                  "zh-CN/gateway/tailscale"
+                ]
+              },
+              {
+                "group": "运维专题",
+                "pages": ["zh-CN/network", "zh-CN/logging"]
+              },
+              {
+                "group": "安全",
+                "pages": ["zh-CN/security/formal-verification"]
+              },
+              {
+                "group": "Web 界面",
+                "pages": [
+                  "zh-CN/web/index",
+                  "zh-CN/web/control-ui",
+                  "zh-CN/web/dashboard",
+                  "zh-CN/web/webchat",
+                  "zh-CN/web/tui"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "参考",
+            "groups": [
+              {
+                "group": "CLI 命令",
+                "pages": [
+                  "zh-CN/cli/index",
+                  "zh-CN/cli/acp",
+                  "zh-CN/cli/agent",
+                  "zh-CN/cli/agents",
+                  "zh-CN/cli/approvals",
+                  "zh-CN/cli/browser",
+                  "zh-CN/cli/channels",
+                  "zh-CN/cli/config",
+                  "zh-CN/cli/configure",
+                  "zh-CN/cli/cron",
+                  "zh-CN/cli/dashboard",
+                  "zh-CN/cli/devices",
+                  "zh-CN/cli/directory",
+                  "zh-CN/cli/dns",
+                  "zh-CN/cli/docs",
+                  "zh-CN/cli/doctor",
+                  "zh-CN/cli/gateway",
+                  "zh-CN/cli/health",
+                  "zh-CN/cli/hooks",
+                  "zh-CN/cli/logs",
+                  "zh-CN/cli/memory",
+                  "zh-CN/cli/message",
+                  "zh-CN/cli/models",
+                  "zh-CN/cli/node",
+                  "zh-CN/cli/nodes",
+                  "zh-CN/cli/onboard",
+                  "zh-CN/cli/pairing",
+                  "zh-CN/cli/plugins",
+                  "zh-CN/cli/reset",
+                  "zh-CN/cli/sandbox",
+                  "zh-CN/cli/security",
+                  "zh-CN/cli/sessions",
+                  "zh-CN/cli/setup",
+                  "zh-CN/cli/skills",
+                  "zh-CN/cli/status",
+                  "zh-CN/cli/system",
+                  "zh-CN/cli/tui",
+                  "zh-CN/cli/uninstall",
+                  "zh-CN/cli/update",
+                  "zh-CN/cli/voicecall",
+                  "zh-CN/cli/webhooks"
+                ]
+              },
+              {
+                "group": "RPC 与 API",
+                "pages": ["zh-CN/reference/rpc", "zh-CN/reference/device-models"]
+              },
+              {
+                "group": "模板",
+                "pages": [
+                  "zh-CN/reference/AGENTS.default",
+                  "zh-CN/reference/templates/AGENTS",
+                  "zh-CN/reference/templates/BOOT",
+                  "zh-CN/reference/templates/BOOTSTRAP",
+                  "zh-CN/reference/templates/HEARTBEAT",
+                  "zh-CN/reference/templates/IDENTITY",
+                  "zh-CN/reference/templates/SOUL",
+                  "zh-CN/reference/templates/TOOLS",
+                  "zh-CN/reference/templates/USER"
+                ]
+              },
+              {
+                "group": "技术参考",
+                "pages": [
+                  "zh-CN/reference/wizard",
+                  "zh-CN/reference/token-use",
+                  "zh-CN/reference/api-usage-costs",
+                  "zh-CN/reference/transcript-hygiene",
+                  "zh-CN/date-time"
+                ]
+              },
+              {
+                "group": "概念内部机制",
+                "pages": [
+                  "zh-CN/concepts/typebox",
+                  "zh-CN/concepts/markdown-formatting",
+                  "zh-CN/concepts/typing-indicators",
+                  "zh-CN/concepts/usage-tracking",
+                  "zh-CN/concepts/timezone"
+                ]
+              },
+              {
+                "group": "项目",
+                "pages": ["zh-CN/reference/credits"]
+              },
+              {
+                "group": "发布说明",
+                "pages": ["zh-CN/reference/RELEASING", "zh-CN/reference/test"]
+              },
+              {
+                "group": "实验性功能",
+                "pages": [
+                  "zh-CN/experiments/onboarding-config-protocol",
+                  "zh-CN/experiments/plans/openresponses-gateway",
+                  "zh-CN/experiments/plans/cron-add-hardening",
+                  "zh-CN/experiments/plans/group-policy-hardening",
+                  "zh-CN/experiments/research/memory",
+                  "zh-CN/experiments/proposals/model-config"
+                ]
+              },
+              {
+                "group": "重构方案",
+                "pages": [
+                  "zh-CN/refactor/clawnet",
+                  "zh-CN/refactor/exec-host",
+                  "zh-CN/refactor/outbound-session-mirroring",
+                  "zh-CN/refactor/plugin-sdk",
+                  "zh-CN/refactor/strict-config"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "帮助",
+            "groups": [
+              {
+                "group": "帮助",
+                "pages": ["zh-CN/help/index", "zh-CN/help/troubleshooting", "zh-CN/help/faq"]
+              },
+              {
+                "group": "社区",
+                "pages": ["zh-CN/start/lore"]
+              },
+              {
+                "group": "环境与调试",
+                "pages": [
+                  "zh-CN/help/environment",
+                  "zh-CN/help/debugging",
+                  "zh-CN/help/testing",
+                  "zh-CN/help/scripts",
+                  "zh-CN/debug/node-issue",
+                  "zh-CN/diagnostics/flags"
+                ]
+              },
+              {
+                "group": "Node 运行时",
+                "pages": ["zh-CN/install/node"]
+              },
+              {
+                "group": "压缩机制内部参考",
+                "pages": ["zh-CN/reference/session-management-compaction"]
+              },
+              {
+                "group": "开发者设置",
+                "pages": ["zh-CN/start/setup", "zh-CN/pi-dev"]
+              },
+              {
+                "group": "文档元信息",
+                "pages": ["zh-CN/start/hubs", "zh-CN/start/docs-directory", "zh-CN/AGENTS"]
               }
             ]
           }
@@ -1474,28 +2001,22 @@
         "language": "ja",
         "tabs": [
           {
-            "tab": "はじめに",
+            "tab": "Get started",
             "groups": [
               {
-                "group": "ホーム",
-                "pages": [
-                  "ja-JP/index"
-                ]
+                "group": "Home",
+                "pages": ["ja-JP/index"]
               },
               {
-                "group": "概要",
-                "pages": [
-                  "ja-JP/start/showcase"
-                ]
+                "group": "Overview",
+                "pages": ["ja-JP/start/showcase"]
               },
               {
-                "group": "基本概念",
-                "pages": [
-                  "ja-JP/concepts/features"
-                ]
+                "group": "Core concepts",
+                "pages": ["ja-JP/concepts/features"]
               },
               {
-                "group": "最初のステップ",
+                "group": "First steps",
                 "pages": [
                   "ja-JP/start/getting-started",
                   "ja-JP/start/onboarding-overview",
@@ -1504,7 +2025,7 @@
                 ]
               },
               {
-                "group": "ガイド",
+                "group": "Guides",
                 "pages": [
                   "ja-JP/start/openclaw",
                   "ja-JP/start/wizard-cli-reference",
@@ -1514,17 +2035,14 @@
             ]
           },
           {
-            "tab": "インストール",
+            "tab": "Install",
             "groups": [
               {
-                "group": "インストール概要",
-                "pages": [
-                  "ja-JP/install/index",
-                  "ja-JP/install/installer"
-                ]
+                "group": "Install overview",
+                "pages": ["ja-JP/install/index", "ja-JP/install/installer"]
               },
               {
-                "group": "その他の方法",
+                "group": "Other install methods",
                 "pages": [
                   "ja-JP/install/docker",
                   "ja-JP/install/podman",
@@ -1534,15 +2052,11 @@
                 ]
               },
               {
-                "group": "メンテナンス",
-                "pages": [
-                  "ja-JP/install/updating",
-                  "ja-JP/install/migrating",
-                  "ja-JP/install/uninstall"
-                ]
+                "group": "Maintenance",
+                "pages": ["ja-JP/install/updating", "ja-JP/install/migrating", "ja-JP/install/uninstall"]
               },
               {
-                "group": "ホスティングとデプロイ",
+                "group": "Hosting and deployment",
                 "pages": [
                   "ja-JP/vps",
                   "ja-JP/install/fly",
@@ -1556,24 +2070,20 @@
                 ]
               },
               {
-                "group": "高度な設定",
-                "pages": [
-                  "ja-JP/install/development-channels"
-                ]
+                "group": "Advanced",
+                "pages": ["ja-JP/install/development-channels"]
               }
             ]
           },
           {
-            "tab": "チャンネル",
+            "tab": "Channels",
             "groups": [
               {
-                "group": "概要",
-                "pages": [
-                  "ja-JP/channels/index"
-                ]
+                "group": "Overview",
+                "pages": ["ja-JP/channels/index"]
               },
               {
-                "group": "メッセージングプラットフォーム",
+                "group": "Messaging platforms",
                 "pages": [
                   "ja-JP/channels/bluebubbles",
                   "ja-JP/channels/discord",
@@ -1599,7 +2109,7 @@
                 ]
               },
               {
-                "group": "設定",
+                "group": "Configuration",
                 "pages": [
                   "ja-JP/channels/pairing",
                   "ja-JP/channels/group-messages",
@@ -1613,10 +2123,10 @@
             ]
           },
           {
-            "tab": "エージェント",
+            "tab": "Agents",
             "groups": [
               {
-                "group": "基礎",
+                "group": "Fundamentals",
                 "pages": [
                   "ja-JP/pi",
                   "ja-JP/concepts/architecture",
@@ -1629,13 +2139,11 @@
                 ]
               },
               {
-                "group": "ブートストラップ",
-                "pages": [
-                  "ja-JP/start/bootstrapping"
-                ]
+                "group": "Bootstrapping",
+                "pages": ["ja-JP/start/bootstrapping"]
               },
               {
-                "group": "セッションとメモリ",
+                "group": "Sessions and memory",
                 "pages": [
                   "ja-JP/concepts/session",
                   "ja-JP/concepts/session-pruning",
@@ -1645,14 +2153,11 @@
                 ]
               },
               {
-                "group": "マルチエージェント",
-                "pages": [
-                  "ja-JP/concepts/multi-agent",
-                  "ja-JP/concepts/presence"
-                ]
+                "group": "Multi-agent",
+                "pages": ["ja-JP/concepts/multi-agent", "ja-JP/concepts/presence"]
               },
               {
-                "group": "メッセージと配信",
+                "group": "Messages and delivery",
                 "pages": [
                   "ja-JP/concepts/messages",
                   "ja-JP/concepts/streaming",
@@ -1663,16 +2168,14 @@
             ]
           },
           {
-            "tab": "ツール",
+            "tab": "Tools",
             "groups": [
               {
-                "group": "概要",
-                "pages": [
-                  "ja-JP/tools/index"
-                ]
+                "group": "Overview",
+                "pages": ["ja-JP/tools/index"]
               },
               {
-                "group": "組み込みツール",
+                "group": "Built-in tools",
                 "pages": [
                   "ja-JP/tools/apply-patch",
                   "ja-JP/brave-search",
@@ -1692,7 +2195,7 @@
                 ]
               },
               {
-                "group": "ブラウザ",
+                "group": "Browser",
                 "pages": [
                   "ja-JP/tools/browser",
                   "ja-JP/tools/browser-login",
@@ -1702,7 +2205,7 @@
                 ]
               },
               {
-                "group": "エージェント連携",
+                "group": "Agent coordination",
                 "pages": [
                   "ja-JP/tools/agent-send",
                   "ja-JP/tools/subagents",
@@ -1711,7 +2214,7 @@
                 ]
               },
               {
-                "group": "スキル",
+                "group": "Skills",
                 "pages": [
                   "ja-JP/tools/creating-skills",
                   "ja-JP/tools/slash-commands",
@@ -1722,7 +2225,7 @@
                 ]
               },
               {
-                "group": "拡張機能",
+                "group": "Extensions",
                 "pages": [
                   "ja-JP/plugins/community",
                   "ja-JP/plugins/voice-call",
@@ -1733,7 +2236,7 @@
                 ]
               },
               {
-                "group": "自動化",
+                "group": "Automation",
                 "pages": [
                   "ja-JP/automation/hooks",
                   "ja-JP/automation/cron-jobs",
@@ -1746,7 +2249,7 @@
                 ]
               },
               {
-                "group": "メディアとデバイス",
+                "group": "Media and devices",
                 "pages": [
                   "ja-JP/nodes/index",
                   "ja-JP/nodes/troubleshooting",
@@ -1763,29 +2266,22 @@
             ]
           },
           {
-            "tab": "モデル",
+            "tab": "Models",
             "groups": [
               {
-                "group": "概要",
-                "pages": [
-                  "ja-JP/providers/index"
-                ]
+                "group": "Overview",
+                "pages": ["ja-JP/providers/index"]
               },
               {
-                "group": "モデルの概念",
-                "pages": [
-                  "ja-JP/concepts/models"
-                ]
+                "group": "Model concepts",
+                "pages": ["ja-JP/concepts/models"]
               },
               {
-                "group": "設定",
-                "pages": [
-                  "ja-JP/concepts/model-providers",
-                  "ja-JP/concepts/model-failover"
-                ]
+                "group": "Configuration",
+                "pages": ["ja-JP/concepts/model-providers", "ja-JP/concepts/model-failover"]
               },
               {
-                "group": "プロバイダー",
+                "group": "Providers",
                 "pages": [
                   "ja-JP/providers/anthropic",
                   "ja-JP/providers/bedrock",
@@ -1819,10 +2315,10 @@
             ]
           },
           {
-            "tab": "プラットフォーム",
+            "tab": "Platforms",
             "groups": [
               {
-                "group": "プラットフォーム概要",
+                "group": "Platforms overview",
                 "pages": [
                   "ja-JP/platforms/index",
                   "ja-JP/platforms/macos",
@@ -1836,7 +2332,7 @@
                 ]
               },
               {
-                "group": "macOSコンパニオンアプリ",
+                "group": "macOS companion app",
                 "pages": [
                   "ja-JP/platforms/mac/dev-setup",
                   "ja-JP/platforms/mac/menu-bar",
@@ -1861,14 +2357,14 @@
             ]
           },
           {
-            "tab": "Gatewayと運用",
+            "tab": "Gateway & Ops",
             "groups": [
               {
                 "group": "Gateway",
                 "pages": [
                   "ja-JP/gateway/index",
                   {
-                    "group": "設定と運用",
+                    "group": "Configuration and operations",
                     "pages": [
                       "ja-JP/gateway/configuration",
                       "ja-JP/gateway/configuration-reference",
@@ -1889,7 +2385,7 @@
                     ]
                   },
                   {
-                    "group": "セキュリティとサンドボックス",
+                    "group": "Security and sandboxing",
                     "pages": [
                       "ja-JP/gateway/security/index",
                       "ja-JP/gateway/sandboxing",
@@ -1897,7 +2393,7 @@
                     ]
                   },
                   {
-                    "group": "プロトコルとAPI",
+                    "group": "Protocols and APIs",
                     "pages": [
                       "ja-JP/gateway/protocol",
                       "ja-JP/gateway/bridge-protocol",
@@ -1909,7 +2405,7 @@
                     ]
                   },
                   {
-                    "group": "ネットワークと検出",
+                    "group": "Networking and discovery",
                     "pages": [
                       "ja-JP/gateway/network-model",
                       "ja-JP/gateway/pairing",
@@ -1920,39 +2416,29 @@
                 ]
               },
               {
-                "group": "リモートアクセス",
-                "pages": [
-                  "ja-JP/gateway/remote",
-                  "ja-JP/gateway/remote-gateway-readme",
-                  "ja-JP/gateway/tailscale"
-                ]
+                "group": "Remote access",
+                "pages": ["ja-JP/gateway/remote", "ja-JP/gateway/remote-gateway-readme", "ja-JP/gateway/tailscale"]
               },
               {
-                "group": "セキュリティ",
+                "group": "Security",
                 "pages": [
                   "ja-JP/security/formal-verification",
-                  "ja-JP/security/index",
+                  "ja-JP/security/README",
                   "ja-JP/security/THREAT-MODEL-ATLAS",
                   "ja-JP/security/CONTRIBUTING-THREAT-MODEL"
                 ]
               },
               {
-                "group": "Webインターフェース",
-                "pages": [
-                  "ja-JP/web/index",
-                  "ja-JP/web/control-ui",
-                  "ja-JP/web/dashboard",
-                  "ja-JP/web/webchat",
-                  "ja-JP/web/tui"
-                ]
+                "group": "Web interfaces",
+                "pages": ["ja-JP/web/index", "ja-JP/web/control-ui", "ja-JP/web/dashboard", "ja-JP/web/webchat", "ja-JP/web/tui"]
               }
             ]
           },
           {
-            "tab": "リファレンス",
+            "tab": "Reference",
             "groups": [
               {
-                "group": "CLIコマンド",
+                "group": "CLI commands",
                 "pages": [
                   "ja-JP/cli/index",
                   "ja-JP/cli/acp",
@@ -2003,14 +2489,11 @@
                 ]
               },
               {
-                "group": "RPCとAPI",
-                "pages": [
-                  "ja-JP/reference/rpc",
-                  "ja-JP/reference/device-models"
-                ]
+                "group": "RPC and API",
+                "pages": ["ja-JP/reference/rpc", "ja-JP/reference/device-models"]
               },
               {
-                "group": "テンプレート",
+                "group": "Templates",
                 "pages": [
                   "ja-JP/reference/AGENTS.default",
                   "ja-JP/reference/templates/AGENTS",
@@ -2024,7 +2507,7 @@
                 ]
               },
               {
-                "group": "技術リファレンス",
+                "group": "Technical reference",
                 "pages": [
                   "ja-JP/reference/wizard",
                   "ja-JP/reference/token-use",
@@ -2036,7 +2519,7 @@
                 ]
               },
               {
-                "group": "内部構造",
+                "group": "Concept internals",
                 "pages": [
                   "ja-JP/concepts/typebox",
                   "ja-JP/concepts/markdown-formatting",
@@ -2046,20 +2529,15 @@
                 ]
               },
               {
-                "group": "プロジェクト",
-                "pages": [
-                  "ja-JP/reference/credits"
-                ]
+                "group": "Project",
+                "pages": ["ja-JP/reference/credits"]
               },
               {
-                "group": "リリースノート",
-                "pages": [
-                  "ja-JP/reference/RELEASING",
-                  "ja-JP/reference/test"
-                ]
+                "group": "Release notes",
+                "pages": ["ja-JP/reference/RELEASING", "ja-JP/reference/test"]
               },
               {
-                "group": "実験的機能",
+                "group": "Experiments",
                 "pages": [
                   "ja-JP/design/kilo-gateway-integration",
                   "ja-JP/experiments/onboarding-config-protocol",
@@ -2076,24 +2554,18 @@
             ]
           },
           {
-            "tab": "ヘルプ",
+            "tab": "Help",
             "groups": [
               {
-                "group": "ヘルプ",
-                "pages": [
-                  "ja-JP/help/index",
-                  "ja-JP/help/troubleshooting",
-                  "ja-JP/help/faq"
-                ]
+                "group": "Help",
+                "pages": ["ja-JP/help/index", "ja-JP/help/troubleshooting", "ja-JP/help/faq"]
               },
               {
-                "group": "コミュニティ",
-                "pages": [
-                  "ja-JP/start/lore"
-                ]
+                "group": "Community",
+                "pages": ["ja-JP/start/lore"]
               },
               {
-                "group": "環境とデバッグ",
+                "group": "Environment and debugging",
                 "pages": [
                   "ja-JP/help/environment",
                   "ja-JP/help/debugging",
@@ -2104,36 +2576,24 @@
                 ]
               },
               {
-                "group": "Nodeランタイム",
-                "pages": [
-                  "ja-JP/install/node"
-                ]
+                "group": "Node runtime",
+                "pages": ["ja-JP/install/node"]
               },
               {
-                "group": "コンパクション内部",
-                "pages": [
-                  "ja-JP/reference/session-management-compaction"
-                ]
+                "group": "Compaction internals",
+                "pages": ["ja-JP/reference/session-management-compaction"]
               },
               {
-                "group": "開発環境",
-                "pages": [
-                  "ja-JP/start/setup",
-                  "ja-JP/pi-dev"
-                ]
+                "group": "Developer setup",
+                "pages": ["ja-JP/start/setup", "ja-JP/pi-dev"]
               },
               {
-                "group": "コントリビューション",
-                "pages": [
-                  "ja-JP/ci"
-                ]
+                "group": "Contributing",
+                "pages": ["ja-JP/ci"]
               },
               {
-                "group": "ドキュメントメタ",
-                "pages": [
-                  "ja-JP/start/hubs",
-                  "ja-JP/start/docs-directory"
-                ]
+                "group": "Docs meta",
+                "pages": ["ja-JP/start/hubs", "ja-JP/start/docs-directory"]
               }
             ]
           }

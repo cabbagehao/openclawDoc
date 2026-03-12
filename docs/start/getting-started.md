@@ -1,5 +1,4 @@
 ---
-description: "Install OpenClaw, run the onboarding wizard, verify the gateway, and start your first chat in minutes."
 summary: "Get OpenClaw installed and run your first chat in minutes."
 read_when:
   - First time setup from zero

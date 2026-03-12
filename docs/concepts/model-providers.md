@@ -180,14 +180,20 @@ Moonshot uses OpenAI-compatible endpoints, so configure it as a custom provider:
 
 Kimi K2 model IDs:
 
-{/_moonshot-kimi-k2-model-refs:start_/}
+<!-- markdownlint-disable MD037 -->
+
+{/_ moonshot-kimi-k2-model-refs:start _/ && null}
+
+<!-- markdownlint-enable MD037 -->
 
 - `moonshot/kimi-k2.5`
 - `moonshot/kimi-k2-0905-preview`
 - `moonshot/kimi-k2-turbo-preview`
 - `moonshot/kimi-k2-thinking`
 - `moonshot/kimi-k2-thinking-turbo`
-  {/_moonshot-kimi-k2-model-refs:end_/}
+  <!-- markdownlint-disable MD037 -->
+  {/_ moonshot-kimi-k2-model-refs:end _/ && null}
+  <!-- markdownlint-enable MD037 -->
 
 ```json5
 {
