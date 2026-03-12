@@ -1,11 +1,12 @@
 ---
 summary: "耐久性のある状態とビルド時に組み込んだバイナリを備え、安価な Hetzner VPS 上で OpenClaw ゲートウェイを 24 時間 365 日動かす"
+description: "Hetzner VPS と Docker で OpenClaw を常時運用するための導入、永続化、再起動時の構成を説明します。"
 read_when:
   - OpenClaw をノート PC ではなくクラウド VPS 上で常時稼働させたい
   - 自前の VPS 上で本番向けの常時稼働ゲートウェイを構築したい
   - 永続化、バイナリ、再起動挙動を完全に制御したい
   - Hetzner または類似プロバイダー上で Docker 版 OpenClaw を運用している
-title: "Hetzner"
+title: "Hetzner VPS で OpenClaw を常時運用する導入手順"
 x-i18n:
   source_hash: "97339c7ddb8b9007fa51bb5c31b1fe5d2b1e190239216df3bd83ed8859f5dae1"
 ---

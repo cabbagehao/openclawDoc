@@ -3,7 +3,8 @@ summary: "ゲートウェイ + CLI 経由の投票送信"
 read_when:
   - 投票サポートの追加または変更時
   - CLI やゲートウェイからの投票送信をデバッグする場合
-title: "投票"
+title: "OpenClawの投票メッセージ機能の送信方法と対応チャネル設定ガイド"
+description: "--channel: whatsapp（デフォルト）、telegram、discord、または msteams --poll-multi: 複数選択を許可。対応チャンネル、CLI、ゲートウェイ RPCを確認できます。"
 x-i18n:
   source_path: "automation/poll.md"
   source_hash: "b2dfc8c649d24cfd3b2bf1c7af52709a34db87109b842cfdeda74ff74063ff3e"

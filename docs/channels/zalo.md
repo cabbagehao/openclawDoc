@@ -2,7 +2,8 @@
 summary: "Zalo ボットのサポートステータス、機能、および構成"
 read_when:
   - Zalo 連携や webhook の設定を行う場合
-title: "Zalo"
+title: "OpenClawのZaloボット連携の設定方法と利用フローガイド"
+description: "Zalo ボットを OpenClaw に接続する設定ガイドです。実験的サポートの範囲、Webhook 構成、DM とグループ運用を確認できます。"
 x-i18n:
   source_hash: "5c787e2a8c1c335df02a6676482a1fedfb79728af4cc54e4c8097221a6abca6e"
 ---

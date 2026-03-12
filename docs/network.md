@@ -1,10 +1,11 @@
 ---
 summary: "ネットワークハブ: ゲートウェイの接続面、ペアリング、検出、セキュリティ"
+description: "localhost、LAN、tailnet をまたぐ接続、ペアリング、検出、安全性に関するネットワーク文書への入口です。"
 read_when:
   - ネットワーク構成とセキュリティの概要を把握したいとき
   - ローカルアクセスと tailnet アクセス、またはペアリングを切り分けるとき
   - ネットワーク関連ドキュメントの正規一覧を確認したいとき
-title: "Network"
+title: "OpenClawのゲートウェイ接続と検出・保護を整理するネットワーク構成ガイド"
 x-i18n:
   source_hash: "6a0d5080db73de4c21d9bf376059f6c4a26ab129c8280ce6b1f54fa9ace48beb"
 ---

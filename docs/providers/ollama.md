@@ -3,7 +3,8 @@ summary: "Ollama で OpenClaw を実行する (ローカル LLM ランタイム)
 read_when:
   - Ollama 経由でローカル モデルで OpenClaw を実行したい
   - Ollama のセットアップと構成のガイダンスが必要です
-title: "オラマ"
+title: "OpenClawでOllamaローカルLLMを使う接続・モデル設定ガイド"
+description: "Ollama を使ってローカル LLM を OpenClaw に接続する方法をまとめます。ネイティブ API 連携、自動検出、認証と provider 設定の考え方を確認できます。"
 x-i18n:
   source_hash: "bdd202620fbdb26db54a45554ec4c33910bde53dd37da5729ab60bb57fbccedf"
 ---

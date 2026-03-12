@@ -4,7 +4,8 @@ read_when:
   - OpenClaw.app のパッケージ化
   - macOS ゲートウェイ launchd サービスのデバッグ
   - macOS 用のゲートウェイ CLI のインストール
-title: "macOS のゲートウェイ"
+title: "OpenClawのmacOS のゲートウェイ の仕組み・設定手順・運用ガイド"
+description: "OpenClaw.app には、Node / Bun やゲートウェイ ランタイムは同梱されなくなりました。macOS アプリは 外部の openclaw CLI がインストールされていることを前提とし、ゲートウェイを子プロセスとして起動しません。"
 x-i18n:
   source_hash: "c1ba561b24f093a6bf0a5cc1258a443464cdaa7cdfae656ec1629a94442bf46d"
 ---

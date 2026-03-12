@@ -1,11 +1,12 @@
 ---
 summary: "分離や iMessage が必要な場合に、サンドボックス化された macOS VM (ローカルまたはホスト型) で OpenClaw を実行する"
+description: "iMessage や分離環境が必要な場合に、macOS VM 上で OpenClaw を動かす構成と注意点を説明します。"
 read_when:
   - メインの macOS 環境から分離された OpenClaw を求めている場合
   - サンドボックス内で iMessage 統合 (BlueBubbles) を使用したい場合
   - クローン可能な、リセット可能な macOS 環境が必要な場合
   - ローカルとホスト型の macOS VM オプションを比較したい場合
-title: "macOS VMs"
+title: "macOS VM 上で OpenClaw を分離運用する構成ガイド"
 ---
 ## 推奨されるデフォルト (ほとんどのユーザー向け)
 

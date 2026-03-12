@@ -1,9 +1,10 @@
 ---
 summary: "OpenClawのオンボーディングオプションとフローの概要"
+description: "実行環境や接続方法に応じた OpenClaw のオンボーディング経路を比較し、適切な始め方を案内します。"
 read_when:
   - オンボーディングパスの選択
   - 新しい環境のセットアップ
-title: "オンボーディング概要"
+title: "OpenClaw のオンボーディング手段と環境別の選び方の導入手順と使い始め方を確認するガイド"
 sidebarTitle: "オンボーディング概要"
 x-i18n:
   source_path: "start/onboarding-overview.md"

@@ -4,7 +4,8 @@ read_when:
   - Moonshot K2 (Moonshot Open Platform) と Kimicoding のセットアップが必要な場合
   - 個別のエンドポイント、キー、モデル参照を理解する必要がある
   - いずれかのプロバイダーの設定をコピー/ペーストする必要がある
-title: "ムーンショットAI"
+title: "OpenClawでMoonshot K2とKimi Codingを使う設定ガイド"
+description: "Moonshot K2 と Kimi Coding を OpenClaw で使う設定ガイドです。provider の分け方、API キー、既定モデルの指定方法を整理しています。"
 x-i18n:
   source_hash: "fb44b0d1213834934aac9b049193104d65fe01dbedc73558495d3cc8a1d3b6bf"
 ---

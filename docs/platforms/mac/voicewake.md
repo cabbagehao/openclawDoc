@@ -2,7 +2,8 @@
 summary: "音声ウェイク モードとプッシュトゥトーク モードに加え、Mac アプリでのルーティングの詳細"
 read_when:
   - 音声ウェイクや PTT の経路を扱うとき
-title: "ボイスウェイク"
+title: "OpenClawのmacOS ボイスウェイク の仕組み・設定手順・運用ガイド"
+description: "Speech recognizer は VoiceWakeRuntime にあります。トリガーは、ウェイクワードと次の単語の間に 意味のある間 がある場合にのみ発火します (およそ 0.55 秒のギャップ)。"
 x-i18n:
   source_hash: "f6440bb89f349ba5c1c9aacffe95e568681beb9899ca736dedfe2f4a366cb5e4"
 ---

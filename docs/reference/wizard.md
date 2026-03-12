@@ -4,7 +4,8 @@ read_when:
   - 特定のウィザードのステップまたはフラグを検索する
   - 非対話型モードによるオンボーディングの自動化
   - デバッグウィザードの動作
-title: "オンボーディング ウィザードのリファレンス"
+title: "OpenClawオンボーディングウィザードの設定項目リファレンス"
+description: "これは、openclaw onboard CLI ウィザードの完全なリファレンスです。高レベルの概要については、オンボーディング ウィザード を参照してください。"
 sidebarTitle: "Wizard Reference"
 x-i18n:
   source_hash: "5b263d1ac76097b11894d62b521ac654c1204f7ecf4f9fe8a6be627ab7f9e06c"

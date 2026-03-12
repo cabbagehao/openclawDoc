@@ -1,7 +1,8 @@
 ---
 summary: "エージェントごとのサンドボックス + ツールの制限、優先順位、および例"
-title: "マルチエージェントサンドボックスとツール"
+title: "OpenClawマルチエージェント用サンドボックスとツール運用ガイド"
 read_when: "You want per-agent sandboxing or per-agent tool allow/deny policies in a multi-agent gateway."
+description: "マルチエージェント設定内の各エージェントは、独自のものを持つことができるようになりました。これにより、異なるセキュリティ プロファイルを使用して複数のエージェントを実行できるようになります。"
 status: active
 x-i18n:
   source_hash: "3e4de14530209ddb899d2366a40981b9063a081cf515cfd770f1d2144359acb9"

@@ -1,8 +1,8 @@
 ---
-title: "SOUL.md テンプレート"
+title: "OpenClawののSOUL テンプレートの用途・記述ルール・設定例"
 summary: "SOUL.md のワークスペース テンプレート"
 read_when:
-  - ワークスペースを手動でブートストラップする
+description: "あなたはチャットボットではありません。あなたは何者かになりつつあります。核となる真実、境界、バイブを確認できます。"
 x-i18n:
   source_hash: "7bdb267d5e9e905507bf836c2d3a2029921942383ac55cffd25eaed11433616c"
 ---

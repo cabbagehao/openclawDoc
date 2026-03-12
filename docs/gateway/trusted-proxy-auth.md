@@ -1,11 +1,12 @@
 ---
 summary: "ゲートウェイの認証を、信頼できるリバースプロキシ（Pomerium, Caddy, nginx + OAuthなど）に委任する方法"
+description: "Pomerium や nginx など信頼できるリバースプロキシに認証を委任する仕組み、設定例、TLS/HSTS、監査と移行手順を説明します。"
 read_when:
   - ID認識プロキシの背後でOpenClawを運用する場合
   - OpenClawの前段にOAuthを適用したPomerium, Caddy, nginx等を設置する場合
   - リバースプロキシ環境でWebSocketの「1008 unauthorized」エラーを解消したい場合
   - HSTSやその他のHTTPセキュリティヘッダーの設定場所を検討している場合
-title: "信頼されたプロキシ認証 (Trusted Proxy Auth)"
+title: "OpenClaw trusted-proxy 認証設定とリバースプロキシ導入ガイド"
 ---
 > ⚠️ **セキュリティ上の重要な機能です。** このモードでは、認証を完全にリバースプロキシに委任します。設定を誤ると、ゲートウェイが不正アクセスにさらされる可能性があります。有効化する前に、このページをよくお読みください。
 

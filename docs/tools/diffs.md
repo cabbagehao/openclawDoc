@@ -1,7 +1,7 @@
 ---
-title: "差分"
+title: "OpenClaw差分表示ツールの見方と活用ポイントガイド"
 summary: "エージェント用の読み取り専用の差分ビューアとファイル レンダラー (オプションのプラグイン ツール)"
-description: "Use the optional Diffs plugin to render before and after text or unified patches as a gateway-hosted diff view, a file (PNG or PDF), or both."
+description: "差分の数 diffs は、短い組み込みシステム ガイダンスと、変更内容をエージェント向けの読み取り専用の差分アーティファクトに変換するコンパニオン スキルを備えたオプションのプラグイン ツールです。"
 read_when:
   - エージェントにコードまたはマークダウンの編集内容を差分として表示したい
   - キャンバス対応のビューア URL またはレンダリングされた diff ファイルが必要な場合
@@ -9,7 +9,6 @@ read_when:
 x-i18n:
   source_hash: "ef3b7a0fb4c20da0eef5f8d7f44668d979486a5a3d648d4abccd09388c69eea0"
 ---
-
 差分の数
 
 `diffs` は、短い組み込みシステム ガイダンスと、変更内容をエージェント向けの読み取り専用の差分アーティファクトに変換するコンパニオン スキルを備えたオプションのプラグイン ツールです。

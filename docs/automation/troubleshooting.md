@@ -4,7 +4,8 @@ read_when:
   - cron が実行されなかった
   - cron は実行されたがメッセージが配信されなかった
   - heartbeat が止まっている、またはスキップされているように見える
-title: "自動化のトラブルシューティング"
+title: "OpenClawのcronとHeartbeatの不具合を切り分ける対処ガイド"
+description: "このページは、スケジューラーと配信まわり（cron + heartbeat）の問題を切り分けるためのものです。確認コマンドの順番、cron が動かない、cron は動いたが配信されないを確認できます。"
 x-i18n:
   source_path: "automation/troubleshooting.md"
   source_hash: "da9ccbd94651fedba573f4f344c1981d6e38d2023c19edd737dc71ce35a4bac2"

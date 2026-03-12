@@ -3,7 +3,8 @@ summary: "Talk mode: ElevenLabs TTS を使った連続音声会話"
 read_when:
   - macOS / iOS / Android で Talk mode を実装するとき
   - 音声 / TTS / 割り込み挙動を変更するとき
-title: "Talk Mode"
+title: "OpenClawのTalkモードの使い方と音声会話フロー設定ガイド"
+description: "Talk mode は、継続的な音声会話ループです。挙動（macOS）、応答内の voice directive、設定（~/.openclaw/openclaw.json）を確認できます。"
 x-i18n:
   source_hash: "34ceb3669c5f9c166af6951ab8c6fcb0e626ed487de5cbe9449bcf9ba4aa12ac"
 ---

@@ -6,7 +6,8 @@ read_when:
 owner: "openclaw"
 status: "in-progress"
 last_updated: "2026-02-15"
-title: "PTY とプロセス監視の計画"
+title: "OpenClawのPTY とプロセス監視の計画 の狙い・設計案・検証ポイント"
+description: "次の長時間コマンド実行をまたいで、単一で信頼できるライフサイクルが必要です。目標は単に PTY をサポートすることではありません。危険なプロセス照合ヒューリスティクスに頼らず、所有権、キャンセル、タイムアウト、クリーンアップを予測可能にすることが目的です。"
 x-i18n:
   source_hash: "cc45c8a9862d59261f3f3ef57a6a332f3b7691613bf338e1088c924c43dc103f"
 ---

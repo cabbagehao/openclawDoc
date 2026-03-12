@@ -2,7 +2,8 @@
 summary: "/think + /verbose のディレクティブ構文とそれらがモデル推論に与える影響"
 read_when:
   - 思考または詳細なディレクティブ解析またはデフォルトの調整
-title: "思考レベル"
+title: "OpenClaw思考レベル設定の使い方と制御ポイントガイド"
+description: "2. セッションオーバーライド (ディレクティブ専用メッセージの送信によって設定)。3. グローバルデフォルト (構成内の agents.defaults.thinkingDefault)。"
 x-i18n:
   source_hash: "8553ee7532439b0c61346679a95063049c9430e6bf5307012154bb9735bed961"
 ---

@@ -1,10 +1,11 @@
 ---
 summary: "OpenProse: OpenClaw における .prose ワークフロー、slash command、状態管理"
+description: "OpenProse の .prose ワークフロー、slash command、sub-agent 実行の仕組みと使いどころを説明します。"
 read_when:
   - .prose ワークフローを実行または作成したいとき
   - OpenProse プラグインを有効化したいとき
   - 状態ストレージの仕組みを理解したいとき
-title: "OpenProse"
+title: "OpenClawのOpenProseワークフローとスラッシュコマンド活用ガイド"
 ---
 OpenProse は、AI セッションをオーケストレーションするための、ポータブルで markdown-first なワークフロー形式です。OpenClaw では、OpenProse skill pack と `/prose` slash command を追加する plugin として提供されます。プログラムは `.prose` ファイルに記述し、明示的な制御フローで複数の sub-agent を起動できます。
 

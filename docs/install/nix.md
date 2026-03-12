@@ -1,10 +1,11 @@
 ---
 summary: "Nix を使用して OpenClaw を宣言的にインストールする"
+description: "Home Manager ベースで OpenClaw を宣言的に導入する nix-openclaw の使い方を案内します。"
 read_when:
   - 再現性があり、ロールバック可能なインストールを求めている場合
   - すでに Nix/NixOS/Home Manager を使用している場合
   - すべてを固定して宣言的に管理したい場合
-title: "Nix"
+title: "Nix で OpenClaw を宣言的に導入するセットアップ手順"
 ---
 Nix で OpenClaw を使う場合の推奨手段は、**[nix-openclaw](https://github.com/openclaw/nix-openclaw)** を利用する方法です。必要なものが一通り揃った Home Manager モジュールとして提供されています。
 

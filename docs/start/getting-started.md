@@ -1,9 +1,10 @@
 ---
 summary: "OpenClawをインストールして、数分で最初のチャットを実行しましょう。"
+description: "ゼロから OpenClaw を導入し、認証とチャンネル設定を済ませて最初のチャットを始める最短ガイドです。"
 read_when:
   - ゼロからの初回セットアップ
   - 動作するチャットへの最速パスが必要な場合
-title: "はじめに"
+title: "OpenClawを最短で始める導入手順と初期設定ガイド"
 x-i18n:
   source_path: "start/getting-started.md"
   source_hash: "4ec86bd0345cc7a70236e566da2ccb9ff17764cc5a7c3b23eab8d5d558251520"

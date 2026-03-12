@@ -2,7 +2,8 @@
 summary: "チャネル、ルーティング、メディア、UX にわたる OpenClaw の主要機能一覧"
 read_when:
   - OpenClaw がサポートしている機能の全体像を把握したい場合
-title: "機能一覧"
+title: "OpenClaw主要機能の一覧と活用シーン整理ガイド"
+description: "WhatsApp, Telegram, Discord, iMessage を 1 つのゲートウェイで統合管理。拡張機能を使用して Mattermost などのチャネルを自由に追加。分離されたセッションによる高度なマルチエージェントルーティング。"
 x-i18n:
   source_hash: "709ea22218ffb9c5435af0ecfef105cb6350754ede0f99094abe18afb8e4e119"
 ---

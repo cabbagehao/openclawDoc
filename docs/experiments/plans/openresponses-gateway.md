@@ -6,7 +6,8 @@ read_when:
 owner: "openclaw"
 status: "draft"
 last_updated: "2026-01-19"
-title: "OpenResponses ゲートウェイ計画"
+title: "OpenClawのOpenResponses ゲートウェイ計画 の狙い・設計案・検証ポイントの設計案と論点整理を確認するガイド"
+description: "OpenClaw Gateway は現在、最小限の OpenAI 互換 Chat Completions エンドポイントを /v1/chat/completions で公開しています。詳細は OpenAI Chat Completions を参照してください。"
 x-i18n:
   source_hash: "c112e9eb5077ff7c88b1bd1b28d57f0526280207211e1f19ada88ebf212b51d1"
 ---

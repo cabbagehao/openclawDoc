@@ -4,7 +4,8 @@ read_when:
   - SecretRef 資格情報の適用範囲の確認
   - 資格情報が「secrets configure」または「secrets apply」の対象となるかどうかを監査する
   - 資格情報がサポート対象外である理由の検証
-title: "SecretRef 資格情報表面"
+title: "OpenClaw SecretRef資格情報の露出面と制御範囲を整理するガイド"
+description: "このページは、正規の SecretRef 資格情報サーフェスを定義します。サポートされている認証情報、openclaw.json ターゲット (secrets configure + secrets apply + secrets audit)。"
 x-i18n:
   source_hash: "836ed5867601d359f966eca357ebcf675bff06d52f046ca47e7a79d3ee5f0b9a"
 ---

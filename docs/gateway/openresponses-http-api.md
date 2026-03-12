@@ -1,9 +1,10 @@
 ---
 summary: "ゲートウェイから OpenResponses 互換の /v1/responses HTTP エンドポイントを公開する"
+description: "Responses 互換エンドポイントの有効化、認証、入力アイテム、クライアント側ツール、画像・ファイル、SSE イベントを整理します。"
 read_when:
   - OpenResponses API を使用するクライアントと統合する場合
   - アイテムベースの入力、クライアント側のツール呼び出し、または SSE イベントを利用したい場合
-title: "OpenResponses API"
+title: "OpenClaw OpenResponses HTTP API 設定・互換仕様・入力形式ガイド"
 x-i18n:
   source_hash: "59aceb2143d65b2d13f39736170ef7c2d01f61b2b223941635148ba819c702d6"
 ---

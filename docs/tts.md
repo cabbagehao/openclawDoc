@@ -1,10 +1,11 @@
 ---
 summary: "送信返信用の音声合成 (TTS)"
+description: "返信を ElevenLabs、OpenAI、Edge TTS で音声化する設定方法、配信条件、要約と文字数制御の挙動をまとめます。"
 read_when:
   - 返信のテキスト読み上げを有効にする
   - TTS プロバイダーまたは制限の構成
   - /tts コマンドの使用
-title: "テキスト読み上げ"
+title: "OpenClawの返信用TTSの設定方法と要約・文字数制御の実践ガイド"
 x-i18n:
   source_hash: "02dbaf88bae62e0815c19121ee0469deb6ddb620f5c58b0a09bf17133837c7b5"
 ---

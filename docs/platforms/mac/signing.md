@@ -2,7 +2,8 @@
 summary: "スクリプトのパッケージ化によって生成される macOS デバッグ ビルドの署名手順"
 read_when:
   - macOS の debug ビルドをビルドまたは署名するとき
-title: "macOS の署名"
+title: "OpenClawのmacOS の署名 の仕組み・設定手順・運用ガイド"
+description: "このアプリは通常 scripts/package-mac-app.sh からビルドします。このスクリプトは現在、次の処理を行います。使い方、ad-hoc 署名に関する注意、About 向けの build metadataを確認できます。"
 x-i18n:
   source_hash: "403b92f9a0ecdb7cb42ec097c684b7a696be3696d6eece747314a4dc90d8797e"
 ---

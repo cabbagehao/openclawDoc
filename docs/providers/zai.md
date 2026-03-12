@@ -3,7 +3,8 @@ summary: "OpenClaw で Z.AI（GLM モデル）を利用する"
 read_when:
   - OpenClaw で Z.AI / GLM モデルを使いたいとき
   - "`ZAI_API_KEY` を使う簡単なセットアップを確認したいとき"
-title: "Z.AI"
+title: "OpenClawでZ.AI GLMモデルAPIを使う認証・設定ガイド"
+description: "Z.AI の GLM モデルを OpenClaw で使う設定ガイドです。API キー認証、provider 設定、CLI での接続手順を確認できます。"
 x-i18n:
   source_hash: "e3db40cb27b48179b7eaf5fb8fadaec6340f99616f199df44ffbb79372c53659"
 ---

@@ -3,7 +3,8 @@ summary: "vLLM で OpenClaw を実行する (OpenAI 互換のローカル サー
 read_when:
   - ローカル vLLM サーバーに対して OpenClaw を実行したい
   - 独自のモデルで OpenAI 互換の /v1 エンドポイントが必要な場合
-title: "vLLM"
+title: "OpenClawでvLLMローカルOpenAI互換サーバーを使う設定ガイド"
+description: "vLLM の OpenAI 互換ローカルサーバーを OpenClaw に接続する方法をまとめます。API エンドポイント、自動モデル検出、認証設定を確認できます。"
 x-i18n:
   source_hash: "47a7b4a302fa829dd9de2da048d6ecd0cea843b84acf92455653a900976216c3"
 ---

@@ -3,7 +3,8 @@ summary: "Synology Chat webhook のセットアップと OpenClaw 構成"
 read_when:
   - OpenClaw で Synology Chat をセットアップする場合
   - Synology Chat webhook ルーティングをデバッグする場合
-title: "Synology Chat"
+title: "OpenClawでSynology Chat webhook連携を設定する方法"
+description: "Synology Chat webhook を使って OpenClaw を接続する設定ガイドです。送受信 webhook の役割、プラグイン構成、返信フローを確認できます。"
 x-i18n:
   source_hash: "65cdf3be3fbf0652e201428d71e0ebd00dc6ab41f7e54c60b8f8019b4aeb12cf"
 ---

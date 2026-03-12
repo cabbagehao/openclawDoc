@@ -1,9 +1,10 @@
 ---
 summary: "web_search 向けの Brave Search API 設定"
+description: "Brave Search API を web_search プロバイダーとして使うための設定手順、認証情報、検索結果の扱いをまとめます。"
 read_when:
   - web_search で Brave Search を使いたい場合
   - "`BRAVE_API_KEY` またはプランの詳細を確認したい場合"
-title: "Brave Search"
+title: "OpenClawのBrave Search API連携の設定方法と検索利用ガイド"
 x-i18n:
   source_path: "brave-search.md"
   source_hash: "85737676532c43280193cc12ca9207e518d64f8ac39100be5c4f8ac312311e58"

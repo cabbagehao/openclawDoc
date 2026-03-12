@@ -2,7 +2,8 @@
 summary: "Matrix のサポートステータス、機能、および構成"
 read_when:
   - Matrix チャネル機能の開発
-title: "Matrix"
+title: "OpenClawのMatrix連携の設定方法とE2EE運用ガイド"
+description: "Matrix を OpenClaw に接続する設定ガイドです。ユーザーアカウントでの接続、E2EE 対応、ルームや DM のサポート範囲を確認できます。"
 x-i18n:
   source_hash: "b1190c8cd14158c5c37fe047b790d0ef5dba8ce073fa36c91e079c9a721b7fe4"
 ---

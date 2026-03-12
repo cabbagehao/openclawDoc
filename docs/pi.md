@@ -1,6 +1,7 @@
 ---
-title: "Pi 統合アーキテクチャ"
+title: "OpenClawのPiエージェント統合とセッション設計を理解するガイド"
 summary: "OpenClaw における組み込み Pi エージェント統合とセッションライフサイクルのアーキテクチャ"
+description: "pi-coding-agent と関連パッケージを OpenClaw に組み込み、セッションとエージェント機能を実現する設計を解説します。"
 read_when:
   - OpenClaw における Pi SDK 統合設計を理解したいとき
   - Pi 向けのエージェントのセッションライフサイクル、ツール、またはプロバイダー接続を変更するとき

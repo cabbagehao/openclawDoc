@@ -1,8 +1,8 @@
 ---
-title: "AGENTS.md テンプレート"
+title: "OpenClawののAGENTS テンプレートの用途・記述ルール・設定例"
 summary: "AGENTS.md のワークスペース テンプレート"
 read_when:
-  - ワークスペースを手動でブートストラップする
+description: "このフォルダーがホームです。そのように扱ってください。最初の実行、セッションの開始、メモリを確認できます。"
 x-i18n:
   source_hash: "ede171764b5443af3dabf9dd511c1952e64cd4b11d61346f2bda56923bbebb78"
 ---

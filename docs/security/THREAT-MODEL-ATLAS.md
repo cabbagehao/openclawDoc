@@ -1,6 +1,7 @@
 ---
 summary: "MITRE ATLAS に基づく OpenClaw 脅威モデルと、主要な脅威・緩和策の一覧"
-title: "OpenClaw 脅威モデル v1.0"
+title: "OpenClaw脅威モデルの全体像と検討範囲ガイド"
+description: "バージョン: 1.0 ドラフト 最終更新日: 2026-02-04 方法論: MITRE ATLAS + データ フロー図 フレームワーク: MITRE ATLAS (AI システムに対する敵対的脅威の状況)。"
 ---
 ## MITRE ATLAS フレームワーク
 

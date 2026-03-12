@@ -1,9 +1,10 @@
 ---
 summary: "OpenClaw を完全にアンインストールする（CLI、サービス、状態、ワークスペース）"
+description: "CLI、サービス、状態ファイル、ワークスペースを含めて OpenClaw を安全に削除する方法を説明します。"
 read_when:
   - マシンから OpenClaw を削除したい場合
   - アンインストール後も Gateway サービスがまだ実行されている場合
-title: "アンインストール"
+title: "OpenClawのCLI・サービス・状態を安全に削除する手順"
 ---
 方法は 2 通りあります。
 

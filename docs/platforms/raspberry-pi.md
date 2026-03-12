@@ -4,7 +4,8 @@ read_when:
   - Raspberry Pi で OpenClaw をセットアップするとき
   - ARM デバイスで OpenClaw を動かすとき
   - 安価な常時稼働パーソナル AI を構築したいとき
-title: "Raspberry Pi"
+title: "Raspberry PiでOpenClawを使う導入構成ガイド"
+description: "Raspberry Pi 上で、約 $35〜80 の初期費用だけで（月額料金なし）、永続的かつ常時稼働の OpenClaw ゲートウェイを運用します。特に次の用途に向いています。"
 x-i18n:
   source_hash: "c114f5a285e18fb1132d5e559a668a738b8beba65531a3583434db9af0bef5b0"
 ---

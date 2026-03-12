@@ -1,10 +1,11 @@
 ---
 summary: "Ansible、Tailscale VPN、ファイアウォール分離を使った、自動化された堅牢な OpenClaw インストール"
+description: "openclaw-ansible を使って、本番サーバーへ安全に OpenClaw を自動導入する手順と運用方法をまとめます。"
 read_when:
   - セキュリティを考慮した自動サーバーデプロイを行いたいとき
   - VPN 経由のみで到達できる、ファイアウォール分離構成が必要なとき
   - リモートの Debian / Ubuntu サーバーへデプロイするとき
-title: "Ansible"
+title: "Ansible と Tailscale で OpenClaw を自動構築する導入手順"
 x-i18n:
   source_hash: "b1e1e1ea13bff37b22bc58dad4b15a2233c6492771403dff364c738504aa7159"
 ---

@@ -1,9 +1,10 @@
 ---
 summary: "stable / beta / dev 各チャネルの意味、切り替え方法、タグ運用"
+description: "stable、beta、dev の各配布チャネルの違い、更新タイミング、切り替え方法を整理します。"
 read_when:
   - stable / beta / dev を切り替えたい
   - プレリリースのタグ付けや公開ルールを確認したい
-title: "開発チャネル"
+title: "OpenClawのstable・beta・dev 配布チャネルの違いと切り替え方で導入する手順と初期設定を整理するガイド"
 ---
 最終更新: 2026-01-21
 

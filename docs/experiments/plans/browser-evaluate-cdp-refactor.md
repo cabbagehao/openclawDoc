@@ -6,7 +6,8 @@ read_when:
 owner: "openclaw"
 status: "draft"
 last_updated: "2026-02-10"
-title: "ブラウザ Evaluate の CDP リファクタリング"
+title: "OpenClawのブラウザ EvaluateのCDP リファクタリング の狙い・設計案・検証ポイントの設計案と論点整理を確認するガイド"
+description: "act:evaluate は、ページ内でユーザー指定の JavaScript を実行する機能です。現在は Playwright (page.evaluate または locator.evaluate) 経由で実行されています。"
 x-i18n:
   source_hash: "7176b8e2d41c3114657e57262938089635c7dbb3617c20ac796c2f8957e9dac2"
 ---

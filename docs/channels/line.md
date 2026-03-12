@@ -4,7 +4,8 @@ read_when:
   - OpenClawをLINEに接続したい場合
   - LINEのwebhookと認証情報のセットアップが必要な場合
   - LINE固有のメッセージオプションを使用したい場合
-title: LINE
+title: "OpenClawでLINE Messaging API連携を設定する方法"
+description: "LINE Messaging API を使って OpenClaw を接続する設定ガイドです。Webhook、認証情報、LINE 固有のメッセージオプションを確認できます。"
 x-i18n:
   source_path: "channels/line.md"
   source_hash: "46badab228c37f9c4424855736d494ec03d2ce8d7caaf558f8aca158cfbbee3b"

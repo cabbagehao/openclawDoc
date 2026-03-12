@@ -4,7 +4,8 @@ read_when:
   - 実行時にシークレット参照（SecretRef）を再解決したい場合
   - 平文で残っている機密情報や未解決の参照を監査したい場合
   - SecretRef を構成し、平文情報の削除を伴う変更を適用したい場合
-title: "secrets"
+title: "OpenClaw CLI: openclaw secrets コマンドの使い方と主要オプション・実行例"
+description: "openclaw secrets コマンドを使用して SecretRef を管理し、稼働中のスナップショットを安全な状態に保ちます。各サブコマンドの役割、推奨される運用サイクル、CI/ゲート用の終了コードを確認できます。"
 x-i18n:
   source_hash: "e73d70ca4d7aba0f4698384e8b9c79ce9b458456a30a73b8dc244529b676c8ed"
 ---

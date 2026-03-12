@@ -2,7 +2,8 @@
 summary: "`openclaw onboard` の CLI リファレンス (対話形式のオンボーディングウィザード)"
 read_when:
   - ゲートウェイ、ワークスペース、認証、チャネル、およびスキルのガイド付きセットアップを行いたい場合
-title: "onboard"
+title: "OpenClaw CLI: openclaw onboard コマンドの使い方と主要オプション・実行例"
+description: "対話形式のオンボーディングウィザード（ローカルまたはリモートゲートウェイのセットアップ）を実行します。関連ドキュメント、実行例、オンボーディング後によく使われるコマンドを確認できます。"
 x-i18n:
   source_hash: "496651939f5f21f9b3921f38396ad1c59b450a51eb06f13d41f66dbb38053d57"
 ---

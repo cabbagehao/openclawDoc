@@ -3,7 +3,8 @@ summary: "IDE 連携のために ACP ブリッジを実行する"
 read_when:
   - ACP ベースの IDE 連携をセットアップする場合
   - ゲートウェイへの ACP セッションルーティングをデバッグする場合
-title: "acp"
+title: "OpenClaw CLI: openclaw acp コマンドの使い方と主要オプション・実行例"
+description: "OpenClaw ゲートウェイと通信する Agent Client Protocol (ACP) ブリッジを実行します。このコマンドは、IDE 等との標準入出力を介した ACP 通信を行い、プロンプトを WebSocket 経由でゲートウェイに転送します。"
 x-i18n:
   source_hash: "dfc8230568ae37649a303d532dc332f73b5d69a3358ae7b68a872c7d1614ec7f"
 ---

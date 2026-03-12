@@ -4,7 +4,8 @@ read_when:
   - Cron ジョブを作成せずにシステムイベントを投入したい場合
   - ハートビート（生存確認と定期実行）を有効化・無効化したい場合
   - システムのプレゼンス（ノードの接続状況など）情報を確認したい場合
-title: "system"
+title: "OpenClaw CLI: openclaw system コマンドの使い方と主要オプション・実行例"
+description: "ゲートウェイ用のシステムレベルヘルパーです。システムイベントの投入、ハートビートの制御、プレゼンス情報の表示を行います。よく使われるコマンド、system event (システムイベント)、system heartbeat last|enable|disable。"
 x-i18n:
   source_hash: "36ae5dbdec327f5a32f7ef44bdc1f161bad69868de62f5071bb4d25a71bfdfe9"
 ---

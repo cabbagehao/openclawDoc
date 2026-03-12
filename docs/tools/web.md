@@ -4,7 +4,8 @@ read_when:
   - web_search または web_fetch を有効にしたい
   - Brave または Perplexity Search API キーの設定が必要です
   - Google 検索の基礎を備えた Gemini を使用したい
-title: "ウェブツール"
+title: "OpenClaw Webツールの使い方と検索・取得フローガイド"
+description: "OpenClaw には、次の 2 つの軽量 Web ツールが付属しています。これらはブラウザの自動化ではありません\\\\。JS を多用するサイトまたはログインの場合は、 ブラウザツール。"
 x-i18n:
   source_hash: "1903be38c22f514b117d0577b2dedcb55338b98432137635ad52b0b1a5e624e5"
 ---

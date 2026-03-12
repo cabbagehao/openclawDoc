@@ -1,9 +1,10 @@
 ---
 summary: "スクリプトによるオンボーディングと OpenClaw CLI のエージェントセットアップ"
+description: "openclaw onboard --non-interactive を使った自動化手順と、CI やスクリプトからのセットアップ方法を説明します。"
 read_when:
   - スクリプトや CI でオンボーディングを自動化する場合
   - 特定のプロバイダー向けの非対話型の例が必要な場合
-title: "CLI 自動化"
+title: "OpenClaw onboard 自動化と非対話スクリプト設定"
 sidebarTitle: "CLI 自動化"
 ---
 `openclaw onboard` を自動化するには `--non-interactive` を使用します。

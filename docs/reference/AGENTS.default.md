@@ -1,9 +1,8 @@
 ---
-title: "デフォルトのAGENTS.md"
+title: "OpenClaw既定AGENTS.mdの役割と記述内容を確認するガイド"
 summary: "パーソナル アシスタント設定用のデフォルトの OpenClaw エージェントの指示とスキル名簿"
 read_when:
-  - 新しい OpenClaw エージェント セッションの開始
-  - デフォルトのスキルの有効化または監査
+description: "OpenClaw は、エージェント専用のワークスペース ディレクトリを使用します。デフォルト: ~/.openclaw/workspace (agents.defaults.workspace 経由で構成可能)。"
 x-i18n:
   source_hash: "7d544c51781ee5b635f36a5e393ffbc92652769bd296e2c63ea3445db518a0a2"
 ---

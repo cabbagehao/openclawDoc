@@ -3,7 +3,8 @@ summary: "OpenClaw で Qwen OAuth (無料枠) を使用する"
 read_when:
   - OpenClaw で Qwen を使用したい
   - Qwen Coder への無料層 OAuth アクセスが必要です
-title: "クウェン"
+title: "OpenClawでQwen OAuth無料枠を使う認証・利用設定ガイド"
+description: "Qwen OAuth 無料枠を OpenClaw で使う設定ガイドです。Qwen Coder / Vision の認証手順、レート制限、利用時の前提を確認できます。"
 x-i18n:
   source_hash: "88b88e224e2fecbb1ca26e24fbccdbe25609be40b38335d0451343a5da53fdd4"
 ---

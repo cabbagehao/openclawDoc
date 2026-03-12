@@ -1,6 +1,7 @@
 ---
 summary: "Kilo Gateway を OpenClaw の標準プロバイダーとして統合するための設計方針"
-title: "Kilo Gateway プロバイダーの統合設計"
+title: "OpenClawのKilo Gateway統合設計の方針と実装論点ガイド"
+description: "本ドキュメントでは、既存の OpenRouter 実装をモデルとして、「Kilo Gateway」を OpenClaw の標準（ファーストクラス）プロバイダーとして統合するための設計案をまとめます。"
 ---
 ## 概要
 

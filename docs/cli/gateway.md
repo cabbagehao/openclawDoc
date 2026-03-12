@@ -4,7 +4,8 @@ read_when:
   - CLI (開発またはサーバー) からゲートウェイを実行する
   - ゲートウェイ認証、バインド モード、および接続のデバッグ
   - Bonjour 経由でのゲートウェイの検出 (LAN + テールネット)
-title: "ゲートウェイ"
+title: "OpenClaw CLI: openclaw gateway コマンドの使い方と主要オプション・実行例"
+description: "ゲートウェイは OpenClaw の WebSocket サーバー (チャネル、ノード、セッション、フック) です。このページのサブコマンドは openclaw gateway … の下にあります。"
 x-i18n:
   source_hash: "6777ffdef99e09b54bd495e40cb3fee336a511addfed509f715dfe5e8001bddf"
 ---

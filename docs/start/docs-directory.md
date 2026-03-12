@@ -1,8 +1,9 @@
 ---
 summary: "よく使われる OpenClaw ドキュメントへの厳選リンク集。"
+description: "初回導入、設定、トラブルシューティングなど主要ドキュメントへ最短で辿れる厳選リンク集です。"
 read_when:
   - 主要なドキュメントページにすばやくアクセスしたいとき
-title: "ドキュメントディレクトリ"
+title: "OpenClaw の主要ドキュメントへ素早く移動する案内ページの導入手順と使い始め方を確認するガイド"
 x-i18n:
   source_path: "start/docs-directory.md"
   source_hash: "44d94b7a654801e9caf5131a5b2bca1fbc66bcd80f06337e5edded4146f21f9d"
@@ -11,7 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:49:35.038Z"
 ---
-
 <Note>
 このページは厳選されたインデックスです。初めての方は、[はじめに](/start/getting-started)からスタートしてください。
 ドキュメントの全体マップについては、[ドキュメントハブ](/start/hubs)を参照してください。

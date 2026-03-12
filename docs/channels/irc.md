@@ -1,6 +1,6 @@
 ---
-title: IRC
-description: OpenClaw を IRC チャンネルおよびダイレクトメッセージへ接続します。
+title: "OpenClawでIRCチャンネルとDM連携を設定する方法"
+description: "IRC チャンネルとダイレクトメッセージを OpenClaw に接続する設定ガイドです。プラグイン導入、allowlist、グループ制御、運用の注意点を確認できます。"
 summary: "IRC プラグインのセットアップ、アクセス制御、トラブルシューティング"
 read_when:
   - OpenClaw を IRC チャンネルまたは DM に接続したい場合
@@ -13,7 +13,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T06:38:42.907Z"
 ---
-
 クラシックな IRC チャンネル (`#room`) やダイレクトメッセージで OpenClaw を使いたい場合は IRC を利用します。IRC は拡張プラグインとして提供されますが、設定はメイン設定ファイル内の `channels.irc` で行います。
 
 ## Quick start

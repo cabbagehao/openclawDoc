@@ -1,9 +1,10 @@
 ---
 summary: "CLI オンボーディング ウィザード: Gateway、ワークスペース、チャンネル、およびスキルのガイド付きセットアップ"
+description: "CLI オンボーディングウィザードで Gateway、チャンネル、ワークスペースを順に設定する推奨フローを説明します。"
 read_when:
   - オンボーディング ウィザードの実行または構成時
   - 新しいマシンのセットアップ時
-title: "オンボーディング ウィザード (CLI)"
+title: "OpenClaw onboard で進める CLI 初期セットアップ完全ガイド"
 sidebarTitle: "オンボーディング: CLI"
 ---
 オンボーディング ウィザードは、macOS、Linux、または Windows (WSL2 経由。強く推奨) で OpenClaw をセットアップするための**推奨**される方法です。

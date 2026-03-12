@@ -6,7 +6,8 @@ read_when:
   - Discord チャネルまたは Telegram フォーラムのトピックを永続的な ACP セッションにバインドする
   - ACP バックエンドとプラグインの配線のトラブルシューティング
   - チャットから /acp コマンドを操作する
-title: "ACPエージェント"
+title: "OpenClaw ACPエージェント連携の仕組みと外部ハーネス実行ガイド"
+description: "エージェント クライアント プロトコル (ACP) セッションにより、OpenClaw は ACP バックエンド プラグインを通じて外部コーディング ハーネス (Pi、Claude Code、Codex、OpenCode、Gemini CLI など) を実行できます。"
 x-i18n:
   source_hash: "52f8793716668a9f3a333a8787aab2a9e5d55015c505176b0add674017b07179"
 ---

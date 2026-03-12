@@ -1,9 +1,10 @@
 ---
 summary: "OpenClaw 向けの任意の Docker ベースセットアップとオンボーディング"
+description: "Docker で OpenClaw を動かす方法と、コンテナ化ゲートウェイとエージェント用サンドボックスの使い分けを説明します。"
 read_when:
   - コンテナ化したゲートウェイをローカルインストールの代わりに使いたい
   - Docker フローを検証したい
-title: "Docker"
+title: "Docker で OpenClaw を導入しサンドボックス運用する方法"
 ---
 Docker は **任意** です。コンテナ化したゲートウェイが必要な場合や、Docker フローを検証したい場合にのみ使ってください。
 

@@ -3,7 +3,8 @@ summary: "OpenClaw で Xiaomi MiMo (mimo-v2-flash) を使用する"
 read_when:
   - OpenClaw で Xiaomi MiMo モデルが必要な場合
   - XIAOMI_API_KEYの設定が必要です
-title: "シャオミ MiMo"
+title: "OpenClawでXiaomi MiMoモデルAPIを使う認証・設定ガイド"
+description: "Xiaomi MiMo モデル API を OpenClaw で使う設定ガイドです。API キー作成、対応 API 形式、provider 設定の流れを確認できます。"
 x-i18n:
   source_hash: "366fd2297b2caf8c5ad944d7f1b6d233b248fe43aedd22a28352ae7f370d2435"
 ---

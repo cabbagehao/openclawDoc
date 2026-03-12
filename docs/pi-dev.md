@@ -1,6 +1,7 @@
 ---
-title: "Pi Development Workflow"
+title: "OpenClawのPi統合の開発フローと検証手順・接続確認ガイド"
 summary: "Pi 統合向け開発ワークフロー: build、test、live validation"
+description: "pi 統合を開発するときのビルド、テスト、live validation、日常的な確認フローをまとめた実務向けガイドです。"
 read_when:
   - Pi 統合コードやテストを触るとき
   - Pi 固有の lint、typecheck、live test フローを回すとき

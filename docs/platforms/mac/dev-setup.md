@@ -2,7 +2,8 @@
 summary: "OpenClaw macOS アプリを開発するためのセットアップ ガイド"
 read_when:
   - macOS 開発環境のセットアップ
-title: "macOS 開発セットアップ"
+title: "OpenClawのmacOS 開発セットアップ の仕組み・設定手順・運用ガイド"
+description: "このガイドでは、OpenClaw の macOS アプリをソースコードからビルドし、実行するまでの手順を説明します。前提条件、1. 依存関係をインストールする、2. アプリをビルドしてパッケージ化するを確認できます。"
 x-i18n:
   source_hash: "1cb41c449e4a314f6327c63458006aeb4d7723f093f3e3866a76f5ffaa00e2d3"
 ---

@@ -4,7 +4,8 @@ read_when:
   - OpenAI 互換ツールで Claude Max subscription を使いたいとき
   - Claude Code CLI をラップするローカル API サーバーが必要なとき
   - subscription ベースと API キー ベースの Anthropic 利用を比較したいとき
-title: "Claude Max API Proxy"
+title: "OpenClawのClaude Max API ProxyでClaudeをOpenAI互換化する設定ガイド"
+description: "Claude Max / Pro の契約を OpenAI 互換 API として使うためのガイドです。ローカル proxy の役割、起動方法、OpenClaw 側の接続設定を確認できます。"
 x-i18n:
   source_hash: "f1e379025bd26798973e6eff790a4c88835a8d5e3032abcef300d45fdf81afb9"
 ---

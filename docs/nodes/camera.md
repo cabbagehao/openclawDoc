@@ -3,7 +3,8 @@ summary: "エージェント利用向けのカメラキャプチャ（iOS / Andr
 read_when:
   - iOS / Android ノードや macOS でカメラキャプチャ機能を追加・変更するとき
   - エージェントが利用できる MEDIA 一時ファイルワークフローを拡張するとき
-title: "Camera Capture"
+title: "OpenClawのカメラ撮影ノードの接続設定と画像取得フローガイド"
+description: "OpenClaw は、エージェントワークフロー向けに camera capture をサポートしています。カメラアクセスはすべて ユーザーが制御する設定 の背後にあります。"
 x-i18n:
   source_hash: "30b1beaac9602ff29733f72b953065f271928743c8fff03191a007e8b965c88d"
 ---

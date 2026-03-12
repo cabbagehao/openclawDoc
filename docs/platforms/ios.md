@@ -4,7 +4,8 @@ read_when:
   - iOS node をペアリングまたは再接続するとき
   - iOS app を source から実行するとき
   - gateway discovery や canvas command を切り分けるとき
-title: "iOS App"
+title: "OpenClawのiOSアプリの接続設定と利用フローガイド"
+description: "提供状況: internal preview。iOS app はまだ一般公開されていません。できること、要件、クイックスタート（pairing + 接続）を確認できます。"
 x-i18n:
   source_hash: "aa473aad6bd953b8489c752467c1e4c33532e7b325a992d836fefad449ff960c"
 ---

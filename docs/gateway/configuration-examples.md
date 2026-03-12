@@ -1,10 +1,11 @@
 ---
 summary: "OpenClaw の一般的な構成設定の具体例（スキーマに準拠）"
+description: "最小構成から推奨初期設定、マルチプラットフォーム、セキュア DM、OAuth フォールバックまで代表的な設定例を掲載します。"
 read_when:
   - OpenClaw の構成方法（設定ファイルの書き方）を学びたい場合
   - 具体的な設定例を探している場合
   - OpenClaw を初めてセットアップする場合
-title: "構成例"
+title: "OpenClaw 設定ファイルの実践例集と構成パターン別サンプル"
 x-i18n:
   source_hash: "bf3ebaf29b2ea19c84d0e1dee5ae35da81ec61f46abbf17bd024836aa4907b5c"
 ---

@@ -1,9 +1,8 @@
 ---
-title: サンドボックス CLI
+title: "OpenClaw CLI: openclaw sandbox コマンドの使い方と主要オプション・実行例"
 summary: "サンドボックスコンテナの管理と現在のポリシーの確認"
 read_when:
-  - サンドボックスコンテナを管理したい場合
-  - サンドボックスやツールポリシーの動作をデバッグしたい場合
+description: "エージェントを分離して実行するための Docker ベースのサンドボックスコンテナを管理します。概要、コマンド一覧、openclaw sandbox explainを確認できます。"
 status: active
 x-i18n:
   source_hash: "6e1186f26c77e188206ce5e198ab624d6b38bc7bb7c06e4d2281b6935c39e347"

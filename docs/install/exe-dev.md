@@ -1,9 +1,10 @@
 ---
 summary: "リモートアクセス用に exe.dev（VM + HTTPS プロキシ）上で OpenClaw ゲートウェイを動かす"
+description: "exe.dev の VM と HTTPS プロキシを使って、外部からアクセスできる OpenClaw Gateway を構築する手順です。"
 read_when:
   - ゲートウェイ用に安価で常時稼働する Linux ホストがほしい
   - 自前の VPS を立てずにリモートの Control UI へアクセスしたい
-title: "exe.dev"
+title: "exe.dev 上で OpenClaw Gateway を公開するリモート導入手順"
 ---
 目的は、exe.dev の VM 上で OpenClaw ゲートウェイを動かし、手元の PC から `https://<vm-name>.exe.xyz` で到達できるようにすることです。
 

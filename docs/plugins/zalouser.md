@@ -3,7 +3,8 @@ summary: "Zalo Personal プラグイン: QR ログインと、ネイティブ zc
 read_when:
   - OpenClaw で Zalo Personal（非公式）を使いたいとき
   - zalouser プラグインを設定または開発しているとき
-title: "Zalo Personal プラグイン"
+title: "OpenClawのZalo Personalプラグインの設定方法と利用ガイド"
+description: "このプラグインは、ネイティブの zca-js を用いて通常の Zalo 個人アカウントを自動操作し、OpenClaw から Zalo Personal を利用できるようにします。"
 x-i18n:
   source_hash: "c3afa0375b8fd2957a3f6f12e166a2703a606c782736b09818588d9f9800b8bf"
 ---

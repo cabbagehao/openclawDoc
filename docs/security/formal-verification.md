@@ -1,9 +1,8 @@
 ---
-title: "正式な検証 (セキュリティ モデル)"
+title: "OpenClawの形式検証の考え方とセキュリティモデル確認ガイド"
 summary: "OpenClaw の最もリスクの高いパスに対する機械チェックされたセキュリティ モデル。"
 read_when:
-  - 正式なセキュリティ モデルの保証または制限の確認
-  - TLA+/TLC セキュリティ モデル チェックの再現または更新
+description: "このページでは、OpenClaw の 正式なセキュリティ モデル (現在は TLA+/TLC、必要に応じて追加) を追跡します。目標 (北極星): OpenClaw が強制するという機械チェックされた引数を提供します。"
 permalink: /security/formal-verification/
 x-i18n:
   source_hash: "b576c7437f598eba41c3e8c644eac801113437c8292ddddf25df67bac504a576"

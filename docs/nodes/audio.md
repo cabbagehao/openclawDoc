@@ -2,7 +2,8 @@
 summary: "受信した音声 / ボイスメモがどのようにダウンロード、文字起こしされ、返信に反映されるか"
 read_when:
   - 音声文字起こしやメディア処理を変更するとき
-title: "Audio and Voice Notes"
+title: "OpenClawの音声メッセージ文字起こし設定とボイスメモ処理ガイド"
+description: "モデルを明示設定しておらず、かつ tools.media.audio.enabled が false でない 場合、OpenClaw は次の順序で自動検出を行い、最初に動作した選択肢を採用します。"
 x-i18n:
   source_hash: "c694fd66dde1fad196da5addd6533d7b7874f3cfa5f266f4ee0253996fc7e600"
 ---

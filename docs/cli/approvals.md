@@ -3,7 +3,8 @@ summary: "`openclaw approvals` の CLI リファレンス (ゲートウェイま
 read_when:
   - CLI から実行承認を編集したい場合
   - ゲートウェイやノードホストの許可リスト（allowlist）を管理する必要がある場合
-title: "approvals"
+title: "OpenClaw CLI: openclaw approvals コマンドの使い方と主要オプション・実行例"
+description: "ローカルホスト、ゲートウェイホスト、または特定のノードホストにおける実行承認（exec approvals）を管理します。デフォルトでは、コマンドはディスク上のローカル承認ファイルを対象とします。"
 x-i18n:
   source_hash: "4329cdaaec2c5f5d619415b6431196512d4834dc1ccd7363576f03dd9b845130"
 ---

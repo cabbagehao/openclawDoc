@@ -1,6 +1,6 @@
 ---
-title: Fly.io
-description: OpenClaw を Fly.io にデプロイする
+title: "Fly.io へ OpenClaw をデプロイして運用する手順"
+description: "Fly.io 上で OpenClaw を常時稼働させるためのデプロイ、永続ストレージ、HTTPS、運用手順を説明します。"
 summary: "永続ストレージと HTTPS を備えた OpenClaw のための Fly.io デプロイのステップバイステップ"
 read_when:
   - OpenClaw を Fly.io にデプロイする場合

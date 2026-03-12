@@ -3,7 +3,8 @@ summary: "`openclaw update` の CLI リファレンス (ソースコードの安
 read_when:
   - ソースインストール環境を安全にアップデートしたい場合
   - "`--update` 短縮コマンドの動作を理解したい場合"
-title: "update"
+title: "OpenClaw CLI: openclaw update コマンドの使い方と主要オプション・実行例"
+description: "OpenClaw を安全にアップデートし、stable（安定版）、beta（ベータ版）、dev（開発版）の各チャンネルを切り替えます。使用法、オプション、update status (ステータス表示)を確認できます。"
 x-i18n:
   source_hash: "f0ab6c4d21952fc637f91e245bcacfe99e18d79d2782076b3bfba35ba4fc4300"
 ---

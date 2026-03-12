@@ -2,7 +2,8 @@
 summary: "`openclaw config` の CLI リファレンス (構成の取得、設定、削除、パスの確認、検証)"
 read_when:
   - 構成（config）を非対話的に読み取ったり編集したりしたい場合
-title: "config"
+title: "OpenClaw CLI: openclaw config コマンドの使い方と主要オプション・実行例"
+description: "構成ファイルのヘルパーです。パスを指定して値の取得、設定、削除、検証を行ったり、現在有効な構成ファイルを表示したりできます。サブコマンドなしで実行した場合は、構成ウィザードが開きます（openclaw configure と同じです）。"
 x-i18n:
   source_hash: "40f101e9159cf02175e461b248805b8b58692d7bbe94f62c7242c5a636f2efdf"
 ---

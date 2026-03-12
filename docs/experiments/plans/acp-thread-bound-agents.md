@@ -3,7 +3,8 @@ summary: "コアおよびプラグインベースのランタイム（まずは 
 owner: "onutc"
 status: "draft"
 last_updated: "2026-02-25"
-title: "ACP スレッド紐付けエージェント"
+title: "OpenClawのACP スレッド紐付けエージェント の狙い・設計案・検証ポイント"
+description: "本計画では、スレッド機能を備えたチャネル（まずは Discord）において、OpenClaw が実稼働レベルのライフサイクル管理とリカバリ（復旧）機能を備えた ACP コーディングエージェントをどのようにサポートすべきかを定義します。"
 x-i18n:
   source_hash: "c98e5e02f369fb4a849906d02b9c8e58f227effd6383aea58c2e3d5a75348e55"
 ---

@@ -1,9 +1,10 @@
 ---
 summary: "OpenClaw のセットアップ、設定、使用方法に関するよくある質問"
+description: "初回導入、OAuth/API キー、VPS 運用、モデル切替まで、つまずきやすい質問への短い回答と関連ガイドをまとめます。"
 read_when:
   - 一般的なセットアップ、インストール、オンボーディング、またはランタイムのサポート質問に回答するとき
   - より深いデバッグの前に、ユーザーから報告された問題をトリアージするとき
-title: "FAQ"
+title: "OpenClaw の初回セットアップ・OAuth・VPS運用 FAQ と解決策"
 ---
 実運用のセットアップ（ローカル開発、VPS、マルチエージェント、OAuth/API キー、モデルのフェイルオーバー）に対応するための簡潔な回答と、より詳細なトラブルシューティングをまとめています。ランタイム診断については [Troubleshooting](/gateway/troubleshooting) を参照してください。完全な設定リファレンスについては [Configuration](/gateway/configuration) を参照してください。
 

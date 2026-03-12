@@ -3,7 +3,8 @@ summary: "OpenClaw のロギング: ローリング診断ファイル ログと 
 read_when:
   - macOS ログの取得やプライベート データのログ出力調査
   - 音声ウェイクやセッション ライフサイクルの問題のデバッグ
-title: "macOS のロギング"
+title: "OpenClawのmacOSログの取得方法とunified logging・ファイル出力設定"
+description: "OpenClaw は macOS アプリのログを swift-log 経由で処理しており、既定では unified logging を使用します。永続的な記録が必要な場合は、ローカル ディスクへローテーション付きのファイル ログを書き出せます。"
 x-i18n:
   source_hash: "c08d6bc012f8e8bb53353fe654713dede676b4e6127e49fd76e00c2510b9ab0b"
 ---

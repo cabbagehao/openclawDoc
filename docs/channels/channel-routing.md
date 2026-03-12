@@ -2,7 +2,8 @@
 summary: "チャンネルごとのルーティングルールと共有コンテキスト"
 read_when:
   - チャンネルルーティングまたは受信トレイの動作を変更する場合
-title: "Channel Routing"
+title: "OpenClawのチャンネル別ルーティング設定と共有コンテキスト運用"
+description: "チャンネル別のルーティング規則を整理したガイドです。共有コンテキストの扱い、アカウント単位の振り分け、受信時の動作を確認できます。"
 x-i18n:
   source_path: "channels/channel-routing.md"
   source_hash: "0fd17f592ef24891ad8721a4cc34fe4b430fa568be843ee81d13def6e45dfa8f"

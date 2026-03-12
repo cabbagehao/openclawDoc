@@ -1,9 +1,10 @@
 ---
 summary: "Bonjour/mDNS による検出とデバッグ (ゲートウェイのビーコン、クライアント、および一般的な失敗パターン)"
+description: "LAN 内 Bonjour 広告の仕組み、Tailscale 上の広域 DNS-SD、公開情報、macOS/iOS での診断方法と失敗パターンをまとめます。"
 read_when:
   - macOS/iOS で Bonjour による検出がうまくいかない場合
   - mDNS のサービスタイプや TXT レコード、検出 UI/UX を変更する場合
-title: "Bonjour による検出"
+title: "OpenClawのBonjour・mDNS 検出設定と接続障害の調査ガイド"
 x-i18n:
   source_hash: "2454692d8d590506fe224d92e4aa6ddf2838a2a11e64529da556c7bd3e35a90c"
 ---

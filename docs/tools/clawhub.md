@@ -4,7 +4,8 @@ read_when:
   - 新規ユーザーへの ClawHub の紹介
   - スキルのインストール、検索、または公開
   - ClawHub CLI フラグと同期動作の説明
-title: "クローハブ"
+title: "OpenClaw ClawHubツールの役割と利用フローを整理するガイド"
+description: "ClawHub は OpenClaw の公開スキル レジストリです。これは無料のサービスです。すべてのスキルは公開され、オープンであり、共有および再利用のために誰でも見ることができます。"
 x-i18n:
   source_hash: "b572473a1124635744cfe537143249cd57659b511d060bb631ffddba7c8c8315"
 ---

@@ -3,7 +3,8 @@ summary: "Feishu ボットの概要、機能、設定"
 read_when:
   - Feishu / Lark ボットを接続したい場合
   - Feishu チャンネルを設定する場合
-title: Feishu
+title: "OpenClawのFeishu / Larkボット連携の設定方法と運用ガイド"
+description: "Feishu / Lark ボットを OpenClaw に接続する設定ガイドです。WebSocket イベント連携の構成、認証情報、受信フローを確認できます。"
 x-i18n:
   source_hash: "da86292f422fef1945309c89a6daa5768974284a936778f082c085d40acc0f52"
 ---

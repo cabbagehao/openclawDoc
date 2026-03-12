@@ -1,9 +1,10 @@
 ---
 summary: "モデル認証の仕組み: OAuth、API キー、および setup-token"
+description: "API キー推奨構成、Anthropic setup-token、認証状態確認、ローテーション、上書き方法と代表的な認証エラーの見方を解説します。"
 read_when:
   - モデル認証や OAuth の有効期限の問題をデバッグする場合
   - 認証方式や認証情報の保存レイアウトを確認したい場合
-title: "認証"
+title: "OpenClaw のモデル認証設定ガイド OAuth・APIキー・setup-token 運用"
 ---
 OpenClaw は、モデルプロバイダー向けの OAuth 認証と API キー認証をサポートしています。常時稼働させるゲートウェイホストにおいては、通常、API キー認証が最も挙動が予測しやすく安定した選択肢となります。プロバイダーのアカウントモデルに応じて、サブスクリプションベースの OAuth フローも利用可能です。
 

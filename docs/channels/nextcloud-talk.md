@@ -2,7 +2,8 @@
 summary: "Nextcloud Talk のサポートステータス、機能、および構成"
 read_when:
   - Nextcloud Talk チャネル機能の開発
-title: "Nextcloud Talk"
+title: "OpenClawのNextcloud Talk連携の設定方法と運用ガイド"
+description: "Nextcloud Talk を OpenClaw に接続する設定ガイドです。webhook ボット連携、DM とルーム対応、プラグイン導入手順を確認できます。"
 x-i18n:
   source_hash: "2769144221e41391fc903a8a9289165fb9ffcc795dd54615e5009f1d6f48df3f"
 ---

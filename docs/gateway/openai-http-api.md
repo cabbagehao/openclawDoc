@@ -1,8 +1,9 @@
 ---
 summary: "ゲートウェイから OpenAI 互換の /v1/chat/completions HTTP エンドポイントを公開する"
+description: "Chat Completions 互換 HTTP API の有効化、認証、セキュリティ境界、エージェント選択、SSE ストリーミングの挙動を説明します。"
 read_when:
   - OpenAI Chat Completions API を期待する外部ツールと統合する場合
-title: "OpenAI 互換 HTTP API"
+title: "OpenClaw OpenAI 互換 Chat Completions API 設定と運用ガイド"
 x-i18n:
   source_hash: "e12f1b5dacbd5a6fe6fe5304dc6a84f56312c57d4b88db5037b1863a8e0edd65"
 ---

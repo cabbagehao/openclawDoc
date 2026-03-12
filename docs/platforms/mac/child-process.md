@@ -2,7 +2,8 @@
 summary: "macOS におけるゲートウェイのライフサイクル（launchd）"
 read_when:
   - Mac アプリとゲートウェイのライフサイクルを統合する
-title: "ゲートウェイのライフサイクル"
+title: "OpenClawのmacOS ゲートウェイのライフサイクル の仕組み・設定手順・運用ガイド"
+description: "macOS アプリは、デフォルトでは launchd 経由でゲートウェイを管理し、ゲートウェイを子プロセスとして起動しません。デフォルト動作（launchd）、未署名の開発ビルド、接続専用モードを確認できます。"
 x-i18n:
   source_hash: "73e7eb64ef432c3bfc81b949a5cc2a344c64f2310b794228609aae1da817ec41"
 ---

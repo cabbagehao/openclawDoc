@@ -1,6 +1,7 @@
 ---
 summary: "OpenClaw サンドボックスの仕組み: 動作モード、スコープ、ワークスペースへのアクセス、および Docker イメージ"
-title: "サンドボックス"
+description: "サンドボックスの対象、モード、スコープ、ワークスペース共有、バインドマウント、イメージ準備、escape hatch の考え方を説明します。"
+title: "OpenClaw サンドボックス設定ガイド Docker 実行・権限範囲・構成"
 read_when:
   - サンドボックスの詳細な解説を読みたい場合
   - "`agents.defaults.sandbox` の設定を調整する必要がある場合"

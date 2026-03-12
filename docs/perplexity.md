@@ -1,9 +1,10 @@
 ---
 summary: "web_search 向けの Perplexity Search API と Sonar / OpenRouter 互換"
+description: "Perplexity Search API を web_search プロバイダーとして使うための設定方法、返却結果、接続要件を説明します。"
 read_when:
   - Perplexity Search を Web 検索に使いたいとき
   - "`PERPLEXITY_API_KEY` または `OPENROUTER_API_KEY` の設定が必要なとき"
-title: "Perplexity Search"
+title: "OpenClawのPerplexity Search API連携の設定方法と検索利用ガイド"
 ---
 OpenClaw は `web_search` provider として Perplexity Search API をサポートしています。返されるのは `title`、`url`、`snippet` を含む構造化結果です。
 

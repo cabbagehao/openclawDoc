@@ -1,8 +1,9 @@
 ---
 summary: "すべてのOpenClawドキュメントへのリンクを集めたハブ"
+description: "用途別に整理した OpenClaw ドキュメント全体へのリンクをまとめ、必要なページへ素早く案内します。"
 read_when:
   - ドキュメントの完全なマップが必要な場合
-title: "ドキュメントハブ"
+title: "OpenClaw ドキュメント全体マップと用途別ハブ一覧"
 x-i18n:
   source_path: "start/hubs.md"
   source_hash: "7faa7ebec705a3ef3968eabee1ab45cb7630af9ab76bf76f021dbbaec8cf5be9"

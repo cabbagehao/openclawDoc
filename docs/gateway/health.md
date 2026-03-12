@@ -1,8 +1,9 @@
 ---
 summary: "チャネル接続のヘルスチェック（健全性確認）手順"
+description: "openclaw status と health コマンドを使って、チャネル接続の状態確認、詳細診断、失敗時の対応パターンを追えるガイドです。"
 read_when:
   - 各チャネル（WhatsApp など）の健全性を診断する場合
-title: "ヘルスチェック"
+title: "OpenClaw チャネル接続ヘルスチェックと障害診断・復旧ガイド"
 x-i18n:
   source_hash: "74f242e98244c135e1322682ed6b67d70f3b404aca783b1bb5de96a27c2c1b01"
 ---

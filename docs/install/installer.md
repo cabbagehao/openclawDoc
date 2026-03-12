@@ -1,10 +1,11 @@
 ---
 summary: "インストーラースクリプト（install.sh、install-cli.sh、install.ps1）の仕組み、フラグ、自動化方法"
+description: "install.sh、install-cli.sh、install.ps1 の役割、フラグ、自動化方法をまとめたインストーラ内部ガイドです。"
 read_when:
   - "`openclaw.ai/install.sh` を理解したい場合"
   - "インストールの自動化（CI / ヘッドレス）をしたい場合"
   - "GitHub のチェックアウトからインストールしたい場合"
-title: "インストーラーの内部構造"
+title: "OpenClaw install.sh・install-cli.sh・install.ps1 の仕組みと使い方"
 ---
 OpenClaw には、`openclaw.ai` から配布される 3 つのインストーラースクリプトがあります。
 

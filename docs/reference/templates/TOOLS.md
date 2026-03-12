@@ -1,8 +1,8 @@
 ---
-title: "TOOLS.md テンプレート"
+title: "OpenClawののTOOLS テンプレートの用途・記述ルール・設定例"
 summary: "TOOLS.md のワークスペース テンプレート"
 read_when:
-  - ワークスペースを手動でブートストラップする
+description: "スキルはツールがどのように機能するかを定義します。このファイルは、your の仕様、つまりセットアップに固有のものです。ここに何が入るのか、例、Camerasを確認できます。"
 x-i18n:
   source_hash: "eed204d57e7221ae0455a87272da2b0730d6aee6ddd2446a851703276e4a96b7"
 ---

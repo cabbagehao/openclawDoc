@@ -2,7 +2,8 @@
 summary: "各チャネルで共通して使われるリアクションの意味"
 read_when:
   - いずれかのチャネルでリアクション機能を扱っている
-title: "Reactions"
+title: "OpenClawリアクション機能の使い方と対応チャネル解説ガイド"
+description: "チャネルをまたいで共通するリアクションの意味は次のとおりです。"
 x-i18n:
   source_hash: "db7aae38b5f7a53cd1ef58545c5fd66238f89240f09e6acc775bac24dbcbbca1"
 ---

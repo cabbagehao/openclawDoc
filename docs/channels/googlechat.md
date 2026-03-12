@@ -2,7 +2,8 @@
 summary: "Google Chat アプリのサポート状況、機能、設定"
 read_when:
   - Google Chat チャンネル機能を扱う場合
-title: "Google Chat"
+title: "OpenClawのGoogle Chatボット連携の設定方法と運用ガイド"
+description: "Google Chat アプリを OpenClaw に接続する設定ガイドです。Webhook ベースの構成、DM とスペースの対応範囲、セットアップ手順を確認できます。"
 x-i18n:
   source_hash: "63af1b6326be96cc47be45e90bafefe3465195c2dedff4ed1c19bf07bd2f8f80"
 ---

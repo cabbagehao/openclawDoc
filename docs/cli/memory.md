@@ -3,7 +3,8 @@ summary: "`openclaw memory` の CLI リファレンス (ステータス確認、
 read_when:
   - セマンティック記憶のインデックス作成や検索を行いたい場合
   - 記憶機能の可用性やインデックスの状態をデバッグしたい場合
-title: "memory"
+title: "OpenClaw CLI: openclaw memory コマンドの使い方と主要オプション・実行例"
+description: "セマンティック記憶（Semantic Memory）のインデックス管理と検索を行います。この機能は現在有効な記憶プラグイン（デフォルトは memory-core）によって提供されます。"
 x-i18n:
   source_hash: "a5b73731b37e1d3f6d0ddb17d58077a76d85d531ead51f59611e254d94337ba0"
 ---

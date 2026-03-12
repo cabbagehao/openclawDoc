@@ -1,9 +1,10 @@
 ---
 summary: "ゲートウェイダッシュボードのための Tailscale Serve/Funnel の統合"
+description: "Control UI と WebSocket を Tailscale Serve/Funnel で公開するモード差分、認証、設定例、CLI 操作、制限事項をまとめます。"
 read_when:
   - ゲートウェイのControl UIをローカルホスト以外から公開する場合
   - テールネットやパブリックなダッシュボードアクセスを自動化する場合
-title: "Tailscale"
+title: "OpenClaw Tailscale Serve・Funnel 設定と外部公開運用ガイド"
 ---
 OpenClawは、ゲートウェイダッシュボードおよびWebSocketポート向けに、Tailscale **Serve** (テールネット内公開) または **Funnel** (インターネット公開) を自動設定できます。これにより、ゲートウェイをループバック（`127.0.0.1`）にバインドしたまま、Tailscaleを介してHTTPS、ルーティング、および（Serveの場合は）IDヘッダーを利用できます。
 

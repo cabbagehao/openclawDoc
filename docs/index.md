@@ -1,8 +1,9 @@
 ---
 summary: "OpenClaw は、あらゆる OS で動作する AI エージェント向けマルチチャンネル Gateway です。"
+description: "OpenClaw の役割、対応チャネル、エージェント連携、導入導線をまとめたトップレベルの概要ページです。"
 read_when:
   - OpenClaw を初めて知る人への紹介時
-title: "OpenClaw"
+title: "OpenClawの機能一覧と導入メリットがわかる総合ガイド"
 x-i18n:
   source_path: "index.md"
   source_hash: "0d167684402482da3162add3aeb4e184bb867a2578cc858a5ca27a918a985155"

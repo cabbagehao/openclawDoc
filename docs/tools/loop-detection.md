@@ -1,6 +1,6 @@
 ---
-title: "ツールループの検出"
-description: "Configure optional guardrails for preventing repetitive or stalled tool-call loops"
+title: "OpenClawのツールループの検出 の使い方・権限設定・実行フロー解説 の使い方・権限設定 の使い方・権限設定・実行フロー解説"
+description: "OpenClaw は、エージェントが繰り返しのツール呼び出しパターンに陥るのを防ぐことができます。ガードは デフォルトでは無効になっています。厳密な設定を使用すると正当な繰り返し呼び出しをブロックできるため、必要な場合にのみ有効にします。"
 summary: "反復的なツール呼び出しループを検出するガードレールを有効にして調整する方法"
 read_when:
   - ユーザーから、エージェントがツール呼び出しを繰り返してスタックしていると報告されました。

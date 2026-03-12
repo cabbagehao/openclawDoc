@@ -1,9 +1,10 @@
 ---
 summary: "doctor コマンド: ヘルスチェック、構成の移行、および修復手順"
+description: "構成移行、レガシー状態の整理、認証やサンドボックスの健全性確認、再起動前後の修復フローをまとめた doctor コマンド解説です。"
 read_when:
   - doctor による移行処理（migration）を追加・変更する場合
   - 構成設定に破壊的な変更を導入する場合
-title: "Doctor"
+title: "OpenClaw doctor の修復手順と移行・健全性診断チェックガイド"
 x-i18n:
   source_hash: "814e0719a170ef7c9fc43358e1fda1f3646f3f8dfa3214654354aab60c0fde2c"
 ---

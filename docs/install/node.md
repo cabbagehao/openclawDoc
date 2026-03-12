@@ -1,6 +1,7 @@
 ---
-title: "Node.js"
+title: "OpenClaw 用 Node.js の導入確認・更新・PATH 問題の解決"
 summary: "OpenClaw 用の Node.js のインストールと設定 — バージョン要件、インストールオプション、および PATH のトラブルシューティング"
+description: "Node.js を手動で準備して OpenClaw を動かすためのバージョン要件、PATH 設定、確認方法を説明します。"
 read_when:
   - "OpenClaw をインストールする前に Node.js をインストールする必要がある場合"
   - "OpenClaw をインストールしたが `openclaw` コマンドが見つからない場合"

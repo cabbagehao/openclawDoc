@@ -1,9 +1,10 @@
 ---
 summary: "CLI オンボーディングフロー、認証/モデルのセットアップ、出力、および内部構造に関する完全なリファレンス"
+description: "openclaw onboard の各ステップ、出力、内部処理を含む CLI オンボーディングの完全リファレンスです。"
 read_when:
   - openclaw onboard の詳細な動作が必要な場合
   - オンボーディング結果のデバッグやオンボーディングクライアントの統合を行う場合
-title: "CLI オンボーディングリファレンス"
+title: "OpenClaw onboard の手順と出力を追う完全リファレンス"
 sidebarTitle: "CLI リファレンス"
 ---
 このページは `openclaw onboard` の完全なリファレンスです。

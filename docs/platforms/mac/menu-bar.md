@@ -2,7 +2,8 @@
 summary: "メニュー バーのステータス ロジックとユーザーに表示される情報"
 read_when:
   - Mac のメニュー UI またはステータス ロジックを調整するとき
-title: "メニュー バー"
+title: "OpenClawのmacOS メニュー バー の仕組み・設定手順・運用ガイド"
+description: "Sessions: イベントには実行単位の runId と、ペイロード内の sessionKey が含まれます。main セッションは main キーで識別し、存在しない場合は最後に更新されたセッションへフォールバックします。Priority: 常に main を優先します。"
 x-i18n:
   source_hash: "8eb73c0e671a76aae4ebb653c65147610bf3e6d3c9c0943d150e292e7761d16d"
 ---

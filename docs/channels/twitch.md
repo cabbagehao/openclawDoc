@@ -2,7 +2,8 @@
 summary: "Twitch チャットボットの構成とセットアップ"
 read_when:
   - OpenClaw に Twitch チャット連携を導入する場合
-title: "Twitch"
+title: "OpenClawのTwitchチャット連携の設定方法と運用ガイド"
+description: "Twitch チャットを OpenClaw に接続する設定ガイドです。IRC 経由の構成、ボットアカウント、プラグイン導入手順を確認できます。"
 x-i18n:
   source_hash: "4fa7daa11d1e5ed43c9a8f9f7092809bf2c643838fc5b0c8df27449e430796dc"
 ---

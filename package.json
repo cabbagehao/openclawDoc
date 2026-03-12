@@ -10,6 +10,7 @@
   "scripts": {
     "docs:bin": "node scripts/build-docs-list.mjs",
     "docs:check-links": "node scripts/docs-link-audit.mjs",
+    "docs:check-meta": "node scripts/docs-metadata-audit.mjs",
     "docs:dev": "cd docs && mint dev",
     "docs:i18n": "go run ./scripts/docs-i18n",
     "docs:list": "node scripts/docs-list.js",

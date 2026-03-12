@@ -1,8 +1,8 @@
 ---
-title: "HEARTBEAT.md Template"
+title: "OpenClawののHEARTBEAT テンプレートの用途・記述ルール・設定例"
 summary: "HEARTBEAT.md 用のワークスペーステンプレート"
 read_when:
-  - ワークスペースを手動でブートストラップするとき
+description: "HEARTBEATについて解説します。"
 x-i18n:
   source_hash: "2435dd405f798e5c34b5f1dd5fcb4a12a9fad375fd09e7c4c1e0d55c1d0ae88e"
 ---

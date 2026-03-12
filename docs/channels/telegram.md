@@ -2,7 +2,8 @@
 summary: "Telegram ボットのサポート ステータス、機能、および構成"
 read_when:
   - Telegram 機能または Webhook の作業
-title: "Telegram"
+title: "OpenClawのTelegramボット連携の設定方法と配信運用ガイド"
+description: "Telegram ボットを OpenClaw に接続する設定と運用ガイドです。BotFather での準備、ロングポーリング / Webhook、ペアリングを確認できます。"
 x-i18n:
   source_hash: "bf7d861c40280b172e13ce6d1778e9ebe6a5441c0d7ad0f09506cbbc5b1afd7d"
 ---

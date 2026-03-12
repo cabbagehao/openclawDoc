@@ -1,9 +1,10 @@
 ---
 summary: "Bun ワークフロー（実験的）: インストール方法と pnpm との差分、注意点"
+description: "Bun で OpenClaw リポジトリを動かす実験的ワークフローと、pnpm との違い、注意点を説明します。"
 read_when:
   - 最速のローカル開発ループ（bun + watch）を使いたい
   - Bun のインストール、パッチ、ライフサイクルスクリプトで問題が出た
-title: "Bun (実験的)"
+title: "Bun で OpenClaw を導入・実行する実験的ワークフロー"
 ---
 目的は、`pnpm` のワークフローから大きく外れずに、このリポジトリを **Bun** で実行できるようにすることです。Bun は任意で利用できますが、WhatsApp / Telegram 用途では推奨されません。
 

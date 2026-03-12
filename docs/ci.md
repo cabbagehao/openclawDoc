@@ -1,6 +1,6 @@
 ---
-title: CIパイプライン
-description: OpenClaw CIパイプラインの仕組み
+title: "OpenClawのGitHub Actions CI構成と実行条件・運用フローガイド"
+description: "GitHub Actions の CI ジョブ構成、変更範囲によるスキップ条件、ローカルでの確認方法を説明します。"
 summary: "CIジョブグラフ、スコープゲート、およびローカルコマンドの同等機能"
 read_when:
   - CIジョブが実行された理由または実行されなかった理由を理解する必要がある場合

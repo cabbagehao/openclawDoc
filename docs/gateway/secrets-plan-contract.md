@@ -1,10 +1,11 @@
 ---
 summary: "`secrets apply` 実行プランの仕様: ターゲットの検証、パスの一致ルール、および `auth-profiles.json` の対象範囲"
+description: "secrets apply が受け付けるプラン形式、対象範囲、target type、パス検証、失敗時挙動、運用チェック項目を定義します。"
 read_when:
   - "`openclaw secrets apply` 用のプランを生成またはレビューする場合"
   - 「Invalid plan target path」エラーをデバッグする場合
   - ターゲットの種類やパスの検証ルールを理解したい場合
-title: "シークレット適用プランの仕様"
+title: "OpenClaw secrets apply プラン仕様とターゲット検証・パス規則"
 x-i18n:
   source_hash: "6fcbec7fbbe8d35fa6b9ef354d8aff83183c9f174097ff7a31b42498203f021b"
 ---

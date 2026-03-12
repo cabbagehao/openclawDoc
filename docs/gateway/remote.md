@@ -1,8 +1,9 @@
 ---
 summary: "SSH トンネル (Gateway WS) および Tailnet を利用したリモートアクセス"
+description: "専用ホストのゲートウェイへ SSH トンネルや Tailnet で接続する構成、コマンド実行位置、認証優先順位、UI 利用時の注意を整理します。"
 read_when:
   - リモートゲートウェイのセットアップやトラブルシューティングを行う場合
-title: "リモートアクセス"
+title: "OpenClaw リモートアクセス設定 SSH トンネル・Tailnet 接続ガイド"
 x-i18n:
   source_hash: "4e83f67b7c811d132b41c44476cd18dfa7c3ed18e8e3e60521ea255dcf31e279"
 ---

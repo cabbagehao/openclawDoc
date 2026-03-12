@@ -1,9 +1,10 @@
 ---
 summary: "OpenClaw 用 VPS ホスティング ハブ (Oracle/Fly/Hetzner/GCP/exe.dev)"
+description: "OpenClaw を常時運用するための VPS 選定と、主要ホスティング先ごとの導入ガイドへの入口を提供します。"
 read_when:
   - ゲートウェイをクラウドで実行したい
   - VPS/ホスティング ガイドの簡単な地図が必要です
-title: "VPSホスティング"
+title: "OpenClaw向けVPS選定と導入先比較・運用判断ガイド"
 x-i18n:
   source_hash: "f318a6f719121da27565de9f9869235b77d4b5ef05b86a11be82933da579e459"
 ---

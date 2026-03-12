@@ -3,7 +3,8 @@ summary: "NIP-04 暗号化メッセージを介した Nostr DM チャネル"
 read_when:
   - OpenClaw が Nostr 経由で DM を受信できるようにしたい場合
   - 分散型メッセージングの設定を行っている場合
-title: "Nostr"
+title: "OpenClawでNostr DMチャネル連携を設定する方法"
+description: "Nostr DM チャネルを OpenClaw に接続する設定ガイドです。NIP-04 暗号化メッセージ対応、プラグイン有効化、基本構成を確認できます。"
 x-i18n:
   source_hash: "6b9fe4c74bf5e7c0f59bbaa129ec5270fd29a248551a8a9a7dde6cff8fb46111"
 ---
