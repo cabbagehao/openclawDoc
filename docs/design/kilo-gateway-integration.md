@@ -1,4 +1,5 @@
 ---
+summary: "Kilo Gateway を OpenClaw の標準プロバイダーとして統合するための設計方針"
 title: "Kilo Gateway プロバイダーの統合設計"
 ---
 

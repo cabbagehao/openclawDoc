@@ -1,4 +1,5 @@
 ---
+summary: "OpenClaw 脅威モデルに脅威、緩和策、攻撃チェーンを追加・提案する方法"
 title: "OpenClaw 脅威モデルへの貢献"
 ---
 

@@ -1,4 +1,5 @@
 ---
+summary: "MITRE ATLAS に基づく OpenClaw 脅威モデルと、主要な脅威・緩和策の一覧"
 title: "OpenClaw 脅威モデル v1.0"
 ---
 
