@@ -2,7 +2,8 @@
 summary: "WhatsApp グループメッセージの挙動と設定"
 read_when:
   - グループメッセージのルールやメンションを変更する場合
-title: "OpenClawのWhatsAppグループメッセージ挙動と設定ガイド"
+title: "Group Messages"
+seoTitle: "OpenClawのWhatsAppグループメッセージ挙動と設定ガイド"
 description: "WhatsApp グループメッセージの挙動を整理したガイドです。メンション制御、返信ルール、グループ内での配信動作を確認できます。"
 x-i18n:
   source_path: "channels/group-messages.md"

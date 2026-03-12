@@ -4,7 +4,8 @@ read_when:
   - Android node をペアリングまたは再接続するとき
   - Android 側の gateway discovery や認証を切り分けるとき
   - クライアント間で chat history の整合性を確認するとき
-title: "OpenClawのAndroidアプリの接続設定とペアリング運用ガイド"
+title: "Android App"
+seoTitle: "OpenClawのAndroidアプリの接続設定とペアリング運用ガイド"
 description: "system 制御（launchd / systemd）は Gateway host 側にあります。詳しくは Gateway を参照してください。サポート概要、system 制御、接続 runbookを確認できます。"
 x-i18n:
   source_hash: "39e9206a770d78adc09aa35c30cecfb07093605a7f432d942b68014332b3c56b"

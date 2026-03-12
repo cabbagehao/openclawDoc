@@ -5,7 +5,8 @@ read_when:
   - ロギングの全体像を手早く把握したいとき
   - ログレベルや出力形式を設定したいとき
   - トラブルシューティングのためにログを素早く見つけたいとき
-title: "OpenClawのログ確認方法と出力先・運用ポイント解説"
+title: "Logging"
+seoTitle: "OpenClawのログ確認方法と出力先・運用ポイント解説"
 x-i18n:
   source_hash: "11907b8364e374c6eb1f157f380c2c14aced3053ef28c0f90e732ab475c21f93"
 ---

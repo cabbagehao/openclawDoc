@@ -2,7 +2,8 @@
 summary: "プロジェクトの由来、貢献者、ライセンス。"
 read_when:
   - プロジェクトの背景や貢献者情報を知りたい
-title: "OpenClawクレジット一覧と採用コンポーネントを確認するガイド"
+title: "Credits"
+seoTitle: "OpenClawクレジット一覧と採用コンポーネントを確認するガイド"
 description: "OpenClaw = CLAW + TARDIS。すべての space lobster には、時空を移動するマシンが必要だからです。名前の由来、クレジット、主要コントリビューターを確認できます。"
 x-i18n:
   source_hash: "97c20703bc1e73a9b72fb7bfe923e32ea4847772d86dfb9c7f51f15e2b550628"

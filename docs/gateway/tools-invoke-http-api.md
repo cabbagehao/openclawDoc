@@ -4,7 +4,8 @@ description: "単一ツールを HTTP から実行するエンドポイントの
 read_when:
   - エージェントのフルターンを実行せずにツールを呼び出す場合
   - ツールポリシーの適用が必要な自動化を構築する場合
-title: "OpenClaw Tools Invoke HTTP API の直接呼び出しと認証ガイド"
+title: "Tools Invoke API"
+seoTitle: "OpenClaw Tools Invoke HTTP API の直接呼び出しと認証ガイド"
 ---
 OpenClawのゲートウェイは、単一のツールを直接呼び出すためのシンプルなHTTPエンドポイントを公開しています。この機能は常に有効ですが、ゲートウェイ認証とツールポリシーによって制限されます。
 

@@ -3,7 +3,8 @@ summary: "gogcli を使って Gmail Pub/Sub プッシュを OpenClaw の webhook
 read_when:
   - Gmail の受信トリガーを OpenClaw に接続したい場合
   - エージェント起動用の Pub/Sub プッシュを設定したい場合
-title: "OpenClawのGmail Pub/Sub連携でWebhook起動を構築する設定ガイド"
+title: "Gmail Pub/Sub"
+seoTitle: "OpenClawのGmail Pub/Sub連携でWebhook起動を構築する設定ガイド"
 description: "目的: Gmail watch -> Pub/Sub プッシュ -> gog gmail watch serve -> OpenClaw webhook。前提条件、ウィザード（推奨）、初回セットアップを確認できます。"
 x-i18n:
   source_path: "automation/gmail-pubsub.md"

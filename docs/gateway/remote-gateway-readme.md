@@ -2,7 +2,8 @@
 summary: "リモートゲートウェイに接続するための OpenClaw.app (macOS) 向け SSH トンネル設定ガイド"
 description: "macOS アプリから SSH トンネル経由でリモートゲートウェイへ接続する手順、launch agent 自動起動、トラブル対応を説明します。"
 read_when: "macOS アプリを SSH 経由でリモートゲートウェイに接続する場合"
-title: "OpenClaw.app リモートゲートウェイ SSH 接続設定と常駐化ガイド"
+title: "リモートゲートウェイのセットアップ"
+seoTitle: "OpenClaw.app リモートゲートウェイ SSH 接続設定と常駐化ガイド"
 x-i18n:
   source_hash: "5c49717a4479ebf9cfb343372b4b7db2eaa804f92c90be2402266a6c009ef389"
 ---

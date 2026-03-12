@@ -3,7 +3,8 @@ summary: "コンテキストとトーンのための OpenClaw のバックスト
 description: "OpenClaw の世界観や背景設定を通じて、プロジェクトのトーンと文脈を掴むための読み物です。"
 read_when:
   - ロアを参照するドキュメントやUXコピーを作成する場合
-title: "OpenClawの世界観・名称の由来・プロジェクト背景ガイド"
+title: "OpenClaw Lore"
+seoTitle: "OpenClawの世界観・名称の由来・プロジェクト背景ガイド"
 ---
 _ロブスター、脱皮する殻、そして多すぎるトークンについての物語。_
 

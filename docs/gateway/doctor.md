@@ -4,7 +4,8 @@ description: "構成移行、レガシー状態の整理、認証やサンドボ
 read_when:
   - doctor による移行処理（migration）を追加・変更する場合
   - 構成設定に破壊的な変更を導入する場合
-title: "OpenClaw向け openclaw doctor の修復手順と健全性診断ガイド"
+title: "Doctor"
+seoTitle: "OpenClaw向け openclaw doctor の修復手順と健全性診断ガイド"
 x-i18n:
   source_hash: "814e0719a170ef7c9fc43358e1fda1f3646f3f8dfa3214654354aab60c0fde2c"
 ---

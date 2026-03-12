@@ -4,7 +4,8 @@ description: "エージェント、プロンプト、ツール、各チャネル
 read_when:
   - モデルやユーザーへのタイムスタンプの表示方法を変更したい場合
   - メッセージやシステムプロンプト内の時刻形式をデバッグしたい場合
-title: "OpenClawの日付時刻処理とタイムゾーン設定の実務ガイド"
+title: "日付と時刻"
+seoTitle: "OpenClawの日付時刻処理とタイムゾーン設定の実務ガイド"
 x-i18n:
   source_hash: "9ee809c96897db1126c7efcaa5bf48a63cdcb2092abd4b3205af224ebd882766"
 ---

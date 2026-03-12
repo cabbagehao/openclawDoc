@@ -3,7 +3,8 @@ summary: "Hugging Face Inference の設定（認証とモデル選択）"
 read_when:
   - OpenClaw で Hugging Face Inference を使いたいとき
   - HF token の環境変数や CLI 認証方法を確認したいとき
-title: "OpenClawでHugging Face Inferenceを使う認証・モデル設定ガイド"
+title: "Hugging Face（Inference）"
+seoTitle: "OpenClawでHugging Face Inferenceを使う認証・モデル設定ガイド"
 description: "Hugging Face Inference Providers を OpenClaw で使う設定ガイドです。トークン認証、OpenAI 互換 endpoint、モデル選択の基本を確認できます。"
 x-i18n:
   source_hash: "e7ba5cb533f652ba9bb514ab8c5ffbd50170077ac0005555915405c109198a4f"

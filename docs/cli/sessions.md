@@ -2,7 +2,8 @@
 summary: "`openclaw sessions` の CLI リファレンス (保存されたセッションの一覧表示とメンテナンス)"
 read_when:
   - 保存されている会話セッションの一覧を確認したり、最近のアクティビティを見たい場合
-title: "OpenClaw CLI: openclaw sessions コマンドの使い方と主要オプション・実行例"
+title: "sessions"
+seoTitle: "OpenClaw CLI: openclaw sessions コマンドの使い方と主要オプション・実行例"
 description: "保存されている会話セッションを一覧表示します。範囲（スコープ）の選択、JSON 出力の例、クリーンアップメンテナンス (cleanup)を確認できます。"
 x-i18n:
   source_hash: "e609bd7f303cc74977d12caae6a8af9fa4c16537fae6294c970bb80e3e472f18"

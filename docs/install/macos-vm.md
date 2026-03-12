@@ -6,7 +6,8 @@ read_when:
   - サンドボックス内で iMessage 統合 (BlueBubbles) を使用したい場合
   - クローン可能な、リセット可能な macOS 環境が必要な場合
   - ローカルとホスト型の macOS VM オプションを比較したい場合
-title: "macOS VM 上で OpenClaw を分離運用する構成ガイド"
+title: "macOS VMs"
+seoTitle: "macOS VM 上で OpenClaw を分離運用する構成ガイド"
 ---
 ## 推奨されるデフォルト (ほとんどのユーザー向け)
 

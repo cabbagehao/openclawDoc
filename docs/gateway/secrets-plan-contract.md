@@ -5,7 +5,8 @@ read_when:
   - "`openclaw secrets apply` 用のプランを生成またはレビューする場合"
   - 「Invalid plan target path」エラーをデバッグする場合
   - ターゲットの種類やパスの検証ルールを理解したい場合
-title: "OpenClaw向け openclaw secrets apply のプラン仕様とパス検証ルール"
+title: "シークレット適用プランの仕様"
+seoTitle: "OpenClaw向け openclaw secrets apply のプラン仕様とパス検証ルール"
 x-i18n:
   source_hash: "6fcbec7fbbe8d35fa6b9ef354d8aff83183c9f174097ff7a31b42498203f021b"
 ---

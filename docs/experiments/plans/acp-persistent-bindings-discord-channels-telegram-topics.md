@@ -1,6 +1,7 @@
 ---
 summary: "Discord チャネルと Telegram フォーラムトピックを長寿命 ACP セッションへ結び付ける永続バインディング計画"
-title: "OpenClawのDiscordチャネルとTelegramトピック向けACP永続バインディング設計"
+title: "Discord チャネルおよび Telegram トピック向けの ACP 永続バインディング"
+seoTitle: "OpenClawのDiscordチャネルとTelegramトピック向けACP永続バインディング設計"
 description: "Discord チャネルや Telegram フォーラムトピックを長寿命 ACP セッションへ結び付ける設計計画です。背景、目標、永続バインディングの導入方針を確認できます。"
 ---
 ステータス: 草案

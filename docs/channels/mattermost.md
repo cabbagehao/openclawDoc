@@ -3,7 +3,8 @@ summary: "Mattermost ボットのセットアップと OpenClaw 構成"
 read_when:
   - Mattermost のセットアップ
   - Mattermost ルーティングのデバッグ
-title: "OpenClawでMattermostボット連携を設定する方法"
+title: "Mattermost"
+seoTitle: "OpenClawでMattermostボット連携を設定する方法"
 description: "Mattermost ボットを OpenClaw に接続する設定ガイドです。ボットトークン、WebSocket イベント、DM・チャネル対応の構成を確認できます。"
 x-i18n:
   source_hash: "c1d43218b97fdaa30e8739287056151feeb88aace9b1787769a890f9cc5eca59"

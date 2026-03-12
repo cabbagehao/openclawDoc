@@ -5,7 +5,8 @@ read_when:
   - トークンの無効化やログアウトの問題が発生した場合
   - setup-token や OAuth 認証フローについて知りたい場合
   - 複数のアカウントやプロファイルによるルーティングを設定したい場合
-title: "OpenClawのOAuth認証フローの仕組みと運用上の注意点ガイド"
+title: "OAuth"
+seoTitle: "OpenClawのOAuth認証フローの仕組みと運用上の注意点ガイド"
 description: "OpenClaw は、対応しているプロバイダー（特に OpenAI Codex (ChatGPT OAuth)）において、OAuth 経由のサブスクリプション認証をサポートしています。Anthropic のサブスクリプション利用には setup-token フローを使用します。"
 x-i18n:
   source_hash: "976668c3e02ee50500fcaaa585a89af718398dc41988318ec3a583c2d5449df3"

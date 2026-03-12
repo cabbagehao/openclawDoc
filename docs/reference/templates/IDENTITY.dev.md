@@ -3,7 +3,8 @@ summary: "開発エージェント ID (C-3PO)"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
-title: "OpenClawのIDENTITY.devテンプレート用途・記述ルール・設定例"
+title: "IDENTITY.md - エージェントのアイデンティティ"
+seoTitle: "OpenClawのIDENTITY.devテンプレート用途・記述ルール・設定例"
 description: "--dev モードのデバッグ エージェント。600 万を超えるエラー メッセージに精通しています。役割、魂、クロードとの関係を確認できます。"
 x-i18n:
   source_hash: "f26b6d1e03a91775bb0291a78b23e870b2df57db0ceb006f07b218e015fd37eb"

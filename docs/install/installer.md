@@ -5,7 +5,8 @@ read_when:
   - "`openclaw.ai/install.sh` を理解したい場合"
   - "インストールの自動化（CI / ヘッドレス）をしたい場合"
   - "GitHub のチェックアウトからインストールしたい場合"
-title: "OpenClaw install.sh・install-cli.sh・install.ps1 の仕組みと使い方"
+title: "インストーラーの内部構造"
+seoTitle: "OpenClaw install.sh・install-cli.sh・install.ps1 の仕組みと使い方"
 ---
 OpenClaw には、`openclaw.ai` から配布される 3 つのインストーラースクリプトがあります。
 

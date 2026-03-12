@@ -4,7 +4,8 @@ read_when:
   - BlueBubbles チャンネルのセットアップ
   - webhook ペアリングのトラブルシューティング
   - macOS での iMessage の設定
-title: "OpenClawでBlueBubbles経由のiMessage連携を設定する方法"
+title: "BlueBubbles"
+seoTitle: "OpenClawでBlueBubbles経由のiMessage連携を設定する方法"
 description: "BlueBubbles 経由で iMessage を OpenClaw に接続する設定ガイドです。REST 連携の特徴、ペアリング、送受信やリアクション対応範囲を確認できます。"
 ---
 ステータス: HTTP 経由で BlueBubbles の macOS サーバーと通信する同梱プラグインです。レガシーな `imsg` チャンネルより API が充実しており、導入も簡単なため、**iMessage 連携にはこちらを推奨**します。

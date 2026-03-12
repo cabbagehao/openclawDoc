@@ -4,7 +4,8 @@ description: "同一ホストで複数ゲートウェイを動かすときの分
 read_when:
   - 同じマシン上で複数のゲートウェイを動作させたい場合
   - ゲートウェイごとに構成、状態、ポートを分離する必要がある場合
-title: "OpenClaw 複数ゲートウェイ運用とプロファイル分離・ポート設定"
+title: "マルチゲートウェイ"
+seoTitle: "OpenClaw 複数ゲートウェイ運用とプロファイル分離・ポート設定"
 x-i18n:
   source_hash: "493bd45bc6939ae7328afcd0351ca7cb4c93c17b819e8ad0fdf0f0312bf9b639"
 ---

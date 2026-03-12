@@ -5,7 +5,8 @@ read_when:
   - エージェントの初回実行時に何が起こるかを理解する
   - ブートストラップファイルの保存場所を説明する
   - オンボーディングID設定のデバッグ
-title: "OpenClawのエージェントブートストラップと初回ワークスペース生成手順"
+title: "エージェントブートストラップ"
+seoTitle: "OpenClawのエージェントブートストラップと初回ワークスペース生成手順"
 sidebarTitle: "ブートストラップ"
 x-i18n:
   source_path: "start/bootstrapping.md"

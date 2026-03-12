@@ -5,7 +5,8 @@ read_when:
   - GCP 上で OpenClaw を 24 時間 365 日実行したい場合
   - 自分の VM 上で本番環境レベルの常時稼働 Gateway が必要な場合
   - 永続性、バイナリ、再起動の動作を完全に制御したい場合
-title: "GCP Compute Engine で OpenClaw を常時運用する導入手順"
+title: "GCP"
+seoTitle: "GCP Compute Engine で OpenClaw を常時運用する導入手順"
 ---
 ## 目標
 

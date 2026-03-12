@@ -3,7 +3,8 @@ summary: "ウェイクと分離されたエージェント実行のための web
 read_when:
   - webhook エンドポイントを追加または変更する場合
   - 外部システムをOpenClawに接続する場合
-title: "OpenClawのWebhook受信の設定方法と外部システム連携ガイド"
+title: "webhook"
+seoTitle: "OpenClawのWebhook受信の設定方法と外部システム連携ガイド"
 description: "ゲートウェイは、外部トリガー向けに小さな HTTP webhook エンドポイントを公開できます。有効化、認証、エンドポイントを確認できます。"
 ---
 ゲートウェイは、外部トリガー向けに小さな HTTP webhook エンドポイントを公開できます。

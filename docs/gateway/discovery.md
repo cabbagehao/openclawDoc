@@ -5,7 +5,8 @@ read_when:
   - Bonjour による検出や広告の設定を実装・変更する場合
   - リモート接続モード（直接接続 vs SSH）を調整する場合
   - リモートノード向けの検出・ペアリング機能を設計する場合
-title: "OpenClaw ゲートウェイ検出方式と Bonjour・Tailnet・SSH 接続ガイド"
+title: "検出と通信方式"
+seoTitle: "OpenClaw ゲートウェイ検出方式と Bonjour・Tailnet・SSH 接続ガイド"
 x-i18n:
   source_hash: "98e914633522a4cf88e191c04d4f4a8b8d55513715a7dfab2700c9ddd042ea09"
 ---

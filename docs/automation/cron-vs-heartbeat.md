@@ -4,7 +4,8 @@ read_when:
   - 定期タスクをどのようにスケジュールするか決める場合
   - バックグラウンド監視や通知を設定する場合
   - 定期チェックのトークン使用量を最適化したい場合
-title: "OpenClawのHeartbeatとcronジョブの使い分けを判断する運用ガイド"
+title: "Cron と Heartbeat"
+seoTitle: "OpenClawのHeartbeatとcronジョブの使い分けを判断する運用ガイド"
 description: "Heartbeat と cron ジョブは、どちらもスケジュールに沿ってタスクを実行できます。このガイドでは、用途ごとにどちらを選ぶべきかを整理します。まずはこれで判断する、Heartbeat: 定期的な状況確認、Heartbeat が向いている場面を確認できます。"
 x-i18n:
   source_path: "automation/cron-vs-heartbeat.md"

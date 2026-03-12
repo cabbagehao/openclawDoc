@@ -2,7 +2,8 @@
 summary: "macOS 上の OpenClaw のメニューバー アイコン状態とアニメーション"
 read_when:
   - メニュー バー アイコンの動作を変更するとき
-title: "OpenClawのmacOS メニュー バー アイコン の仕組み・設定手順・運用ガイド"
+title: "メニュー バー アイコン"
+seoTitle: "OpenClawのmacOS メニュー バー アイコン の仕組み・設定手順・運用ガイド"
 description: "Author: steipete · Updated: 2025-12-06 · Scope: macOS app (apps/macos) Wiring points。"
 x-i18n:
   source_hash: "a67a6e6bbdc2b611ba365d3be3dd83f9e24025d02366bc35ffcce9f0b121872b"

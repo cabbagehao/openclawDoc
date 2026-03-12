@@ -4,7 +4,8 @@ read_when:
   - Firecrawl を利用した Web 抽出が必要な場合
   - Firecrawl API キーが必要です
   - web_fetch のアンチボット抽出が必要な場合
-title: "OpenClaw Firecrawl連携の使い方と取得フロー・制約ガイド"
+title: "ファイアクロール"
+seoTitle: "OpenClaw Firecrawl連携の使い方と取得フロー・制約ガイド"
 description: "OpenClaw は、Firecrawl を web_fetch のフォールバック エクストラクターとして使用できます。ホスト型です ボットの回避とキャッシュをサポートするコンテンツ抽出サービス。プレーンな HTTP フェッチをブロックする JS を多用するサイトまたはページ。"
 x-i18n:
   source_hash: "08a7ad45b41af41204e44d2b0be0f980b7184d80d2fa3977339e42a47beb2851"

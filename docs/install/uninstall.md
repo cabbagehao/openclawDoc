@@ -4,7 +4,8 @@ description: "CLI、サービス、状態ファイル、ワークスペースを
 read_when:
   - マシンから OpenClaw を削除したい場合
   - アンインストール後も Gateway サービスがまだ実行されている場合
-title: "OpenClawのCLI・サービス・状態を安全に削除する手順"
+title: "アンインストール"
+seoTitle: "OpenClawのCLI・サービス・状態を安全に削除する手順"
 ---
 方法は 2 通りあります。
 

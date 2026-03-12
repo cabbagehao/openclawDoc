@@ -1,6 +1,7 @@
 ---
 summary: "OpenClaw のセキュリティ文書、脆弱性報告手順、信頼リソースの入口"
-title: "OpenClawのセキュリティ方針・脆弱性報告・信頼モデル総合ガイド"
+title: "OpenClaw のセキュリティと信頼"
+seoTitle: "OpenClawのセキュリティ方針・脆弱性報告・信頼モデル総合ガイド"
 description: "Live: trust.openclaw.ai。ドキュメント、脆弱性の報告、連絡先を確認できます。"
 ---
 **Live:** [trust.openclaw.ai](https://trust.openclaw.ai)

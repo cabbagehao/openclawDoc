@@ -5,7 +5,8 @@ read_when:
   - ノードクライアントの構築やデバッグを行う場合 (iOS/Android/macOS ノードモード)
   - ペアリングやブリッジの認証エラーを調査する場合
   - ゲートウェイが公開しているノード用のインターフェースを監査する場合
-title: "OpenClaw レガシーブリッジプロトコル仕様と TCP JSONL 通信解説"
+title: "ブリッジプロトコル"
+seoTitle: "OpenClaw レガシーブリッジプロトコル仕様と TCP JSONL 通信解説"
 x-i18n:
   source_hash: "2923c683c77336b92b62dc6d66fa3ff5d4b4fac56c4ec2dc2cca8d8bbcc5d834"
 ---

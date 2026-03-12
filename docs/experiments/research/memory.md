@@ -4,7 +4,8 @@ read_when:
   - 日次 Markdown ログを超えた、ワークスペースの記憶 (~/.openclaw/workspace) を設計する場合
   - 選択の検討: スタンドアロン CLI か、OpenClaw への深い統合か
   - オフラインでの想起（Recall）と内省（Reflection）機能の追加 (Retain/Recall/Reflect)
-title: "OpenClawのワークスペース記憶の研究 の狙い・設計案・検証ポイント"
+title: "ワークスペース記憶の研究"
+seoTitle: "OpenClawのワークスペース記憶の研究 の狙い・設計案・検証ポイント"
 description: "対象: Clawd スタイルのワークスペース (agents.defaults.workspace, デフォルトは ~/.openclaw/workspace)。"
 x-i18n:
   source_hash: "1753c8ee6284999fab4a94ff5fae7421c85233699c9d3088453d0c2133ac0feb"

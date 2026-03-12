@@ -2,7 +2,8 @@
 summary: "`openclaw agents` の CLI リファレンス (エージェントの一覧表示/追加/削除、ルーティングバインディングの設定、アイデンティティの設定)"
 read_when:
   - ワークスペース、ルーティング、認証が分離された複数のエージェントを運用したい場合
-title: "OpenClaw CLI: openclaw agents コマンドの使い方と主要オプション・実行例"
+title: "agents"
+seoTitle: "OpenClaw CLI: openclaw agents コマンドの使い方と主要オプション・実行例"
 description: "ワークスペース、認証、ルーティングが分離された個別のエージェントを管理します。関連ドキュメント: - マルチエージェントルーティング: マルチエージェントルーティング - エージェントワークスペース: エージェントワークスペース。"
 x-i18n:
   source_hash: "b6a6b7b9ac330a6eb35dbbb6c080fcca621b6310983534fe7ad10b90e7f0c38c"

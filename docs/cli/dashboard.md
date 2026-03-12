@@ -3,7 +3,8 @@ summary: "`openclaw dashboard` の CLI リファレンス (コントロール UI
 read_when:
   - 現在の認証情報を使用してコントロール UI を開きたい場合
   - ブラウザを起動せずに URL のみを表示したい場合
-title: "OpenClaw CLI: openclaw dashboard コマンドの使い方と主要オプション・実行例"
+title: "dashboard"
+seoTitle: "OpenClaw CLI: openclaw dashboard コマンドの使い方と主要オプション・実行例"
 description: "現在の認証情報を使用してコントロール UI を開きます。"
 x-i18n:
   source_hash: "a34cd109a3803e2910fcb4d32f2588aa205a4933819829ef5598f0780f586c94"

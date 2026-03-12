@@ -4,7 +4,8 @@ read_when:
   - "`openclaw browser` コマンドを使用しており、よくあるタスクの実行例を確認したい場合"
   - ノードホストを介して別のマシンで実行されているブラウザを制御したい場合
   - Chrome 拡張機能リレーを使用したい（ツールバーのボタンによるアタッチ/デタッチ）場合
-title: "OpenClaw CLI: openclaw browser コマンドの使い方と主要オプション・実行例"
+title: "browser"
+seoTitle: "OpenClaw CLI: openclaw browser コマンドの使い方と主要オプション・実行例"
 description: "OpenClaw のブラウザ制御サーバーを管理し、ブラウザ操作（タブ管理、スナップショット取得、スクリーンショット、ナビゲーション、クリック、入力など）を実行します。"
 x-i18n:
   source_hash: "af35adfd68726fd519c704d046451effd330458c2b8305e713137fb07b2571fd"

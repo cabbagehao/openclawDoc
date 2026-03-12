@@ -2,7 +2,8 @@
 summary: "送信、ゲートウェイ、エージェント返信における画像 / メディア処理ルール"
 read_when:
   - メディアパイプラインや添付ファイル処理を変更するとき
-title: "OpenClawの画像とメディア理解機能の設定方法と解析ガイド"
+title: "Image and Media Support"
+seoTitle: "OpenClawの画像とメディア理解機能の設定方法と解析ガイド"
 description: "WhatsApp チャンネルは Baileys Web で動作します。この文書では、送信、gateway、エージェント返信における現在のメディア処理ルールを整理します。"
 x-i18n:
   source_hash: "971aed398ea01078efbad7a8a4bca17f2a975222a2c4db557565e4334c9450e0"

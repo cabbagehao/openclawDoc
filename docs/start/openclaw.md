@@ -4,7 +4,8 @@ description: "OpenClaw を個人用アシスタントとして常時運用する
 read_when:
   - 新しいアシスタントインスタンスのオンボーディング時
   - セキュリティ/権限の意味合いを確認する場合
-title: "OpenClawを個人向けAIアシスタントとして運用する設定と活用ガイド"
+title: "パーソナルアシスタントのセットアップ"
+seoTitle: "OpenClawを個人向けAIアシスタントとして運用する設定と活用ガイド"
 ---
 OpenClaw は、**Pi** エージェントのための WhatsApp + Telegram + Discord + iMessage ゲートウェイです。プラグインで Mattermost を追加できます。このガイドは「パーソナルアシスタント」のセットアップです。1つの専用の WhatsApp 番号が、常時稼働するアシスタントのように振る舞います。
 

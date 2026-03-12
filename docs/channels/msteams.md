@@ -2,7 +2,8 @@
 summary: "Microsoft Teams ボットのサポートステータス、機能、および構成"
 read_when:
   - Microsoft Teams チャネル機能の開発
-title: "OpenClawのMicrosoft Teamsボット連携の設定方法と運用ガイド"
+title: "Microsoft Teams"
+seoTitle: "OpenClawのMicrosoft Teamsボット連携の設定方法と運用ガイド"
 description: "Microsoft Teams ボット連携の現状と設定方法をまとめます。対応範囲、前提条件、構成手順、既知の制約を確認できます。"
 x-i18n:
   source_hash: "9559705b08291578f9d476ea4924d53aa77ae81d682a95d93e9b148430007e32"

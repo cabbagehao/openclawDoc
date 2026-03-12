@@ -2,7 +2,8 @@
 summary: "OpenClaw アプリ、ゲートウェイ ノード トランスポート、および PeekabooBridge 用の macOS IPC アーキテクチャ"
 read_when:
   - IPC contract や menu bar app IPC を編集するとき
-title: "OpenClawのmacOS IPC の仕組み・設定手順・運用ガイド"
+title: "macOS IPC"
+seoTitle: "OpenClawのmacOS IPC の仕組み・設定手順・運用ガイド"
 description: "現在のモデル: ローカル Unix socket を使って、node host service と macOS アプリ を接続し、exec approval と system.run をやり取りします。"
 x-i18n:
   source_hash: "d0211c334a4a59b71afb29dd7b024778172e529fa618985632d3d11d795ced92"

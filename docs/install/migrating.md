@@ -4,7 +4,8 @@ description: "既存の OpenClaw Gateway をオンボーディングし直さず
 read_when:
   - OpenClaw を新しいラップトップやサーバーに移動する場合
   - セッション、認証、チャンネルのログイン（WhatsApp など）を維持したい場合
-title: "OpenClaw の設定・状態・ワークスペースを新環境へ移行する手順"
+title: "移行ガイド"
+seoTitle: "OpenClaw の設定・状態・ワークスペースを新環境へ移行する手順"
 ---
 このガイドでは、**オンボーディングをやり直すことなく**、OpenClaw Gateway をあるマシンから別のマシンへ移行する方法を説明します。
 

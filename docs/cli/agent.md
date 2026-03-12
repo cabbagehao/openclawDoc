@@ -2,7 +2,8 @@
 summary: "`openclaw agent`のCLIリファレンス（Gateway経由で1つのエージェントターンを送信）"
 read_when:
   - スクリプトから1つのエージェントターンを実行したい場合（オプションで返信を配信）
-title: "OpenClaw CLI: openclaw agent コマンドの使い方と主要オプション・実行例"
+title: "agent"
+seoTitle: "OpenClaw CLI: openclaw agent コマンドの使い方と主要オプション・実行例"
 description: "Gateway経由でエージェントターンを実行します（埋め込みには--localを使用）。設定されたエージェントを直接ターゲットにするには、--agent を使用します。"
 ---
 Gateway経由でエージェントターンを実行します（埋め込みには`--local`を使用）。

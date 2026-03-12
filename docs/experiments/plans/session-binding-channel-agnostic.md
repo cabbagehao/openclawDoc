@@ -6,7 +6,8 @@ read_when:
 owner: "onutc"
 status: "in-progress"
 last_updated: "2026-02-21"
-title: "OpenClawのSession Binding Channel Agnostic 計画 の狙い・設計案・検証ポイント"
+title: "Session Binding Channel Agnostic 計画"
+seoTitle: "OpenClawのSession Binding Channel Agnostic 計画 の狙い・設計案・検証ポイント"
 description: "この文書では、長期的に採用するチャネル非依存の session binding モデルと、次の実装イテレーションで扱う具体的な範囲を定義します。概要、この文書が必要な理由、Iteration 1 の範囲を確認できます。"
 x-i18n:
   source_hash: "9bf79098053da3d7a28ec4f7fe8289b5c39462c23b5ca1420a83ffb02191c7cd"

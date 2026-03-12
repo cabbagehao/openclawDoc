@@ -3,7 +3,8 @@ summary: "受信音声メモ向け Deepgram 文字起こし"
 read_when:
   - 音声添付ファイルに Deepgram の speech-to-text を使いたいとき
   - Deepgram の簡単な設定例を確認したいとき
-title: "OpenClawでDeepgram音声文字起こしを使う設定ガイド"
+title: "Deepgram"
+seoTitle: "OpenClawでDeepgram音声文字起こしを使う設定ガイド"
 description: "Deepgram で受信音声メモを文字起こしする設定ガイドです。speech-to-text の有効化方法、音声処理の流れ、返信パイプラインへの組み込み方を確認できます。"
 x-i18n:
   source_hash: "dabd1f6942c339fbd744fbf38040b6a663b06ddf4d9c9ee31e3ac034de9e79d9"

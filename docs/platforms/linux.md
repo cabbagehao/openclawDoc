@@ -3,7 +3,8 @@ summary: "Linux support と companion app の現状"
 read_when:
   - Linux companion app の状況を確認したいとき
   - platform coverage や contribution を検討するとき
-title: "LinuxでOpenClawを使う導入方法と運用ポイントガイド"
+title: "Linux App"
+seoTitle: "LinuxでOpenClawを使う導入方法と運用ポイントガイド"
 description: "Gateway は Linux で完全サポートされています。推奨ランタイムは Node です。Bun は Gateway には推奨されません（WhatsApp / Telegram 周りに既知の不具合があります）。"
 x-i18n:
   source_hash: "93b8250cd1267004a3342c8119462d0442af96704f9b3be250d8ee1eeeb7d4cd"

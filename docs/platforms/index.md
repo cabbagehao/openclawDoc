@@ -3,7 +3,8 @@ summary: "Platform support の概要（Gateway + companion app）"
 read_when:
   - OS ごとのサポート状況や install path を確認したいとき
   - Gateway をどこで動かすか決めたいとき
-title: "OpenClawの対応プラットフォーム一覧と導入先の選び方ガイド"
+title: "Platforms"
+seoTitle: "OpenClawの対応プラットフォーム一覧と導入先の選び方ガイド"
 description: "OpenClaw core は TypeScript 製で、推奨ランタイムは Node です。Bun は Gateway には推奨されません（WhatsApp / Telegram 周りに既知の不具合があります）。"
 x-i18n:
   source_hash: "653f395598b9558cb15b58ab42ed931dba47c70780be1c803d33dd795bad6503"

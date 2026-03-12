@@ -1,5 +1,6 @@
 ---
-title: "OpenClawでIRCチャンネルとDM連携を設定する方法"
+title: "IRC"
+seoTitle: "OpenClawでIRCチャンネルとDM連携を設定する方法"
 description: "IRC チャンネルとダイレクトメッセージを OpenClaw に接続する設定ガイドです。プラグイン導入、allowlist、グループ制御、運用の注意点を確認できます。"
 summary: "IRC プラグインのセットアップ、アクセス制御、トラブルシューティング"
 read_when:

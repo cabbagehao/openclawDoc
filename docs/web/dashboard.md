@@ -2,7 +2,8 @@
 summary: "Gateway ダッシュボード（Control UI）のアクセスと認証"
 read_when:
   - ダッシュボード認証または公開モードの変更時
-title: "OpenClaw Gatewayダッシュボードのアクセス方法と認証設定ガイド"
+title: "ダッシュボード"
+seoTitle: "OpenClaw Gatewayダッシュボードのアクセス方法と認証設定ガイド"
 description: "Gateway ダッシュボードへのアクセス方法と認証設定を説明します。Control UI の公開場所、`basePath` の変更、ローカル接続時の確認事項を確認できます。"
 x-i18n:
   source_hash: "243230ad35672a374afec7ad9ea344c5fb74bdb7ea3a36e21a0b2a313583d000"

@@ -3,7 +3,8 @@ summary: "OpenClaw で Amazon Bedrock（Converse API）モデルを使用する"
 read_when:
   - OpenClaw で Amazon Bedrock モデルを使いたいとき
   - モデル呼び出しに必要な AWS 認証情報やリージョン設定を確認したいとき
-title: "OpenClawでAmazon Bedrockを使うAWS認証・モデル設定ガイド"
+title: "Amazon Bedrock"
+seoTitle: "OpenClawでAmazon Bedrockを使うAWS認証・モデル設定ガイド"
 description: "Amazon Bedrock を OpenClaw で使うための設定ガイドです。AWS 認証情報、リージョン指定、自動モデル検出、Converse API の前提をまとめています。"
 x-i18n:
   source_hash: "73b0472f571ee6eb9c1b0d851ce94208914f2fa24eacc3b92a571aeb162dbca8"

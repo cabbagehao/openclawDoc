@@ -4,7 +4,8 @@ read_when:
   - Oracle Cloud で OpenClaw をセットアップするとき
   - OpenClaw 向けの低コスト VPS を探しているとき
   - 小規模サーバーで 24 時間稼働の OpenClaw を動かしたいとき
-title: "Oracle CloudでOpenClawを導入する構成ガイド"
+title: "Oracle Cloud"
+seoTitle: "Oracle CloudでOpenClawを導入する構成ガイド"
 description: "Oracle Cloud の Always Free ARM 枠で、常時稼働する OpenClaw ゲートウェイを運用します。Oracle の無料枠は OpenClaw に適していることが多く、すでに OCI アカウントがある場合は特に有力な選択肢です。"
 x-i18n:
   source_hash: "8ec927ab5055c915fda464458f85bfb96151967c3b7cd1b1fd2b2f156110fc6d"

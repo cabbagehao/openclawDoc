@@ -2,7 +2,8 @@
 summary: "テストをローカルで実行する方法 (vitest)、および強制/カバレッジ モードをいつ使用するか"
 read_when:
   - テストの実行または修正
-title: "OpenClawテスト用リファレンスの内容と確認ポイントガイド"
+title: "テスト"
+seoTitle: "OpenClawテスト用リファレンスの内容と確認ポイントガイド"
 description: "ローカル PR ランド/ゲート チェックの場合は、次を実行します。ローカル PR ゲート、モデル レイテンシ ベンチ (ローカル キー)、CLI 起動ベンチを確認できます。"
 x-i18n:
   source_hash: "c98456042ff6ff4ba0773cb461fa85beae69864b65d41f546e0b488f60d98c26"

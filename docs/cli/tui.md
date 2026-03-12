@@ -3,7 +3,8 @@ summary: "`openclaw tui` の CLI リファレンス (ゲートウェイに接続
 read_when:
   - ゲートウェイ用のターミナル UI（リモート環境にも対応）を使用したい場合
   - スクリプトから URL、トークン、セッション情報を渡したい場合
-title: "OpenClaw CLI: openclaw tui コマンドの使い方と主要オプション・実行例"
+title: "tui"
+seoTitle: "OpenClaw CLI: openclaw tui コマンドの使い方と主要オプション・実行例"
 description: "ゲートウェイに接続して対話を行うターミナル UI（TUI）を開きます。関連ドキュメント: - TUI ガイド: TUI。補足事項、実行例を確認できます。"
 x-i18n:
   source_hash: "60e35062c0551f85ce0da604a915b3e1ca2514d00d840afe3b94c529304c2c1a"

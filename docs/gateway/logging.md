@@ -4,7 +4,8 @@ description: "ファイルログとコンソール出力の違い、redaction、
 read_when:
   - ログの出力内容や形式を変更する場合
   - CLI やゲートウェイの出力をデバッグする場合
-title: "OpenClaw ゲートウェイログ設定と出力先・確認方法の完全ガイド"
+title: "ロギング"
+seoTitle: "OpenClaw ゲートウェイログ設定と出力先・確認方法の完全ガイド"
 x-i18n:
   source_hash: "efb8eda5e77e3809369a8ff569fac110323a86b3945797093f20e9bc98f39b2e"
 ---

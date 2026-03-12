@@ -3,7 +3,8 @@ summary: "hooks: コマンドとライフサイクルイベントのためのイ
 read_when:
   - /new、/reset、/stop、およびエージェントのライフサイクルイベントに対してイベント駆動型の自動化を行いたい場合
   - hooks を構築、インストール、またはデバッグしたい場合
-title: "OpenClawのフック自動化の作成方法とイベント駆動運用の実践ガイド"
+title: "hooks"
+seoTitle: "OpenClawのフック自動化の作成方法とイベント駆動運用の実践ガイド"
 description: "hooks は、エージェントのコマンドやイベントに応じたアクションの自動化を可能にする、拡張可能なイベント駆動システムです。hooks はディレクトリから自動検出され、OpenClaw の skills と同様に CLI コマンドで管理できます。"
 x-i18n:
   source_path: "automation/hooks.md"

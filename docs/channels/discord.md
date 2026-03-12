@@ -2,7 +2,8 @@
 summary: "Discord ボットのサポート状況、機能、設定"
 read_when:
   - Discord チャンネル機能を扱うとき
-title: "OpenClawのDiscordボット連携の設定方法と配信運用ガイド"
+title: "Discord"
+seoTitle: "OpenClawのDiscordボット連携の設定方法と配信運用ガイド"
 description: "Discord ボットを OpenClaw に接続する設定と運用ガイドです。DM・ギルドチャンネル対応、権限設定、ペアリング、主要な診断手順を確認できます。"
 x-i18n:
   source_hash: "62001ac1c2832bc2321787bbdb97e40240dc9478b7b4f024434e299d580f763c"

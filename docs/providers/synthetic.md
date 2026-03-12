@@ -3,7 +3,8 @@ summary: "OpenClaw で Synthetic の Anthropic 互換 API を使用する"
 read_when:
   - Synthetic をモデルプロバイダーとして使用したい場合
   - 合成 API キーまたはベース URL の設定が必要です
-title: "OpenClawでSynthetic Anthropic互換APIを使う接続設定ガイド"
+title: "合成"
+seoTitle: "OpenClawでSynthetic Anthropic互換APIを使う接続設定ガイド"
 description: "Synthetic の Anthropic 互換 API を OpenClaw に接続する方法をまとめます。API キー、base URL、provider 設定の基本を確認できます。"
 x-i18n:
   source_hash: "3a2adb0b831babe3e88b027772167748764d85ee72d402ff759571420a91757f"

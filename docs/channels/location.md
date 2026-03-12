@@ -3,7 +3,8 @@ summary: "インバウンドチャンネルの位置情報解析（Telegram + Wh
 read_when:
   - チャンネルの位置情報解析を追加または変更する場合
   - エージェントプロンプトやツールで位置情報コンテキストフィールドを使用する場合
-title: "OpenClawのTelegram・WhatsApp位置情報解析設定ガイド"
+title: "チャンネル位置情報解析"
+seoTitle: "OpenClawのTelegram・WhatsApp位置情報解析設定ガイド"
 description: "Telegram と WhatsApp の位置情報メッセージを OpenClaw がどう解釈するかをまとめます。抽出されるコンテキスト項目と利用方法を確認できます。"
 x-i18n:
   source_path: "channels/location.md"

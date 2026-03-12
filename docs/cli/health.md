@@ -2,7 +2,8 @@
 summary: "`openclaw health` の CLI リファレンス (RPC 経由でのゲートウェイヘルスチェック)"
 read_when:
   - 稼働中のゲートウェイの健全性を素早く確認したい場合
-title: "OpenClaw CLI: openclaw health コマンドの使い方と主要オプション・実行例"
+title: "health"
+seoTitle: "OpenClaw CLI: openclaw health コマンドの使い方と主要オプション・実行例"
 description: "稼働中のゲートウェイからヘルスステータス（健全性情報）を取得します。"
 x-i18n:
   source_hash: "82a78a5a97123f7a5736699ae8d793592a736f336c5caced9eba06d14d973fd7"

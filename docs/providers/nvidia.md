@@ -3,7 +3,8 @@ summary: "OpenClaw で NVIDIA の OpenAI 互換 API を使用する"
 read_when:
   - OpenClaw で NVIDIA モデルを使用したい
   - NVIDIA_API_KEY の設定が必要です
-title: "OpenClawでNVIDIA OpenAI互換APIを使う認証・設定ガイド"
+title: "エヌビディア"
+seoTitle: "OpenClawでNVIDIA OpenAI互換APIを使う認証・設定ガイド"
 description: "NVIDIA の OpenAI 互換 API を OpenClaw から使う設定ガイドです。API キー認証、対応モデル、CLI セットアップの流れを確認できます。"
 x-i18n:
   source_hash: "81e7a1b6cd6821b68db9c71b864d36023b1ccfad1641bf88e2bc2957782edf8b"

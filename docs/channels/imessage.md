@@ -3,7 +3,8 @@ summary: "imsg 経由のレガシー iMessage サポート (stdio 上の JSON-RP
 read_when:
   - iMessage サポートをセットアップする場合
   - iMessage の送受信をデバッグする場合
-title: "OpenClawのiMessage連携の設定方法とレガシー運用ガイド"
+title: "iMessage"
+seoTitle: "OpenClawのiMessage連携の設定方法とレガシー運用ガイド"
 description: "レガシーな imsg 経由で iMessage を連携する設定ガイドです。BlueBubbles との違い、前提条件、送受信の構成を確認できます。"
 x-i18n:
   source_path: "channels/imessage.md"

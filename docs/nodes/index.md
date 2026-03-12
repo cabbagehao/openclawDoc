@@ -4,8 +4,9 @@ read_when:
   - iOS / Android node を gateway にペアリングするとき
   - エージェントコンテキスト用に node の canvas / camera を使うとき
   - 新しい node command や CLI helper を追加するとき
-title: "OpenClawのノード機能の一覧と接続方式・活用シーンガイド"
-description: "node は companion device（macOS / iOS / Android / headless）であり、role: \\"node\\" を使って Gateway の WebSocket（operator と同じポート）へ接続し、node.invoke 経由で。"
+title: "Nodes"
+seoTitle: "OpenClawのノード機能の一覧と接続方式・活用シーンガイド"
+description: "node は companion device（macOS / iOS / Android / headless）であり、role: \"node\" を使って Gateway の WebSocket（operator と同じポート）へ接続し、node.invoke 経由で。"
 x-i18n:
   source_hash: "e41328845dfec03dbd9e31b90482ec2cd7aad57491e1aa413bf674eadc58d310"
 ---

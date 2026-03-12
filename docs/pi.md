@@ -1,5 +1,6 @@
 ---
-title: "OpenClawのPiエージェント統合とセッション設計を理解するガイド"
+title: "Pi 統合アーキテクチャ"
+seoTitle: "OpenClawのPiエージェント統合とセッション設計を理解するガイド"
 summary: "OpenClaw における組み込み Pi エージェント統合とセッションライフサイクルのアーキテクチャ"
 description: "pi-coding-agent と関連パッケージを OpenClaw に組み込み、セッションとエージェント機能を実現する設計を解説します。"
 read_when:

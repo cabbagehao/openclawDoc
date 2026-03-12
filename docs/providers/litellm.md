@@ -3,7 +3,8 @@ summary: "統合モデルへのアクセスとコスト追跡のために、Lite
 read_when:
   - OpenClaw を LiteLLM プロキシ経由でルーティングしたい場合
   - LiteLLM を介したコスト追跡、ロギング、またはモデル ルーティングが必要な場合
-title: "LiteLLMプロキシ経由でOpenClawを使う認証・ルーティング設定ガイド"
+title: "LiteLLM"
+seoTitle: "LiteLLMプロキシ経由でOpenClawを使う認証・ルーティング設定ガイド"
 description: "LiteLLM プロキシ経由で OpenClaw を運用する方法をまとめます。統合 API 化、コスト追跡、ログ集約、モデル切り替えの利点と設定手順を確認できます。"
 x-i18n:
   source_hash: "269529671c60864972441606c730b5ca327546a45d3b264dbd03204c4401936f"

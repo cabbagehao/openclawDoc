@@ -4,7 +4,8 @@ read_when:
   - ブロードキャストグループを設定する場合
   - WhatsApp でのマルチエージェント返信をデバッグする場合
 status: experimental
-title: "OpenClawでWhatsApp Broadcast Groupsを設定・運用する方法"
+title: "Broadcast Groups"
+seoTitle: "OpenClawでWhatsApp Broadcast Groupsを設定・運用する方法"
 description: "WhatsApp の Broadcast Groups を使って複数エージェントへ配信する方法をまとめます。実験的機能の前提、設定手順、運用上の注意点を確認できます。"
 ---
 **ステータス:** 実験的<br />

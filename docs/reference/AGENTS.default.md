@@ -1,5 +1,6 @@
 ---
-title: "OpenClaw既定AGENTS.mdの役割と記述内容を確認するガイド"
+title: "デフォルトのAGENTS.md"
+seoTitle: "OpenClaw既定AGENTS.mdの役割と記述内容を確認するガイド"
 summary: "パーソナル アシスタント設定用のデフォルトの OpenClaw エージェントの指示とスキル名簿"
 read_when:
 description: "OpenClaw は、エージェント専用のワークスペース ディレクトリを使用します。デフォルト: ~/.openclaw/workspace (agents.defaults.workspace 経由で構成可能)。"

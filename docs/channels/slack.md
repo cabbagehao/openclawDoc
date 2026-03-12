@@ -2,7 +2,8 @@
 summary: "Slack のセットアップと実行時の動作 (ソケットモード + HTTP イベント API)"
 read_when:
   - Slack のセットアップまたは Slack のソケット/HTTP モードをデバッグする場合
-title: "OpenClawのSlackボット連携の設定方法と配信運用ガイド"
+title: "Slack"
+seoTitle: "OpenClawのSlackボット連携の設定方法と配信運用ガイド"
 description: "Slack アプリを OpenClaw に接続する設定と運用ガイドです。Socket Mode と HTTP Event API の違い、権限設定、ペアリングを確認できます。"
 x-i18n:
   source_hash: "be99246c8d9235549e030416966b72b5db1d7d111364d35aeb2ae2760e66dc1e"

@@ -2,7 +2,8 @@
 summary: "ゲートウェイ プロトコルの信頼できる唯一の情報源としての TypeBox スキーマ"
 read_when:
   - プロトコルスキーマまたはコード生成の更新
-title: "OpenClawのTypeBox採用理由とスキーマ設計の考え方ガイド"
+title: "タイプボックス"
+seoTitle: "OpenClawのTypeBox採用理由とスキーマ設計の考え方ガイド"
 description: "TypeBox は、TypeScript ファーストのスキーマ ライブラリです。これを使用して ゲートウェイを定義します WebSocket プロトコル (ハンドシェイク、リクエスト/レスポンス、サーバー イベント)。"
 x-i18n:
   source_hash: "b270406f956d486b75d513f6355b9021ca5e6c73eac31f3eba3259ce6c1915b0"

@@ -2,7 +2,8 @@
 summary: "ループバック WebChat 静的ホストとゲートウェイ WS のチャット UI の使用"
 read_when:
   - WebChat アクセスのデバッグまたは構成
-title: "OpenClaw Webチャット画面の使い方と接続フローガイド"
+title: "ウェブチャット"
+seoTitle: "OpenClaw Webチャット画面の使い方と接続フローガイド"
 description: "ステータス: macOS/iOS SwiftUI チャット UI はゲートウェイ WebSocket と直接通信します。それは何ですか、クイックスタート、仕組み (動作)を確認できます。"
 x-i18n:
   source_hash: "18739c0332e9a78e78d51275b3f5f55e267c9b11316a79bf38ac95b7d3f3bdd1"

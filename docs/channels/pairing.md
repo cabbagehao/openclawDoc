@@ -4,7 +4,8 @@ read_when:
   - DMアクセス制御の設定
   - 新しい iOS/Android ノードのペアリング
   - OpenClaw のセキュリティ体制の見直し
-title: "OpenClawのDM送信者とノードのペアリング設定ガイド"
+title: "ペアリング"
+seoTitle: "OpenClawのDM送信者とノードのペアリング設定ガイド"
 description: "DM 送信者とノード参加を所有者承認で管理するペアリング機能のガイドです。アクセス制御の考え方と設定フローを確認できます。"
 x-i18n:
   source_hash: "65894ceee288fcd03547a4570ee06b9bdc6721cf6e32745a5f9507c34935eba3"

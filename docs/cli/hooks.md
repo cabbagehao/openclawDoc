@@ -3,7 +3,8 @@ summary: "`openclaw hooks` (エージェントフック) の CLI リファレン
 read_when:
   - エージェントフックを管理したい場合
   - フックのインストールや更新を行いたい場合
-title: "OpenClaw CLI: openclaw hooks コマンドの使い方と主要オプション・実行例"
+title: "hooks"
+seoTitle: "OpenClaw CLI: openclaw hooks コマンドの使い方と主要オプション・実行例"
 description: "エージェントフック（/new、/reset、ゲートウェイの起動などのイベントに基づいて実行される自動化スクリプト）を管理します。関連ドキュメント: - フックの概要: フック - プラグインフック: プラグイン。"
 x-i18n:
   source_hash: "c9de9c21e7e474dc19753e2bed326510df02a3c8cd70c0cc0e0c54112230756a"

@@ -2,7 +2,8 @@
 summary: "`openclaw configure` の CLI リファレンス (対話形式による構成設定プロンプト)"
 read_when:
   - 認証情報、デバイス、またはエージェントのデフォルト設定を対話的に調整したい場合
-title: "OpenClaw CLI: openclaw configure コマンドの使い方と主要オプション・実行例"
+title: "configure"
+seoTitle: "OpenClaw CLI: openclaw configure コマンドの使い方と主要オプション・実行例"
 description: "認証情報、デバイス、およびエージェントのデフォルト設定を行うための対話形式のプロンプトです。補足: Model セクションには、agents.defaults.models の許可リスト（/model コマンドやモデル選択ツールに表示されるモデル）の複数選択機能が含まれています。"
 x-i18n:
   source_hash: "2df6bce0bf8c02cca7cdc28d6d28f3e32dd52329c54438c7b4fb7a236e105fa4"

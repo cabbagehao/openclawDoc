@@ -5,7 +5,8 @@ read_when:
   - macOS UI を使用せずにノードのペアリング承認を実装する場合
   - リモートノードを承認するための CLI フローを追加する場合
   - ノード管理機能によってゲートウェイプロトコルを拡張する場合
-title: "OpenClaw ノードペアリング承認フローと CLI・UI 運用ガイド"
+title: "ゲートウェイ主導のペアリング"
+seoTitle: "OpenClaw ノードペアリング承認フローと CLI・UI 運用ガイド"
 x-i18n:
   source_hash: "1f5154292a75ea2c1470324babc99c6c46a5e4e16afb394ed323d28f6168f459"
 ---

@@ -4,7 +4,8 @@ read_when:
   - 送信メッセージのフォーマットやチャンク化（分割）の仕組みを変更する場合
   - 新しいチャネル用のフォーマッタやスタイルマッピングを追加する場合
   - チャネル間での表示崩れをデバッグする場合
-title: "OpenClawのMarkdown整形ルールと出力フォーマット設計ガイド"
+title: "Markdown フォーマット"
+seoTitle: "OpenClawのMarkdown整形ルールと出力フォーマット設計ガイド"
 description: "OpenClaw は、送信（アウトバウンド）される Markdown テキストを一度共有の中間表現 (IR) に変換してから、各チャネル固有の形式にレンダリングします。"
 x-i18n:
   source_hash: "f9cbf9b744f9a218860730f29435bcad02d3db80b1847fed5f17c063c97d4820"

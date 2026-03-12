@@ -3,7 +3,8 @@ summary: "ルートレス Podman コンテナで OpenClaw を実行する"
 description: "rootless Podman で OpenClaw Gateway を動かすためのイメージ利用方法、設定、運用上の注意点を説明します。"
 read_when:
   - Docker の代わりに Podman を使ったコンテナ化ゲートウェイが必要な場合
-title: "rootless Podman で OpenClaw を動かす導入手順"
+title: "Podman"
+seoTitle: "rootless Podman で OpenClaw を動かす導入手順"
 ---
 **ルートレス** Podman コンテナで OpenClaw ゲートウェイを実行します。使用するイメージは Docker と同じで、リポジトリの [Dockerfile](https://github.com/openclaw/openclaw/blob/main/Dockerfile) からビルドします。
 

@@ -5,7 +5,8 @@ read_when:
   - OpenClaw の構成方法（設定ファイルの書き方）を学びたい場合
   - 具体的な設定例を探している場合
   - OpenClaw を初めてセットアップする場合
-title: "OpenClaw 設定ファイルの実践例集と構成パターン別サンプル"
+title: "構成例"
+seoTitle: "OpenClaw 設定ファイルの実践例集と構成パターン別サンプル"
 x-i18n:
   source_hash: "bf3ebaf29b2ea19c84d0e1dee5ae35da81ec61f46abbf17bd024836aa4907b5c"
 ---

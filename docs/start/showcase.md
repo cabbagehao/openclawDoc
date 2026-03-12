@@ -1,5 +1,6 @@
 ---
-title: "OpenClaw の活用事例・導入例・コミュニティショーケース"
+title: "ショーケース"
+seoTitle: "OpenClaw の活用事例・導入例・コミュニティショーケース"
 description: "OpenClaw を使った実例やコミュニティプロジェクトを通じて、実運用のユースケースを紹介します。"
 summary: "OpenClaw を活用したコミュニティ構築プロジェクトと統合"
 read_when:

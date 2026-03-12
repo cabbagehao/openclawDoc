@@ -2,7 +2,8 @@
 summary: "macOS アプリがゲートウェイ / Baileys の健全性状態をどのように表示するか"
 read_when:
   - Mac アプリの健全性インジケーターのデバッグ
-title: "OpenClawのmacOS ヘルスチェック の仕組み・設定手順・運用ガイド"
+title: "ヘルスチェック"
+seoTitle: "OpenClawのmacOS ヘルスチェック の仕組み・設定手順・運用ガイド"
 description: "メニューバー アプリから、リンク済みチャネルの健全性を確認する方法を説明します。"
 x-i18n:
   source_hash: "0560e96501ddf53a499f8960cfcf11c2622fcb9056bfd1bcc57876e955cab03d"

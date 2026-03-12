@@ -5,7 +5,8 @@ read_when:
   - ローカルまたは CI でテストを実行するとき
   - モデルやプロバイダーの不具合に対する回帰を追加するとき
   - ゲートウェイとエージェントの挙動をデバッグするとき
-title: "OpenClawのunit・e2e・live テスト実行と回帰追加ガイド"
+title: "テスト"
+seoTitle: "OpenClawのunit・e2e・live テスト実行と回帰追加ガイド"
 x-i18n:
   source_hash: "0ae8b68d1649d80f9d9fe515415e66b706629532b5b8aadbfb31512e250835cd"
 ---

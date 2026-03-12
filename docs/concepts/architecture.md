@@ -2,7 +2,8 @@
 summary: "WebSocket ゲートウェイのアーキテクチャ、構成要素、およびクライアントフロー"
 read_when:
   - ゲートウェイのプロトコル、クライアント、または通信路（トランスポート）について理解を深めたい場合
-title: "OpenClawのゲートウェイアーキテクチャの全体像と設計意図ガイド"
+title: "ゲートウェイアーキテクチャ"
+seoTitle: "OpenClawのゲートウェイアーキテクチャの全体像と設計意図ガイド"
 description: "単一の常駐プロセスである ゲートウェイ が、すべてのメッセージングインターフェース（Baileys による WhatsApp、grammY による Telegram、Slack、Discord、Signal、iMessage、WebChat）を管理します。"
 x-i18n:
   source_hash: "7559fe777524b8b3d0527f36ff550b45cda583f408f4004e80f632916ac462d0"

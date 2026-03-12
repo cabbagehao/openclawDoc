@@ -3,7 +3,8 @@ summary: "モデルプロバイダーの OAuth 有効期限を監視する"
 read_when:
   - 認証の有効期限監視やアラートを設定する場合
   - Claude Code / Codex の OAuth 更新チェックを自動化する場合
-title: "OpenClawのOAuth認証期限の監視方法とアラート自動化の運用ガイド"
+title: "認証監視"
+seoTitle: "OpenClawのOAuth認証期限の監視方法とアラート自動化の運用ガイド"
 description: "OpenClaw は openclaw models status を通じて、OAuth の有効期限の状態を公開します。自動化やアラートにはこれを利用してください。スクリプトは、スマートフォン向けワークフローのための追加オプションにすぎません。"
 x-i18n:
   source_path: "automation/auth-monitoring.md"

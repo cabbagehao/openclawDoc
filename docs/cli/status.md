@@ -3,7 +3,8 @@ summary: "`openclaw status` の CLI リファレンス (診断、プローブ、
 read_when:
   - チャネルの健全性や、最近対話したセッション相手を素早く確認したい場合
   - デバッグ用に、すべてのステータス情報をコピー＆ペースト可能な形式で出力したい場合
-title: "OpenClaw CLI: openclaw status コマンドの使い方と主要オプション・実行例"
+title: "status"
+seoTitle: "OpenClaw CLI: openclaw status コマンドの使い方と主要オプション・実行例"
 description: "チャネルおよびセッションの状態に関する診断情報を表示します。補足事項を確認できます。"
 x-i18n:
   source_hash: "7c0050b01ed5c9027e4eb274048ca6e40ae042805896585edc48ca5edfbce2f0"

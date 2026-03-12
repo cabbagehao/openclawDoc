@@ -6,7 +6,8 @@ read_when:
   - 自前の VPS 上で本番向けの常時稼働ゲートウェイを構築したい
   - 永続化、バイナリ、再起動挙動を完全に制御したい
   - Hetzner または類似プロバイダー上で Docker 版 OpenClaw を運用している
-title: "Hetzner VPS で OpenClaw を常時運用する導入手順"
+title: "Hetzner"
+seoTitle: "Hetzner VPS で OpenClaw を常時運用する導入手順"
 x-i18n:
   source_hash: "97339c7ddb8b9007fa51bb5c31b1fe5d2b1e190239216df3bd83ed8859f5dae1"
 ---

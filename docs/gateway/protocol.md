@@ -5,7 +5,8 @@ read_when:
   - ゲートウェイの WebSocket クライアントを実装・更新する場合
   - プロトコルの不一致や接続エラーをデバッグする場合
   - プロトコルのスキーマやモデルを再生成する場合
-title: "OpenClaw WebSocket ゲートウェイプロトコル仕様と認証・権限解説"
+title: "ゲートウェイプロトコル"
+seoTitle: "OpenClaw WebSocket ゲートウェイプロトコル仕様と認証・権限解説"
 x-i18n:
   source_hash: "d0d110acae55813c5d8c126d95912e5ca145910b05d9a01a9a53822830cc8cd6"
 ---

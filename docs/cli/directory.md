@@ -3,7 +3,8 @@ summary: "`openclaw directory` の CLI リファレンス (自身、連絡先、
 read_when:
   - 各チャネルにおける連絡先やグループ、自身の ID を確認したい場合
   - チャネルディレクトリのアダプターを開発している場合
-title: "OpenClaw CLI: openclaw directory コマンドの使い方と主要オプション・実行例"
+title: "directory"
+seoTitle: "OpenClaw CLI: openclaw directory コマンドの使い方と主要オプション・実行例"
 description: "ディレクトリ検索に対応しているチャネルにおいて、連絡先（ピア）、グループ、および自分自身の情報を検索します。よく使われるフラグ、補足事項、検索結果を message send で利用する例を確認できます。"
 x-i18n:
   source_hash: "7c878d9013aeaa22c8a21563fac30b465a86be85d8c917c5d4591b5c3d4b2025"

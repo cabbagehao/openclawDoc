@@ -3,7 +3,8 @@ summary: "受信した画像 / 音声 / 動画の理解（オプション）。p
 read_when:
   - media understanding を設計またはリファクタリングするとき
   - 受信した音声 / 動画 / 画像の前処理を調整するとき
-title: "OpenClawのメディア理解機能の設定方法と解析フローガイド"
+title: "Media Understanding"
+seoTitle: "OpenClawのメディア理解機能の設定方法と解析フローガイド"
 description: "OpenClaw は、返信パイプラインに入る前に 受信メディア（画像 / 音声 / 動画）を要約できます。ローカルツールや provider key が利用可能な場合は自動検出され、必要に応じて無効化やカスタマイズも可能です。"
 x-i18n:
   source_hash: "3f4364c2744a9d48f6b7863d1e6ad495b7706af57fa7509f83dde4448e22f151"

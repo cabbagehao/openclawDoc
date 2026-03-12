@@ -5,7 +5,8 @@ read_when:
   - OpenClaw を初めてセットアップする場合
   - 一般的な設定パターンを確認したい場合
   - 特定の設定セクションを探している場合
-title: "OpenClaw設定ガイド: openclaw.json の基本構成と編集手順"
+title: "構成"
+seoTitle: "OpenClaw設定ガイド: openclaw.json の基本構成と編集手順"
 x-i18n:
   source_hash: "f152f06f31bc06b527d9c28ab1a914879312827aeef69b077b6816f499196e97"
 ---

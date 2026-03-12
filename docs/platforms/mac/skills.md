@@ -3,7 +3,8 @@ summary: "macOS スキル設定 UI とゲートウェイ支援ステータス"
 read_when:
   - macOS の Skills 設定 UI を更新するとき
   - skills の gating や install 動作を変更するとき
-title: "OpenClawのmacOSスキル機能の使い方と設定・運用ガイド"
+title: "スキル"
+seoTitle: "OpenClawのmacOSスキル機能の使い方と設定・運用ガイド"
 description: "macOS アプリは、OpenClaw のスキル情報をゲートウェイ経由で表示します。ローカルで SKILL.md を解析することはありません。データ ソース、インストール操作、環境変数 / API キーを確認できます。"
 x-i18n:
   source_hash: "ecd5286bbe49eed89319686c4f7d6da55ef7b0d3952656ba98ef5e769f3fbf79"

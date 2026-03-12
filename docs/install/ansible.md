@@ -5,7 +5,8 @@ read_when:
   - セキュリティを考慮した自動サーバーデプロイを行いたいとき
   - VPN 経由のみで到達できる、ファイアウォール分離構成が必要なとき
   - リモートの Debian / Ubuntu サーバーへデプロイするとき
-title: "Ansible と Tailscale で OpenClaw を自動構築する導入手順"
+title: "Ansible"
+seoTitle: "Ansible と Tailscale で OpenClaw を自動構築する導入手順"
 x-i18n:
   source_hash: "b1e1e1ea13bff37b22bc58dad4b15a2233c6492771403dff364c738504aa7159"
 ---

@@ -3,7 +3,8 @@ summary: "`openclaw daemon` の CLI リファレンス (ゲートウェイサー
 read_when:
   - スクリプト等で `openclaw daemon ...` を引き続き使用している場合
   - サービスのライフサイクル管理コマンド（インストール/起動/停止/再起動/ステータス）が必要な場合
-title: "OpenClaw CLI: openclaw daemon コマンドの使い方と主要オプション・実行例"
+title: "daemon"
+seoTitle: "OpenClaw CLI: openclaw daemon コマンドの使い方と主要オプション・実行例"
 description: "ゲートウェイのサービス管理コマンド用のレガシーな別名（エイリアス）です。openclaw daemon ... は、openclaw gateway ... のサービス制御コマンドと同じ機能を実行します。"
 x-i18n:
   source_hash: "b67f116e565b9f69967d95e5eac8ddc8d818f195b0d7d610e0997cf504edcfb7"

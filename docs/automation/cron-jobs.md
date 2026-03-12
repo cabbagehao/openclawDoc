@@ -4,7 +4,8 @@ read_when:
   - バックグラウンドジョブやウェイクアップをスケジュールする場合
   - heartbeat と一緒に、または heartbeat に合わせて動く自動化を構成する場合
   - スケジュールされたタスクで heartbeat と cron のどちらを使うか判断する場合
-title: "OpenClawのcronジョブの作成方法とバックグラウンド自動化の運用ガイド"
+title: "cron ジョブ"
+seoTitle: "OpenClawのcronジョブの作成方法とバックグラウンド自動化の運用ガイド"
 description: "cron はゲートウェイに組み込まれたスケジューラです。ジョブを永続化し、適切なタイミングでエージェントを起動し、必要に応じて出力をチャットへ返せます。「毎朝これを実行したい」や「20 分後にエージェントを起こしたい」といった用途では、cron を使います。"
 x-i18n:
   source_path: "automation/cron-jobs.md"

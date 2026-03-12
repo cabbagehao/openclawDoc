@@ -3,7 +3,8 @@ summary: "OpenClaw で OpenCode Zen の厳選モデルを利用する"
 read_when:
   - OpenCode Zen を使ってモデルへアクセスしたいとき
   - コーディング向けに厳選されたモデル一覧を使いたいとき
-title: "OpenClawでOpenCode Zen厳選モデルを使う認証・設定ガイド"
+title: "OpenCode Zen"
+seoTitle: "OpenClawでOpenCode Zen厳選モデルを使う認証・設定ガイド"
 description: "OpenCode Zen の厳選モデルを OpenClaw で使う設定ガイドです。beta 提供の位置づけ、API キーの使い方、provider 設定の流れを確認できます。"
 x-i18n:
   source_hash: "b3b5c640ac32f3177f6f4ffce766f3f57ff75c6ca918822c817d9a18f680be8f"

@@ -3,7 +3,8 @@ summary: "Windows（WSL2）サポートとコンパニオン アプリの現状"
 read_when:
   - Windows に OpenClaw をインストールするとき
   - Windows companion app の状況を確認したいとき
-title: "WindowsとWSL2でOpenClawを使う導入ガイド"
+title: "Windows（WSL2）"
+seoTitle: "WindowsとWSL2でOpenClawを使う導入ガイド"
 description: "Windows 上の OpenClaw は、WSL2 経由での利用を推奨します（Ubuntu 推奨）。インストール（WSL2）、ゲートウェイ、ゲートウェイ サービスのインストール（CLI）を確認できます。"
 x-i18n:
   source_hash: "0732bb1719830ea088a86d9f4e2662d693fd6b3e256dcd3034d5ccdf3413035c"

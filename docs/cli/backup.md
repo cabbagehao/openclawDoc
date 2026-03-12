@@ -3,7 +3,8 @@ summary: "`openclaw backup` の CLI リファレンス (ローカルバックア
 read_when:
   - OpenClaw の状態をアーカイブしてバックアップしたい場合
   - リセットやアンインストールの前に、どのパスが含まれるかを確認したい場合
-title: "OpenClaw CLI: openclaw backup コマンドの使い方と主要オプション・実行例"
+title: "backup"
+seoTitle: "OpenClaw CLI: openclaw backup コマンドの使い方と主要オプション・実行例"
 description: "OpenClaw の状態、構成、認証情報、セッション、およびオプションでワークスペースを含むローカルバックアップアーカイブを作成します。補足事項、バックアップの対象、構成が無効な場合の動作を確認できます。"
 x-i18n:
   source_hash: "6060606060606060606060606060606060606060606060606060606060606060"

@@ -1,5 +1,6 @@
 ---
-title: "Cloudflare AI GatewayをOpenClaw経由で使う認証・モデル設定ガイド"
+title: "Cloudflare AI Gateway"
+seoTitle: "Cloudflare AI GatewayをOpenClaw経由で使う認証・モデル設定ガイド"
 description: "Cloudflare AI Gateway を OpenClaw の経由先として設定する方法をまとめます。認証、ゲートウェイ ID、モデル選択、対応 provider の前提を確認できます。"
 summary: "Cloudflare AI Gateway のセットアップ (認証 + モデル選択)"
 read_when:

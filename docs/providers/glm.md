@@ -3,7 +3,8 @@ summary: "GLM モデル ファミリーの概要と OpenClaw での使い方"
 read_when:
   - OpenClaw で GLM モデルを使いたいとき
   - モデル命名規則やセットアップ方法を確認したいとき
-title: "OpenClawでGLMモデルを使うZ.AIプロバイダー設定ガイド"
+title: "GLM Models"
+seoTitle: "OpenClawでGLMモデルを使うZ.AIプロバイダー設定ガイド"
 description: "GLM モデルを OpenClaw から使うときの参照ガイドです。Z.AI との関係、モデル命名規則、CLI でのセットアップ手順を整理しています。"
 x-i18n:
   source_hash: "11d3a0189a0a8033dd4dd1c5a6d7d8de0cd0d1b629b677ed05a37562ca61d2f8"

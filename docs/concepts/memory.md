@@ -1,5 +1,6 @@
 ---
-title: "OpenClawのセマンティック記憶の仕組みと検索運用ガイド"
+title: "記憶 (Memory)"
+seoTitle: "OpenClawのセマンティック記憶の仕組みと検索運用ガイド"
 summary: "OpenClaw における記憶の仕組み (ワークスペース内のファイル管理と自動フラッシュ機能)"
 read_when:
 description: "OpenClaw の記憶は、エージェントのワークスペース内にあるプレーンな Markdown ファイル です。ファイルが「真実のソース」であり、モデルはディスクに書き込まれた内容のみを「記憶」として保持し続けます。"

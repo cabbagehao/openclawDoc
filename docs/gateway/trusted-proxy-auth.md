@@ -6,7 +6,8 @@ read_when:
   - OpenClawの前段にOAuthを適用したPomerium, Caddy, nginx等を設置する場合
   - リバースプロキシ環境でWebSocketの「1008 unauthorized」エラーを解消したい場合
   - HSTSやその他のHTTPセキュリティヘッダーの設定場所を検討している場合
-title: "OpenClaw trusted-proxy 認証設定とリバースプロキシ導入ガイド"
+title: "信頼されたプロキシ認証 (Trusted Proxy Auth)"
+seoTitle: "OpenClaw trusted-proxy 認証設定とリバースプロキシ導入ガイド"
 ---
 > ⚠️ **セキュリティ上の重要な機能です。** このモードでは、認証を完全にリバースプロキシに委任します。設定を誤ると、ゲートウェイが不正アクセスにさらされる可能性があります。有効化する前に、このページをよくお読みください。
 

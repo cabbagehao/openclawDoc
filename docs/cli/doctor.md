@@ -3,7 +3,8 @@ summary: "`openclaw doctor` の CLI リファレンス (ヘルスチェックと
 read_when:
   - 接続や認証に問題があり、解決のためのガイドが必要な場合
   - アップデート後に環境の健全性を確認したい場合
-title: "OpenClaw CLI: openclaw doctor コマンドの使い方と主要オプション・実行例"
+title: "doctor"
+seoTitle: "OpenClaw CLI: openclaw doctor コマンドの使い方と主要オプション・実行例"
 description: "ゲートウェイや各チャネルのヘルスチェック（健全性確認）と、一般的な問題に対するクイックフィックスを提供します。関連ドキュメント: - トラブルシューティング: トラブルシューティング - セキュリティ監査: セキュリティ。"
 x-i18n:
   source_hash: "d6d5cbb3d5a90d2a3de883d5af9ffbad30bf59bd7471231dc54d3428f129d2dc"

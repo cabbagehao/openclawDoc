@@ -2,7 +2,8 @@
 summary: "Mac アプリにゲートウェイ WebChat を埋め込む方法とそれをデバッグする方法"
 read_when:
   - Mac の WebChat ビューや loopback port をデバッグするとき
-title: "OpenClawのmacOS ウェブチャット の仕組み・設定手順・運用ガイド"
+title: "ウェブチャット"
+seoTitle: "OpenClawのmacOS ウェブチャット の仕組み・設定手順・運用ガイド"
 description: "macOS のメニュー バー アプリは、WebChat UI をネイティブの SwiftUI view として埋め込んでいます。ゲートウェイへ接続し、選択中エージェントの main session を既定対象とします。"
 x-i18n:
   source_hash: "6e72893255fa01cafa1252c4d5accf76e87f9b7720158c14442b99b60753363e"

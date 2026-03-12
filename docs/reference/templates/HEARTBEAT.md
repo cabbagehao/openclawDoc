@@ -1,5 +1,6 @@
 ---
-title: "OpenClawのHEARTBEATテンプレート用途・記述ルール・設定例"
+title: "HEARTBEAT.md Template"
+seoTitle: "OpenClawのHEARTBEATテンプレート用途・記述ルール・設定例"
 summary: "HEARTBEAT.md 用のワークスペーステンプレート"
 read_when:
 description: "HEARTBEATについて解説します。"
