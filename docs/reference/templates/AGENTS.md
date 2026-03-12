@@ -1,5 +1,5 @@
 ---
-title: "OpenClawののAGENTS テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのAGENTSテンプレート用途・記述ルール・設定例"
 summary: "AGENTS.md のワークスペース テンプレート"
 read_when:
 description: "このフォルダーがホームです。そのように扱ってください。最初の実行、セッションの開始、メモリを確認できます。"

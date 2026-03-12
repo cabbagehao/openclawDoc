@@ -1,5 +1,5 @@
 ---
-title: "OpenClawののHEARTBEAT テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのHEARTBEATテンプレート用途・記述ルール・設定例"
 summary: "HEARTBEAT.md 用のワークスペーステンプレート"
 read_when:
 description: "HEARTBEATについて解説します。"

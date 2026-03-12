@@ -4,7 +4,7 @@ description: "CLI オンボーディングウィザードで Gateway、チャン
 read_when:
   - オンボーディング ウィザードの実行または構成時
   - 新しいマシンのセットアップ時
-title: "OpenClaw onboard で進める CLI 初期セットアップ完全ガイド"
+title: "OpenClaw向け openclaw onboard のCLI初期セットアップ完全ガイド"
 sidebarTitle: "オンボーディング: CLI"
 ---
 オンボーディング ウィザードは、macOS、Linux、または Windows (WSL2 経由。強く推奨) で OpenClaw をセットアップするための**推奨**される方法です。

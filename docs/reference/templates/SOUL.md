@@ -1,5 +1,5 @@
 ---
-title: "OpenClawののSOUL テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのSOULテンプレート用途・記述ルール・設定例"
 summary: "SOUL.md のワークスペース テンプレート"
 read_when:
 description: "あなたはチャットボットではありません。あなたは何者かになりつつあります。核となる真実、境界、バイブを確認できます。"

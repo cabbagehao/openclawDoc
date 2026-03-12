@@ -4,7 +4,7 @@ read_when:
   - OpenClaw.app で PeekabooBridge をホストするとき
   - Swift Package Manager 経由で Peekaboo を統合するとき
   - PeekabooBridge のプロトコルやパスを変更するとき
-title: "OpenClawのmacOS Peekaboo Bridge の仕組み・設定手順・運用ガイドで使う導入方法と運用ポイントを整理するガイド"
+title: "OpenClawのmacOS Peekaboo Bridge連携と運用ガイド"
 description: "OpenClaw は、ローカルで動作する権限認識型の UI 自動化 broker として PeekabooBridge をホストできます。これにより、peekaboo CLI は macOS アプリ側の TCC 権限を再利用しながら UI 自動化を実行できます。"
 x-i18n:
   source_hash: "b5b9ddb9a7c59e153a1d5d23c33616bb1542b5c7dadedc3af340aeee9ba03487"

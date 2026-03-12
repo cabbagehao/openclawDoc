@@ -1,5 +1,5 @@
 ---
-title: "OpenClaw 設定リファレンス OpenClaw.json 全項目と既定値一覧"
+title: "OpenClaw設定リファレンス: openclaw.json 全項目と既定値一覧"
 description: "チャネル、エージェント、セッション、ツール、サンドボックスなど、openclaw.json の各フィールドと既定値を項目別に参照できます。"
 summary: "OpenClaw のすべての構成キー、デフォルト、およびチャネル設定の完全なリファレンス"
 read_when:

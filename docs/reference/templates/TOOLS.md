@@ -1,5 +1,5 @@
 ---
-title: "OpenClawののTOOLS テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのTOOLSテンプレート用途・記述ルール・設定例"
 summary: "TOOLS.md のワークスペース テンプレート"
 read_when:
 description: "スキルはツールがどのように機能するかを定義します。このファイルは、your の仕様、つまりセットアップに固有のものです。ここに何が入るのか、例、Camerasを確認できます。"

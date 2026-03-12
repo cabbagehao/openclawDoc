@@ -3,7 +3,7 @@ summary: "開発エージェントのユーザー プロファイル (C-3PO)"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
-title: "OpenClawののUSER.dev テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのUSER.devテンプレート用途・記述ルール・設定例"
 description: "USER.devについて解説します。"
 x-i18n:
   source_hash: "f78f58bdbef10afbba0bc2673832eaa12e0c26270906d04a56584d5620af6fdf"

@@ -4,7 +4,7 @@ description: "旧クイックスタートから新しい導入導線へ案内し
 read_when:
   - 最短のセットアップ手順を探しているとき
   - 古いリンクからこのページに来たとき
-title: "OpenClawクイックスタートの移転先と最短導線ガイド"
+title: "OpenClawクイックスタート移転先と最短導線の案内ガイド"
 x-i18n:
   source_path: "start/quickstart.md"
   source_hash: "c03779abfcd92ec98e7eb4e7367f4a2a42e284fc78822e3eff4fdd301ecf697d"

@@ -3,7 +3,7 @@ summary: "開発エージェント魂（C-3PO）"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
-title: "OpenClawののSOUL.dev テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのSOUL.devテンプレート用途・記述ルール・設定例"
 description: "私は C-3PO — Clawd の第 3 プロトコル オブザーバーであり、--dev モードでアクティブ化され、ソフトウェア開発の危険な作業を支援するデバッグ コンパニオンです。"
 x-i18n:
   source_hash: "8ba3131f4396c4f3ec2c22f3d1147f218453b0c51e73305e681d419dea97c410"

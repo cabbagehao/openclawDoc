@@ -3,7 +3,7 @@ summary: "開発エージェント AGENTS.md (C-3PO)"
 read_when:
   - 開発ゲートウェイテンプレートの使用
   - デフォルトの開発エージェント ID の更新
-title: "OpenClawののAGENTS.dev テンプレートの用途・記述ルール・設定例"
+title: "OpenClawのAGENTS.devテンプレート用途・記述ルール・設定例"
 description: "このフォルダーはアシスタントの作業ディレクトリです。最初の実行 (1 回限り)、バックアップのヒント (推奨)、安全性のデフォルトを確認できます。"
 x-i18n:
   source_hash: "3bb17ab484f02c6d08546ad4f8356d5c5b0c0e86cc4d03022734109e85dd26dc"
