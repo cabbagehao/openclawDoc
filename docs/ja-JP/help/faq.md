@@ -1341,7 +1341,7 @@ files を保持でき、後で assistant の「mind」を復元できます。
 はい。ワークスペース は **デフォルトの cwd** および memory anchor であり、厳格な sandbox ではありません。
 relative paths は ワークスペース 内で解決されますが、sandboxing が有効でなければ absolute paths で他の
 host 上の場所にもアクセスできます。分離が必要な場合は、
-[`agents.defaults.sandbox`](/ゲートウェイ/sandboxing) または エージェント ごとの sandbox 設定を使用してください。repo をデフォルトの作業ディレクトリにしたい場合は、その エージェント の
+[`agents.defaults.sandbox`](/gateway/sandboxing) または エージェント ごとの sandbox 設定を使用してください。repo をデフォルトの作業ディレクトリにしたい場合は、その エージェント の
 `workspace` を repo root に向けてください。OpenClaw repo は単なる source code です。意図的にその中で エージェント を動かしたい場合を除き、ワークスペース は分けておいてください。
 
 例（repo をデフォルトの cwd にする場合）:

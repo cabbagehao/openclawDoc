@@ -197,7 +197,7 @@ Doubao（豆包）などのモデルへのアクセスを提供します。
 - モデル例: `volcengine/doubao-seed-1-8-251228`
 - セットアップ: `openclaw onboard --auth-choice volcengine-api-key`
 
-利用可能なモデルの詳細は [/providers/volcengine](/providers/volcengine) を参照してください。
+利用可能なモデルは以下のとおりです。
 
 ### Ollama
 
