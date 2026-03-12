@@ -1,83 +1,85 @@
 ---
-summary: "Google Chat app support status, capabilities, and configuration"
+summary: "Google Chat アプリのサポート状況、機能、設定"
 read_when:
-  - Working on Google Chat channel features
+  - Google Chat チャンネル機能を扱う場合
 title: "Google Chat"
+x-i18n:
+  source_hash: "63af1b6326be96cc47be45e90bafefe3465195c2dedff4ed1c19bf07bd2f8f80"
 ---
 
 # Google Chat (Chat API)
 
-Status: ready for DMs + spaces via Google Chat API webhooks (HTTP only).
+ステータス: Google Chat API の webhook 経由で DM とスペースに対応しています (HTTP のみ)。
 
 ## Quick setup (beginner)
 
-1. Create a Google Cloud project and enable the **Google Chat API**.
-   - Go to: [Google Chat API Credentials](https://console.cloud.google.com/apis/api/chat.googleapis.com/credentials)
-   - Enable the API if it is not already enabled.
-2. Create a **Service Account**:
-   - Press **Create Credentials** > **Service Account**.
-   - Name it whatever you want (e.g., `openclaw-chat`).
-   - Leave permissions blank (press **Continue**).
-   - Leave principals with access blank (press **Done**).
-3. Create and download the **JSON Key**:
-   - In the list of service accounts, click on the one you just created.
-   - Go to the **Keys** tab.
-   - Click **Add Key** > **Create new key**.
-   - Select **JSON** and press **Create**.
-4. Store the downloaded JSON file on your gateway host (e.g., `~/.openclaw/googlechat-service-account.json`).
-5. Create a Google Chat app in the [Google Cloud Console Chat Configuration](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat):
-   - Fill in the **Application info**:
-     - **App name**: (e.g. `OpenClaw`)
-     - **Avatar URL**: (e.g. `https://openclaw.ai/logo.png`)
-     - **Description**: (e.g. `Personal AI Assistant`)
-   - Enable **Interactive features**.
-   - Under **Functionality**, check **Join spaces and group conversations**.
-   - Under **Connection settings**, select **HTTP endpoint URL**.
-   - Under **Triggers**, select **Use a common HTTP endpoint URL for all triggers** and set it to your gateway's public URL followed by `/googlechat`.
-     - _Tip: Run `openclaw status` to find your gateway's public URL._
-   - Under **Visibility**, check **Make this Chat app available to specific people and groups in &lt;Your Domain&gt;**.
-   - Enter your email address (e.g. `user@example.com`) in the text box.
-   - Click **Save** at the bottom.
-6. **Enable the app status**:
-   - After saving, **refresh the page**.
-   - Look for the **App status** section (usually near the top or bottom after saving).
-   - Change the status to **Live - available to users**.
-   - Click **Save** again.
-7. Configure OpenClaw with the service account path + webhook audience:
-   - Env: `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE=/path/to/service-account.json`
-   - Or config: `channels.googlechat.serviceAccountFile: "/path/to/service-account.json"`.
-8. Set the webhook audience type + value (matches your Chat app config).
-9. Start the gateway. Google Chat will POST to your webhook path.
+1. Google Cloud プロジェクトを作成し、**Google Chat API** を有効にします。
+   - [Google Chat API Credentials](https://console.cloud.google.com/apis/api/chat.googleapis.com/credentials) を開きます。
+   - API がまだ有効でなければ有効化します。
+2. **Service Account** を作成します。
+   - **Create Credentials** > **Service Account** を選択します。
+   - 任意の名前を付けます (例: `openclaw-chat`)。
+   - 権限は空欄のままにして **Continue** を押します。
+   - アクセスを持つ principal も空欄のままにして **Done** を押します。
+3. **JSON Key** を作成してダウンロードします。
+   - Service Account の一覧から、いま作成したアカウントを開きます。
+   - **Keys** タブを開きます。
+   - **Add Key** > **Create new key** を選びます。
+   - **JSON** を選択して **Create** を押します。
+4. ダウンロードした JSON ファイルをゲートウェイホストへ保存します (例: `~/.openclaw/googlechat-service-account.json`)。
+5. [Google Cloud Console Chat Configuration](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat) で Google Chat アプリを作成します。
+   - **Application info** を入力します。
+     - **App name**: 例 `OpenClaw`
+     - **Avatar URL**: 例 `https://openclaw.ai/logo.png`
+     - **Description**: 例 `Personal AI Assistant`
+   - **Interactive features** を有効にします。
+   - **Functionality** で **Join spaces and group conversations** を有効にします。
+   - **Connection settings** で **HTTP endpoint URL** を選択します。
+   - **Triggers** で **Use a common HTTP endpoint URL for all triggers** を選び、ゲートウェイの公開 URL に `/googlechat` を付けたものを指定します。
+     - _Tip: `openclaw status` を実行すると、ゲートウェイの公開 URL を確認できます。_
+   - **Visibility** で **Make this Chat app available to specific people and groups in &lt;Your Domain&gt;** を有効にします。
+   - テキストボックスへ利用者のメールアドレス (例: `user@example.com`) を入力します。
+   - 画面下部の **Save** を押します。
+6. **App status** を有効にします。
+   - 保存後に **ページを再読み込み** します。
+   - **App status** セクションを探します。通常は保存後、画面上部または下部付近に表示されます。
+   - ステータスを **Live - available to users** に変更します。
+   - もう一度 **Save** を押します。
+7. Service Account のパスと webhook audience を使って OpenClaw を設定します。
+   - 環境変数: `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE=/path/to/service-account.json`
+   - または設定: `channels.googlechat.serviceAccountFile: "/path/to/service-account.json"`
+8. webhook audience の type と value を設定します。Chat アプリ側の設定と一致させてください。
+9. ゲートウェイを起動します。Google Chat は webhook パスに対して POST を送信します。
 
 ## Add to Google Chat
 
-Once the gateway is running and your email is added to the visibility list:
+ゲートウェイが起動しており、利用者のメールアドレスが visibility list に追加されていれば、次の手順で使い始められます。
 
-1. Go to [Google Chat](https://chat.google.com/).
-2. Click the **+** (plus) icon next to **Direct Messages**.
-3. In the search bar (where you usually add people), type the **App name** you configured in the Google Cloud Console.
-   - **Note**: The bot will _not_ appear in the "Marketplace" browse list because it is a private app. You must search for it by name.
-4. Select your bot from the results.
-5. Click **Add** or **Chat** to start a 1:1 conversation.
-6. Send "Hello" to trigger the assistant!
+1. [Google Chat](https://chat.google.com/) を開きます。
+2. **Direct Messages** の横にある **+** アイコンを押します。
+3. 通常ユーザーを追加する検索欄に、Google Cloud Console で設定した **App name** を入力します。
+   - **Note**: このボットは非公開アプリのため、"Marketplace" の一覧には表示されません。名前で検索する必要があります。
+4. 検索結果からボットを選択します。
+5. **Add** または **Chat** を押して 1 対 1 の会話を開始します。
+6. `"Hello"` を送ってアシスタントを起動します。
 
 ## Public URL (Webhook-only)
 
-Google Chat webhooks require a public HTTPS endpoint. For security, **only expose the `/googlechat` path** to the internet. Keep the OpenClaw dashboard and other sensitive endpoints on your private network.
+Google Chat の webhook には公開 HTTPS エンドポイントが必要です。セキュリティのため、**外部へ公開するのは `/googlechat` パスだけ** にしてください。OpenClaw のダッシュボードや、その他の機密性の高いエンドポイントはプライベートネットワーク内にとどめておくべきです。
 
 ### Option A: Tailscale Funnel (Recommended)
 
-Use Tailscale Serve for the private dashboard and Funnel for the public webhook path. This keeps `/` private while exposing only `/googlechat`.
+プライベートダッシュボードには Tailscale Serve を使い、公開する webhook パスには Funnel を使います。これにより、`/` は非公開のままにしつつ、`/googlechat` だけを外部公開できます。
 
-1. **Check what address your gateway is bound to:**
+1. **ゲートウェイがどのアドレスにバインドされているか確認します。**
 
    ```bash
    ss -tlnp | grep 18789
    ```
 
-   Note the IP address (e.g., `127.0.0.1`, `0.0.0.0`, or your Tailscale IP like `100.x.x.x`).
+   `127.0.0.1`、`0.0.0.0`、または `100.x.x.x` のような Tailscale IP など、表示された IP アドレスを控えます。
 
-2. **Expose the dashboard to the tailnet only (port 8443):**
+2. **ダッシュボードを tailnet 内だけに公開します (port 8443)。**
 
    ```bash
    # If bound to localhost (127.0.0.1 or 0.0.0.0):
@@ -87,7 +89,7 @@ Use Tailscale Serve for the private dashboard and Funnel for the public webhook 
    tailscale serve --bg --https 8443 http://100.106.161.80:18789
    ```
 
-3. **Expose only the webhook path publicly:**
+3. **webhook パスだけを公開します。**
 
    ```bash
    # If bound to localhost (127.0.0.1 or 0.0.0.0):
@@ -97,29 +99,29 @@ Use Tailscale Serve for the private dashboard and Funnel for the public webhook 
    tailscale funnel --bg --set-path /googlechat http://100.106.161.80:18789/googlechat
    ```
 
-4. **Authorize the node for Funnel access:**
-   If prompted, visit the authorization URL shown in the output to enable Funnel for this node in your tailnet policy.
+4. **ノードに Funnel アクセスを許可します。**
+   必要に応じて、出力に表示される認可 URL を開き、tailnet policy 上でそのノードに Funnel を許可してください。
 
-5. **Verify the configuration:**
+5. **設定を確認します。**
 
    ```bash
    tailscale serve status
    tailscale funnel status
    ```
 
-Your public webhook URL will be:
+公開される webhook URL は次の形になります。
 `https://<node-name>.<tailnet>.ts.net/googlechat`
 
-Your private dashboard stays tailnet-only:
+プライベートダッシュボードは tailnet 内のままです。
 `https://<node-name>.<tailnet>.ts.net:8443/`
 
-Use the public URL (without `:8443`) in the Google Chat app config.
+Google Chat アプリの設定には、`:8443` を含まない公開 URL を使ってください。
 
-> Note: This configuration persists across reboots. To remove it later, run `tailscale funnel reset` and `tailscale serve reset`.
+> Note: この設定は再起動後も維持されます。削除したい場合は `tailscale funnel reset` と `tailscale serve reset` を実行してください。
 
 ### Option B: Reverse Proxy (Caddy)
 
-If you use a reverse proxy like Caddy, only proxy the specific path:
+Caddy などの reverse proxy を使う場合は、該当パスだけを proxy してください。
 
 ```caddy
 your-domain.com {
@@ -127,38 +129,38 @@ your-domain.com {
 }
 ```
 
-With this config, any request to `your-domain.com/` will be ignored or returned as 404, while `your-domain.com/googlechat` is safely routed to OpenClaw.
+この構成では、`your-domain.com/` へのリクエストは無視されるか 404 を返し、`your-domain.com/googlechat` だけが安全に OpenClaw へルーティングされます。
 
 ### Option C: Cloudflare Tunnel
 
-Configure your tunnel's ingress rules to only route the webhook path:
+tunnel の ingress rules を、webhook パスだけに向けるよう設定します。
 
 - **Path**: `/googlechat` -> `http://localhost:18789/googlechat`
 - **Default Rule**: HTTP 404 (Not Found)
 
 ## How it works
 
-1. Google Chat sends webhook POSTs to the gateway. Each request includes an `Authorization: Bearer <token>` header.
-   - OpenClaw verifies bearer auth before reading/parsing full webhook bodies when the header is present.
-   - Google Workspace Add-on requests that carry `authorizationEventObject.systemIdToken` in the body are supported via a stricter pre-auth body budget.
-2. OpenClaw verifies the token against the configured `audienceType` + `audience`:
-   - `audienceType: "app-url"` → audience is your HTTPS webhook URL.
-   - `audienceType: "project-number"` → audience is the Cloud project number.
-3. Messages are routed by space:
-   - DMs use session key `agent:<agentId>:googlechat:dm:<spaceId>`.
-   - Spaces use session key `agent:<agentId>:googlechat:group:<spaceId>`.
-4. DM access is pairing by default. Unknown senders receive a pairing code; approve with:
+1. Google Chat が webhook POST をゲートウェイへ送信します。各リクエストには `Authorization: Bearer <token>` ヘッダーが含まれます。
+   - OpenClaw は、このヘッダーがある場合、webhook 本文を最後まで読んだり解析したりする前に bearer 認証を検証します。
+   - 本文に `authorizationEventObject.systemIdToken` を持つ Google Workspace Add-on リクエストも、より厳格な事前認証本文バジェットを使ってサポートされます。
+2. OpenClaw は設定された `audienceType` と `audience` に対してトークンを検証します。
+   - `audienceType: "app-url"` の場合、audience は HTTPS の webhook URL です。
+   - `audienceType: "project-number"` の場合、audience は Cloud project number です。
+3. メッセージは space 単位でルーティングされます。
+   - DM ではセッションキー `agent:<agentId>:googlechat:dm:<spaceId>` を使います。
+   - Space ではセッションキー `agent:<agentId>:googlechat:group:<spaceId>` を使います。
+4. DM アクセスはデフォルトでペアリングです。未知の送信者にはペアリングコードが返るため、次のコマンドで承認します。
    - `openclaw pairing approve googlechat <code>`
-5. Group spaces require @-mention by default. Use `botUser` if mention detection needs the app’s user name.
+5. Group space では、デフォルトで @mention が必要です。アプリのユーザー名がないとメンション検出できない場合は `botUser` を設定します。
 
 ## Targets
 
-Use these identifiers for delivery and allowlists:
+配信先や allowlist では、次の識別子を使います。
 
-- Direct messages: `users/<userId>` (recommended).
-- Raw email `name@example.com` is mutable and only used for direct allowlist matching when `channels.googlechat.dangerouslyAllowNameMatching: true`.
-- Deprecated: `users/<email>` is treated as a user id, not an email allowlist.
-- Spaces: `spaces/<spaceId>`.
+- Direct message: `users/<userId>` (推奨)
+- 生のメールアドレス `name@example.com` は変更可能であり、`channels.googlechat.dangerouslyAllowNameMatching: true` を設定した場合にだけ、DM allowlist の直接一致へ使われます。
+- 非推奨: `users/<email>` はメールアドレスの allowlist ではなく、user id として扱われます。
+- Space: `spaces/<spaceId>`
 
 ## Config highlights
 
@@ -194,53 +196,53 @@ Use these identifiers for delivery and allowlists:
 }
 ```
 
-Notes:
+補足:
 
-- Service account credentials can also be passed inline with `serviceAccount` (JSON string).
-- `serviceAccountRef` is also supported (env/file SecretRef), including per-account refs under `channels.googlechat.accounts.<id>.serviceAccountRef`.
-- Default webhook path is `/googlechat` if `webhookPath` isn’t set.
-- `dangerouslyAllowNameMatching` re-enables mutable email principal matching for allowlists (break-glass compatibility mode).
-- Reactions are available via the `reactions` tool and `channels action` when `actions.reactions` is enabled.
-- `typingIndicator` supports `none`, `message` (default), and `reaction` (reaction requires user OAuth).
-- Attachments are downloaded through the Chat API and stored in the media pipeline (size capped by `mediaMaxMb`).
+- Service Account の認証情報は `serviceAccount` に JSON 文字列としてインライン指定することもできます。
+- `serviceAccountRef` も使えます (env/file SecretRef)。`channels.googlechat.accounts.<id>.serviceAccountRef` のように、アカウント単位でも指定できます。
+- `webhookPath` を設定しない場合、既定値は `/googlechat` です。
+- `dangerouslyAllowNameMatching` は、変更可能なメール principal による allowlist 一致を再度有効化します。緊急互換モード向けの設定です。
+- `actions.reactions` を有効にすると、リアクションは `reactions` ツールおよび `channels action` から利用できます。
+- `typingIndicator` では `none`、`message` (デフォルト)、`reaction` を使えます。`reaction` には user OAuth が必要です。
+- 添付ファイルは Chat API 経由でダウンロードされ、メディアパイプラインへ保存されます。サイズ上限は `mediaMaxMb` です。
 
-Secrets reference details: [Secrets Management](/gateway/secrets).
+SecretRef の詳細は [Secrets Management](/gateway/secrets) を参照してください。
 
 ## Troubleshooting
 
 ### 405 Method Not Allowed
 
-If Google Cloud Logs Explorer shows errors like:
+Google Cloud Logs Explorer に次のようなエラーが出る場合があります。
 
 ```
 status code: 405, reason phrase: HTTP error response: HTTP/1.1 405 Method Not Allowed
 ```
 
-This means the webhook handler isn't registered. Common causes:
+これは webhook handler が登録されていないことを意味します。代表的な原因は次のとおりです。
 
-1. **Channel not configured**: The `channels.googlechat` section is missing from your config. Verify with:
+1. **Channel not configured**: 設定に `channels.googlechat` セクションがありません。次のコマンドで確認します。
 
    ```bash
    openclaw config get channels.googlechat
    ```
 
-   If it returns "Config path not found", add the configuration (see [Config highlights](#config-highlights)).
+   `Config path not found` が返る場合は、設定を追加してください ([Config highlights](#config-highlights) を参照)。
 
-2. **Plugin not enabled**: Check plugin status:
+2. **Plugin not enabled**: plugin の状態を確認します。
 
    ```bash
    openclaw plugins list | grep googlechat
    ```
 
-   If it shows "disabled", add `plugins.entries.googlechat.enabled: true` to your config.
+   `disabled` と表示される場合は、設定に `plugins.entries.googlechat.enabled: true` を追加してください。
 
-3. **Gateway not restarted**: After adding config, restart the gateway:
+3. **Gateway not restarted**: 設定追加後にゲートウェイが再起動されていません。次を実行してください。
 
    ```bash
    openclaw gateway restart
    ```
 
-Verify the channel is running:
+チャンネルが動作中かどうかは次のコマンドで確認できます。
 
 ```bash
 openclaw channels status
@@ -249,12 +251,12 @@ openclaw channels status
 
 ### Other issues
 
-- Check `openclaw channels status --probe` for auth errors or missing audience config.
-- If no messages arrive, confirm the Chat app's webhook URL + event subscriptions.
-- If mention gating blocks replies, set `botUser` to the app's user resource name and verify `requireMention`.
-- Use `openclaw logs --follow` while sending a test message to see if requests reach the gateway.
+- `openclaw channels status --probe` を使って、認証エラーや audience 設定不足を確認してください。
+- メッセージが届かない場合は、Chat app 側の webhook URL と event subscriptions を確認してください。
+- メンション制御のために返信が止まっている場合は、`botUser` にアプリの user resource name を設定し、`requireMention` も確認してください。
+- テストメッセージを送りながら `openclaw logs --follow` を実行すると、リクエストがゲートウェイへ届いているか確認できます。
 
-Related docs:
+関連ドキュメント:
 
 - [Gateway configuration](/gateway/configuration)
 - [Security](/gateway/security)

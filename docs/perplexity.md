@@ -1,37 +1,35 @@
 ---
-summary: "Perplexity Search API and Sonar/OpenRouter compatibility for web_search"
+summary: "web_search 向けの Perplexity Search API と Sonar / OpenRouter 互換"
 read_when:
-  - You want to use Perplexity Search for web search
-  - You need PERPLEXITY_API_KEY or OPENROUTER_API_KEY setup
+  - Perplexity Search を Web 検索に使いたいとき
+  - "`PERPLEXITY_API_KEY` または `OPENROUTER_API_KEY` の設定が必要なとき"
 title: "Perplexity Search"
 ---
 
 # Perplexity Search API
 
-OpenClaw supports Perplexity Search API as a `web_search` provider.
-It returns structured results with `title`, `url`, and `snippet` fields.
+OpenClaw は `web_search` provider として Perplexity Search API をサポートしています。返されるのは `title`、`url`、`snippet` を含む構造化結果です。
 
-For compatibility, OpenClaw also supports legacy Perplexity Sonar/OpenRouter setups.
-If you use `OPENROUTER_API_KEY`, an `sk-or-...` key in `tools.web.search.perplexity.apiKey`, or set `tools.web.search.perplexity.baseUrl` / `model`, the provider switches to the chat-completions path and returns AI-synthesized answers with citations instead of structured Search API results.
+互換性のため、OpenClaw は legacy の Perplexity Sonar / OpenRouter 構成もサポートしています。`OPENROUTER_API_KEY` を使う場合、`tools.web.search.perplexity.apiKey` に `sk-or-...` 形式の key を設定した場合、または `tools.web.search.perplexity.baseUrl` / `model` を設定した場合、provider は chat-completions 経路へ切り替わり、構造化された Search API 結果ではなく、引用付きの AI 合成回答を返します。
 
-## Getting a Perplexity API key
+## Perplexity API key の取得
 
-1. Create a Perplexity account at <https://www.perplexity.ai/settings/api>
-2. Generate an API key in the dashboard
-3. Store the key in config or set `PERPLEXITY_API_KEY` in the Gateway environment.
+1. [https://www.perplexity.ai/settings/api](https://www.perplexity.ai/settings/api) で Perplexity アカウントを作成する
+2. dashboard で API key を生成する
+3. key を config に保存するか、Gateway 環境で `PERPLEXITY_API_KEY` を設定する
 
-## OpenRouter compatibility
+## OpenRouter 互換
 
-If you were already using OpenRouter for Perplexity Sonar, keep `provider: "perplexity"` and set `OPENROUTER_API_KEY` in the Gateway environment, or store an `sk-or-...` key in `tools.web.search.perplexity.apiKey`.
+すでに Perplexity Sonar 用に OpenRouter を使っている場合は、`provider: "perplexity"` を維持したまま、Gateway 環境で `OPENROUTER_API_KEY` を設定するか、`tools.web.search.perplexity.apiKey` に `sk-or-...` key を保存してください。
 
-Optional legacy controls:
+任意の legacy 制御:
 
 - `tools.web.search.perplexity.baseUrl`
 - `tools.web.search.perplexity.model`
 
-## Config examples
+## 設定例
 
-### Native Perplexity Search API
+### ネイティブ Perplexity Search API
 
 ```json5
 {
@@ -48,7 +46,7 @@ Optional legacy controls:
 }
 ```
 
-### OpenRouter / Sonar compatibility
+### OpenRouter / Sonar 互換
 
 ```json5
 {
@@ -67,71 +65,67 @@ Optional legacy controls:
 }
 ```
 
-## Where to set the key
+## key の設定場所
 
-**Via config:** run `openclaw configure --section web`. It stores the key in
-`~/.openclaw/openclaw.json` under `tools.web.search.perplexity.apiKey`.
+**config 経由:** `openclaw configure --section web` を実行します。key は `~/.openclaw/openclaw.json` の `tools.web.search.perplexity.apiKey` に保存されます。
 
-**Via environment:** set `PERPLEXITY_API_KEY` or `OPENROUTER_API_KEY`
-in the Gateway process environment. For a gateway install, put it in
-`~/.openclaw/.env` (or your service environment). See [Env vars](/help/faq#how-does-openclaw-load-environment-variables).
+**環境変数経由:** Gateway process 環境で `PERPLEXITY_API_KEY` または `OPENROUTER_API_KEY` を設定します。Gateway を常駐インストールしている場合は `~/.openclaw/.env`（または service 環境）に配置してください。詳細は [Env vars](/help/faq#how-does-openclaw-load-environment-variables) を参照してください。
 
-## Tool parameters
+## ツールパラメータ
 
-These parameters apply to the native Perplexity Search API path.
+以下のパラメータは、ネイティブ Perplexity Search API 経路に適用されます。
 
 | Parameter             | Description                                          |
 | --------------------- | ---------------------------------------------------- |
-| `query`               | Search query (required)                              |
-| `count`               | Number of results to return (1-10, default: 5)       |
-| `country`             | 2-letter ISO country code (e.g., "US", "DE")         |
-| `language`            | ISO 639-1 language code (e.g., "en", "de", "fr")     |
-| `freshness`           | Time filter: `day` (24h), `week`, `month`, or `year` |
-| `date_after`          | Only results published after this date (YYYY-MM-DD)  |
-| `date_before`         | Only results published before this date (YYYY-MM-DD) |
-| `domain_filter`       | Domain allowlist/denylist array (max 20)             |
-| `max_tokens`          | Total content budget (default: 25000, max: 1000000)  |
-| `max_tokens_per_page` | Per-page token limit (default: 2048)                 |
+| `query`               | 検索クエリ（必須）                                   |
+| `count`               | 返す結果数（1-10、デフォルト: 5）                    |
+| `country`             | 2 文字の ISO 国コード（例: `"US"`、`"DE"`）          |
+| `language`            | ISO 639-1 言語コード（例: `"en"`、`"de"`、`"fr"`）   |
+| `freshness`           | 時間フィルタ: `day`（24h）、`week`、`month`、`year` |
+| `date_after`          | この日付以降に公開された結果のみ（YYYY-MM-DD）       |
+| `date_before`         | この日付以前に公開された結果のみ（YYYY-MM-DD）       |
+| `domain_filter`       | ドメイン allowlist / denylist 配列（最大 20 件）     |
+| `max_tokens`          | 総コンテンツ予算（デフォルト: 25000、最大: 1000000） |
+| `max_tokens_per_page` | ページ単位のトークン上限（デフォルト: 2048）         |
 
-For the legacy Sonar/OpenRouter compatibility path, only `query` and `freshness` are supported.
-Search API-only filters such as `country`, `language`, `date_after`, `date_before`, `domain_filter`, `max_tokens`, and `max_tokens_per_page` return explicit errors.
+legacy の Sonar / OpenRouter 互換経路では、`query` と `freshness` だけがサポート対象です。`country`、`language`、`date_after`、`date_before`、`domain_filter`、`max_tokens`、`max_tokens_per_page` など Search API 専用の filter は明示的な error を返します。
 
-**Examples:**
+**例:**
 
 ```javascript
-// Country and language-specific search
+// 国と言語を指定した検索
 await web_search({
   query: "renewable energy",
   country: "DE",
   language: "de",
 });
 
-// Recent results (past week)
+// 最近1週間の結果
 await web_search({
   query: "AI news",
   freshness: "week",
 });
 
-// Date range search
+// 日付範囲検索
 await web_search({
   query: "AI developments",
   date_after: "2024-01-01",
   date_before: "2024-06-30",
 });
 
-// Domain filtering (allowlist)
+// ドメインフィルタ（allowlist）
 await web_search({
   query: "climate research",
   domain_filter: ["nature.com", "science.org", ".edu"],
 });
 
-// Domain filtering (denylist - prefix with -)
+// ドメインフィルタ（denylist: 接頭辞に - を付ける）
 await web_search({
   query: "product reviews",
   domain_filter: ["-reddit.com", "-pinterest.com"],
 });
 
-// More content extraction
+// より多くのコンテンツを抽出
 await web_search({
   query: "detailed AI research",
   max_tokens: 50000,
@@ -139,17 +133,16 @@ await web_search({
 });
 ```
 
-### Domain filter rules
+### domain filter のルール
 
-- Maximum 20 domains per filter
-- Cannot mix allowlist and denylist in the same request
-- Use `-` prefix for denylist entries (e.g., `["-reddit.com"]`)
+- 1 リクエストあたり最大 20 ドメイン
+- 同じリクエスト内で allowlist と denylist を混在させることはできない
+- denylist entry には `-` 接頭辞を付ける（例: `["-reddit.com"]`）
 
-## Notes
+## 注意点
 
-- Perplexity Search API returns structured web search results (`title`, `url`, `snippet`)
-- OpenRouter or explicit `baseUrl` / `model` switches Perplexity back to Sonar chat completions for compatibility
-- Results are cached for 15 minutes by default (configurable via `cacheTtlMinutes`)
+- Perplexity Search API は構造化された Web 検索結果（`title`、`url`、`snippet`）を返します
+- OpenRouter または明示的な `baseUrl` / `model` を設定すると、互換性維持のため Perplexity は Sonar chat completions 経路へ切り替わります
+- 結果はデフォルトで 15 分間キャッシュされます（`cacheTtlMinutes` で変更可能）
 
-See [Web tools](/tools/web) for the full web_search configuration.
-See [Perplexity Search API docs](https://docs.perplexity.ai/docs/search/quickstart) for more details.
+完全な `web_search` 設定については [Web tools](/tools/web) を参照してください。詳細は [Perplexity Search API docs](https://docs.perplexity.ai/docs/search/quickstart) を参照してください。

@@ -1,28 +1,30 @@
 ---
-title: "Prompt Caching"
-summary: "Prompt caching knobs, merge order, provider behavior, and tuning patterns"
+title: "プロンプトキャッシング"
+summary: "プロンプト キャッシュ ノブ、マージ順序、プロバイダーの動作、およびチューニング パターン"
 read_when:
-  - You want to reduce prompt token costs with cache retention
-  - You need per-agent cache behavior in multi-agent setups
-  - You are tuning heartbeat and cache-ttl pruning together
+  - キャッシュ保持によりプロンプト トークンのコストを削減したい
+  - マルチエージェント設定ではエージェントごとのキャッシュ動作が必要です
+  - ハートビートとキャッシュ ttl プルーニングを一緒に調整しています
+x-i18n:
+  source_hash: "7952e90d0d6eb23fee4e0046220dddc7c89dc19aae0129d0619290e081a92778"
 ---
 
-# Prompt caching
+# プロンプトキャッシュ
 
-Prompt caching means the model provider can reuse unchanged prompt prefixes (usually system/developer instructions and other stable context) across turns instead of re-processing them every time. The first matching request writes cache tokens (`cacheWrite`), and later matching requests can read them back (`cacheRead`).
+プロンプト キャッシュとは、モデル プロバイダーが変更されていないプロンプト プレフィックス (通常はシステム/開発者の指示やその他の安定したコンテキスト) を毎回再処理するのではなく、ターンをまたいで再利用できることを意味します。最初に一致したリクエストはキャッシュ トークンを書き込み (`cacheWrite`)、その後の一致したリクエストはキャッシュ トークンを読み戻すことができます (`cacheRead`)。
 
-Why this matters: lower token cost, faster responses, and more predictable performance for long-running sessions. Without caching, repeated prompts pay the full prompt cost on every turn even when most input did not change.
+これが重要な理由: トークンコストの削減、応答の高速化、長時間実行セッションのパフォーマンスの予測可能性の向上。キャッシュを使用しないと、ほとんどの入力が変更されなかった場合でも、プロンプトが繰り返されると、ターンごとにプロンプ​​ト コストの全額が支払われます。
 
-This page covers all cache-related knobs that affect prompt reuse and token cost.
+このページでは、プロンプト再利用とトークン コストに影響を与えるキャッシュ関連のノブをすべて取り上げます。
 
-For Anthropic pricing details, see:
+Anthropic の価格の詳細については、以下を参照してください。
 [https://docs.anthropic.com/docs/build-with-claude/prompt-caching](https://docs.anthropic.com/docs/build-with-claude/prompt-caching)
 
-## Primary knobs
+## プライマリノブ
 
-### `cacheRetention` (model and per-agent)
+### `cacheRetention` (モデルおよびエージェントごと)
 
-Set cache retention on model params:
+モデルパラメータでキャッシュ保持を設定します。
 
 ```yaml
 agents:
@@ -33,7 +35,7 @@ agents:
           cacheRetention: "short" # none | short | long
 ```
 
-Per-agent override:
+エージェントごとのオーバーライド:
 
 ```yaml
 agents:
@@ -43,72 +45,70 @@ agents:
         cacheRetention: "none"
 ```
 
-Config merge order:
+構成のマージ順序:
 
 1. `agents.defaults.models["provider/model"].params`
-2. `agents.list[].params` (matching agent id; overrides by key)
+2. `agents.list[].params` (エージェント ID の一致、キーによるオーバーライド)
 
-### Legacy `cacheControlTtl`
+### レガシー `cacheControlTtl`
 
-Legacy values are still accepted and mapped:
+従来の値は引き続き受け入れられ、マッピングされます。
 
 - `5m` -> `short`
 - `1h` -> `long`
 
-Prefer `cacheRetention` for new config.
+新しい構成には `cacheRetention` を優先します。
 
 ### `contextPruning.mode: "cache-ttl"`
 
-Prunes old tool-result context after cache TTL windows so post-idle requests do not re-cache oversized history.
+キャッシュ TTL ウィンドウの後に古いツール結果コンテキストを削除し、アイドル後のリクエストがサイズを超えた履歴を再キャッシュしないようにします。
 
-```yaml
+````yaml
 agents:
   defaults:
     contextPruning:
       mode: "cache-ttl"
       ttl: "1h"
-```
+```完全な動作については、[セッション プルーニング](/concepts/session-pruning) を参照してください。
 
-See [Session Pruning](/concepts/session-pruning) for full behavior.
+### ハートビートの保温
 
-### Heartbeat keep-warm
-
-Heartbeat can keep cache windows warm and reduce repeated cache writes after idle gaps.
+ハートビートは、キャッシュ ウィンドウを暖かく保ち、アイドル ギャップ後のキャッシュ書き込みの繰り返しを減らすことができます。
 
 ```yaml
 agents:
   defaults:
     heartbeat:
       every: "55m"
-```
+````
 
-Per-agent heartbeat is supported at `agents.list[].heartbeat`.
+エージェントごとのハートビートは `agents.list[].heartbeat` でサポートされています。
 
-## Provider behavior
+## プロバイダーの動作
 
-### Anthropic (direct API)
+### Anthropic (直接 API)
 
-- `cacheRetention` is supported.
-- With Anthropic API-key auth profiles, OpenClaw seeds `cacheRetention: "short"` for Anthropic model refs when unset.
+- `cacheRetention` がサポートされています。
+- Anthropic API キー認証プロファイルを使用すると、OpenClaw は設定を解除すると Anthropic モデル参照に `cacheRetention: "short"` をシードします。
 
-### Amazon Bedrock
+### アマゾンの岩盤
 
-- Anthropic Claude model refs (`amazon-bedrock/*anthropic.claude*`) support explicit `cacheRetention` pass-through.
-- Non-Anthropic Bedrock models are forced to `cacheRetention: "none"` at runtime.
+- Anthropic Claude モデル参照 (`amazon-bedrock/*anthropic.claude*`) は、明示的な `cacheRetention` パススルーをサポートします。
+- 非人為的岩盤モデルは実行時に `cacheRetention: "none"` に強制されます。
 
-### OpenRouter Anthropic models
+### OpenRouter 人間モデル
 
-For `openrouter/anthropic/*` model refs, OpenClaw injects Anthropic `cache_control` on system/developer prompt blocks to improve prompt-cache reuse.
+`openrouter/anthropic/*` モデル参照の場合、OpenClaw はシステム/開発者プロンプト ブロックに Anthropic `cache_control` を挿入して、プロンプト キャッシュの再利用を改善します。
 
-### Other providers
+### 他のプロバイダー
 
-If the provider does not support this cache mode, `cacheRetention` has no effect.
+プロバイダーがこのキャッシュ モードをサポートしていない場合、`cacheRetention` は効果がありません。
 
-## Tuning patterns
+## チューニングパターン
 
-### Mixed traffic (recommended default)
+### 混合トラフィック (推奨デフォルト)
 
-Keep a long-lived baseline on your main agent, disable caching on bursty notifier agents:
+メイン エージェントで長期間のベースラインを維持し、バースト通知エージェントのキャッシュを無効にします。
 
 ```yaml
 agents:
@@ -129,19 +129,19 @@ agents:
         cacheRetention: "none"
 ```
 
-### Cost-first baseline
+### コスト優先のベースライン
 
-- Set baseline `cacheRetention: "short"`.
-- Enable `contextPruning.mode: "cache-ttl"`.
-- Keep heartbeat below your TTL only for agents that benefit from warm caches.
+- ベースライン `cacheRetention: "short"` を設定します。
+- `contextPruning.mode: "cache-ttl"` を有効にします。
+- ウォーム キャッシュの恩恵を受けるエージェントに対してのみ、ハートビートを TTL 未満に保ちます。
 
-## Cache diagnostics
+## キャッシュ診断
 
-OpenClaw exposes dedicated cache-trace diagnostics for embedded agent runs.
+OpenClaw は、組み込みエージェントの実行用の専用のキャッシュ トレース診断を公開します。
 
-### `diagnostics.cacheTrace` config
+### `diagnostics.cacheTrace` 構成
 
-```yaml
+````yaml
 diagnostics:
   cacheTrace:
     enabled: true
@@ -149,37 +149,36 @@ diagnostics:
     includeMessages: false # default true
     includePrompt: false # default true
     includeSystem: false # default true
-```
-
-Defaults:
+```デフォルト:
 
 - `filePath`: `$OPENCLAW_STATE_DIR/logs/cache-trace.jsonl`
 - `includeMessages`: `true`
 - `includePrompt`: `true`
 - `includeSystem`: `true`
 
-### Env toggles (one-off debugging)
+### 環境切り替え (1 回限りのデバッグ)
 
-- `OPENCLAW_CACHE_TRACE=1` enables cache tracing.
-- `OPENCLAW_CACHE_TRACE_FILE=/path/to/cache-trace.jsonl` overrides output path.
-- `OPENCLAW_CACHE_TRACE_MESSAGES=0|1` toggles full message payload capture.
-- `OPENCLAW_CACHE_TRACE_PROMPT=0|1` toggles prompt text capture.
-- `OPENCLAW_CACHE_TRACE_SYSTEM=0|1` toggles system prompt capture.
+- `OPENCLAW_CACHE_TRACE=1` はキャッシュ トレースを有効にします。
+- `OPENCLAW_CACHE_TRACE_FILE=/path/to/cache-trace.jsonl` は出力パスをオーバーライドします。
+- `OPENCLAW_CACHE_TRACE_MESSAGES=0|1` は、完全なメッセージ ペイロードのキャプチャを切り替えます。
+- `OPENCLAW_CACHE_TRACE_PROMPT=0|1` は、プロンプト テキストのキャプチャを切り替えます。
+- `OPENCLAW_CACHE_TRACE_SYSTEM=0|1` は、システム プロンプト キャプチャを切り替えます。
 
-### What to inspect
+### 何を検査するか
 
-- Cache trace events are JSONL and include staged snapshots like `session:loaded`, `prompt:before`, `stream:context`, and `session:after`.
-- Per-turn cache token impact is visible in normal usage surfaces via `cacheRead` and `cacheWrite` (for example `/usage full` and session usage summaries).
+- キャッシュ トレース イベントは JSONL であり、`session:loaded`、`prompt:before`、`stream:context`、`session:after` などのステージングされたスナップショットが含まれます。
+- ターンごとのキャッシュ トークンの影響は、`cacheRead` および `cacheWrite` を介して通常の使用状況に表示されます (たとえば、`/usage full` およびセッション使用状況の概要)。
 
-## Quick troubleshooting
+## 簡単なトラブルシューティング
 
-- High `cacheWrite` on most turns: check for volatile system-prompt inputs and verify model/provider supports your cache settings.
-- No effect from `cacheRetention`: confirm model key matches `agents.defaults.models["provider/model"]`.
-- Bedrock Nova/Mistral requests with cache settings: expected runtime force to `none`.
+- ほとんどのターンで高い `cacheWrite` : 揮発性のシステム プロンプト入力をチェックし、モデル/プロバイダーがキャッシュ設定をサポートしていることを確認します。
+- `cacheRetention` による影響なし: モデル キーが `agents.defaults.models["provider/model"]` と一致することを確認します。
+- キャッシュ設定を使用した Bedrock Nova/Mistral リクエスト: ランタイム強制は `none` になることが予想されます。
 
-Related docs:
+関連ドキュメント:
 
-- [Anthropic](/providers/anthropic)
-- [Token Use and Costs](/reference/token-use)
-- [Session Pruning](/concepts/session-pruning)
-- [Gateway Configuration Reference](/gateway/configuration-reference)
+- [人族](/providers/anthropic)
+- [トークンの使用とコスト](/reference/token-use)
+- [セッションのプルーニング](/concepts/session-pruning)
+- [ゲートウェイ構成リファレンス](/gateway/configuration-reference)
+````

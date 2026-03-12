@@ -1,37 +1,39 @@
 ---
-summary: "Telegram bot support status, capabilities, and configuration"
+summary: "Telegram ボットのサポート ステータス、機能、および構成"
 read_when:
-  - Working on Telegram features or webhooks
+  - Telegram 機能または Webhook の作業
 title: "Telegram"
+x-i18n:
+  source_hash: "bf7d861c40280b172e13ce6d1778e9ebe6a5441c0d7ad0f09506cbbc5b1afd7d"
 ---
 
-# Telegram (Bot API)
+# テレグラム（ボットAPI）
 
-Status: production-ready for bot DMs + groups via grammY. Long polling is the default mode; webhook mode is optional.
+ステータス: grammY を介したボット DM + グループの運用準備が整っています。ロングポーリングがデフォルトのモードです。 Webhook モードはオプションです。
 
 <CardGroup cols={3}>
-  <Card title="Pairing" icon="link" href="/channels/pairing">
-    Default DM policy for Telegram is pairing.
+  <Card title="ペアリング" icon="link" href="/channels/pairing">
+    Telegram のデフォルトの DM ポリシーはペアリングです。
   </Card>
-  <Card title="Channel troubleshooting" icon="wrench" href="/channels/troubleshooting">
-    Cross-channel diagnostics and repair playbooks.
+  <Card title="チャネルのトラブルシューティング" icon="wrench" href="/channels/troubleshooting">
+    クロスチャネル診断と修復プレイブック。
   </Card>
-  <Card title="Gateway configuration" icon="settings" href="/gateway/configuration">
-    Full channel config patterns and examples.
+  <Card title="ゲートウェイ構成" icon="settings" href="/gateway/configuration">
+    完全なチャネル構成パターンと例。
   </Card>
 </CardGroup>
 
-## Quick setup
+## クイックセットアップ
 
 <Steps>
-  <Step title="Create the bot token in BotFather">
-    Open Telegram and chat with **@BotFather** (confirm the handle is exactly `@BotFather`).
+  <Step title="BotFather でボット トークンを作成する">
+    Telegram を開いて **@BotFather** とチャットします (ハンドルが正確に `@BotFather` であることを確認してください)。
 
-    Run `/newbot`, follow prompts, and save the token.
+    `/newbot` を実行し、プロンプトに従い、トークンを保存します。
 
   </Step>
 
-  <Step title="Configure token and DM policy">
+  <Step title="トークンとDMポリシーを構成する">
 
 ```json5
 {
@@ -46,12 +48,12 @@ Status: production-ready for bot DMs + groups via grammY. Long polling is the de
 }
 ```
 
-    Env fallback: `TELEGRAM_BOT_TOKEN=...` (default account only).
-    Telegram does **not** use `openclaw channels login telegram`; configure token in config/env, then start gateway.
+    環境フォールバック: `TELEGRAM_BOT_TOKEN=...` (デフォルト アカウントのみ)。
+    Telegram は `openclaw channels login telegram` を**使用しません**。 config/env でトークンを構成し、ゲートウェイを開始します。
 
   </Step>
 
-  <Step title="Start gateway and approve first DM">
+  <Step title="ゲートウェイを開始し、最初の DM を承認する">
 
 ```bash
 openclaw gateway
@@ -59,108 +61,105 @@ openclaw pairing list telegram
 openclaw pairing approve telegram <CODE>
 ```
 
-    Pairing codes expire after 1 hour.
+    ペアリング コードは 1 時間後に期限切れになります。
 
   </Step>
 
-  <Step title="Add the bot to a group">
-    Add the bot to your group, then set `channels.telegram.groups` and `groupPolicy` to match your access model.
+  <Step title="ボットをグループに追加する">
+    ボットをグループに追加し、アクセス モデルに一致するように `channels.telegram.groups` と `groupPolicy` を設定します。
   </Step>
 </Steps>
 
 <Note>
-Token resolution order is account-aware. In practice, config values win over env fallback, and `TELEGRAM_BOT_TOKEN` only applies to the default account.
+トークン解決順序はアカウントに応じて決まります。実際には、構成値は環境フォールバックよりも優先され、`TELEGRAM_BOT_TOKEN` はデフォルトのアカウントにのみ適用されます。
 </Note>
 
-## Telegram side settings
+## Telegram側の設定
 
 <AccordionGroup>
-  <Accordion title="Privacy mode and group visibility">
-    Telegram bots default to **Privacy Mode**, which limits what group messages they receive.
 
-    If the bot must see all group messages, either:
+  <Accordion title="プライバシーモードとグループの可視性">
+    Telegram ボットはデフォルトで **プライバシー モード** になっており、受信するグループ メッセージが制限されます。
 
-    - disable privacy mode via `/setprivacy`, or
-    - make the bot a group admin.
+    ボットがすべてのグループ メッセージを参照する必要がある場合は、次のいずれかを実行します。
 
-    When toggling privacy mode, remove + re-add the bot in each group so Telegram applies the change.
+    - `/setprivacy` 経由でプライバシー モードを無効にする、または
+    - ボットをグループ管理者にします。
 
-  </Accordion>
-
-  <Accordion title="Group permissions">
-    Admin status is controlled in Telegram group settings.
-
-    Admin bots receive all group messages, which is useful for always-on group behavior.
+    プライバシー モードを切り替えるときは、各グループのボットを削除して再追加し、Telegram が変更を適用できるようにします。
 
   </Accordion>
 
-  <Accordion title="Helpful BotFather toggles">
+  <Accordion title="グループ権限">
+    管理ステータスは Telegram グループ設定で制御されます。
 
-    - `/setjoingroups` to allow/deny group adds
-    - `/setprivacy` for group visibility behavior
+    管理ボットはすべてのグループ メッセージを受信するため、常時接続のグループ動作に役立ちます。
+
+  </Accordion>
+
+  <Accordion title="便利な BotFather 切り替え">
+
+    - `/setjoingroups` グループの追加を許可/拒否します
+    - `/setprivacy` グループの可視性動作用
 
   </Accordion>
 </AccordionGroup>
 
-## Access control and activation
+## アクセス制御とアクティベーション
 
 <Tabs>
-  <Tab title="DM policy">
-    `channels.telegram.dmPolicy` controls direct message access:
+  <Tab title="DMポリシー">
+    `channels.telegram.dmPolicy` はダイレクト メッセージ アクセスを制御します。
 
-    - `pairing` (default)
-    - `allowlist` (requires at least one sender ID in `allowFrom`)
-    - `open` (requires `allowFrom` to include `"*"`)
-    - `disabled`
+    - `pairing` (デフォルト)
+    - `allowlist` (`allowFrom` には少なくとも 1 つの送信者 ID が必要です)
+    - `open` (`"*"` を含めるには `allowFrom` が必要です)
+    - `disabled``channels.telegram.allowFrom` は、数値の Telegram ユーザー ID を受け入れます。 `telegram:` / `tg:` プレフィックスは受け入れられ、正規化されます。
+    `dmPolicy: "allowlist"` と空の `allowFrom` はすべての DM をブロックし、構成検証によって拒否されます。
+    オンボーディング ウィザードは `@username` 入力を受け入れ、それを数値 ID に解決します。
+    アップグレードしていて、構成に `@username` 許可リスト エントリが含まれている場合は、`openclaw doctor --fix` を実行してそれらを解決します (ベストエフォート。Telegram ボット トークンが必要です)。
+    以前にペアリング ストア ホワイトリスト ファイルに依存していた場合、`openclaw doctor --fix` はホワイトリスト フロー内の `channels.telegram.allowFrom` へのエントリを回復できます (たとえば、`dmPolicy: "allowlist"` にまだ明示的な ID がない場合)。
 
-    `channels.telegram.allowFrom` accepts numeric Telegram user IDs. `telegram:` / `tg:` prefixes are accepted and normalized.
-    `dmPolicy: "allowlist"` with empty `allowFrom` blocks all DMs and is rejected by config validation.
-    The onboarding wizard accepts `@username` input and resolves it to numeric IDs.
-    If you upgraded and your config contains `@username` allowlist entries, run `openclaw doctor --fix` to resolve them (best-effort; requires a Telegram bot token).
-    If you previously relied on pairing-store allowlist files, `openclaw doctor --fix` can recover entries into `channels.telegram.allowFrom` in allowlist flows (for example when `dmPolicy: "allowlist"` has no explicit IDs yet).
+    単一所有者ボットの場合は、(以前のペアリングの承認に依存するのではなく) アクセス ポリシーを構成内で永続的に保つために、明示的な数値 `allowFrom` ID を持つ `dmPolicy: "allowlist"` を優先します。
 
-    For one-owner bots, prefer `dmPolicy: "allowlist"` with explicit numeric `allowFrom` IDs to keep access policy durable in config (instead of depending on previous pairing approvals).
+    ### Telegram ユーザー ID を見つける
 
-    ### Finding your Telegram user ID
+    より安全 (サードパーティのボットなし):
 
-    Safer (no third-party bot):
+    1. ボットに DM を送ります。
+    2. `openclaw logs --follow` を実行します。
+    3. `from.id` を読みます。
 
-    1. DM your bot.
-    2. Run `openclaw logs --follow`.
-    3. Read `from.id`.
-
-    Official Bot API method:
+    公式ボット API メソッド:
 
 ```bash
 curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 ```
 
-    Third-party method (less private): `@userinfobot` or `@getidsbot`.
+    サードパーティの方法 (非公開): `@userinfobot` または `@getidsbot`。
 
   </Tab>
 
-  <Tab title="Group policy and allowlists">
-    Two controls apply together:
+  <Tab title="グループポリシーと許可リスト">
+    2 つのコントロールが一緒に適用されます。1. **許可されるグループ** (`channels.telegram.groups`)
+       - `groups` 構成がありません:
+         - `groupPolicy: "open"` の場合: どのグループもグループ ID チェックに合格できます
+         - `groupPolicy: "allowlist"` の場合 (デフォルト): `groups` エントリ (または `"*"`) を追加するまで、グループはブロックされます。
+       - `groups` 構成済み: 許可リストとして機能します (明示的な ID または `"*"`)
 
-    1. **Which groups are allowed** (`channels.telegram.groups`)
-       - no `groups` config:
-         - with `groupPolicy: "open"`: any group can pass group-ID checks
-         - with `groupPolicy: "allowlist"` (default): groups are blocked until you add `groups` entries (or `"*"`)
-       - `groups` configured: acts as allowlist (explicit IDs or `"*"`)
-
-    2. **Which senders are allowed in groups** (`channels.telegram.groupPolicy`)
+    2. **グループ内で許可される送信者** (`channels.telegram.groupPolicy`)
        - `open`
-       - `allowlist` (default)
+       - `allowlist` (デフォルト)
        - `disabled`
 
-    `groupAllowFrom` is used for group sender filtering. If not set, Telegram falls back to `allowFrom`.
-    `groupAllowFrom` entries should be numeric Telegram user IDs (`telegram:` / `tg:` prefixes are normalized).
-    Non-numeric entries are ignored for sender authorization.
-    Security boundary (`2026.2.25+`): group sender auth does **not** inherit DM pairing-store approvals.
-    Pairing stays DM-only. For groups, set `groupAllowFrom` or per-group/per-topic `allowFrom`.
-    Runtime note: if `channels.telegram` is completely missing, runtime defaults to fail-closed `groupPolicy="allowlist"` unless `channels.defaults.groupPolicy` is explicitly set.
+    `groupAllowFrom` は、グループ送信者のフィルタリングに使用されます。設定されていない場合、Telegram は `allowFrom` に戻ります。
+    `groupAllowFrom` エントリは、数値の Telegram ユーザー ID である必要があります (`telegram:` / `tg:` プレフィックスは正規化されます)。
+    数値以外のエントリは送信者の認証では無視されます。
+    セキュリティ境界 (`2026.2.25+`): グループ送信者の認証は、DM ペアリングとストアの承認を**継承しません**。
+    ペアリングはDMのみのままです。グループの場合は、`groupAllowFrom` またはグループごと/トピックごとに `allowFrom` を設定します。
+    ランタイムに関する注意: `channels.telegram` が完全に欠落している場合、`channels.defaults.groupPolicy` が明示的に設定されていない限り、ランタイムはデフォルトでフェールクローズされた `groupPolicy="allowlist"` になります。
 
-    Example: allow any member in one specific group:
+    例: 1 つの特定のグループ内の任意のメンバーを許可します。
 
 ```json5
 {
@@ -179,24 +178,22 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
   </Tab>
 
-  <Tab title="Mention behavior">
-    Group replies require mention by default.
+  <Tab title="言及行動">
+    グループ返信にはデフォルトでメンションが必要です。
 
-    Mention can come from:
-
-    - native `@botusername` mention, or
-    - mention patterns in:
+    言及は次のとおりです。- ネイティブ `@botusername` の言及、または
+    - パターンについての言及:
       - `agents.list[].groupChat.mentionPatterns`
       - `messages.groupChat.mentionPatterns`
 
-    Session-level command toggles:
+    セッションレベルのコマンドの切り替え：
 
     - `/activation always`
     - `/activation mention`
 
-    These update session state only. Use config for persistence.
+    これらはセッション状態のみを更新します。永続化のために config を使用します。
 
-    Persistent config example:
+    永続的な構成の例:
 
 ```json5
 {
@@ -210,77 +207,73 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Getting the group chat ID:
+    グループチャットIDの取得：
 
-    - forward a group message to `@userinfobot` / `@getidsbot`
-    - or read `chat.id` from `openclaw logs --follow`
-    - or inspect Bot API `getUpdates`
+    - グループメッセージを `@userinfobot` / `@getidsbot` に転送します
+    - または `openclaw logs --follow` から `chat.id` を読み取ります
+    - またはボット API `getUpdates` を検査します
 
   </Tab>
 </Tabs>
 
-## Runtime behavior
+## 実行時の動作
 
-- Telegram is owned by the gateway process.
-- Routing is deterministic: Telegram inbound replies back to Telegram (the model does not pick channels).
-- Inbound messages normalize into the shared channel envelope with reply metadata and media placeholders.
-- Group sessions are isolated by group ID. Forum topics append `:topic:<threadId>` to keep topics isolated.
-- DM messages can carry `message_thread_id`; OpenClaw routes them with thread-aware session keys and preserves thread ID for replies.
-- Long polling uses grammY runner with per-chat/per-thread sequencing. Overall runner sink concurrency uses `agents.defaults.maxConcurrent`.
-- Telegram Bot API has no read-receipt support (`sendReadReceipts` does not apply).
+- テレグラムはゲートウェイプロセスによって所有されます。
+- ルーティングは決定的です: Telegram の受信応答は Telegram に返されます (モデルはチャネルを選択しません)。
+- 受信メッセージは、返信メタデータとメディア プレースホルダーを使用して共有チャネル エンベロープに正規化されます。
+- グループセッションはグループIDによって分離されます。トピックを分離するために、フォーラムのトピックには `:topic:<threadId>` が追加されます。
+- DM メッセージには `message_thread_id` を含めることができます。 OpenClaw は、スレッド対応のセッション キーを使用してそれらをルーティングし、応答用のスレッド ID を保存します。
+- ロングポーリングでは、チャットごと/スレッドごとのシーケンスを持つ grammY ランナーを使用します。全体的なランナー シンクの同時実行性は `agents.defaults.maxConcurrent` を使用します。
+- Telegram Bot API には読み取り受信サポートがありません (`sendReadReceipts` は適用されません)。
 
-## Feature reference
+## 機能リファレンス
 
 <AccordionGroup>
-  <Accordion title="Live stream preview (message edits)">
-    OpenClaw can stream partial replies in real time:
+  <Accordion title="ライブ ストリーム プレビュー (メッセージ編集)">
+    OpenClaw は部分的な応答をリアルタイムでストリーミングできます。- ダイレクト チャット: プレビュー メッセージ + `editMessageText`
+    - グループ/トピック: プレビュー メッセージ + `editMessageText`
 
-    - direct chats: preview message + `editMessageText`
-    - groups/topics: preview message + `editMessageText`
+    要件:
 
-    Requirement:
+    - `channels.telegram.streaming` は `off | partial | block | progress` (デフォルト: `partial`)
+    - `progress` は Telegram の `partial` にマップされます (クロスチャネル命名と互換)
+    - 従来の `channels.telegram.streamMode` およびブール値 `streaming` 値は自動マッピングされます
 
-    - `channels.telegram.streaming` is `off | partial | block | progress` (default: `partial`)
-    - `progress` maps to `partial` on Telegram (compat with cross-channel naming)
-    - legacy `channels.telegram.streamMode` and boolean `streaming` values are auto-mapped
+    テキストのみの返信の場合:
 
-    For text-only replies:
+    - DM: OpenClaw は同じプレビュー メッセージを保持し、その場で最終編集を実行します (2 番目のメッセージはありません)
+    - グループ/トピック: OpenClaw は同じプレビュー メッセージを保持し、その場で最終編集を実行します (2 番目のメッセージはありません)。
 
-    - DM: OpenClaw keeps the same preview message and performs a final edit in place (no second message)
-    - group/topic: OpenClaw keeps the same preview message and performs a final edit in place (no second message)
+    複雑な応答 (メディア ペイロードなど) の場合、OpenClaw は通常の最終配信に戻り、プレビュー メッセージをクリーンアップします。
 
-    For complex replies (for example media payloads), OpenClaw falls back to normal final delivery and then cleans up the preview message.
+    プレビュー ストリーミングはブロック ストリーミングとは別のものです。 Telegram に対してブロック ストリーミングが明示的に有効になっている場合、OpenClaw は二重ストリーミングを避けるためにプレビュー ストリームをスキップします。
 
-    Preview streaming is separate from block streaming. When block streaming is explicitly enabled for Telegram, OpenClaw skips the preview stream to avoid double-streaming.
+    ネイティブ ドラフト トランスポートが利用できないか拒否された場合、OpenClaw は自動的に `sendMessage` + `editMessageText` にフォールバックします。
 
-    If native draft transport is unavailable/rejected, OpenClaw automatically falls back to `sendMessage` + `editMessageText`.
+    テレグラムのみの推論ストリーム:
 
-    Telegram-only reasoning stream:
-
-    - `/reasoning stream` sends reasoning to the live preview while generating
-    - final answer is sent without reasoning text
+    - `/reasoning stream` は生成中に推論をライブ プレビューに送信します
+    - 最終回答は推論テキストなしで送信されます
 
   </Accordion>
 
-  <Accordion title="Formatting and HTML fallback">
-    Outbound text uses Telegram `parse_mode: "HTML"`.
+  <Accordion title="書式設定と HTML フォールバック">
+    送信テキストには Telegram `parse_mode: "HTML"` が使用されます。- Markdown 風のテキストは Telegram セーフな HTML にレンダリングされます。
+    - 生のモデル HTML は、Telegram の解析エラーを減らすためにエスケープされます。
+    - Telegram が解析された HTML を拒否した場合、OpenClaw はプレーン テキストとして再試行します。
 
-    - Markdown-ish text is rendered to Telegram-safe HTML.
-    - Raw model HTML is escaped to reduce Telegram parse failures.
-    - If Telegram rejects parsed HTML, OpenClaw retries as plain text.
-
-    Link previews are enabled by default and can be disabled with `channels.telegram.linkPreview: false`.
+    リンク プレビューはデフォルトで有効になっており、`channels.telegram.linkPreview: false` で無効にできます。
 
   </Accordion>
 
-  <Accordion title="Native commands and custom commands">
-    Telegram command menu registration is handled at startup with `setMyCommands`.
+  <Accordion title="ネイティブコマンドとカスタムコマンド">
+    Telegram コマンド メニューの登録は、起動時に `setMyCommands` で処理されます。
 
-    Native command defaults:
+    ネイティブ コマンドのデフォルト:
 
-    - `commands.native: "auto"` enables native commands for Telegram
+    - `commands.native: "auto"` は Telegram のネイティブ コマンドを有効にします
 
-    Add custom command menu entries:
+    カスタム コマンド メニュー エントリを追加します。
 
 ```json5
 {
@@ -295,38 +288,36 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Rules:
+    ルール:
 
-    - names are normalized (strip leading `/`, lowercase)
-    - valid pattern: `a-z`, `0-9`, `_`, length `1..32`
-    - custom commands cannot override native commands
-    - conflicts/duplicates are skipped and logged
+    - 名前は正規化されます (先頭の `/` を削除し、小文字にします)
+    - 有効なパターン: `a-z`、`0-9`、`_`、長さ `1..32`
+    - カスタム コマンドはネイティブ コマンドをオーバーライドできません
+    - 競合/重複はスキップされ、ログに記録されます
 
-    Notes:
+    注:
 
-    - custom commands are menu entries only; they do not auto-implement behavior
-    - plugin/skill commands can still work when typed even if not shown in Telegram menu
+    - カスタム コマンドはメニュー エントリのみです。動作を自動実装しない
+    - プラグイン/スキルコマンドは、テレグラムメニューに表示されていなくても、入力すると機能します
 
-    If native commands are disabled, built-ins are removed. Custom/plugin commands may still register if configured.
+    ネイティブ コマンドが無効になっている場合、組み込みは削除されます。カスタム/プラグイン コマンドが設定されている場合は、引き続き登録される可能性があります。
 
-    Common setup failure:
+    よくあるセットアップの失敗:
 
-    - `setMyCommands failed` usually means outbound DNS/HTTPS to `api.telegram.org` is blocked.
+    - `setMyCommands failed` は通常、`api.telegram.org` へのアウトバウンド DNS/HTTPS がブロックされていることを意味します。
 
-    ### Device pairing commands (`device-pair` plugin)
+    ### デバイス ペアリング コマンド (`device-pair` プラグイン)
 
-    When the `device-pair` plugin is installed:
+    `device-pair` プラグインがインストールされている場合:1. `/pair` はセットアップ コードを生成します
+    2. iOS アプリにコードを貼り付けます
+    3. `/pair approve` が最新の保留中のリクエストを承認します
 
-    1. `/pair` generates setup code
-    2. paste code in iOS app
-    3. `/pair approve` approves latest pending request
-
-    More details: [Pairing](/channels/pairing#pair-via-telegram-recommended-for-ios).
+    詳細: [ペアリング](/channels/pairing#pair-via-telegram-recommended-for-ios)。
 
   </Accordion>
 
-  <Accordion title="Inline buttons">
-    Configure inline keyboard scope:
+  <Accordion title="インラインボタン">
+    インライン キーボード スコープを構成します。
 
 ```json5
 {
@@ -340,7 +331,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Per-account override:
+    アカウントごとの上書き:
 
 ```json5
 {
@@ -358,17 +349,17 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Scopes:
+    範囲:
 
     - `off`
     - `dm`
     - `group`
     - `all`
-    - `allowlist` (default)
+    - `allowlist` (デフォルト)
 
-    Legacy `capabilities: ["inlineButtons"]` maps to `inlineButtons: "all"`.
+    レガシー `capabilities: ["inlineButtons"]` は `inlineButtons: "all"` にマップされます。
 
-    Message action example:
+    メッセージアクションの例:
 
 ```json5
 {
@@ -386,68 +377,64 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Callback clicks are passed to the agent as text:
+    コールバックのクリックはテキストとしてエージェントに渡されます。
     `callback_data: <value>`
 
   </Accordion>
 
-  <Accordion title="Telegram message actions for agents and automation">
-    Telegram tool actions include:
+  <Accordion title="エージェントと自動化のためのTelegramメッセージ アクション">
+    Telegram ツールのアクションには次のものが含まれます。
 
-    - `sendMessage` (`to`, `content`, optional `mediaUrl`, `replyToMessageId`, `messageThreadId`)
-    - `react` (`chatId`, `messageId`, `emoji`)
-    - `deleteMessage` (`chatId`, `messageId`)
-    - `editMessage` (`chatId`, `messageId`, `content`)
-    - `createForumTopic` (`chatId`, `name`, optional `iconColor`, `iconCustomEmojiId`)
+    - `sendMessage` (`to`、`content`、オプションの `mediaUrl`、`replyToMessageId`、`messageThreadId`)
+    - `react` (`chatId`、`messageId`、`emoji`)
+    - `deleteMessage` (`chatId`、`messageId`)
+    - `editMessage` (`chatId`、`messageId`、`content`)
+    - `createForumTopic` (`chatId`、`name`、オプションの `iconColor`、`iconCustomEmojiId`)
 
-    Channel message actions expose ergonomic aliases (`send`, `react`, `delete`, `edit`, `sticker`, `sticker-search`, `topic-create`).
+    チャネル メッセージ アクションは、人間工学に基づいたエイリアス (`send`、`react`、`delete`、`edit`、`sticker`、`sticker-search`、`topic-create`) を公開します。
 
-    Gating controls:
-
-    - `channels.telegram.actions.sendMessage`
+    ゲート制御:- `channels.telegram.actions.sendMessage`
     - `channels.telegram.actions.deleteMessage`
     - `channels.telegram.actions.reactions`
-    - `channels.telegram.actions.sticker` (default: disabled)
+    - `channels.telegram.actions.sticker` (デフォルト: 無効)
 
-    Note: `edit` and `topic-create` are currently enabled by default and do not have separate `channels.telegram.actions.*` toggles.
+    注: `edit` と `topic-create` は現在デフォルトで有効になっており、個別の `channels.telegram.actions.*` 切り替えはありません。
 
-    Reaction removal semantics: [/tools/reactions](/tools/reactions)
+    リアクション削除セマンティクス: [/tools/reactions](/tools/reactions)
 
   </Accordion>
 
-  <Accordion title="Reply threading tags">
-    Telegram supports explicit reply threading tags in generated output:
+  <Accordion title="返信スレッドタグ">
+    Telegram は、生成された出力で明示的な応答スレッド タグをサポートしています。
 
-    - `[[reply_to_current]]` replies to the triggering message
-    - `[[reply_to:<id>]]` replies to a specific Telegram message ID
+    - `[[reply_to_current]]` はトリガーメッセージに応答します
+    - `[[reply_to:<id>]]` は特定の Telegram メッセージ ID に応答します
 
-    `channels.telegram.replyToMode` controls handling:
+    `channels.telegram.replyToMode` は次の処理を制御します。
 
-    - `off` (default)
+    - `off` (デフォルト)
     - `first`
     - `all`
 
-    Note: `off` disables implicit reply threading. Explicit `[[reply_to_*]]` tags are still honored.
+    注: `off` は、暗黙的な応答スレッドを無効にします。明示的な `[[reply_to_*]]` タグは引き続き受け入れられます。
 
   </Accordion>
 
-  <Accordion title="Forum topics and thread behavior">
-    Forum supergroups:
+  <Accordion title="フォーラムのトピックとスレッドの動作">
+    フォーラムのスーパーグループ:
 
-    - topic session keys append `:topic:<threadId>`
-    - replies and typing target the topic thread
-    - topic config path:
+    - トピック セッション キーは `:topic:<threadId>` を追加します
+    - 返信と入力はトピックのスレッドをターゲットにします
+    - トピック構成パス:
       `channels.telegram.groups.<chatId>.topics.<threadId>`
 
-    General topic (`threadId=1`) special-case:
+    一般トピック (`threadId=1`) 特殊ケース:
 
-    - message sends omit `message_thread_id` (Telegram rejects `sendMessage(...thread_id=1)`)
-    - typing actions still include `message_thread_id`
+    - メッセージは `message_thread_id` を省略して送信されます (テレグラムは `sendMessage(...thread_id=1)` を拒否します)
+    - 入力アクションには引き続き `message_thread_id` が含まれますトピックの継承: トピック エントリは、オーバーライドされない限り、グループ設定を継承します (`requireMention`、`allowFrom`、`skills`、`systemPrompt`、`enabled`、`groupPolicy`)。
+    `agentId` はトピックのみであり、グループのデフォルトを継承しません。
 
-    Topic inheritance: topic entries inherit group settings unless overridden (`requireMention`, `allowFrom`, `skills`, `systemPrompt`, `enabled`, `groupPolicy`).
-    `agentId` is topic-only and does not inherit from group defaults.
-
-    **Per-topic agent routing**: Each topic can route to a different agent by setting `agentId` in the topic config. This gives each topic its own isolated workspace, memory, and session. Example:
+    **トピックごとのエージェント ルーティング**: トピック構成で `agentId` を設定することで、各トピックを異なるエージェントにルーティングできます。これにより、各トピックに独自の分離されたワークスペース、メモリ、セッションが与えられます。例:
 
     ```json5
     {
@@ -467,13 +454,13 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     }
     ```
 
-    Each topic then has its own session key: `agent:zu:telegram:group:-1001234567890:topic:3`
+    各トピックには独自のセッション キーがあります: `agent:zu:telegram:group:-1001234567890:topic:3`
 
-    **Persistent ACP topic binding**: Forum topics can pin ACP harness sessions through top-level typed ACP bindings:
+    **永続的な ACP トピック バインディング**: フォーラム トピックは、トップレベルの型付き ACP バインディングを通じて ACP ハーネス セッションを固定できます。
 
-    - `bindings[]` with `type: "acp"` and `match.channel: "telegram"`
+    - `bindings[]` と `type: "acp"` および `match.channel: "telegram"`
 
-    Example:
+    例:
 
     ```json5
     {
@@ -520,35 +507,33 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     }
     ```
 
-    This is currently scoped to forum topics in groups and supergroups.
+    現在、これはグループおよびスーパーグループのフォーラム トピックに限定されています。
 
-    **Thread-bound ACP spawn from chat**:
+    **スレッドバインドされた ACP がチャットから生成**:
 
-    - `/acp spawn <agent> --thread here|auto` can bind the current Telegram topic to a new ACP session.
-    - Follow-up topic messages route to the bound ACP session directly (no `/acp steer` required).
-    - OpenClaw pins the spawn confirmation message in-topic after a successful bind.
-    - Requires `channels.telegram.threadBindings.spawnAcpSessions=true`.
+    - `/acp spawn <agent> --thread here|auto` は、現在の Telegram トピックを新しい ACP セッションにバインドできます。
+    - フォローアップ トピック メッセージは、バインドされた ACP セッションに直接ルーティングされます (`/acp steer` は必要ありません)。
+    - OpenClaw は、バインドが成功した後、トピック内に生成確認メッセージを固定します。
+    - `channels.telegram.threadBindings.spawnAcpSessions=true` が必要です。
 
-    Template context includes:
+    テンプレートのコンテキストには次のものが含まれます。
 
     - `MessageThreadId`
     - `IsForum`
 
-    DM thread behavior:
-
-    - private chats with `message_thread_id` keep DM routing but use thread-aware session keys/reply targets.
+    DM スレッドの動作:- `message_thread_id` とのプライベート チャットは DM ルーティングを維持しますが、スレッド対応のセッション キー/返信ターゲットを使用します。
 
   </Accordion>
 
-  <Accordion title="Audio, video, and stickers">
-    ### Audio messages
+  <Accordion title="オーディオ、ビデオ、ステッカー">
+    ### 音声メッセージ
 
-    Telegram distinguishes voice notes vs audio files.
+    Telegram は音声メモと音声ファイルを区別します。
 
-    - default: audio file behavior
-    - tag `[[audio_as_voice]]` in agent reply to force voice-note send
+    - デフォルト: オーディオファイルの動作
+    - エージェントの応答に `[[audio_as_voice]]` タグを付けて、ボイスメモの送信を強制します
 
-    Message action example:
+    メッセージアクションの例:
 
 ```json5
 {
@@ -560,11 +545,11 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    ### Video messages
+    ### ビデオメッセージ
 
-    Telegram distinguishes video files vs video notes.
+    Telegram はビデオ ファイルとビデオ メモを区別します。
 
-    Message action example:
+    メッセージアクションの例:
 
 ```json5
 {
@@ -576,17 +561,17 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Video notes do not support captions; provided message text is sent separately.
+    ビデオノートはキャプションをサポートしていません。指定されたメッセージ テキストは別個に送信されます。
 
-    ### Stickers
+    ### ステッカー
 
-    Inbound sticker handling:
+    インバウンドステッカーの処理:
 
-    - static WEBP: downloaded and processed (placeholder `<media:sticker>`)
-    - animated TGS: skipped
-    - video WEBM: skipped
+    - 静的 WEBP: ダウンロードおよび処理済み (プレースホルダー `<media:sticker>`)
+    - アニメーション TGS: スキップされました
+    - ビデオ WEBM: スキップされました
 
-    Sticker context fields:
+    ステッカーコンテキストフィールド:
 
     - `Sticker.emoji`
     - `Sticker.setName`
@@ -594,13 +579,13 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     - `Sticker.fileUniqueId`
     - `Sticker.cachedDescription`
 
-    Sticker cache file:
+    ステッカーキャッシュファイル:
 
     - `~/.openclaw/telegram/sticker-cache.json`
 
-    Stickers are described once (when possible) and cached to reduce repeated vision calls.
+    ステッカーは (可能な場合) 1 回記述され、ビジョン呼び出しの繰り返しを減らすためにキャッシュされます。
 
-    Enable sticker actions:
+    ステッカーアクションを有効にします。
 
 ```json5
 {
@@ -614,7 +599,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Send sticker action:
+    ステッカーを送信するアクション:
 
 ```json5
 {
@@ -625,7 +610,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    Search cached stickers:
+    キャッシュされたステッカーを検索:
 
 ```json5
 {
@@ -638,56 +623,52 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
   </Accordion>
 
-  <Accordion title="Reaction notifications">
-    Telegram reactions arrive as `message_reaction` updates (separate from message payloads).
+  <Accordion title="反応通知">
+    Telegram の反応は、`message_reaction` 更新として (メッセージ ペイロードとは別に) 到着します。
 
-    When enabled, OpenClaw enqueues system events like:
+    有効にすると、OpenClaw は次のようなシステム イベントをキューに入れます。- `Telegram reaction added: 👍 by Alice (@alice) on msg 42`
 
-    - `Telegram reaction added: 👍 by Alice (@alice) on msg 42`
+    構成:
 
-    Config:
+    - `channels.telegram.reactionNotifications`: `off | own | all` (デフォルト: `own`)
+    - `channels.telegram.reactionLevel`: `off | ack | minimal | extensive` (デフォルト: `minimal`)
 
-    - `channels.telegram.reactionNotifications`: `off | own | all` (default: `own`)
-    - `channels.telegram.reactionLevel`: `off | ack | minimal | extensive` (default: `minimal`)
+    注:
 
-    Notes:
+    - `own` は、ボット送信メッセージのみに対するユーザーの反応を意味します (送信メッセージ キャッシュによるベストエフォート)。
+    - リアクション イベントは依然として Telegram のアクセス制御を尊重します (`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`)。不正な送信者はドロップされます。
+    - Telegram はリアクション更新でスレッド ID を提供しません。
+      - 非フォーラムグループはグループチャットセッションにルーティングされます
+      - フォーラム グループは、正確な元のトピックではなく、グループの一般トピック セッション (`:topic:1`) にルーティングされます。
 
-    - `own` means user reactions to bot-sent messages only (best-effort via sent-message cache).
-    - Reaction events still respect Telegram access controls (`dmPolicy`, `allowFrom`, `groupPolicy`, `groupAllowFrom`); unauthorized senders are dropped.
-    - Telegram does not provide thread IDs in reaction updates.
-      - non-forum groups route to group chat session
-      - forum groups route to the group general-topic session (`:topic:1`), not the exact originating topic
-
-    `allowed_updates` for polling/webhook include `message_reaction` automatically.
+    ポーリング/Webhook の `allowed_updates` には、`message_reaction` が自動的に含まれます。
 
   </Accordion>
 
-  <Accordion title="Ack reactions">
-    `ackReaction` sends an acknowledgement emoji while OpenClaw is processing an inbound message.
+  <Accordion title="ACK反応">
+    `ackReaction` は、OpenClaw が受信メッセージを処理している間に、確認の絵文字を送信します。
 
-    Resolution order:
+    解決順序:
 
     - `channels.telegram.accounts.<accountId>.ackReaction`
     - `channels.telegram.ackReaction`
     - `messages.ackReaction`
-    - agent identity emoji fallback (`agents.list[].identity.emoji`, else "👀")
+    - エージェント ID 絵文字フォールバック (`agents.list[].identity.emoji`、それ以外の場合は「👀」)
 
-    Notes:
+    注:
 
-    - Telegram expects unicode emoji (for example "👀").
-    - Use `""` to disable the reaction for a channel or account.
+    - Telegram は Unicode 絵文字 (「👀」など) を想定しています。
+    - `""` を使用して、チャネルまたはアカウントの反応を無効にします。
 
   </Accordion>
 
-  <Accordion title="Config writes from Telegram events and commands">
-    Channel config writes are enabled by default (`configWrites !== false`).
+  <Accordion title="Telegram イベントおよびコマンドからの構成の書き込み">
+    チャネル構成の書き込みはデフォルトで有効になっています (`configWrites !== false`)。
 
-    Telegram-triggered writes include:
+    Telegram によってトリガーされる書き込みには次のものが含まれます。- `channels.telegram.groups` を更新するグループ移行イベント (`migrate_to_chat_id`)
+    - `/config set` および `/config unset` (コマンドの有効化が必要)
 
-    - group migration events (`migrate_to_chat_id`) to update `channels.telegram.groups`
-    - `/config set` and `/config unset` (requires command enablement)
-
-    Disable:
+    無効にする:
 
 ```json5
 {
@@ -701,43 +682,43 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
   </Accordion>
 
-  <Accordion title="Long polling vs webhook">
-    Default: long polling.
+  <Accordion title="ロングポーリングと Webhook の比較">
+    デフォルト: ロングポーリング。
 
-    Webhook mode:
+    Webhook モード:
 
-    - set `channels.telegram.webhookUrl`
-    - set `channels.telegram.webhookSecret` (required when webhook URL is set)
-    - optional `channels.telegram.webhookPath` (default `/telegram-webhook`)
-    - optional `channels.telegram.webhookHost` (default `127.0.0.1`)
-    - optional `channels.telegram.webhookPort` (default `8787`)
+    - `channels.telegram.webhookUrl` を設定します
+    - set `channels.telegram.webhookSecret` (Webhook URL を設定する場合に必要)
+    - オプションの `channels.telegram.webhookPath` (デフォルトは `/telegram-webhook`)
+    - オプションの `channels.telegram.webhookHost` (デフォルトは `127.0.0.1`)
+    - オプションの `channels.telegram.webhookPort` (デフォルトは `8787`)
 
-    Default local listener for webhook mode binds to `127.0.0.1:8787`.
+    Webhook モードのデフォルトのローカル リスナーは `127.0.0.1:8787` にバインドされます。
 
-    If your public endpoint differs, place a reverse proxy in front and point `webhookUrl` at the public URL.
-    Set `webhookHost` (for example `0.0.0.0`) when you intentionally need external ingress.
+    パブリック エンドポイントが異なる場合は、リバース プロキシを前面に配置し、`webhookUrl` をパブリック URL に指定します。
+    意図的に外部イングレスが必要な場合は、`webhookHost` (例: `0.0.0.0`) を設定します。
 
   </Accordion>
 
-  <Accordion title="Limits, retry, and CLI targets">
-    - `channels.telegram.textChunkLimit` default is 4000.
-    - `channels.telegram.chunkMode="newline"` prefers paragraph boundaries (blank lines) before length splitting.
-    - `channels.telegram.mediaMaxMb` (default 100) caps inbound and outbound Telegram media size.
-    - `channels.telegram.timeoutSeconds` overrides Telegram API client timeout (if unset, grammY default applies).
-    - group context history uses `channels.telegram.historyLimit` or `messages.groupChat.historyLimit` (default 50); `0` disables.
-    - DM history controls:
+  <Accordion title="制限、再試行、および CLI ターゲット">
+    - `channels.telegram.textChunkLimit` のデフォルトは 4000 です。
+    - `channels.telegram.chunkMode="newline"` は、長さで分割する前に段落境界（空行）を優先します。
+    - `channels.telegram.mediaMaxMb`（デフォルト 100）は、受信および送信する Telegram メディアのサイズを制限します。
+    - `channels.telegram.timeoutSeconds` は Telegram API クライアントのタイムアウトを上書きします（未設定時は grammY の既定値が使われます）。
+    - グループ コンテキスト履歴は `channels.telegram.historyLimit` または `messages.groupChat.historyLimit`（デフォルト 50）を使います。`0` で無効になります。
+    - DM 履歴の制御項目:
       - `channels.telegram.dmHistoryLimit`
       - `channels.telegram.dms["<user_id>"].historyLimit`
-    - `channels.telegram.retry` config applies to Telegram send helpers (CLI/tools/actions) for recoverable outbound API errors.
+    - `channels.telegram.retry` 設定は、回復可能な送信 API エラーに対する Telegram 送信ヘルパー（CLI / ツール / アクション）へ適用されます。
 
-    CLI send target can be numeric chat ID or username:
+    CLI 送信ターゲットには、数値のチャット ID またはユーザー名を指定できます。
 
 ```bash
 openclaw message send --channel telegram --target 123456789 --message "hi"
 openclaw message send --channel telegram --target @name --message "hi"
 ```
 
-    Telegram polls use `openclaw message poll` and support forum topics:
+    Telegram の投票では `openclaw message poll` を使用し、フォーラム トピックもサポートします。
 
 ```bash
 openclaw message poll --channel telegram --target 123456789 \
@@ -747,57 +728,57 @@ openclaw message poll --channel telegram --target -1001234567890:topic:42 \
   --poll-duration-seconds 300 --poll-public
 ```
 
-    Telegram-only poll flags:
+    Telegram のみのポーリング フラグ:
 
     - `--poll-duration-seconds` (5-600)
     - `--poll-anonymous`
     - `--poll-public`
-    - `--thread-id` for forum topics (or use a `:topic:` target)
+    - フォーラム トピックの場合は `--thread-id` (または `:topic:` ターゲットを使用)
 
-    Action gating:
+    アクションゲート:
 
-    - `channels.telegram.actions.sendMessage=false` disables outbound Telegram messages, including polls
-    - `channels.telegram.actions.poll=false` disables Telegram poll creation while leaving regular sends enabled
+    - `channels.telegram.actions.sendMessage=false` は、投票を含むアウトバウンド Telegram メッセージを無効にします
+    - `channels.telegram.actions.poll=false` は、定期的な送信を有効にしたまま、テレグラム投票の作成を無効にします
 
   </Accordion>
 </AccordionGroup>
 
-## Troubleshooting
+## トラブルシューティング
 
 <AccordionGroup>
-  <Accordion title="Bot does not respond to non mention group messages">
+  <Accordion title="ボットはメンション以外のグループ メッセージに応答しません">
 
-    - If `requireMention=false`, Telegram privacy mode must allow full visibility.
-      - BotFather: `/setprivacy` -> Disable
-      - then remove + re-add bot to group
-    - `openclaw channels status` warns when config expects unmentioned group messages.
-    - `openclaw channels status --probe` can check explicit numeric group IDs; wildcard `"*"` cannot be membership-probed.
-    - quick session test: `/activation always`.
-
-  </Accordion>
-
-  <Accordion title="Bot not seeing group messages at all">
-
-    - when `channels.telegram.groups` exists, group must be listed (or include `"*"`)
-    - verify bot membership in group
-    - review logs: `openclaw logs --follow` for skip reasons
+    - `requireMention=false` の場合、Telegram プライバシー モードでは完全な可視性を許可する必要があります。
+    - BotFather: `/setprivacy` -> 無効にする
+    - その後、ボットを削除してグループに再度追加します
+    - `openclaw channels status` は、構成で言及されていないグループ メッセージが予期される場合に警告します。
+    - `openclaw channels status --probe` は、明示的な数値グループ ID をチェックできます。ワイルドカード `"*"` はメンバーシップを調査できません。
+    - クイックセッションテスト: `/activation always`。
 
   </Accordion>
 
-  <Accordion title="Commands work partially or not at all">
+  <Accordion title="ボットにグループメッセージがまったく表示されない">
 
-    - authorize your sender identity (pairing and/or numeric `allowFrom`)
-    - command authorization still applies even when group policy is `open`
-    - `setMyCommands failed` usually indicates DNS/HTTPS reachability issues to `api.telegram.org`
+    - `channels.telegram.groups` が存在する場合、グループをリストする必要があります (または `"*"` を含める)
+    - グループ内のボットのメンバーシップを確認する
+    - ログの確認: スキップ理由の `openclaw logs --follow`
 
   </Accordion>
 
-  <Accordion title="Polling or network instability">
+  <Accordion title="コマンドが部分的に機能するか、まったく機能しない">
 
-    - Node 22+ + custom fetch/proxy can trigger immediate abort behavior if AbortSignal types mismatch.
-    - Some hosts resolve `api.telegram.org` to IPv6 first; broken IPv6 egress can cause intermittent Telegram API failures.
-    - If logs include `TypeError: fetch failed` or `Network request for 'getUpdates' failed!`, OpenClaw now retries these as recoverable network errors.
-    - On VPS hosts with unstable direct egress/TLS, route Telegram API calls through `channels.telegram.proxy`:
+    - 送信者の ID を認証します (ペアリングおよび/または数値 `allowFrom`)
+    - グループ ポリシーが `open` の場合でも、コマンド認可は引き続き適用されます。
+    - `setMyCommands failed` は通常、`api.telegram.org` への DNS/HTTPS 到達可能性の問題を示します。
+
+  </Accordion>
+
+<Accordion title="ポーリングまたはネットワークの不安定性">
+
+    - ノード 22 以降 + カスタム フェッチ/プロキシは、AbortSignal タイプが一致しない場合に即時中止動作をトリガーできます。
+    - 一部のホストは、最初に `api.telegram.org` を IPv6 に解決します。壊れた IPv6 出力により、断続的な Telegram API エラーが発生する可能性があります。
+    - ログに `TypeError: fetch failed` または `Network request for 'getUpdates' failed!` が含まれている場合、OpenClaw はこれらを回復可能なネットワーク エラーとして再試行するようになりました。
+    - 不安定な直接出力/TLS を備えた VPS ホストでは、Telegram API 呼び出しを `channels.telegram.proxy` 経由でルーティングします。
 
 ```yaml
 channels:
@@ -805,8 +786,8 @@ channels:
     proxy: socks5://<user>:<password>@proxy-host:1080
 ```
 
-    - Node 22+ defaults to `autoSelectFamily=true` (except WSL2) and `dnsResultOrder=ipv4first`.
-    - If your host is WSL2 or explicitly works better with IPv4-only behavior, force family selection:
+    - ノード 22+ のデフォルトは `autoSelectFamily=true` (WSL2 を除く) および `dnsResultOrder=ipv4first` です。
+    - ホストが WSL2 であるか、明示的に IPv4 のみの動作でより適切に動作する場合は、ファミリーの選択を強制します。
 
 ```yaml
 channels:
@@ -815,11 +796,11 @@ channels:
       autoSelectFamily: false
 ```
 
-    - Environment overrides (temporary):
+    - 環境の上書き (一時的):
       - `OPENCLAW_TELEGRAM_DISABLE_AUTO_SELECT_FAMILY=1`
       - `OPENCLAW_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY=1`
       - `OPENCLAW_TELEGRAM_DNS_RESULT_ORDER=ipv4first`
-    - Validate DNS answers:
+    - DNS 応答を検証します。
 
 ```bash
 dig +short api.telegram.org A
@@ -829,84 +810,79 @@ dig +short api.telegram.org AAAA
   </Accordion>
 </AccordionGroup>
 
-More help: [Channel troubleshooting](/channels/troubleshooting).
+その他のヘルプ: [チャネルのトラブルシューティング](/channels/troubleshooting)。
 
-## Telegram config reference pointers
+## Telegram 構成参照ポインタ
 
-Primary reference:
+主な参考文献:- `channels.telegram.enabled`: チャネルの起動を有効/無効にします。
 
-- `channels.telegram.enabled`: enable/disable channel startup.
-- `channels.telegram.botToken`: bot token (BotFather).
-- `channels.telegram.tokenFile`: read token from file path.
-- `channels.telegram.dmPolicy`: `pairing | allowlist | open | disabled` (default: pairing).
-- `channels.telegram.allowFrom`: DM allowlist (numeric Telegram user IDs). `allowlist` requires at least one sender ID. `open` requires `"*"`. `openclaw doctor --fix` can resolve legacy `@username` entries to IDs and can recover allowlist entries from pairing-store files in allowlist migration flows.
-- `channels.telegram.actions.poll`: enable or disable Telegram poll creation (default: enabled; still requires `sendMessage`).
-- `channels.telegram.defaultTo`: default Telegram target used by CLI `--deliver` when no explicit `--reply-to` is provided.
-- `channels.telegram.groupPolicy`: `open | allowlist | disabled` (default: allowlist).
-- `channels.telegram.groupAllowFrom`: group sender allowlist (numeric Telegram user IDs). `openclaw doctor --fix` can resolve legacy `@username` entries to IDs. Non-numeric entries are ignored at auth time. Group auth does not use DM pairing-store fallback (`2026.2.25+`).
-- Multi-account precedence:
-  - When two or more account IDs are configured, set `channels.telegram.defaultAccount` (or include `channels.telegram.accounts.default`) to make default routing explicit.
-  - If neither is set, OpenClaw falls back to the first normalized account ID and `openclaw doctor` warns.
-  - `channels.telegram.accounts.default.allowFrom` and `channels.telegram.accounts.default.groupAllowFrom` apply only to the `default` account.
-  - Named accounts inherit `channels.telegram.allowFrom` and `channels.telegram.groupAllowFrom` when account-level values are unset.
-  - Named accounts do not inherit `channels.telegram.accounts.default.allowFrom` / `groupAllowFrom`.
-- `channels.telegram.groups`: per-group defaults + allowlist (use `"*"` for global defaults).
-  - `channels.telegram.groups.<id>.groupPolicy`: per-group override for groupPolicy (`open | allowlist | disabled`).
-  - `channels.telegram.groups.<id>.requireMention`: mention gating default.
-  - `channels.telegram.groups.<id>.skills`: skill filter (omit = all skills, empty = none).
-  - `channels.telegram.groups.<id>.allowFrom`: per-group sender allowlist override.
-  - `channels.telegram.groups.<id>.systemPrompt`: extra system prompt for the group.
-  - `channels.telegram.groups.<id>.enabled`: disable the group when `false`.
-  - `channels.telegram.groups.<id>.topics.<threadId>.*`: per-topic overrides (group fields + topic-only `agentId`).
-  - `channels.telegram.groups.<id>.topics.<threadId>.agentId`: route this topic to a specific agent (overrides group-level and binding routing).
-  - `channels.telegram.groups.<id>.topics.<threadId>.groupPolicy`: per-topic override for groupPolicy (`open | allowlist | disabled`).
-  - `channels.telegram.groups.<id>.topics.<threadId>.requireMention`: per-topic mention gating override.
-  - top-level `bindings[]` with `type: "acp"` and canonical topic id `chatId:topic:topicId` in `match.peer.id`: persistent ACP topic binding fields (see [ACP Agents](/tools/acp-agents#channel-specific-settings)).
-  - `channels.telegram.direct.<id>.topics.<threadId>.agentId`: route DM topics to a specific agent (same behavior as forum topics).
-- `channels.telegram.capabilities.inlineButtons`: `off | dm | group | all | allowlist` (default: allowlist).
-- `channels.telegram.accounts.<account>.capabilities.inlineButtons`: per-account override.
-- `channels.telegram.commands.nativeSkills`: enable/disable Telegram native skills commands.
-- `channels.telegram.replyToMode`: `off | first | all` (default: `off`).
-- `channels.telegram.textChunkLimit`: outbound chunk size (chars).
-- `channels.telegram.chunkMode`: `length` (default) or `newline` to split on blank lines (paragraph boundaries) before length chunking.
-- `channels.telegram.linkPreview`: toggle link previews for outbound messages (default: true).
-- `channels.telegram.streaming`: `off | partial | block | progress` (live stream preview; default: `partial`; `progress` maps to `partial`; `block` is legacy preview mode compatibility). Telegram preview streaming uses a single preview message that is edited in place.
-- `channels.telegram.mediaMaxMb`: inbound/outbound Telegram media cap (MB, default: 100).
-- `channels.telegram.retry`: retry policy for Telegram send helpers (CLI/tools/actions) on recoverable outbound API errors (attempts, minDelayMs, maxDelayMs, jitter).
-- `channels.telegram.network.autoSelectFamily`: override Node autoSelectFamily (true=enable, false=disable). Defaults to enabled on Node 22+, with WSL2 defaulting to disabled.
-- `channels.telegram.network.dnsResultOrder`: override DNS result order (`ipv4first` or `verbatim`). Defaults to `ipv4first` on Node 22+.
-- `channels.telegram.proxy`: proxy URL for Bot API calls (SOCKS/HTTP).
-- `channels.telegram.webhookUrl`: enable webhook mode (requires `channels.telegram.webhookSecret`).
-- `channels.telegram.webhookSecret`: webhook secret (required when webhookUrl is set).
-- `channels.telegram.webhookPath`: local webhook path (default `/telegram-webhook`).
-- `channels.telegram.webhookHost`: local webhook bind host (default `127.0.0.1`).
-- `channels.telegram.webhookPort`: local webhook bind port (default `8787`).
-- `channels.telegram.actions.reactions`: gate Telegram tool reactions.
-- `channels.telegram.actions.sendMessage`: gate Telegram tool message sends.
-- `channels.telegram.actions.deleteMessage`: gate Telegram tool message deletes.
-- `channels.telegram.actions.sticker`: gate Telegram sticker actions — send and search (default: false).
-- `channels.telegram.reactionNotifications`: `off | own | all` — control which reactions trigger system events (default: `own` when not set).
-- `channels.telegram.reactionLevel`: `off | ack | minimal | extensive` — control agent's reaction capability (default: `minimal` when not set).
+- `channels.telegram.botToken`: ボット トークン (BotFather)。
+- `channels.telegram.tokenFile`: ファイル パスからトークンを読み取ります。
+- `channels.telegram.dmPolicy`: `pairing | allowlist | open | disabled` (デフォルト: ペアリング)。
+- `channels.telegram.allowFrom`: DM 許可リスト (数値の Telegram ユーザー ID)。 `allowlist` には少なくとも 1 つの送信者 ID が必要です。 `open` には `"*"` が必要です。 `openclaw doctor --fix` は、レガシー `@username` エントリを ID に解決でき、ホワイトリスト移行フローのペアリング ストア ファイルからホワイトリスト エントリを回復できます。
+- `channels.telegram.actions.poll`: Telegram 投票の作成を有効または無効にします (デフォルト: 有効。それでも `sendMessage` が必要です)。
+- `channels.telegram.defaultTo`: 明示的な `--reply-to` が指定されていない場合に、CLI `--deliver` によって使用されるデフォルトの Telegram ターゲット。
+- `channels.telegram.groupPolicy`: `open | allowlist | disabled` (デフォルト: ホワイトリスト)。
+- `channels.telegram.groupAllowFrom`: グループ送信者の許可リスト (数値の Telegram ユーザー ID)。 `openclaw doctor --fix` は、従来の `@username` エントリを ID に解決できます。数値以外のエントリは認証時に無視されます。グループ認証では、DM ペアリングとストアのフォールバックは使用されません (`2026.2.25+`)。
+- マルチアカウントの優先順位:
+  - 2 つ以上のアカウント ID が設定されている場合は、`channels.telegram.defaultAccount` を設定 (または `channels.telegram.accounts.default` を含めて) デフォルトのルーティングを明示します。
+  - どちらも設定されていない場合、OpenClaw は最初の正規化されたアカウント ID にフォールバックし、`openclaw doctor` が警告します。- `channels.telegram.accounts.default.allowFrom` および `channels.telegram.accounts.default.groupAllowFrom` は、`default` アカウントにのみ適用されます。
+  - アカウントレベルの値が設定されていない場合、名前付きアカウントは `channels.telegram.allowFrom` および `channels.telegram.groupAllowFrom` を継承します。
+  - 名前付きアカウントは `channels.telegram.accounts.default.allowFrom` / `groupAllowFrom` を継承しません。
+- `channels.telegram.groups`: グループごとのデフォルト + ホワイトリスト (グローバルデフォルトには `"*"` を使用します)。
+  - `channels.telegram.groups.<id>.groupPolicy`: groupPolicy のグループごとの上書き (`open | allowlist | disabled`)。
+  - `channels.telegram.groups.<id>.requireMention`: ゲートのデフォルトについて言及。
+  - `channels.telegram.groups.<id>.skills`: スキル フィルター (省略 = すべてのスキル、空 = なし)。
+  - `channels.telegram.groups.<id>.allowFrom`: グループごとの送信者許可リストの上書き。
+  - `channels.telegram.groups.<id>.systemPrompt`: グループの追加のシステム プロンプト。
+  - `channels.telegram.groups.<id>.enabled`: `false` の場合はグループを無効にします。
+  - `channels.telegram.groups.<id>.topics.<threadId>.*`: トピックごとのオーバーライド (グループ フィールド + トピックのみ `agentId`)。
+  - `channels.telegram.groups.<id>.topics.<threadId>.agentId`: このトピックを特定のエージェントにルーティングします (グループ レベルおよびバインディング ルーティングをオーバーライドします)。
+  - `channels.telegram.groups.<id>.topics.<threadId>.groupPolicy`: groupPolicy のトピックごとのオーバーライド (`open | allowlist | disabled`)。
+  - `channels.telegram.groups.<id>.topics.<threadId>.requireMention`: トピックごとのメンション ゲートのオーバーライド。
+  - トップレベル `bindings[]` と `type: "acp"` および正規トピック ID `chatId:topic:topicId` (`match.peer.id`): 永続的な ACP トピック バインディング フィールド ([ACP エージェント](/tools/acp-agents#channel-specific-settings) を参照)。
+  - `channels.telegram.direct.<id>.topics.<threadId>.agentId`: DM トピックを特定のエージェントにルーティングします (フォーラム トピックと同じ動作)。
+- `channels.telegram.capabilities.inlineButtons`: `off | dm | group | all | allowlist` (デフォルト: ホワイトリスト)。- `channels.telegram.accounts.<account>.capabilities.inlineButtons`: アカウントごとの上書き。
+- `channels.telegram.commands.nativeSkills`: Telegram ネイティブ スキル コマンドを有効/無効にします。
+- `channels.telegram.replyToMode`: `off | first | all` (デフォルト: `off`)。
+- `channels.telegram.textChunkLimit`: 送信チャンク サイズ (文字数)。
+- `channels.telegram.chunkMode`: `length` (デフォルト) または `newline` は、長さをチャンクする前に空白行 (段落境界) で分割します。
+- `channels.telegram.linkPreview`: 送信メッセージのリンク プレビューを切り替えます (デフォルト: true)。
+- `channels.telegram.streaming`: `off | partial | block | progress` (ライブ ストリーム プレビュー; デフォルト: `partial`; `progress` は `partial` にマップされます。 `block` は従来のプレビュー モードとの互換性です)。 Telegram プレビュー ストリーミングでは、その場で編集された単一のプレビュー メッセージが使用されます。
+- `channels.telegram.mediaMaxMb`: インバウンド/アウトバウンド Telegram メディアの上限 (MB、デフォルト: 100)。
+- `channels.telegram.retry`: 回復可能なアウトバウンド API エラー (試行、minDelayMs、maxDelayMs、ジッター) に対する Telegram 送信ヘルパー (CLI/ツール/アクション) の再試行ポリシー。
+- `channels.telegram.network.autoSelectFamily`: ノード autoSelectFamily をオーバーライドします (true=有効、false=無効)。ノード 22 以降ではデフォルトで有効になり、WSL2 はデフォルトで無効になります。
+- `channels.telegram.network.dnsResultOrder`: DNS 結果の順序を上書きします (`ipv4first` または `verbatim`)。ノード 22 以降のデフォルトは `ipv4first` です。
+- `channels.telegram.proxy`: ボット API 呼び出しのプロキシ URL (SOCKS/HTTP)。
+- `channels.telegram.webhookUrl`: Webhook モードを有効にします (`channels.telegram.webhookSecret` が必要)。- `channels.telegram.webhookSecret`: Webhook シークレット (WebhookUrl が設定されている場合に必要)。
+- `channels.telegram.webhookPath`: ローカル Webhook パス (デフォルト `/telegram-webhook`)。
+- `channels.telegram.webhookHost`: ローカル Webhook バインド ホスト (デフォルト `127.0.0.1`)。
+- `channels.telegram.webhookPort`: ローカル Webhook バインド ポート (デフォルト `8787`)。
+- `channels.telegram.actions.reactions`: ゲートTelegramツールの反応。
+- `channels.telegram.actions.sendMessage`: ゲート テレグラム ツール メッセージの送信。
+- `channels.telegram.actions.deleteMessage`: ゲート テレグラム ツール メッセージが削除されます。
+- `channels.telegram.actions.sticker`: ゲート テレグラム ステッカー アクション — 送信および検索 (デフォルト: false)。
+- `channels.telegram.reactionNotifications`: `off | own | all` — どの反応がシステム イベントをトリガーするかを制御します (設定されていない場合、デフォルト: `own`)。
+- `channels.telegram.reactionLevel`: `off | ack | minimal | extensive` — 制御エージェントの反応能力 (設定されていない場合のデフォルト: `minimal`)。
 
-- [Configuration reference - Telegram](/gateway/configuration-reference#telegram)
+- [設定リファレンス - Telegram](/gateway/configuration-reference#telegram)
 
-Telegram-specific high-signal fields:
+Telegram特有の高信号フィールド:- 起動/認証: `enabled`、`botToken`、`tokenFile`、`accounts.*`
 
-- startup/auth: `enabled`, `botToken`, `tokenFile`, `accounts.*`
-- access control: `dmPolicy`, `allowFrom`, `groupPolicy`, `groupAllowFrom`, `groups`, `groups.*.topics.*`, top-level `bindings[]` (`type: "acp"`)
-- command/menu: `commands.native`, `commands.nativeSkills`, `customCommands`
-- threading/replies: `replyToMode`
-- streaming: `streaming` (preview), `blockStreaming`
-- formatting/delivery: `textChunkLimit`, `chunkMode`, `linkPreview`, `responsePrefix`
-- media/network: `mediaMaxMb`, `timeoutSeconds`, `retry`, `network.autoSelectFamily`, `proxy`
-- webhook: `webhookUrl`, `webhookSecret`, `webhookPath`, `webhookHost`
-- actions/capabilities: `capabilities.inlineButtons`, `actions.sendMessage|editMessage|deleteMessage|reactions|sticker`
-- reactions: `reactionNotifications`, `reactionLevel`
-- writes/history: `configWrites`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
+- アクセス制御: `dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`groups.*.topics.*`、トップレベル `bindings[]` (`type: "acp"`)
+- コマンド/メニュー: `commands.native`、`commands.nativeSkills`、`customCommands`
+- スレッド化/返信: `replyToMode`
+- ストリーミング: `streaming` (プレビュー)、`blockStreaming`
+- フォーマット/配信: `textChunkLimit`、`chunkMode`、`linkPreview`、`responsePrefix`
+- メディア/ネットワーク: `mediaMaxMb`、`timeoutSeconds`、`retry`、`network.autoSelectFamily`、`proxy`
+- Webhook: `webhookUrl`、`webhookSecret`、`webhookPath`、`webhookHost`
+- アクション/機能: `capabilities.inlineButtons`、`actions.sendMessage|editMessage|deleteMessage|reactions|sticker`
+- 反応: `reactionNotifications`、`reactionLevel`
+- 書き込み/履歴: `configWrites`、`historyLimit`、`dmHistoryLimit`、`dms.*.historyLimit`
 
-## Related
+## 関連
 
-- [Pairing](/channels/pairing)
-- [Channel routing](/channels/channel-routing)
-- [Multi-agent routing](/concepts/multi-agent)
-- [Troubleshooting](/channels/troubleshooting)
+- [ペアリング](/channels/pairing)
+- [チャンネルルーティング](/channels/channel-routing)
+- [マルチエージェントルーティング](/concepts/multi-agent)
+- [トラブルシューティング](/channels/troubleshooting)

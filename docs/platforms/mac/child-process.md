@@ -1,69 +1,58 @@
 ---
-summary: "Gateway lifecycle on macOS (launchd)"
+summary: "macOS におけるゲートウェイのライフサイクル（launchd）"
 read_when:
-  - Integrating the mac app with the gateway lifecycle
-title: "Gateway Lifecycle"
+  - Mac アプリとゲートウェイのライフサイクルを統合する
+title: "ゲートウェイのライフサイクル"
+x-i18n:
+  source_hash: "73e7eb64ef432c3bfc81b949a5cc2a344c64f2310b794228609aae1da817ec41"
 ---
 
-# Gateway lifecycle on macOS
+# macOS におけるゲートウェイのライフサイクル
 
-The macOS app **manages the Gateway via launchd** by default and does not spawn
-the Gateway as a child process. It first tries to attach to an already‑running
-Gateway on the configured port; if none is reachable, it enables the launchd
-service via the external `openclaw` CLI (no embedded runtime). This gives you
-reliable auto‑start at login and restart on crashes.
+macOS アプリは、デフォルトでは **launchd 経由でゲートウェイを管理**し、ゲートウェイを子プロセスとして起動しません。まず、設定済みポートで既存のゲートウェイに接続できるか確認し、到達できるプロセスがない場合のみ、外部 `openclaw` CLI を使って launchd サービスを有効にします。組み込みランタイムは使いません。この方式により、ログイン時の自動起動とクラッシュ後の再起動を安定して実現できます。
 
-Child‑process mode (Gateway spawned directly by the app) is **not in use** today.
-If you need tighter coupling to the UI, run the Gateway manually in a terminal.
+子プロセス モード、つまりアプリが直接ゲートウェイを起動する構成は、現時点では **使用していません**。UI とより密に連携させたい場合は、ターミナルからゲートウェイを手動で起動してください。
 
-## Default behavior (launchd)
+## デフォルト動作（launchd）
 
-- The app installs a per‑user LaunchAgent labeled `ai.openclaw.gateway`
-  (or `ai.openclaw.<profile>` when using `--profile`/`OPENCLAW_PROFILE`; legacy `com.openclaw.*` is supported).
-- When Local mode is enabled, the app ensures the LaunchAgent is loaded and
-  starts the Gateway if needed.
-- Logs are written to the launchd gateway log path (visible in Debug Settings).
+- アプリは、ユーザーごとの LaunchAgent として `ai.openclaw.gateway` をインストールします。
+  `--profile` / `OPENCLAW_PROFILE` を使う場合は `ai.openclaw.<profile>` になり、従来の `com.openclaw.*` ラベルも引き続き扱えます。
+- ローカル モードが有効な場合、アプリは LaunchAgent がロード済みであることを確認し、必要に応じてゲートウェイを起動します。
+- ログは launchd 用のゲートウェイ ログ パスに書き込まれ、Debug Settings から確認できます。
 
-Common commands:
+一般的なコマンド:
 
 ```bash
 launchctl kickstart -k gui/$UID/ai.openclaw.gateway
 launchctl bootout gui/$UID/ai.openclaw.gateway
 ```
 
-Replace the label with `ai.openclaw.<profile>` when running a named profile.
+名前付きプロファイルを実行する場合は、ラベルを `ai.openclaw.<profile>` に置き換えます。
 
-## Unsigned dev builds
+## 未署名の開発ビルド
 
-`scripts/restart-mac.sh --no-sign` is for fast local builds when you don’t have
-signing keys. To prevent launchd from pointing at an unsigned relay binary, it:
+`scripts/restart-mac.sh --no-sign` は、署名キーがない環境で高速にローカル ビルドを回すためのオプションです。launchd が未署名の relay バイナリを参照しないよう、次のファイルを書き込みます。
 
-- Writes `~/.openclaw/disable-launchagent`.
+- `~/.openclaw/disable-launchagent`
 
-Signed runs of `scripts/restart-mac.sh` clear this override if the marker is
-present. To reset manually:
+`scripts/restart-mac.sh` を署名付きで実行すると、このマーカーが存在する場合は自動的に解除されます。手動でリセットする場合は次を実行します。
 
 ```bash
 rm ~/.openclaw/disable-launchagent
 ```
 
-## Attach-only mode
+## 接続専用モード
 
-To force the macOS app to **never install or manage launchd**, launch it with
-`--attach-only` (or `--no-launchd`). This sets `~/.openclaw/disable-launchagent`,
-so the app only attaches to an already running Gateway. You can toggle the same
-behavior in Debug Settings.
+macOS アプリに **launchd のインストールや管理を一切行わせたくない** 場合は、`--attach-only`（または `--no-launchd`）を付けて起動します。これにより `~/.openclaw/disable-launchagent` が設定され、アプリはすでに起動しているゲートウェイにのみ接続します。同じ挙動は Debug Settings からも切り替えられます。
 
-## Remote mode
+## リモートモード
 
-Remote mode never starts a local Gateway. The app uses an SSH tunnel to the
-remote host and connects over that tunnel.
+リモート モードでは、ローカルのゲートウェイは起動しません。アプリは SSH トンネルを張り、そのトンネル経由でリモート ホストへ接続します。
 
-## Why we prefer launchd
+## launchd を採用している理由
 
-- Auto‑start at login.
-- Built‑in restart/KeepAlive semantics.
-- Predictable logs and supervision.
+- ログイン時に自動起動できます。
+- 再起動と KeepAlive の仕組みが標準で備わっています。
+- 予測可能なログと監視を提供できます。
 
-If a true child‑process mode is ever needed again, it should be documented as a
-separate, explicit dev‑only mode.
+将来的に真の子プロセス モードが再び必要になった場合は、別の明示的な開発専用モードとして文書化するべきです。

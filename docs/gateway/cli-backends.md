@@ -1,41 +1,40 @@
 ---
-summary: "CLI backends: text-only fallback via local AI CLIs"
+summary: "CLI バックエンド: ローカル AI CLI を活用したテキスト専用フォールバック機能"
 read_when:
-  - You want a reliable fallback when API providers fail
-  - You are running Claude Code CLI or other local AI CLIs and want to reuse them
-  - You need a text-only, tool-free path that still supports sessions and images
-title: "CLI Backends"
+  - API プロバイダーの障害時に備えて、信頼性の高いフォールバック経路を確保したい場合
+  - Claude Code CLI や他のローカル AI CLI を既に利用しており、それを再利用したい場合
+  - ツール実行を伴わないテキスト専用の処理において、セッションや画像を維持しつつ安定した経路が必要な場合
+title: "CLI バックエンド"
+x-i18n:
+  source_hash: "3c0477463a7eb051e535a249253662261043bc6fa7d0ce91eb28b6780c12a2b3"
 ---
 
-# CLI backends (fallback runtime)
+# CLI バックエンド (フォールバックランタイム)
 
-OpenClaw can run **local AI CLIs** as a **text-only fallback** when API providers are down,
-rate-limited, or temporarily misbehaving. This is intentionally conservative:
+OpenClaw は、API プロバイダーがダウンしている場合やレート制限に達している場合、あるいは一時的に不安定な挙動を示す場合に、**ローカルの AI CLI** を **テキスト専用のフォールバック** として実行できます。この機能は意図的に制限されています:
 
-- **Tools are disabled** (no tool calls).
-- **Text in → text out** (reliable).
-- **Sessions are supported** (so follow-up turns stay coherent).
-- **Images can be passed through** if the CLI accepts image paths.
+- **ツール実行は無効**（ツール呼び出しは行われません）。
+- **テキスト入力 → テキスト出力** の確実な動作。
+- **セッションをサポート**（継続的なターンの文脈を維持）。
+- **画像のパススルー**に対応（CLI が画像パスを受け入れ可能な場合）。
 
-This is designed as a **safety net** rather than a primary path. Use it when you
-want “always works” text responses without relying on external APIs.
+これはメインの経路ではなく、外部 API に依存せずに「常に動作する」テキスト応答を確保するための **セーフティネット** として設計されています。
 
-## Beginner-friendly quick start
+## クイックスタート (初心者向け)
 
-You can use Claude Code CLI **without any config** (OpenClaw ships a built-in default):
+Claude Code CLI は **設定なし** ですぐに利用可能です（OpenClaw にデフォルト設定が組み込まれています）:
 
 ```bash
-openclaw agent --message "hi" --model claude-cli/opus-4.6
+openclaw agent --message "こんにちは" --model claude-cli/opus-4.6
 ```
 
-Codex CLI also works out of the box:
+Codex CLI も同様に設定不要で動作します:
 
 ```bash
-openclaw agent --message "hi" --model codex-cli/gpt-5.4
+openclaw agent --message "こんにちは" --model codex-cli/gpt-5.4
 ```
 
-If your gateway runs under launchd/systemd and PATH is minimal, add just the
-command path:
+ゲートウェイを launchd や systemd 下で実行しており、環境変数 `PATH` が最小限の場合は、コマンドの絶対パスのみを追加してください:
 
 ```json5
 {
@@ -51,11 +50,11 @@ command path:
 }
 ```
 
-That’s it. No keys, no extra auth config needed beyond the CLI itself.
+これだけで完了です。CLI 自体の認証が済んでいれば、追加のキーや認証設定は不要です。
 
-## Using it as a fallback
+## フォールバックとしての利用
 
-Add a CLI backend to your fallback list so it only runs when primary models fail:
+プライマリモデルが失敗したときにのみ CLI バックエンドが動作するように、フォールバックリストに追加します:
 
 ```json5
 {
@@ -75,28 +74,25 @@ Add a CLI backend to your fallback list so it only runs when primary models fail
 }
 ```
 
-Notes:
+補足事項:
+- `agents.defaults.models` (許可リスト) を使用している場合は、そのリストに `claude-cli/...` を含める必要があります。
+- プライマリプロバイダーでエラー（認証失敗、レート制限、タイムアウトなど）が発生すると、OpenClaw は次に CLI バックエンドを試行します。
 
-- If you use `agents.defaults.models` (allowlist), you must include `claude-cli/...`.
-- If the primary provider fails (auth, rate limits, timeouts), OpenClaw will
-  try the CLI backend next.
+## 構成の概要
 
-## Configuration overview
-
-All CLI backends live under:
+すべての CLI バックエンドの設定は以下に記述します:
 
 ```
 agents.defaults.cliBackends
 ```
 
-Each entry is keyed by a **provider id** (e.g. `claude-cli`, `my-cli`).
-The provider id becomes the left side of your model ref:
+各エントリは **プロバイダー ID**（例: `claude-cli`, `my-cli`）をキーとします。この ID がモデル参照の左側になります:
 
 ```
 <provider>/<model>
 ```
 
-### Example configuration
+### 構成例
 
 ```json5
 {
@@ -132,57 +128,48 @@ The provider id becomes the left side of your model ref:
 }
 ```
 
-## How it works
+## 仕組み
 
-1. **Selects a backend** based on the provider prefix (`claude-cli/...`).
-2. **Builds a system prompt** using the same OpenClaw prompt + workspace context.
-3. **Executes the CLI** with a session id (if supported) so history stays consistent.
-4. **Parses output** (JSON or plain text) and returns the final text.
-5. **Persists session ids** per backend, so follow-ups reuse the same CLI session.
+1. プロバイダーの接頭辞 (`claude-cli/...` 等) に基づいて **バックエンドを選択** します。
+2. 他の経路と同じ OpenClaw のプロンプトとワークスペース文脈を使用して **システムプロンプトを構築** します。
+3. 履歴の継続性を保つため、**セッション ID (対応している場合) と共に CLI を実行** します。
+4. **出力を解析**（JSON またはプレーンテキスト）し、最終的なテキストを返します。
+5. バックエンドごとに **セッション ID を永続化** し、以降のターンで同じ CLI セッションを再利用します。
 
-## Sessions
+## セッション管理
 
-- If the CLI supports sessions, set `sessionArg` (e.g. `--session-id`) or
-  `sessionArgs` (placeholder `{sessionId}`) when the ID needs to be inserted
-  into multiple flags.
-- If the CLI uses a **resume subcommand** with different flags, set
-  `resumeArgs` (replaces `args` when resuming) and optionally `resumeOutput`
-  (for non-JSON resumes).
+- CLI がセッションをサポートしている場合は、`sessionArg` (例: `--session-id`) を設定します。複数のフラグに ID を挿入する必要がある場合は `sessionArgs` (プレースホルダー `{sessionId}` を使用) を設定します。
+- CLI が異なるフラグを持つ **再開（resume）用のサブコマンド** を使用する場合は、`resumeArgs` (再開時に `args` を置き換え) を設定し、必要に応じて JSON 以外の再開出力に対応するための `resumeOutput` も設定します。
 - `sessionMode`:
-  - `always`: always send a session id (new UUID if none stored).
-  - `existing`: only send a session id if one was stored before.
-  - `none`: never send a session id.
+  - `always`: 常にセッション ID を送信（保存された ID がなければ新規 UUID を生成）。
+  - `existing`: 以前に保存された ID がある場合にのみ送信。
+  - `none`: セッション ID を送信しない。
 
-## Images (pass-through)
+## 画像 (パススルー)
 
-If your CLI accepts image paths, set `imageArg`:
+CLI が画像パスを受け入れ可能な場合は、`imageArg` を設定してください:
 
 ```json5
 imageArg: "--image",
 imageMode: "repeat"
 ```
 
-OpenClaw will write base64 images to temp files. If `imageArg` is set, those
-paths are passed as CLI args. If `imageArg` is missing, OpenClaw appends the
-file paths to the prompt (path injection), which is enough for CLIs that auto-
-load local files from plain paths (Claude Code CLI behavior).
+OpenClaw は base64 画像を一時ファイルに書き出します。`imageArg` が設定されていればそのパスが CLI 引数として渡されます。`imageArg` が未設定の場合、OpenClaw はプロンプト末尾にファイルパスを付加します（パス注入）。これは、通常のファイルパスからローカルファイルを自動ロードする CLI（Claude Code CLI 等の挙動）において有効です。
 
-## Inputs / outputs
+## 入出力
 
-- `output: "json"` (default) tries to parse JSON and extract text + session id.
-- `output: "jsonl"` parses JSONL streams (Codex CLI `--json`) and extracts the
-  last agent message plus `thread_id` when present.
-- `output: "text"` treats stdout as the final response.
+- `output: "json"` (デフォルト): JSON をパースし、テキストとセッション ID を抽出します。
+- `output: "jsonl"`: JSONL ストリーム (Codex CLI の `--json` 等) をパースし、最後のエージェントメッセージと、存在すれば `thread_id` を抽出します。
+- `output: "text"`: 標準出力をそのまま最終回答として扱います。
 
-Input modes:
+入力モード:
+- `input: "arg"` (デフォルト): プロンプトを最後の CLI 引数として渡します。
+- `input: "stdin"`: プロンプトを標準入力 (stdin) 経由で送信します。
+- プロンプトが非常に長く、かつ `maxPromptArgChars` が設定されている場合、自動的に標準入力が使用されます。
 
-- `input: "arg"` (default) passes the prompt as the last CLI arg.
-- `input: "stdin"` sends the prompt via stdin.
-- If the prompt is very long and `maxPromptArgChars` is set, stdin is used.
+## 組み込みのデフォルト設定
 
-## Defaults (built-in)
-
-OpenClaw ships a default for `claude-cli`:
+OpenClaw は `claude-cli` 用のデフォルト設定を同梱しています:
 
 - `command: "claude"`
 - `args: ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions"]`
@@ -193,7 +180,7 @@ OpenClaw ships a default for `claude-cli`:
 - `systemPromptWhen: "first"`
 - `sessionMode: "always"`
 
-OpenClaw also ships a default for `codex-cli`:
+また、`codex-cli` 用のデフォルト設定も同梱されています:
 
 - `command: "codex"`
 - `args: ["exec","--json","--color","never","--sandbox","read-only","--skip-git-repo-check"]`
@@ -204,22 +191,18 @@ OpenClaw also ships a default for `codex-cli`:
 - `imageArg: "--image"`
 - `sessionMode: "existing"`
 
-Override only if needed (common: absolute `command` path).
+これらは、絶対パスによる `command` 指定など、必要な場合にのみ上書きしてください。
 
-## Limitations
+## 制限事項
 
-- **No OpenClaw tools** (the CLI backend never receives tool calls). Some CLIs
-  may still run their own agent tooling.
-- **No streaming** (CLI output is collected then returned).
-- **Structured outputs** depend on the CLI’s JSON format.
-- **Codex CLI sessions** resume via text output (no JSONL), which is less
-  structured than the initial `--json` run. OpenClaw sessions still work
-  normally.
+- **OpenClaw ツールの利用不可**: CLI バックエンド側で OpenClaw のツール呼び出しを受け取ることはありません（CLI 自体が独自のツール実行機能を備えている場合は、そちらが動作することがあります）。
+- **非ストリーミング**: CLI の出力をすべて収集した後に返信が行われます。
+- **構造化出力**: 抽出精度は CLI 側の JSON フォーマットに依存します。
+- **Codex CLI セッション**: 再開時はテキスト出力 (JSONL ではない) となるため、初回の `--json` 実行時よりも構造化の度合いが低下します。OpenClaw のセッション管理自体は通常通り機能します。
 
-## Troubleshooting
+## トラブルシューティング
 
-- **CLI not found**: set `command` to a full path.
-- **Wrong model name**: use `modelAliases` to map `provider/model` → CLI model.
-- **No session continuity**: ensure `sessionArg` is set and `sessionMode` is not
-  `none` (Codex CLI currently cannot resume with JSON output).
-- **Images ignored**: set `imageArg` (and verify CLI supports file paths).
+- **CLI が見つからない**: `command` に絶対パスを設定してください。
+- **モデル名が正しくない**: `modelAliases` を使用して `provider/model` → CLI 用のモデル名へとマッピングしてください。
+- **セッションが継続しない**: `sessionArg` が正しく、かつ `sessionMode` が `none` 以外であることを確認してください（なお、Codex CLI は現在 JSON 出力での再開に対応していません）。
+- **画像が無視される**: `imageArg` を設定し、かつ CLI 側がファイルパスからの画像ロードに対応しているか確認してください。

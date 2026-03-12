@@ -1,51 +1,54 @@
 ---
-summary: "Overview of OpenClaw onboarding options and flows"
+summary: "OpenClawのオンボーディングオプションとフローの概要"
 read_when:
-  - Choosing an onboarding path
-  - Setting up a new environment
-title: "Onboarding Overview"
-sidebarTitle: "Onboarding Overview"
+  - オンボーディングパスの選択
+  - 新しい環境のセットアップ
+title: "オンボーディング概要"
+sidebarTitle: "オンボーディング概要"
+x-i18n:
+  source_path: "start/onboarding-overview.md"
+  source_hash: "64540138b717f4a4c1201868220d755a21b16fa330c558c33beb426cfa4504d0"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:49:54.222Z"
 ---
 
-# Onboarding Overview
+# オンボーディング概要
 
-OpenClaw supports multiple onboarding paths depending on where the Gateway runs
-and how you prefer to configure providers.
+OpenClawは、Gatewayの実行場所とプロバイダーの設定方法に応じて、複数のオンボーディングパスをサポートしています。
 
-## Choose your onboarding path
+## オンボーディングパスの選択
 
-- **CLI wizard** for macOS, Linux, and Windows (via WSL2).
-- **macOS app** for a guided first run on Apple silicon or Intel Macs.
+- **CLIウィザード** macOS、Linux、Windows（WSL2経由）向け。
+- **macOSアプリ** Apple siliconまたはIntel Mac上でのガイド付き初回実行向け。
 
-## CLI onboarding wizard
+## CLIオンボーディングウィザード
 
-Run the wizard in a terminal:
+ターミナルでウィザードを実行します：
 
 ```bash
 openclaw onboard
 ```
 
-Use the CLI wizard when you want full control of the Gateway, workspace,
-channels, and skills. Docs:
+Gateway、ワークスペース、チャンネル、Skillsを完全に制御したい場合は、CLIウィザードを使用してください。ドキュメント：
 
-- [Onboarding Wizard (CLI)](/start/wizard)
-- [`openclaw onboard` command](/cli/onboard)
+- [オンボーディングウィザード（CLI）](/start/wizard)
+- [`openclaw onboard`コマンド](/cli/onboard)
 
-## macOS app onboarding
+## macOSアプリオンボーディング
 
-Use the OpenClaw app when you want a fully guided setup on macOS. Docs:
+macOS上で完全にガイドされたセットアップが必要な場合は、OpenClawアプリを使用してください。ドキュメント：
 
-- [Onboarding (macOS App)](/start/onboarding)
+- [オンボーディング（macOSアプリ）](/start/onboarding)
 
-## Custom Provider
+## カスタムプロバイダー
 
-If you need an endpoint that is not listed, including hosted providers that
-expose standard OpenAI or Anthropic APIs, choose **Custom Provider** in the
-CLI wizard. You will be asked to:
+リストにないエンドポイントが必要な場合、標準のOpenAIまたはAnthropic APIを公開するホスト型プロバイダーを含め、CLIウィザードで**カスタムプロバイダー**を選択してください。次の情報を求められます：
 
-- Pick OpenAI-compatible, Anthropic-compatible, or **Unknown** (auto-detect).
-- Enter a base URL and API key (if required by the provider).
-- Provide a model ID and optional alias.
-- Choose an Endpoint ID so multiple custom endpoints can coexist.
+- OpenAI互換、Anthropic互換、または**不明**（自動検出）を選択。
+- ベースURLとAPIキー（プロバイダーが必要とする場合）を入力。
+- モデルIDとオプションのエイリアスを提供。
+- 複数のカスタムエンドポイントが共存できるようにエンドポイントIDを選択。
 
-For detailed steps, follow the CLI onboarding docs above.
+詳細な手順については、上記のCLIオンボーディングドキュメントに従ってください。

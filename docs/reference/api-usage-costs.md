@@ -1,142 +1,141 @@
 ---
-summary: "Audit what can spend money, which keys are used, and how to view usage"
+summary: "何がお金を費やす可能性があるか、どのキーが使用されるか、使用状況を確認する方法を監査する"
 read_when:
-  - You want to understand which features may call paid APIs
-  - You need to audit keys, costs, and usage visibility
-  - You’re explaining /status or /usage cost reporting
-title: "API Usage and Costs"
+  - どの機能が有料 API を呼び出す可能性があるかを理解したい
+  - キー、コスト、使用状況の可視性を監査する必要がある
+  - /status または /usage Cost レポートについて説明しています
+title: "APIの使用量とコスト"
+x-i18n:
+  source_hash: "2377e392fbeb4805c3689a3a710ee8613082c8844c744b1f812b2e2fdc17e050"
 ---
 
-# API usage & costs
+# API の使用量とコスト
 
-This doc lists **features that can invoke API keys** and where their costs show up. It focuses on
-OpenClaw features that can generate provider usage or paid API calls.
+このドキュメントには、**API キーを呼び出すことができる機能**とそのコストが発生する場所がリストされています。焦点を当てているのは、
+プロバイダーの使用状況または有料 API 呼び出しを生成できる OpenClaw 機能。
 
-## Where costs show up (chat + CLI)
+## コストが発生する場所 (チャット + CLI)
 
-**Per-session cost snapshot**
+**セッションごとのコストのスナップショット**
 
-- `/status` shows the current session model, context usage, and last response tokens.
-- If the model uses **API-key auth**, `/status` also shows **estimated cost** for the last reply.
+- `/status` は、現在のセッション モデル、コンテキストの使用状況、および最後の応答トークンを示します。
+- モデルが **API キー認証**を使用している場合、`/status` には最後の応答の **推定コスト** も表示されます。
 
-**Per-message cost footer**
+**メッセージごとのコストフッター**
 
-- `/usage full` appends a usage footer to every reply, including **estimated cost** (API-key only).
-- `/usage tokens` shows tokens only; OAuth flows hide dollar cost.
+- `/usage full` は、**推定コスト** (API キーのみ) を含む使用状況フッターをすべての返信に追加します。
+- `/usage tokens` はトークンのみを表示します。 OAuth フローはコストを隠します。
 
-**CLI usage windows (provider quotas)**
+**CLI 使用ウィンドウ (プロバイダー クォータ)**
 
-- `openclaw status --usage` and `openclaw channels list` show provider **usage windows**
-  (quota snapshots, not per-message costs).
+- `openclaw status --usage` および `openclaw channels list` はプロバイダーの **使用ウィンドウ** を表示します
+  (メッセージごとのコストではなく、クォータのスナップショット)。
 
-See [Token use & costs](/reference/token-use) for details and examples.
+詳細と例については、[トークンの使用とコスト](/reference/token-use) を参照してください。
 
-## How keys are discovered
+## キーの発見方法
 
-OpenClaw can pick up credentials from:
+OpenClaw は以下から認証情報を取得できます。
 
-- **Auth profiles** (per-agent, stored in `auth-profiles.json`).
-- **Environment variables** (e.g. `OPENAI_API_KEY`, `BRAVE_API_KEY`, `FIRECRAWL_API_KEY`).
-- **Config** (`models.providers.*.apiKey`, `tools.web.search.*`, `tools.web.fetch.firecrawl.*`,
-  `memorySearch.*`, `talk.apiKey`).
-- **Skills** (`skills.entries.<name>.apiKey`) which may export keys to the skill process env.
+- **認証プロファイル** (エージェントごと、`auth-profiles.json` に保存)。
+- **環境変数** (例: `OPENAI_API_KEY`、`BRAVE_API_KEY`、`FIRECRAWL_API_KEY`)。
+- **構成** (`models.providers.*.apiKey`、`tools.web.search.*`、`tools.web.fetch.firecrawl.*`、
+  `memorySearch.*`、`talk.apiKey`)。
+- **スキル** (`skills.entries.<name>.apiKey`) キーをスキル プロセス環境にエクスポートする可能性があります。
 
-## Features that can spend keys
+## キーを使用できる機能
 
-### 1) Core model responses (chat + tools)
+### 1) コアモデルの応答 (チャット + ツール)すべての応答またはツール呼び出しでは、**現在のモデル プロバイダー** (OpenAI、Anthropic など) が使用されます。これは、
 
-Every reply or tool call uses the **current model provider** (OpenAI, Anthropic, etc). This is the
-primary source of usage and cost.
+使用量とコストの主なソース。
 
-See [Models](/providers/models) for pricing config and [Token use & costs](/reference/token-use) for display.
+価格設定については [モデル](/providers/models) を、表示については [トークンの使用とコスト](/reference/token-use) を参照してください。
 
-### 2) Media understanding (audio/image/video)
+### 2) メディア理解 (音声/画像/ビデオ)
 
-Inbound media can be summarized/transcribed before the reply runs. This uses model/provider APIs.
+受信メディアは、応答が実行される前に要約/転写できます。これにはモデル/プロバイダー API が使用されます。
 
-- Audio: OpenAI / Groq / Deepgram (now **auto-enabled** when keys exist).
-- Image: OpenAI / Anthropic / Google.
-- Video: Google.
+- オーディオ: OpenAI / Groq / Deepgram (キーが存在する場合は **自動有効**)。
+- 画像: OpenAI / Anthropic / Google。
+- ビデオ: Google。
 
-See [Media understanding](/nodes/media-understanding).
+[メディアの理解](/nodes/media-understanding) を参照してください。
 
-### 3) Memory embeddings + semantic search
+### 3) メモリ埋め込み + セマンティック検索
 
-Semantic memory search uses **embedding APIs** when configured for remote providers:
+セマンティック メモリ検索は、リモート プロバイダー用に構成されている場合に **埋め込み API** を使用します。
 
-- `memorySearch.provider = "openai"` → OpenAI embeddings
-- `memorySearch.provider = "gemini"` → Gemini embeddings
-- `memorySearch.provider = "voyage"` → Voyage embeddings
-- `memorySearch.provider = "mistral"` → Mistral embeddings
-- `memorySearch.provider = "ollama"` → Ollama embeddings (local/self-hosted; typically no hosted API billing)
-- Optional fallback to a remote provider if local embeddings fail
+- `memorySearch.provider = "openai"` → OpenAI 埋め込み
+- `memorySearch.provider = "gemini"` → Gemini 埋め込み
+- `memorySearch.provider = "voyage"` → Voyage の埋め込み
+- `memorySearch.provider = "mistral"` → ミストラル埋め込み
+- `memorySearch.provider = "ollama"` → Ollama 埋め込み (ローカル/セルフホスト。通常、ホスト API の課金はありません)
+- ローカルの埋め込みが失敗した場合のリモートプロバイダーへのオプションのフォールバック
 
-You can keep it local with `memorySearch.provider = "local"` (no API usage).
+`memorySearch.provider = "local"` を使用してローカルに維持できます (API は使用しません)。
 
-See [Memory](/concepts/memory).
+[メモリ](/concepts/memory) を参照してください。
 
-### 4) Web search tool
+### 4) Web検索ツール
 
-`web_search` uses API keys and may incur usage charges depending on your provider:
+`web_search` は API キーを使用するため、プロバイダーによっては使用料金が発生する場合があります。- **Brave Search API**: `BRAVE_API_KEY` または `tools.web.search.apiKey`
 
-- **Brave Search API**: `BRAVE_API_KEY` or `tools.web.search.apiKey`
-- **Gemini (Google Search)**: `GEMINI_API_KEY`
+- **ジェミニ (Google 検索)**: `GEMINI_API_KEY`
 - **Grok (xAI)**: `XAI_API_KEY`
-- **Kimi (Moonshot)**: `KIMI_API_KEY` or `MOONSHOT_API_KEY`
-- **Perplexity Search API**: `PERPLEXITY_API_KEY`
+- **キミ (ムーンショット)**: `KIMI_API_KEY` または `MOONSHOT_API_KEY`
+- **複雑性検索 API**: `PERPLEXITY_API_KEY`
 
-**Brave Search free credit:** Each Brave plan includes $5/month in renewing
-free credit. The Search plan costs $5 per 1,000 requests, so the credit covers
-1,000 requests/month at no charge. Set your usage limit in the Brave dashboard
-to avoid unexpected charges.
+**Brave Search の無料クレジット:** 各 Brave プランには、月額 5 ドルの更新料が含まれています
+無料のクレジット。検索プランの料金は 1,000 リクエストあたり 5 ドルなので、クレジットでカバーされます。
+1,000 件のリクエスト/月は無料です。 Brave ダッシュボードで使用制限を設定します
+予期せぬ請求を避けるため。
 
-See [Web tools](/tools/web).
+[Web ツール](/tools/web) を参照してください。
 
-### 5) Web fetch tool (Firecrawl)
+### 5) Web 取得ツール (Firecrawl)
 
-`web_fetch` can call **Firecrawl** when an API key is present:
+API キーが存在する場合、`web_fetch` は **Firecrawl** を呼び出すことができます。
 
-- `FIRECRAWL_API_KEY` or `tools.web.fetch.firecrawl.apiKey`
+- `FIRECRAWL_API_KEY` または `tools.web.fetch.firecrawl.apiKey`
 
-If Firecrawl isn’t configured, the tool falls back to direct fetch + readability (no paid API).
+Firecrawl が構成されていない場合、ツールは直接フェッチ + 可読性にフォールバックします (有料 API なし)。
 
-See [Web tools](/tools/web).
+[Web ツール](/tools/web) を参照してください。
 
-### 6) Provider usage snapshots (status/health)
+### 6) プロバイダーの使用状況のスナップショット (ステータス/健全性)
 
-Some status commands call **provider usage endpoints** to display quota windows or auth health.
-These are typically low-volume calls but still hit provider APIs:
+一部のステータス コマンドは、**プロバイダー使用状況エンドポイント**を呼び出して、クォータ ウィンドウまたは認証の状態を表示します。
+これらは通常、少量の呼び出しですが、それでもプロバイダー API にヒットします。
 
 - `openclaw status --usage`
 - `openclaw models status --json`
 
-See [Models CLI](/cli/models).
+[モデル CLI](/cli/models) を参照してください。
 
-### 7) Compaction safeguard summarization
+### 7) 圧縮セーフガードの概要
 
-The compaction safeguard can summarize session history using the **current model**, which
-invokes provider APIs when it runs.
+圧縮セーフガードは、**現在のモデル** を使用してセッション履歴を要約できます。
+実行時にプロバイダー API を呼び出します。
 
-See [Session management + compaction](/reference/session-management-compaction).
+[セッション管理 + 圧縮](/reference/session-management-compaction) を参照してください。
 
-### 8) Model scan / probe
+### 8) モデルスキャン/プローブ`openclaw models scan` は OpenRouter モデルをプローブでき、次の場合に `OPENROUTER_API_KEY` を使用します
 
-`openclaw models scan` can probe OpenRouter models and uses `OPENROUTER_API_KEY` when
-probing is enabled.
+プロービングが有効になっています。
 
-See [Models CLI](/cli/models).
+[モデル CLI](/cli/models) を参照してください。
 
-### 9) Talk (speech)
+### 9) トーク（スピーチ）
 
-Talk mode can invoke **ElevenLabs** when configured:
+トーク モードは、構成時に **イレブンラボ** を呼び出すことができます。
 
-- `ELEVENLABS_API_KEY` or `talk.apiKey`
+- `ELEVENLABS_API_KEY` または `talk.apiKey`
 
-See [Talk mode](/nodes/talk).
+[トークモード](/nodes/talk)を参照してください。
 
-### 10) Skills (third-party APIs)
+### 10) スキル (サードパーティ API)
 
-Skills can store `apiKey` in `skills.entries.<name>.apiKey`. If a skill uses that key for external
-APIs, it can incur costs according to the skill’s provider.
+スキルは `apiKey` を `skills.entries.<name>.apiKey` に保存できます。スキルがそのキーを外部に使用する場合
+API の場合、スキルのプロバイダーに応じてコストが発生する可能性があります。
 
-See [Skills](/tools/skills).
+[スキル](/tools/skills) を参照してください。

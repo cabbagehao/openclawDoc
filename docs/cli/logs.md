@@ -1,20 +1,22 @@
 ---
-summary: "CLI reference for `openclaw logs` (tail gateway logs via RPC)"
+summary: "「openclaw ログ」の CLI リファレンス (RPC 経由のテール ゲートウェイ ログ)"
 read_when:
-  - You need to tail Gateway logs remotely (without SSH)
-  - You want JSON log lines for tooling
-title: "logs"
+  - ゲートウェイのログをリモートで追跡する必要があります (SSH を使用しない)
+  - ツール用に JSON ログ行が必要な場合
+title: "ログ"
+x-i18n:
+  source_hash: "81be02b6f8acad32ccf2d280827c7188a3c2f6bba0de5cbfa39fcc0bee3129cd"
 ---
 
 # `openclaw logs`
 
-Tail Gateway file logs over RPC (works in remote mode).
+Tail Gateway ファイルは RPC 経由でログを記録します (リモート モードで動作します)。
 
-Related:
+関連:
 
-- Logging overview: [Logging](/logging)
+- ロギングの概要: [ロギング](/logging)
 
-## Examples
+## 例
 
 ```bash
 openclaw logs
@@ -25,4 +27,4 @@ openclaw logs --local-time
 openclaw logs --follow --local-time
 ```
 
-Use `--local-time` to render timestamps in your local timezone.
+`--local-time` を使用して、ローカル タイムゾーンでタイムスタンプをレンダリングします。

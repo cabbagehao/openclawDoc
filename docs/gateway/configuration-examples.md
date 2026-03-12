@@ -1,19 +1,21 @@
 ---
-summary: "Schema-accurate configuration examples for common OpenClaw setups"
+summary: "OpenClaw の一般的な構成設定の具体例（スキーマに準拠）"
 read_when:
-  - Learning how to configure OpenClaw
-  - Looking for configuration examples
-  - Setting up OpenClaw for the first time
-title: "Configuration Examples"
+  - OpenClaw の構成方法（設定ファイルの書き方）を学びたい場合
+  - 具体的な設定例を探している場合
+  - OpenClaw を初めてセットアップする場合
+title: "構成例"
+x-i18n:
+  source_hash: "bf3ebaf29b2ea19c84d0e1dee5ae35da81ec61f46abbf17bd024836aa4907b5c"
 ---
 
-# Configuration Examples
+# 構成例
 
-Examples below are aligned with the current config schema. For the exhaustive reference and per-field notes, see [Configuration](/gateway/configuration).
+以下の例は、現在の構成スキーマに準拠しています。すべての項目の詳細なリファレンスとフィールドごとの説明については、[構成](/gateway/configuration) を参照してください。
 
-## Quick start
+## クイックスタート
 
-### Absolute minimum
+### 最小構成
 
 ```json5
 {
@@ -22,15 +24,15 @@ Examples below are aligned with the current config schema. For the exhaustive re
 }
 ```
 
-Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
+`~/.openclaw/openclaw.json` に保存すると、指定した番号からボットに DM を送信できるようになります。
 
-### Recommended starter
+### 推奨される初期設定
 
 ```json5
 {
   identity: {
     name: "Clawd",
-    theme: "helpful assistant",
+    theme: "親切なアシスタント",
     emoji: "🦞",
   },
   agent: {
@@ -46,13 +48,13 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
 }
 ```
 
-## Expanded example (major options)
+## 詳細な設定例 (主要なオプションを含む)
 
-> JSON5 lets you use comments and trailing commas. Regular JSON works too.
+> JSON5 形式では、コメントや末尾のカンマを使用できます。通常の JSON 形式も同様に動作します。
 
 ```json5
 {
-  // Environment + shell
+  // 環境変数とシェルの設定
   env: {
     OPENROUTER_API_KEY: "sk-or-...",
     vars: {
@@ -64,7 +66,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Auth profile metadata (secrets live in auth-profiles.json)
+  // 認証プロファイルのメタデータ (実際のシークレットは auth-profiles.json に保存されます)
   auth: {
     profiles: {
       "anthropic:me@example.com": {
@@ -83,14 +85,14 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Identity
+  // アイデンティティ (エージェントのプロフィール)
   identity: {
     name: "Samantha",
-    theme: "helpful sloth",
+    theme: "親切なナマケモノ",
     emoji: "🦥",
   },
 
-  // Logging
+  // ロギング (ログ出力)
   logging: {
     level: "info",
     file: "/tmp/openclaw/openclaw.log",
@@ -99,7 +101,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     redactSensitive: "tools",
   },
 
-  // Message formatting
+  // メッセージのフォーマット
   messages: {
     messagePrefix: "[openclaw]",
     responsePrefix: ">",
@@ -107,7 +109,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     ackReactionScope: "group-mentions",
   },
 
-  // Routing + queue
+  // ルーティングとキュー
   routing: {
     groupChat: {
       mentionPatterns: ["@openclaw", "openclaw"],
@@ -130,7 +132,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Tooling
+  // ツール設定
   tools: {
     media: {
       audio: {
@@ -138,7 +140,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
         maxBytes: 20971520,
         models: [
           { provider: "openai", model: "gpt-4o-mini-transcribe" },
-          // Optional CLI fallback (Whisper binary):
+          // オプションの CLI フォールバック (Whisper バイナリ等):
           // { type: "cli", command: "whisper", args: ["--model", "base", "{{MediaPath}}"] }
         ],
         timeoutSeconds: 120,
@@ -151,7 +153,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Session behavior
+  // セッションの挙動
   session: {
     scope: "per-sender",
     reset: {
@@ -169,9 +171,9 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
       pruneAfter: "30d",
       maxEntries: 500,
       rotateBytes: "10mb",
-      resetArchiveRetention: "30d", // duration or false
-      maxDiskBytes: "500mb", // optional
-      highWaterBytes: "400mb", // optional (defaults to 80% of maxDiskBytes)
+      resetArchiveRetention: "30d", // 期間指定、または無効にする場合は false
+      maxDiskBytes: "500mb", // オプション
+      highWaterBytes: "400mb", // オプション (デフォルトは maxDiskBytes の 80%)
     },
     typingIntervalSeconds: 5,
     sendPolicy: {
@@ -180,7 +182,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Channels
+  // チャネル設定
   channels: {
     whatsapp: {
       dmPolicy: "pairing",
@@ -232,11 +234,11 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Agent runtime
+  // エージェントランタイム設定
   agents: {
     defaults: {
       workspace: "~/.openclaw/workspace",
-      userTimezone: "America/Chicago",
+      userTimezone: "Asia/Tokyo",
       model: {
         primary: "anthropic/claude-sonnet-4-5",
         fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.2"],
@@ -273,7 +275,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
         every: "30m",
         model: "anthropic/claude-sonnet-4-5",
         target: "last",
-        directPolicy: "allow", // allow (default) | block
+        directPolicy: "allow", // allow (デフォルト) | block
         to: "+15555550123",
         prompt: "HEARTBEAT",
         ackMaxChars: 300,
@@ -327,7 +329,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Custom model providers
+  // カスタムモデルプロバイダー設定
   models: {
     mode: "merge",
     providers: {
@@ -353,7 +355,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Cron jobs
+  // Cron ジョブ
   cron: {
     enabled: true,
     store: "~/.openclaw/cron/cron.json",
@@ -365,7 +367,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Webhooks
+  // Webhook とフック設定
   hooks: {
     enabled: true,
     path: "/hooks",
@@ -408,7 +410,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     },
   },
 
-  // Gateway + networking
+  // ゲートウェイとネットワーク設定
   gateway: {
     mode: "local",
     port: 18789,
@@ -424,6 +426,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
     reload: { mode: "hybrid", debounceMs: 300 },
   },
 
+  // スキル設定
   skills: {
     allowBundled: ["gemini", "peekaboo"],
     load: {
@@ -445,9 +448,9 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
 }
 ```
 
-## Common patterns
+## よく使われるパターン
 
-### Multi-platform setup
+### マルチプラットフォーム構成
 
 ```json5
 {
@@ -468,23 +471,23 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
 }
 ```
 
-### Secure DM mode (shared inbox / multi-user DMs)
+### セキュア DM モード (共有インボックス / 複数ユーザーでの DM)
 
-If more than one person can DM your bot (multiple entries in `allowFrom`, pairing approvals for multiple people, or `dmPolicy: "open"`), enable **secure DM mode** so DMs from different senders don’t share one context by default:
+2 人以上のユーザーがボットに DM を送れる場合（`allowFrom` に複数のエントリがある、複数人のペアリングを承認している、または `dmPolicy: "open"` にしている場合）、**セキュア DM モード** を有効にしてください。これにより、異なる送信者からの DM がデフォルトで同じコンテキストを共有することを防げます。
 
 ```json5
 {
-  // Secure DM mode (recommended for multi-user or sensitive DM agents)
+  // セキュア DM モード (複数ユーザー、または機密性の高い DM を扱う場合に推奨)
   session: { dmScope: "per-channel-peer" },
 
   channels: {
-    // Example: WhatsApp multi-user inbox
+    // 例: WhatsApp の複数ユーザーインボックス
     whatsapp: {
       dmPolicy: "allowlist",
       allowFrom: ["+15555550123", "+15555550124"],
     },
 
-    // Example: Discord multi-user inbox
+    // 例: Discord の複数ユーザーインボックス
     discord: {
       enabled: true,
       token: "YOUR_DISCORD_BOT_TOKEN",
@@ -494,10 +497,10 @@ If more than one person can DM your bot (multiple entries in `allowFrom`, pairin
 }
 ```
 
-For Discord/Slack/Google Chat/MS Teams/Mattermost/IRC, sender authorization is ID-first by default.
-Only enable direct mutable name/email/nick matching with each channel's `dangerouslyAllowNameMatching: true` if you explicitly accept that risk.
+Discord, Slack, Google Chat, MS Teams, Mattermost, IRC において、送信者の認可判定はデフォルトで ID が優先されます。
+変更可能な「名前」「メールアドレス」「ニックネーム」による直接一致を有効にするには、各チャネルの `dangerouslyAllowNameMatching: true` を設定する必要がありますが、そのリスクを十分に理解した上で有効にしてください。
 
-### OAuth with API key failover
+### API キーへのフェイルオーバーを伴う OAuth 設定
 
 ```json5
 {
@@ -527,12 +530,10 @@ Only enable direct mutable name/email/nick matching with each channel's `dangero
 }
 ```
 
-### Anthropic setup-token + API key, MiniMax fallback
+### Anthropic setup-token ＋ API キー、MiniMax フォールバック
 
 <Warning>
-Anthropic setup-token usage outside Claude Code has been restricted for some
-users in the past. Treat this as user-choice risk and verify current Anthropic
-terms before depending on subscription auth.
+Anthropic の setup-token を Claude Code 以外で使用することは、過去に一部のユーザーで制限された事例があります。これはユーザー自身の判断によるリスクとして扱い、サブスクリプション認証に依存する前に最新の Anthropic の規約を確認してください。
 </Warning>
 
 ```json5
@@ -572,13 +573,13 @@ terms before depending on subscription auth.
 }
 ```
 
-### Work bot (restricted access)
+### 仕事用ボット (アクセス制限あり)
 
 ```json5
 {
   identity: {
     name: "WorkBot",
-    theme: "professional assistant",
+    theme: "プロフェッショナルなアシスタント",
   },
   agent: {
     workspace: "~/work-openclaw",
@@ -597,7 +598,7 @@ terms before depending on subscription auth.
 }
 ```
 
-### Local models only
+### ローカルモデルのみを使用する場合
 
 ```json5
 {
@@ -629,9 +630,9 @@ terms before depending on subscription auth.
 }
 ```
 
-## Tips
+## ヒント
 
-- If you set `dmPolicy: "open"`, the matching `allowFrom` list must include `"*"`.
-- Provider IDs differ (phone numbers, user IDs, channel IDs). Use the provider docs to confirm the format.
-- Optional sections to add later: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`.
-- See [Providers](/providers) and [Troubleshooting](/gateway/troubleshooting) for deeper setup notes.
+- `dmPolicy: "open"` を設定する場合、対になる `allowFrom` リストには必ず `"*"` を含めてください。
+- プロバイダーごとに使用する ID の形式が異なります（電話番号、ユーザー ID、チャネル ID など）。各プロバイダーのドキュメントで正しい形式を確認してください。
+- 後から追加可能なセクション: `web`, `browser`, `ui`, `discovery`, `canvasHost`, `talk`, `signal`, `imessage`。
+- より詳細なセットアップについては、[プロバイダー](/providers) および [トラブルシューティング](/gateway/troubleshooting) を参照してください。

@@ -1,18 +1,20 @@
 ---
-summary: "Fast channel level troubleshooting with per channel failure signatures and fixes"
+summary: "チャネルごとの障害パターンと修正方法をまとめた迅速なトラブルシューティングガイド"
 read_when:
-  - Channel transport says connected but replies fail
-  - You need channel specific checks before deep provider docs
-title: "Channel Troubleshooting"
+  - チャネルの接続は確立されているが、応答が返ってこない場合
+  - 各プロバイダーの詳細ドキュメントを確認する前に、チャネル固有のチェックを行いたい場合
+title: "チャネルのトラブルシューティング"
+x-i18n:
+  source_hash: "c210b2aefa1d76d42ffed61e7fec02a1f8f6c521ba83e5080a98eb2ce8245696"
 ---
 
-# Channel troubleshooting
+# チャネルのトラブルシューティング
 
-Use this page when a channel connects but behavior is wrong.
+チャネル自体は接続されているが、期待通りの動作をしない場合は、このページを確認してください。
 
-## Command ladder
+## 診断コマンド
 
-Run these in order first:
+まず、以下のコマンドを順番に実行してください:
 
 ```bash
 openclaw status
@@ -22,96 +24,95 @@ openclaw doctor
 openclaw channels status --probe
 ```
 
-Healthy baseline:
+正常な状態の目安:
 
 - `Runtime: running`
 - `RPC probe: ok`
-- Channel probe shows connected/ready
+- チャネルプローブの結果が `connected` または `ready` になっている
 
 ## WhatsApp
 
-### WhatsApp failure signatures
+### WhatsApp の障害パターン
 
-| Symptom                         | Fastest check                                       | Fix                                                     |
-| ------------------------------- | --------------------------------------------------- | ------------------------------------------------------- |
-| Connected but no DM replies     | `openclaw pairing list whatsapp`                    | Approve sender or switch DM policy/allowlist.           |
-| Group messages ignored          | Check `requireMention` + mention patterns in config | Mention the bot or relax mention policy for that group. |
-| Random disconnect/relogin loops | `openclaw channels status --probe` + logs           | Re-login and verify credentials directory is healthy.   |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| 接続中だが DM の返信がない | `openclaw pairing list whatsapp` | 送信者を承認するか、DM ポリシー/許可リストを変更します。 |
+| グループメッセージが無視される | `requireMention` および構成内のメンションパターンを確認 | ボットにメンションするか、そのグループのメンション制限を緩和します。 |
+| 切断と再ログインを繰り返す | `openclaw channels status --probe` + ログ | 再ログインを行い、認証情報ディレクトリが正常であることを確認します。 |
 
-Full troubleshooting: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
+詳細なトラブルシューティング: [/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
 
 ## Telegram
 
-### Telegram failure signatures
+### Telegram の障害パターン
 
-| Symptom                           | Fastest check                                   | Fix                                                                         |
-| --------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
-| `/start` but no usable reply flow | `openclaw pairing list telegram`                | Approve pairing or change DM policy.                                        |
-| Bot online but group stays silent | Verify mention requirement and bot privacy mode | Disable privacy mode for group visibility or mention bot.                   |
-| Send failures with network errors | Inspect logs for Telegram API call failures     | Fix DNS/IPv6/proxy routing to `api.telegram.org`.                           |
-| Upgraded and allowlist blocks you | `openclaw security audit` and config allowlists | Run `openclaw doctor --fix` or replace `@username` with numeric sender IDs. |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| `/start` しても返信フローが動かない | `openclaw pairing list telegram` | ペアリングを承認するか、DM ポリシーを変更します。 |
+| ボットは起動中だがグループで無反応 | メンション要件とボットのプライバシーモードを確認 | グループの可視性を確保するためにプライバシーモードを無効にするか、ボットにメンションします。 |
+| ネットワークエラーで送信に失敗する | ログで Telegram API 呼び出しの失敗を確認 | `api.telegram.org` への DNS/IPv6/プロキシのルーティングを修正します。 |
+| アップグレード後に許可リストでブロックされる | `openclaw security audit` と構成の許可リスト | `openclaw doctor --fix` を実行するか、`@username` を数値の送信者 ID に置き換えます。 |
 
-Full troubleshooting: [/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
+詳細なトラブルシューティング: [/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
 
 ## Discord
 
-### Discord failure signatures
+### Discord の障害パターン
 
-| Symptom                         | Fastest check                       | Fix                                                       |
-| ------------------------------- | ----------------------------------- | --------------------------------------------------------- |
-| Bot online but no guild replies | `openclaw channels status --probe`  | Allow guild/channel and verify message content intent.    |
-| Group messages ignored          | Check logs for mention gating drops | Mention bot or set guild/channel `requireMention: false`. |
-| DM replies missing              | `openclaw pairing list discord`     | Approve DM pairing or adjust DM policy.                   |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| ボットは起動中だがサーバーで無反応 | `openclaw channels status --probe` | サーバー/チャネルを許可リストに追加し、「Message Content Intent」が有効であることを確認します。 |
+| グループメッセージが無視される | ログでメンションによる破棄を確認 | ボットにメンションするか、サーバー/チャネル設定で `requireMention: false` にします。 |
+| DM の返信がない | `openclaw pairing list discord` | DM のペアリングを承認するか、DM ポリシーを調整します。 |
 
-Full troubleshooting: [/channels/discord#troubleshooting](/channels/discord#troubleshooting)
+詳細なトラブルシューティング: [/channels/discord#troubleshooting](/channels/discord#troubleshooting)
 
 ## Slack
 
-### Slack failure signatures
+### Slack の障害パターン
 
-| Symptom                                | Fastest check                             | Fix                                               |
-| -------------------------------------- | ----------------------------------------- | ------------------------------------------------- |
-| Socket mode connected but no responses | `openclaw channels status --probe`        | Verify app token + bot token and required scopes. |
-| DMs blocked                            | `openclaw pairing list slack`             | Approve pairing or relax DM policy.               |
-| Channel message ignored                | Check `groupPolicy` and channel allowlist | Allow the channel or switch policy to `open`.     |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| Socket Mode で接続中だが無反応 | `openclaw channels status --probe` | App Token, Bot Token および必要なスコープを確認します。 |
+| DM がブロックされる | `openclaw pairing list slack` | ペアリングを承認するか、DM ポリシーを緩和します。 |
+| チャネルメッセージが無視される | `groupPolicy` とチャネルの許可リストを確認 | チャネルを許可リストに追加するか、ポリシーを `open` に変更します。 |
 
-Full troubleshooting: [/channels/slack#troubleshooting](/channels/slack#troubleshooting)
+詳細なトラブルシューティング: [/channels/slack#troubleshooting](/channels/slack#troubleshooting)
 
-## iMessage and BlueBubbles
+## iMessage および BlueBubbles
 
-### iMessage and BlueBubbles failure signatures
+### iMessage / BlueBubbles の障害パターン
 
-| Symptom                          | Fastest check                                                           | Fix                                                   |
-| -------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| No inbound events                | Verify webhook/server reachability and app permissions                  | Fix webhook URL or BlueBubbles server state.          |
-| Can send but no receive on macOS | Check macOS privacy permissions for Messages automation                 | Re-grant TCC permissions and restart channel process. |
-| DM sender blocked                | `openclaw pairing list imessage` or `openclaw pairing list bluebubbles` | Approve pairing or update allowlist.                  |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| インバウンドイベントが届かない | Webhook/サーバーの到達可能性とアプリの権限を確認 | Webhook URL または BlueBubbles サーバーの状態を修正します。 |
+| macOS で送信はできるが受信できない | macOS の「メッセージ」自動化に関するプライバシー権限 | TCC 権限を再付与し、チャネルプロセスを再起動します。 |
+| DM 送信者がブロックされる | `openclaw pairing list imessage` (または `bluebubbles`) | ペアリングを承認するか、許可リストを更新します。 |
 
-Full troubleshooting:
-
+詳細なトラブルシューティング:
 - [/channels/imessage#troubleshooting-macos-privacy-and-security-tcc](/channels/imessage#troubleshooting-macos-privacy-and-security-tcc)
 - [/channels/bluebubbles#troubleshooting](/channels/bluebubbles#troubleshooting)
 
 ## Signal
 
-### Signal failure signatures
+### Signal の障害パターン
 
-| Symptom                         | Fastest check                              | Fix                                                      |
-| ------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
-| Daemon reachable but bot silent | `openclaw channels status --probe`         | Verify `signal-cli` daemon URL/account and receive mode. |
-| DM blocked                      | `openclaw pairing list signal`             | Approve sender or adjust DM policy.                      |
-| Group replies do not trigger    | Check group allowlist and mention patterns | Add sender/group or loosen gating.                       |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| デーモンは到達可能だがボットが無反応 | `openclaw channels status --probe` | `signal-cli` デーモンの URL/アカウントおよび受信モードを確認します。 |
+| DM がブロックされる | `openclaw pairing list signal` | 送信者を承認するか、DM ポリシーを調整します。 |
+| グループでの返信がトリガーされない | グループの許可リストとメンションパターンを確認 | 送信者/グループを追加するか、制限を緩めます。 |
 
-Full troubleshooting: [/channels/signal#troubleshooting](/channels/signal#troubleshooting)
+詳細なトラブルシューティング: [/channels/signal#troubleshooting](/channels/signal#troubleshooting)
 
 ## Matrix
 
-### Matrix failure signatures
+### Matrix の障害パターン
 
-| Symptom                             | Fastest check                                | Fix                                             |
-| ----------------------------------- | -------------------------------------------- | ----------------------------------------------- |
-| Logged in but ignores room messages | `openclaw channels status --probe`           | Check `groupPolicy` and room allowlist.         |
-| DMs do not process                  | `openclaw pairing list matrix`               | Approve sender or adjust DM policy.             |
-| Encrypted rooms fail                | Verify crypto module and encryption settings | Enable encryption support and rejoin/sync room. |
+| 症状 | 確認事項 | 解決策 |
+| :--- | :--- | :--- |
+| ログイン中だがルームメッセージを無視する | `openclaw channels status --probe` | `groupPolicy` とルームの許可リストを確認します。 |
+| DM が処理されない | `openclaw pairing list matrix` | 送信者を承認するか、DM ポリシーを調整します。 |
+| 暗号化されたルームで失敗する | 暗号化モジュールと暗号化設定を確認 | 暗号化サポートを有効にし、ルームに再参加または同期します。 |
 
-Full troubleshooting: [/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)
+詳細なトラブルシューティング: [/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)

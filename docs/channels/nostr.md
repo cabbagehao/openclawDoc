@@ -1,55 +1,57 @@
 ---
-summary: "Nostr DM channel via NIP-04 encrypted messages"
+summary: "NIP-04 暗号化メッセージを介した Nostr DM チャネル"
 read_when:
-  - You want OpenClaw to receive DMs via Nostr
-  - You're setting up decentralized messaging
+  - OpenClaw が Nostr 経由で DM を受信できるようにしたい場合
+  - 分散型メッセージングの設定を行っている場合
 title: "Nostr"
+x-i18n:
+  source_hash: "6b9fe4c74bf5e7c0f59bbaa129ec5270fd29a248551a8a9a7dde6cff8fb46111"
 ---
 
 # Nostr
 
-**Status:** Optional plugin (disabled by default).
+**ステータス:** オプションのプラグイン (デフォルトでは無効)。
 
-Nostr is a decentralized protocol for social networking. This channel enables OpenClaw to receive and respond to encrypted direct messages (DMs) via NIP-04.
+Nostr は、ソーシャルネットワーキング用の分散型プロトコルです。このチャネルを有効にすると、OpenClaw は NIP-04 経由で暗号化されたダイレクトメッセージ (DM) を受信し、応答できるようになります。
 
-## Install (on demand)
+## インストール (オンデマンド)
 
-### Onboarding (recommended)
+### オンボーディング (推奨)
 
-- The onboarding wizard (`openclaw onboard`) and `openclaw channels add` list optional channel plugins.
-- Selecting Nostr prompts you to install the plugin on demand.
+- オンボーディングウィザード (`openclaw onboard`) や `openclaw channels add` では、オプションのチャネルプラグインが一覧表示されます。
+- Nostr を選択すると、必要に応じてプラグインをインストールするように求められます。
 
-Install defaults:
+インストールのデフォルト動作:
 
-- **Dev channel + git checkout available:** uses the local plugin path.
-- **Stable/Beta:** downloads from npm.
+- **dev チャンネル + git チェックアウトが利用可能:** ローカルのプラグインパスを使用します。
+- **stable/beta チャンネル:** npm からダウンロードします。
 
-You can always override the choice in the prompt.
+プロンプトでの選択はいつでも上書き可能です。
 
-### Manual install
+### 手動インストール
 
 ```bash
 openclaw plugins install @openclaw/nostr
 ```
 
-Use a local checkout (dev workflows):
+ローカルチェックアウトを使用する場合 (開発ワークフロー):
 
 ```bash
 openclaw plugins install --link <path-to-openclaw>/extensions/nostr
 ```
 
-Restart the Gateway after installing or enabling plugins.
+プラグインをインストールまたは有効にした後は、ゲートウェイを再起動してください。
 
-## Quick setup
+## クイックセットアップ
 
-1. Generate a Nostr keypair (if needed):
+1. Nostr のキーペアを生成します (必要な場合):
 
 ```bash
-# Using nak
+# nak を使用する場合
 nak key generate
 ```
 
-2. Add to config:
+2. 構成ファイルに追加します:
 
 ```json
 {
@@ -61,31 +63,31 @@ nak key generate
 }
 ```
 
-3. Export the key:
+3. キーを環境変数としてエクスポートします:
 
 ```bash
 export NOSTR_PRIVATE_KEY="nsec1..."
 ```
 
-4. Restart the Gateway.
+4. ゲートウェイを再起動します。
 
-## Configuration reference
+## 構成リファレンス
 
-| Key          | Type     | Default                                     | Description                         |
-| ------------ | -------- | ------------------------------------------- | ----------------------------------- |
-| `privateKey` | string   | required                                    | Private key in `nsec` or hex format |
-| `relays`     | string[] | `['wss://relay.damus.io', 'wss://nos.lol']` | Relay URLs (WebSocket)              |
-| `dmPolicy`   | string   | `pairing`                                   | DM access policy                    |
-| `allowFrom`  | string[] | `[]`                                        | Allowed sender pubkeys              |
-| `enabled`    | boolean  | `true`                                      | Enable/disable channel              |
-| `name`       | string   | -                                           | Display name                        |
-| `profile`    | object   | -                                           | NIP-01 profile metadata             |
+| キー | 型 | デフォルト | 説明 |
+| :--- | :--- | :--- | :--- |
+| `privateKey` | string | 必須 | `nsec` または 16 進形式の秘密鍵 |
+| `relays` | string[] | `['wss://relay.damus.io', 'wss://nos.lol']` | リレー URL (WebSocket) |
+| `dmPolicy` | string | `pairing` | DM アクセスポリシー |
+| `allowFrom` | string[] | `[]` | 許可された送信者の公開鍵 |
+| `enabled` | boolean | `true` | チャネルの有効/無効 |
+| `name` | string | - | 表示名 |
+| `profile` | object | - | NIP-01 プロフィールメタデータ |
 
-## Profile metadata
+## プロフィールメタデータ
 
-Profile data is published as a NIP-01 `kind:0` event. You can manage it from the Control UI (Channels -> Nostr -> Profile) or set it directly in config.
+プロフィールデータは NIP-01 `kind:0` イベントとして公開されます。コントロール UI (Channels -> Nostr -> Profile) から管理するか、構成ファイルで直接設定できます。
 
-Example:
+構成例:
 
 ```json
 {
@@ -95,7 +97,7 @@ Example:
       "profile": {
         "name": "openclaw",
         "displayName": "OpenClaw",
-        "about": "Personal assistant DM bot",
+        "about": "パーソナルアシスタント DM ボット",
         "picture": "https://example.com/avatar.png",
         "banner": "https://example.com/banner.png",
         "website": "https://example.com",
@@ -107,21 +109,21 @@ Example:
 }
 ```
 
-Notes:
+注記:
 
-- Profile URLs must use `https://`.
-- Importing from relays merges fields and preserves local overrides.
+- プロフィールの URL には `https://` を使用する必要があります。
+- リレーからインポートすると、フィールドがマージされ、ローカルの上書き設定が保持されます。
 
-## Access control
+## アクセス制御
 
-### DM policies
+### DM ポリシー
 
-- **pairing** (default): unknown senders get a pairing code.
-- **allowlist**: only pubkeys in `allowFrom` can DM.
-- **open**: public inbound DMs (requires `allowFrom: ["*"]`).
-- **disabled**: ignore inbound DMs.
+- **pairing** (デフォルト): 未知の送信者にはペアリングコードが送信されます。
+- **allowlist**: `allowFrom` に含まれる公開鍵のみが DM を送信できます。
+- **open**: パブリックな受信 DM を許可します (`allowFrom: ["*"]` が必要)。
+- **disabled**: 受信 DM を無視します。
 
-### Allowlist example
+### 許可リストの例
 
 ```json
 {
@@ -135,16 +137,16 @@ Notes:
 }
 ```
 
-## Key formats
+## キーの形式
 
-Accepted formats:
+以下の形式を受け入れます:
 
-- **Private key:** `nsec...` or 64-char hex
-- **Pubkeys (`allowFrom`):** `npub...` or hex
+- **秘密鍵:** `nsec...` または 64 文字の 16 進数
+- **公開鍵 (`allowFrom`):** `npub...` または 16 進数
 
-## Relays
+## リレー (Relays)
 
-Defaults: `relay.damus.io` and `nos.lol`.
+デフォルト設定: `relay.damus.io` および `nos.lol`。
 
 ```json
 {
@@ -157,28 +159,28 @@ Defaults: `relay.damus.io` and `nos.lol`.
 }
 ```
 
-Tips:
+ヒント:
 
-- Use 2-3 relays for redundancy.
-- Avoid too many relays (latency, duplication).
-- Paid relays can improve reliability.
-- Local relays are fine for testing (`ws://localhost:7777`).
+- 冗長性のために 2〜3 個のリレーを使用してください。
+- リレーが多すぎると遅延や重複の原因となるため避けてください。
+- 有料リレーを使用すると信頼性が向上する場合があります。
+- テストにはローカルリレーが適しています (`ws://localhost:7777`)。
 
-## Protocol support
+## プロトコルのサポート
 
-| NIP    | Status    | Description                           |
-| ------ | --------- | ------------------------------------- |
-| NIP-01 | Supported | Basic event format + profile metadata |
-| NIP-04 | Supported | Encrypted DMs (`kind:4`)              |
-| NIP-17 | Planned   | Gift-wrapped DMs                      |
-| NIP-44 | Planned   | Versioned encryption                  |
+| NIP | ステータス | 説明 |
+| :--- | :--- | :--- |
+| NIP-01 | サポート済み | 基本的なイベント形式 + プロフィールメタデータ |
+| NIP-04 | サポート済み | 暗号化 DM (`kind:4`) |
+| NIP-17 | 計画中 | ギフト包装 (Gift-wrapped) DM |
+| NIP-44 | 計画中 | バージョン管理された暗号化 |
 
-## Testing
+## テスト
 
-### Local relay
+### ローカルリレー
 
 ```bash
-# Start strfry
+# strfry を起動
 docker run -p 7777:7777 ghcr.io/hoytech/strfry
 ```
 
@@ -193,41 +195,41 @@ docker run -p 7777:7777 ghcr.io/hoytech/strfry
 }
 ```
 
-### Manual test
+### 手動テスト
 
-1. Note the bot pubkey (npub) from logs.
-2. Open a Nostr client (Damus, Amethyst, etc.).
-3. DM the bot pubkey.
-4. Verify the response.
+1. ログからボットの公開鍵 (npub) をメモします。
+2. Nostr クライアント (Damus, Amethyst 等) を開きます。
+3. ボットの公開鍵に DM を送信します。
+4. 応答を確認します。
 
-## Troubleshooting
+## トラブルシューティング
 
-### Not receiving messages
+### メッセージを受信できない
 
-- Verify the private key is valid.
-- Ensure relay URLs are reachable and use `wss://` (or `ws://` for local).
-- Confirm `enabled` is not `false`.
-- Check Gateway logs for relay connection errors.
+- 秘密鍵が有効であることを確認してください。
+- リレーの URL が到達可能であり、`wss://` (ローカルの場合は `ws://`) を使用していることを確認してください。
+- `enabled` が `false` になっていないか確認してください。
+- ゲートウェイのログでリレーの接続エラーを確認してください。
 
-### Not sending responses
+### 応答を送信できない
 
-- Check relay accepts writes.
-- Verify outbound connectivity.
-- Watch for relay rate limits.
+- リレーが書き込みを受け入れているか確認してください。
+- アウトバウンドの接続性を確認してください。
+- リレーのレート制限に注意してください。
 
-### Duplicate responses
+### 応答が重複する
 
-- Expected when using multiple relays.
-- Messages are deduplicated by event ID; only the first delivery triggers a response.
+- 複数のリレーを使用している場合、重複は想定内の動作です。
+- メッセージはイベント ID によって重複排除されます。最初のアクティベーションのみが応答をトリガーします。
 
-## Security
+## セキュリティ
 
-- Never commit private keys.
-- Use environment variables for keys.
-- Consider `allowlist` for production bots.
+- 秘密鍵を決してコミットしないでください。
+- キーの管理には環境変数を使用してください。
+- 本番用のボットには `allowlist` の使用を検討してください。
 
-## Limitations (MVP)
+## 制限事項 (MVP)
 
-- Direct messages only (no group chats).
-- No media attachments.
-- NIP-04 only (NIP-17 gift-wrap planned).
+- ダイレクトメッセージのみ (グループチャットは不可)。
+- メディアの添付は未サポート。
+- NIP-04 のみ (NIP-17 のギフト包装は計画中)。

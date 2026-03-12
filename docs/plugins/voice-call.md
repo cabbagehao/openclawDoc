@@ -1,58 +1,59 @@
 ---
-summary: "Voice Call plugin: outbound + inbound calls via Twilio/Telnyx/Plivo (plugin install + config + CLI)"
+summary: "音声通話プラグイン: Twilio / Telnyx / Plivo 経由の発信・着信通話（インストール、設定、CLI）"
 read_when:
-  - You want to place an outbound voice call from OpenClaw
-  - You are configuring or developing the voice-call plugin
-title: "Voice Call Plugin"
+  - OpenClaw から音声通話を発信したいとき
+  - voice-call プラグインを設定または開発しているとき
+title: "音声通話プラグイン"
+x-i18n:
+  source_hash: "5417fbfcdca2ed10a1e478715604cdc4e9fdace2fa0d50924e6a1da58d604444"
 ---
 
-# Voice Call (plugin)
+# Voice Call（plugin）
 
-Voice calls for OpenClaw via a plugin. Supports outbound notifications and
-multi-turn conversations with inbound policies.
+このプラグインは、OpenClaw に音声通話機能を追加します。発信通知と、着信ポリシーを伴う複数ターンの会話をサポートします。
 
-Current providers:
+現在利用できる provider:
 
-- `twilio` (Programmable Voice + Media Streams)
-- `telnyx` (Call Control v2)
-- `plivo` (Voice API + XML transfer + GetInput speech)
-- `mock` (dev/no network)
+- `twilio`（Programmable Voice + Media Streams）
+- `telnyx`（Call Control v2）
+- `plivo`（Voice API + XML transfer + GetInput speech）
+- `mock`（開発用 / ネットワーク不要）
 
-Quick mental model:
+全体の流れは次のとおりです。
 
-- Install plugin
-- Restart Gateway
-- Configure under `plugins.entries.voice-call.config`
-- Use `openclaw voicecall ...` or the `voice_call` tool
+- plugin をインストールする
+- ゲートウェイを再起動する
+- `plugins.entries.voice-call.config` に設定を書く
+- `openclaw voicecall ...` または `voice_call` ツールを使う
 
-## Where it runs (local vs remote)
+## 実行場所（local / remote）
 
-The Voice Call plugin runs **inside the Gateway process**.
+Voice Call plugin は **ゲートウェイ プロセス内** で動作します。
 
-If you use a remote Gateway, install/configure the plugin on the **machine running the Gateway**, then restart the Gateway to load it.
+remote ゲートウェイを使う場合は、**ゲートウェイが動作しているマシン** にインストールと設定を行い、その後ゲートウェイを再起動して読み込ませてください。
 
-## Install
+## インストール
 
-### Option A: install from npm (recommended)
+### Option A: npm からインストールする（推奨）
 
 ```bash
 openclaw plugins install @openclaw/voice-call
 ```
 
-Restart the Gateway afterwards.
+その後、ゲートウェイを再起動してください。
 
-### Option B: install from a local folder (dev, no copying)
+### Option B: ローカル フォルダーからインストールする（開発向け、コピーなし）
 
 ```bash
 openclaw plugins install ./extensions/voice-call
 cd ./extensions/voice-call && pnpm install
 ```
 
-Restart the Gateway afterwards.
+その後、ゲートウェイを再起動してください。
 
-## Config
+## 設定
 
-Set config under `plugins.entries.voice-call.config`:
+設定は `plugins.entries.voice-call.config` 配下に置きます。
 
 ```json5
 {
@@ -119,35 +120,32 @@ Set config under `plugins.entries.voice-call.config`:
 }
 ```
 
-Notes:
+注意:
 
-- Twilio/Telnyx require a **publicly reachable** webhook URL.
-- Plivo requires a **publicly reachable** webhook URL.
-- `mock` is a local dev provider (no network calls).
-- Telnyx requires `telnyx.publicKey` (or `TELNYX_PUBLIC_KEY`) unless `skipSignatureVerification` is true.
-- `skipSignatureVerification` is for local testing only.
-- If you use ngrok free tier, set `publicUrl` to the exact ngrok URL; signature verification is always enforced.
-- `tunnel.allowNgrokFreeTierLoopbackBypass: true` allows Twilio webhooks with invalid signatures **only** when `tunnel.provider="ngrok"` and `serve.bind` is loopback (ngrok local agent). Use for local dev only.
-- Ngrok free tier URLs can change or add interstitial behavior; if `publicUrl` drifts, Twilio signatures will fail. For production, prefer a stable domain or Tailscale funnel.
-- Streaming security defaults:
-  - `streaming.preStartTimeoutMs` closes sockets that never send a valid `start` frame.
-  - `streaming.maxPendingConnections` caps total unauthenticated pre-start sockets.
-  - `streaming.maxPendingConnectionsPerIp` caps unauthenticated pre-start sockets per source IP.
-  - `streaming.maxConnections` caps total open media stream sockets (pending + active).
+- Twilio / Telnyx では、**public に到達可能な** webhook URL が必要です。
+- Plivo でも、**public に到達可能な** webhook URL が必要です。
+- `mock` はローカル開発用 provider で、ネットワーク呼び出しを行いません。
+- Telnyx では、`skipSignatureVerification` が true でない限り、`telnyx.publicKey`（または `TELNYX_PUBLIC_KEY`）が必要です。
+- `skipSignatureVerification` はローカル テスト専用です。
+- ngrok の無料プランを使う場合は、`publicUrl` に実際の ngrok URL を正確に設定してください。署名検証は常に有効です。
+- `tunnel.allowNgrokFreeTierLoopbackBypass: true` は、`tunnel.provider="ngrok"` かつ `serve.bind` が loopback（ngrok local agent）の場合に限り、無効な署名を持つ Twilio webhook を許可します。ローカル開発専用です。
+- ngrok の無料 URL は変わる場合があり、interstitial が入ることもあります。`publicUrl` がずれると Twilio の署名検証は失敗します。本番では安定した独自ドメインか Tailscale funnel を推奨します。
+- streaming セキュリティの既定値:
+  - `streaming.preStartTimeoutMs` は、有効な `start` frame を送らない socket を閉じます。
+  - `streaming.maxPendingConnections` は、未認証の pre-start socket 総数を制限します。
+  - `streaming.maxPendingConnectionsPerIp` は、送信元 IP ごとの未認証 pre-start socket 数を制限します。
+  - `streaming.maxConnections` は、開いている media stream socket の総数（pending + active）を制限します。
 
 ## Stale call reaper
 
-Use `staleCallReaperSeconds` to end calls that never receive a terminal webhook
-(for example, notify-mode calls that never complete). The default is `0`
-(disabled).
+`staleCallReaperSeconds` を使うと、終端 webhook を受け取らない通話を終了できます。たとえば、完了しない notify-mode の通話が対象です。既定値は `0`（無効）です。
 
-Recommended ranges:
+推奨レンジ:
 
-- **Production:** `120`–`300` seconds for notify-style flows.
-- Keep this value **higher than `maxDurationSeconds`** so normal calls can
-  finish. A good starting point is `maxDurationSeconds + 30–60` seconds.
+- **本番:** notify 系フローなら `120`〜`300` 秒
+- 正常な通話を途中で刈り取らないよう、この値は **`maxDurationSeconds` より大きく** 設定してください。目安は `maxDurationSeconds + 30〜60` 秒です。
 
-Example:
+例:
 
 ```json5
 {
@@ -166,24 +164,19 @@ Example:
 
 ## Webhook Security
 
-When a proxy or tunnel sits in front of the Gateway, the plugin reconstructs the
-public URL for signature verification. These options control which forwarded
-headers are trusted.
+proxy や tunnel がゲートウェイの前段にある場合、plugin は署名検証のために public URL を再構築します。ここでは、どの forwarded header を信頼するかを制御します。
 
-`webhookSecurity.allowedHosts` allowlists hosts from forwarding headers.
+`webhookSecurity.allowedHosts` は、forwarding header 由来の host を allowlist します。
 
-`webhookSecurity.trustForwardingHeaders` trusts forwarded headers without an allowlist.
+`webhookSecurity.trustForwardingHeaders` は、allowlist なしで forwarded header を信頼します。
 
-`webhookSecurity.trustedProxyIPs` only trusts forwarded headers when the request
-remote IP matches the list.
+`webhookSecurity.trustedProxyIPs` は、request の remote IP が一致した場合にのみ forwarded header を信頼します。
 
-Webhook replay protection is enabled for Twilio and Plivo. Replayed valid webhook
-requests are acknowledged but skipped for side effects.
+Webhook replay protection は Twilio と Plivo で有効です。正しい署名を持つ replay 済み webhook は受理されますが、副作用処理はスキップされます。
 
-Twilio conversation turns include a per-turn token in `<Gather>` callbacks, so
-stale/replayed speech callbacks cannot satisfy a newer pending transcript turn.
+Twilio の会話ターンでは、`<Gather>` callback にターンごとのトークンを含めるため、古い / replay 済みの音声 callback が、新しい待機中 transcript turn を満たすことはありません。
 
-Example with a stable public host:
+安定した public host を使う例:
 
 ```json5
 {
@@ -202,11 +195,9 @@ Example with a stable public host:
 }
 ```
 
-## TTS for calls
+## 通話時の TTS
 
-Voice Call uses the core `messages.tts` configuration (OpenAI or ElevenLabs) for
-streaming speech on calls. You can override it under the plugin config with the
-**same shape** — it deep‑merges with `messages.tts`.
+Voice Call は、コアの `messages.tts` 設定（OpenAI または ElevenLabs）を使って通話中の音声ストリーミングを行います。plugin 側で **同じ構造** のまま上書きでき、その内容は `messages.tts` と deep-merge されます。
 
 ```json5
 {
@@ -220,14 +211,14 @@ streaming speech on calls. You can override it under the plugin config with the
 }
 ```
 
-Notes:
+注意:
 
-- **Edge TTS is ignored for voice calls** (telephony audio needs PCM; Edge output is unreliable).
-- Core TTS is used when Twilio media streaming is enabled; otherwise calls fall back to provider native voices.
+- **音声通話では Edge TTS は使われません。** 電話音声は PCM を必要とし、Edge の出力は安定しないためです。
+- Twilio media streaming が有効なら core TTS を使い、そうでない場合は provider の native voice へフォールバックします。
 
-### More examples
+### 追加例
 
-Use core TTS only (no override):
+core TTS のみを使う場合（override なし）:
 
 ```json5
 {
@@ -240,7 +231,7 @@ Use core TTS only (no override):
 }
 ```
 
-Override to ElevenLabs just for calls (keep core default elsewhere):
+通話だけ ElevenLabs に切り替える場合（コア既定値は他で維持）:
 
 ```json5
 {
@@ -263,7 +254,7 @@ Override to ElevenLabs just for calls (keep core default elsewhere):
 }
 ```
 
-Override only the OpenAI model for calls (deep‑merge example):
+通話向けに OpenAI model だけを override する場合（deep-merge の例）:
 
 ```json5
 {
@@ -284,9 +275,9 @@ Override only the OpenAI model for calls (deep‑merge example):
 }
 ```
 
-## Inbound calls
+## 着信通話
 
-Inbound policy defaults to `disabled`. To enable inbound calls, set:
+着信ポリシーの既定値は `disabled` です。着信を有効化するには次のように設定します。
 
 ```json5
 {
@@ -296,7 +287,7 @@ Inbound policy defaults to `disabled`. To enable inbound calls, set:
 }
 ```
 
-Auto-responses use the agent system. Tune with:
+自動応答は agent system を使います。主な調整項目:
 
 - `responseModel`
 - `responseSystemPrompt`
@@ -316,22 +307,22 @@ openclaw voicecall expose --mode funnel
 
 ## Agent tool
 
-Tool name: `voice_call`
+tool 名: `voice_call`
 
-Actions:
+actions:
 
-- `initiate_call` (message, to?, mode?)
-- `continue_call` (callId, message)
-- `speak_to_user` (callId, message)
-- `end_call` (callId)
-- `get_status` (callId)
+- `initiate_call`（message, to?, mode?）
+- `continue_call`（callId, message）
+- `speak_to_user`（callId, message）
+- `end_call`（callId）
+- `get_status`（callId）
 
-This repo ships a matching skill doc at `skills/voice-call/SKILL.md`.
+この repository には対応する skill doc が `skills/voice-call/SKILL.md` として含まれています。
 
 ## Gateway RPC
 
-- `voicecall.initiate` (`to?`, `message`, `mode?`)
-- `voicecall.continue` (`callId`, `message`)
-- `voicecall.speak` (`callId`, `message`)
-- `voicecall.end` (`callId`)
-- `voicecall.status` (`callId`)
+- `voicecall.initiate`（`to?`, `message`, `mode?`）
+- `voicecall.continue`（`callId`, `message`）
+- `voicecall.speak`（`callId`, `message`）
+- `voicecall.end`（`callId`）
+- `voicecall.status`（`callId`）

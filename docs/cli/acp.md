@@ -1,133 +1,116 @@
 ---
-summary: "Run the ACP bridge for IDE integrations"
+summary: "IDE 連携のために ACP ブリッジを実行する"
 read_when:
-  - Setting up ACP-based IDE integrations
-  - Debugging ACP session routing to the Gateway
+  - ACP ベースの IDE 連携をセットアップする場合
+  - ゲートウェイへの ACP セッションルーティングをデバッグする場合
 title: "acp"
+x-i18n:
+  source_hash: "dfc8230568ae37649a303d532dc332f73b5d69a3358ae7b68a872c7d1614ec7f"
 ---
 
 # acp
 
-Run the [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) bridge that talks to a OpenClaw Gateway.
+OpenClaw ゲートウェイと通信する [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) ブリッジを実行します。
 
-This command speaks ACP over stdio for IDEs and forwards prompts to the Gateway
-over WebSocket. It keeps ACP sessions mapped to Gateway session keys.
+このコマンドは、IDE 等との標準入出力を介した ACP 通信を行い、プロンプトを WebSocket 経由でゲートウェイに転送します。ACP セッションとゲートウェイのセッションキーのマッピングを維持します。
 
-`openclaw acp` is a Gateway-backed ACP bridge, not a full ACP-native editor
-runtime. It focuses on session routing, prompt delivery, and basic streaming
-updates.
+`openclaw acp` はゲートウェイをバックエンドとする ACP ブリッジであり、完全な ACP ネイティブのエディタランタイムではありません。セッションのルーティング、プロンプトの配信、および基本的なストリーミング更新に重点を置いています。
 
-## Compatibility Matrix
+## 互換性マトリックス
 
-| ACP area                                                              | Status      | Notes                                                                                                                                                                                                                                            |
-| --------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `initialize`, `newSession`, `prompt`, `cancel`                        | Implemented | Core bridge flow over stdio to Gateway chat/send + abort.                                                                                                                                                                                        |
-| `listSessions`, slash commands                                        | Implemented | Session list works against Gateway session state; commands are advertised via `available_commands_update`.                                                                                                                                       |
-| `loadSession`                                                         | Partial     | Rebinds the ACP session to a Gateway session key and replays stored user/assistant text history. Tool/system history is not reconstructed yet.                                                                                                   |
-| Prompt content (`text`, embedded `resource`, images)                  | Partial     | Text/resources are flattened into chat input; images become Gateway attachments.                                                                                                                                                                 |
-| Session modes                                                         | Partial     | `session/set_mode` is supported and the bridge exposes initial Gateway-backed session controls for thought level, tool verbosity, reasoning, usage detail, and elevated actions. Broader ACP-native mode/config surfaces are still out of scope. |
-| Session info and usage updates                                        | Partial     | The bridge emits `session_info_update` and best-effort `usage_update` notifications from cached Gateway session snapshots. Usage is approximate and only sent when Gateway token totals are marked fresh.                                        |
-| Tool streaming                                                        | Partial     | `tool_call` / `tool_call_update` events include raw I/O, text content, and best-effort file locations when Gateway tool args/results expose them. Embedded terminals and richer diff-native output are still not exposed.                        |
-| Per-session MCP servers (`mcpServers`)                                | Unsupported | Bridge mode rejects per-session MCP server requests. Configure MCP on the OpenClaw gateway or agent instead.                                                                                                                                     |
-| Client filesystem methods (`fs/read_text_file`, `fs/write_text_file`) | Unsupported | The bridge does not call ACP client filesystem methods.                                                                                                                                                                                          |
-| Client terminal methods (`terminal/*`)                                | Unsupported | The bridge does not create ACP client terminals or stream terminal ids through tool calls.                                                                                                                                                       |
-| Session plans / thought streaming                                     | Unsupported | The bridge currently emits output text and tool status, not ACP plan or thought updates.                                                                                                                                                         |
+| ACP 領域 | ステータス | 備考 |
+| :--- | :--- | :--- |
+| `initialize`, `newSession`, `prompt`, `cancel` | 実装済み | 標準入出力を介したブリッジフロー。ゲートウェイへの chat/send および実行中止に対応。 |
+| `listSessions`, スラッシュコマンド | 実装済み | セッション一覧はゲートウェイのセッション状態に基づきます。コマンドは `available_commands_update` 経由で通知されます。 |
+| `loadSession` | 部分的 | ACP セッションをゲートウェイのセッションキーに再バインドし、保存されているユーザー/アシスタントのテキスト履歴を再生します。ツールやシステムの履歴はまだ再構築されません。 |
+| プロンプト内容 (`text`, 埋め込み `resource`, 画像) | 部分的 | テキストやリソースはチャット入力にフラット化されます。画像はゲートウェイの添付ファイルになります。 |
+| セッションモード | 部分的 | `session/set_mode` がサポートされています。ブリッジは、思考レベル、ツールの詳細度、推論、使用状況の詳細、および権限昇格アクションに対するゲートウェイベースの初期制御を公開します。広範な ACP ネイティブのモードや構成は対象外です。 |
+| セッション情報と使用状況の更新 | 部分的 | キャッシュされたゲートウェイのセッションスナップショットから `session_info_update` と、ベストエフォートで `usage_update` 通知を発行します。使用状況は概算であり、ゲートウェイのトークン合計が更新された場合にのみ送信されます。 |
+| ツールストリーミング | 部分的 | `tool_call` / `tool_call_update` イベントには、生の I/O、テキスト内容、およびゲートウェイツールの引数/結果に含まれる場合はベストエフォートでファイル位置が含まれます。埋め込みターミナルやリッチな diff 出力にはまだ対応していません。 |
+| セッションごとの MCP サーバー (`mcpServers`) | 未サポート | ブリッジモードではセッションごとの MCP サーバー要求を拒否します。代わりに OpenClaw のゲートウェイまたはエージェントで MCP を構成してください。 |
+| クライアント側ファイルシステムメソッド (`fs/read_text_file`, `fs/write_text_file`) | 未サポート | ブリッジは ACP クライアントのファイルシステムメソッドを呼び出しません。 |
+| クライアント側ターミナルメソッド (`terminal/*`) | 未サポート | ブリッジは ACP クライアントターミナルを作成したり、ツール呼び出しを通じてターミナル ID をストリーミングしたりしません。 |
+| セッションプラン / 思考ストリーミング | 未サポート | 現在、ブリッジは出力テキストとツールのステータスのみを出力し、ACP のプランや思考プロセスの更新は出力しません。 |
 
-## Known Limitations
+## 既知の制限事項
 
-- `loadSession` replays stored user and assistant text history, but it does not
-  reconstruct historic tool calls, system notices, or richer ACP-native event
-  types.
-- If multiple ACP clients share the same Gateway session key, event and cancel
-  routing are best-effort rather than strictly isolated per client. Prefer the
-  default isolated `acp:<uuid>` sessions when you need clean editor-local
-  turns.
-- Gateway stop states are translated into ACP stop reasons, but that mapping is
-  less expressive than a fully ACP-native runtime.
-- Initial session controls currently surface a focused subset of Gateway knobs:
-  thought level, tool verbosity, reasoning, usage detail, and elevated
-  actions. Model selection and exec-host controls are not yet exposed as ACP
-  config options.
-- `session_info_update` and `usage_update` are derived from Gateway session
-  snapshots, not live ACP-native runtime accounting. Usage is approximate,
-  carries no cost data, and is only emitted when the Gateway marks total token
-  data as fresh.
-- Tool follow-along data is best-effort. The bridge can surface file paths that
-  appear in known tool args/results, but it does not yet emit ACP terminals or
-  structured file diffs.
+- `loadSession` は保存されたユーザーとアシスタントのテキスト履歴を再生しますが、過去のツール呼び出し、システム通知、またはリッチな ACP ネイティブイベントタイプは再構築しません。
+- 複数の ACP クライアントが同じゲートウェイセッションキーを共有する場合、イベントやキャンセル（中断）のルーティングはクライアントごとに厳密に分離されるのではなく、ベストエフォートになります。クリーンなエディタローカルのターンが必要な場合は、デフォルトの分離された `acp:<uuid>` セッションを使用してください。
+- ゲートウェイの停止状態は ACP の停止理由に変換されますが、そのマッピングは完全な ACP ネイティブランタイムほど表現力が高くありません。
+- 初期のセッション制御は、現在、思考レベル、ツールの詳細度、推論、使用状況の詳細、および権限昇格アクションといった、ゲートウェイの設定のサブセットのみを対象としています。モデル選択や実行ホストの制御は、まだ ACP 構成オプションとして公開されていません。
+- `session_info_update` と `usage_update` は、ライブの ACP ネイティブランタイム計測ではなく、ゲートウェイのセッションスナップショットから派生しています。使用状況は概算であり、コストデータは含まれず、ゲートウェイがトークン合計データを「最新」とマークした場合にのみ発行されます。
+- ツールの追跡データはベストエフォートです。ブリッジは既知のツールの引数や結果に現れるファイルパスを表示できますが、ACP ターミナルや構造化されたファイル diff はまだ発行しません。
 
-## Usage
+## 使用法
 
 ```bash
 openclaw acp
 
-# Remote Gateway
+# リモートゲートウェイへの接続
 openclaw acp --url wss://gateway-host:18789 --token <token>
 
-# Remote Gateway (token from file)
+# リモートゲートウェイへの接続 (トークンをファイルから読み込む)
 openclaw acp --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
 
-# Attach to an existing session key
+# 既存のセッションキーにアタッチ
 openclaw acp --session agent:main:main
 
-# Attach by label (must already exist)
+# ラベルで指定してアタッチ (既存のラベルである必要があります)
 openclaw acp --session-label "support inbox"
 
-# Reset the session key before the first prompt
+# 初回プロンプトの前にセッションキーをリセット
 openclaw acp --session agent:main:main --reset-session
 ```
 
-## ACP client (debug)
+## ACP クライアント (デバッグ用)
 
-Use the built-in ACP client to sanity-check the bridge without an IDE.
-It spawns the ACP bridge and lets you type prompts interactively.
+IDE を介さずにブリッジの動作確認を行うための組み込み ACP クライアントです。ACP ブリッジを起動し、対話的にプロンプトを入力できます。
 
 ```bash
 openclaw acp client
 
-# Point the spawned bridge at a remote Gateway
+# 起動したブリッジをリモートゲートウェイに向ける
 openclaw acp client --server-args --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
 
-# Override the server command (default: openclaw)
+# サーバーコマンドを上書き (デフォルト: openclaw)
 openclaw acp client --server "node" --server-args openclaw.mjs acp --url ws://127.0.0.1:19001
 ```
 
-Permission model (client debug mode):
+権限モデル (クライアントデバッグモード):
 
-- Auto-approval is allowlist-based and only applies to trusted core tool IDs.
-- `read` auto-approval is scoped to the current working directory (`--cwd` when set).
-- Unknown/non-core tool names, out-of-scope reads, and dangerous tools always require explicit prompt approval.
-- Server-provided `toolCall.kind` is treated as untrusted metadata (not an authorization source).
+- 自動承認は許可リストに基づいており、信頼されたコアツール ID にのみ適用されます。
+- `read` の自動承認は、現在の作業ディレクトリ（`--cwd` 設定時）に制限されます。
+- 未知のツールや非コアツール、範囲外の読み取り、および危険なツールには、常に明示的な承認プロンプトが必要です。
+- サーバーから提供される `toolCall.kind` は、信頼できないメタデータとして扱われます（権限付与の根拠にはなりません）。
 
-## How to use this
+## 利用手順
 
-Use ACP when an IDE (or other client) speaks Agent Client Protocol and you want
-it to drive a OpenClaw Gateway session.
+IDE（または他のクライアント）が Agent Client Protocol をサポートしており、OpenClaw ゲートウェイのセッションを操作したい場合に ACP を使用します。
 
-1. Ensure the Gateway is running (local or remote).
-2. Configure the Gateway target (config or flags).
-3. Point your IDE to run `openclaw acp` over stdio.
+1. ゲートウェイが起動していることを確認します（ローカルまたはリモート）。
+2. ゲートウェイの接続先を構成します（構成ファイルまたはフラグ）。
+3. IDE の設定で、stdio 経由で `openclaw acp` を実行するように指定します。
 
-Example config (persisted):
+構成例（永続化する場合）:
 
 ```bash
 openclaw config set gateway.remote.url wss://gateway-host:18789
 openclaw config set gateway.remote.token <token>
 ```
 
-Example direct run (no config write):
+直接実行する場合（構成を書き換えない）:
 
 ```bash
 openclaw acp --url wss://gateway-host:18789 --token <token>
-# preferred for local process safety
+# ローカルプロセスの安全性の観点から以下を推奨します
 openclaw acp --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
 ```
 
-## Selecting agents
+## エージェントの選択
 
-ACP does not pick agents directly. It routes by the Gateway session key.
+ACP はエージェントを直接選択するのではなく、ゲートウェイのセッションキーによってルーティングを行います。
 
-Use agent-scoped session keys to target a specific agent:
+特定のエージェントをターゲットにするには、エージェントスコープのセッションキーを使用します:
 
 ```bash
 openclaw acp --session agent:main:main
@@ -135,39 +118,33 @@ openclaw acp --session agent:design:main
 openclaw acp --session agent:qa:bug-123
 ```
 
-Each ACP session maps to a single Gateway session key. One agent can have many
-sessions; ACP defaults to an isolated `acp:<uuid>` session unless you override
-the key or label.
+各 ACP セッションは単一のゲートウェイセッションキーにマップされます。1 つのエージェントが複数のセッションを持つことができます。ACP は、キーやラベルを明示的に上書きしない限り、デフォルトで分離された `acp:<uuid>` セッションを使用します。
 
-Per-session `mcpServers` are not supported in bridge mode. If an ACP client
-sends them during `newSession` or `loadSession`, the bridge returns a clear
-error instead of silently ignoring them.
+ブリッジモードでは、セッションごとの `mcpServers` はサポートされていません。ACP クライアントが `newSession` や `loadSession` 時にこれらを送信した場合、ブリッジは黙って無視するのではなく、明確なエラーを返します。
 
-## Use from `acpx` (Codex, Claude, other ACP clients)
+## `acpx` (Codex, Claude Code 等の ACP クライアント) からの利用
 
-If you want a coding agent such as Codex or Claude Code to talk to your
-OpenClaw bot over ACP, use `acpx` with its built-in `openclaw` target.
+Codex や Claude Code などのコーディングエージェントから OpenClaw ボットと ACP 経由で通信したい場合は、`acpx` の組み込み `openclaw` ターゲットを使用します。
 
-Typical flow:
+標準的な流れ:
 
-1. Run the Gateway and make sure the ACP bridge can reach it.
-2. Point `acpx openclaw` at `openclaw acp`.
-3. Target the OpenClaw session key you want the coding agent to use.
+1. ゲートウェイを実行し、ACP ブリッジから到達可能であることを確認します。
+2. `acpx openclaw` の参照先として `openclaw acp` を指定します。
+3. コーディングエージェントに使用させたい OpenClaw のセッションキーを指定します。
 
-Examples:
+実行例:
 
 ```bash
-# One-shot request into your default OpenClaw ACP session
-acpx openclaw exec "Summarize the active OpenClaw session state."
+# デフォルトの OpenClaw ACP セッションに対して一度限りの要求を行う
+acpx openclaw exec "現在の OpenClaw セッションの状態を要約してください。"
 
-# Persistent named session for follow-up turns
+# 継続的なターンのために永続的な名前付きセッションを使用する
 acpx openclaw sessions ensure --name codex-bridge
 acpx openclaw -s codex-bridge --cwd /path/to/repo \
-  "Ask my OpenClaw work agent for recent context relevant to this repo."
+  "仕事用の OpenClaw エージェントに、このリポジトリに関連する最近のコンテキストを尋ねてください。"
 ```
 
-If you want `acpx openclaw` to target a specific Gateway and session key every
-time, override the `openclaw` agent command in `~/.acpx/config.json`:
+毎回特定のゲートウェイとセッションキーをターゲットにしたい場合は、`~/.acpx/config.json` で `openclaw` エージェントコマンドを上書きします:
 
 ```json
 {
@@ -179,19 +156,17 @@ time, override the `openclaw` agent command in `~/.acpx/config.json`:
 }
 ```
 
-For a repo-local OpenClaw checkout, use the direct CLI entrypoint instead of the
-dev runner so the ACP stream stays clean. For example:
+リポジトリローカルの OpenClaw チェックアウトを使用する場合は、ACP ストリームをクリーンに保つため、dev ランナーではなく直接的な CLI エントリポイントを使用してください。例:
 
 ```bash
 env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 node openclaw.mjs acp ...
 ```
 
-This is the easiest way to let Codex, Claude Code, or another ACP-aware client
-pull contextual information from an OpenClaw agent without scraping a terminal.
+これは、Codex や Claude Code などの ACP 対応クライアントが、ターミナルの画面をスクレイピングすることなく、OpenClaw エージェントからコンテキスト情報を取得するための最も簡単な方法です。
 
-## Zed editor setup
+## Zed エディタのセットアップ
 
-Add a custom ACP agent in `~/.config/zed/settings.json` (or use Zed’s Settings UI):
+`~/.config/zed/settings.json` にカスタム ACP エージェントを追加します（または Zed の設定 UI を使用します）:
 
 ```json
 {
@@ -206,7 +181,7 @@ Add a custom ACP agent in `~/.config/zed/settings.json` (or use Zed’s Settings
 }
 ```
 
-To target a specific Gateway or agent:
+特定のゲートウェイやエージェントを指定する場合:
 
 ```json
 {
@@ -229,18 +204,17 @@ To target a specific Gateway or agent:
 }
 ```
 
-In Zed, open the Agent panel and select “OpenClaw ACP” to start a thread.
+Zed でエージェントパネルを開き、"OpenClaw ACP" を選択してスレッドを開始します。
 
-## Session mapping
+## セッションマッピング
 
-By default, ACP sessions get an isolated Gateway session key with an `acp:` prefix.
-To reuse a known session, pass a session key or label:
+デフォルトでは、ACP セッションには `acp:` プレフィックスが付いた分離されたゲートウェイセッションキーが割り当てられます。既存のセッションを再利用するには、セッションキーまたはラベルを渡します。
 
-- `--session <key>`: use a specific Gateway session key.
-- `--session-label <label>`: resolve an existing session by label.
-- `--reset-session`: mint a fresh session id for that key (same key, new transcript).
+- `--session <key>`: 特定のゲートウェイセッションキーを使用します。
+- `--session-label <label>`: 既存のセッションをラベルで解決します。
+- `--reset-session`: そのキーに対して新しいセッション ID を発行します（同じキーですが、履歴は新しくなります）。
 
-If your ACP client supports metadata, you can override per session:
+ACP クライアントがメタデータをサポートしている場合は、セッションごとに上書き可能です:
 
 ```json
 {
@@ -252,37 +226,37 @@ If your ACP client supports metadata, you can override per session:
 }
 ```
 
-Learn more about session keys at [/concepts/session](/concepts/session).
+セッションキーの詳細については、[/concepts/session](/concepts/session) を参照してください。
 
-## Options
+## オプション
 
-- `--url <url>`: Gateway WebSocket URL (defaults to gateway.remote.url when configured).
-- `--token <token>`: Gateway auth token.
-- `--token-file <path>`: read Gateway auth token from file.
-- `--password <password>`: Gateway auth password.
-- `--password-file <path>`: read Gateway auth password from file.
-- `--session <key>`: default session key.
-- `--session-label <label>`: default session label to resolve.
-- `--require-existing`: fail if the session key/label does not exist.
-- `--reset-session`: reset the session key before first use.
-- `--no-prefix-cwd`: do not prefix prompts with the working directory.
-- `--verbose, -v`: verbose logging to stderr.
+- `--url <url>`: ゲートウェイの WebSocket URL (構成済みであれば gateway.remote.url がデフォルトとなります)。
+- `--token <token>`: ゲートウェイ認証トークン。
+- `--token-file <path>`: ゲートウェイ認証トークンをファイルから読み込みます。
+- `--password <password>`: ゲートウェイ認証パスワード。
+- `--password-file <path>`: ゲートウェイ認証パスワードをファイルから読み込みます。
+- `--session <key>`: デフォルトのセッションキー。
+- `--session-label <label>`: 解決するデフォルトのセッションラベル。
+- `--require-existing`: セッションキーやラベルが存在しない場合にエラーにします。
+- `--reset-session`: 初回使用前にセッションキーをリセットします。
+- `--no-prefix-cwd`: プロンプトの前に作業ディレクトリを付加しません。
+- `--verbose, -v`: stderr への詳細ログ出力を有効にします。
 
-Security note:
+セキュリティに関する注意:
 
-- `--token` and `--password` can be visible in local process listings on some systems.
-- Prefer `--token-file`/`--password-file` or environment variables (`OPENCLAW_GATEWAY_TOKEN`, `OPENCLAW_GATEWAY_PASSWORD`).
-- Gateway auth resolution follows the shared contract used by other Gateway clients:
-  - local mode: env (`OPENCLAW_GATEWAY_*`) -> `gateway.auth.*` -> `gateway.remote.*` fallback when `gateway.auth.*` is unset
-  - remote mode: `gateway.remote.*` with env/config fallback per remote precedence rules
-  - `--url` is override-safe and does not reuse implicit config/env credentials; pass explicit `--token`/`--password` (or file variants)
-- ACP runtime backend child processes receive `OPENCLAW_SHELL=acp`, which can be used for context-specific shell/profile rules.
-- `openclaw acp client` sets `OPENCLAW_SHELL=acp-client` on the spawned bridge process.
+- 一部のシステムでは、`--token` や `--password` はローカルのプロセス一覧から可視状態になる場合があります。
+- `--token-file` / `--password-file` または環境変数 (`OPENCLAW_GATEWAY_TOKEN`, `OPENCLAW_GATEWAY_PASSWORD`) の使用を推奨します。
+- ゲートウェイ認証の解決は、他のゲートウェイクライアントと共通のルールに従います:
+  - ローカルモード: 環境変数 (`OPENCLAW_GATEWAY_*`) -> `gateway.auth.*` -> `gateway.auth.*` 未設定時は `gateway.remote.*` へフォールバック
+  - リモートモード: `gateway.remote.*` (リモート優先順位ルールによる環境変数/構成フォールバックあり)
+  - `--url` 指定時は上書きが優先され、暗黙的な構成や環境変数の認証情報は再利用されません。明示的に `--token` / `--password` (またはファイル版) を指定してください。
+- ACP ランタイムバックエンドの子プロセスは `OPENCLAW_SHELL=acp` を受け取ります。これはコンテキスト固有のシェルやプロフィールルールに使用できます。
+- `openclaw acp client` は、起動したブリッジプロセスに `OPENCLAW_SHELL=acp-client` を設定します。
 
-### `acp client` options
+### `acp client` オプション
 
-- `--cwd <dir>`: working directory for the ACP session.
-- `--server <command>`: ACP server command (default: `openclaw`).
-- `--server-args <args...>`: extra arguments passed to the ACP server.
-- `--server-verbose`: enable verbose logging on the ACP server.
-- `--verbose, -v`: verbose client logging.
+- `--cwd <dir>`: ACP セッションの作業ディレクトリ。
+- `--server <command>`: ACP サーバーコマンド (デフォルト: `openclaw`)。
+- `--server-args <args...>`: ACP サーバーに渡す追加の引数。
+- `--server-verbose`: ACP サーバーの詳細ログ出力を有効にします。
+- `--verbose, -v`: クライアントの詳細ログ出力。

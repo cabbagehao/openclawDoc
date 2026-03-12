@@ -1,76 +1,74 @@
 ---
-summary: "Research notes: offline memory system for Clawd workspaces (Markdown source-of-truth + derived index)"
+summary: "研究メモ: Clawd ワークスペース向けオフライン記憶システム (Markdown による真実のソース + 派生インデックス)"
 read_when:
-  - Designing workspace memory (~/.openclaw/workspace) beyond daily Markdown logs
-  - Deciding: standalone CLI vs deep OpenClaw integration
-  - Adding offline recall + reflection (retain/recall/reflect)
-title: "Workspace Memory Research"
+  - 日次 Markdown ログを超えた、ワークスペースの記憶 (~/.openclaw/workspace) を設計する場合
+  - 選択の検討: スタンドアロン CLI か、OpenClaw への深い統合か
+  - オフラインでの想起（Recall）と内省（Reflection）機能の追加 (Retain/Recall/Reflect)
+title: "ワークスペース記憶の研究"
+x-i18n:
+  source_hash: "1753c8ee6284999fab4a94ff5fae7421c85233699c9d3088453d0c2133ac0feb"
 ---
 
-# Workspace Memory v2 (offline): research notes
+# ワークスペース記憶 v2 (オフライン): 研究メモ
 
-Target: Clawd-style workspace (`agents.defaults.workspace`, default `~/.openclaw/workspace`) where “memory” is stored as one Markdown file per day (`memory/YYYY-MM-DD.md`) plus a small set of stable files (e.g. `memory.md`, `SOUL.md`).
+対象: Clawd スタイルのワークスペース (`agents.defaults.workspace`, デフォルトは `~/.openclaw/workspace`)。ここでは「記憶」は 1 日 1 つの Markdown ファイル (`memory/YYYY-MM-DD.md`) と、少数の安定したファイル (例: `memory.md`, `SOUL.md`) として保存されています。
 
-This doc proposes an **offline-first** memory architecture that keeps Markdown as the canonical, reviewable source of truth, but adds **structured recall** (search, entity summaries, confidence updates) via a derived index.
+本ドキュメントでは、Markdown を「真実のソース（正）」として人間がレビュー可能な状態で維持しつつ、派生インデックスを介して **構造化された想起** (検索、実体（エンティティ）サマリー、確信度の更新) を追加する、**オフライン優先** の記憶アーキテクチャを提案します。
 
-## Why change?
+## なぜ変更するのか？
 
-The current setup (one file per day) is excellent for:
+現在の仕組み (1 日 1 ファイル) は以下の点に優れています:
+- 「追記専用」のジャーナリング（日記）形式
+- 人間による直接編集が可能
+- Git による耐久性と監査性
+- 低摩擦なキャプチャ（「ただ書き留めるだけ」で済む）
 
-- “append-only” journaling
-- human editing
-- git-backed durability + auditability
-- low-friction capture (“just write it down”)
+一方で、以下の点が弱みです:
+- 高精度な検索（「X について何を決めたか？」「最後に Y を試したのはいつか？」）
+- 実体（エンティティ）中心の回答（Alice, The Castle, warelay について多くのファイルを読み返さずに答えること）
+- 意見や好みの安定性（および、それが変化した際の根拠の把握）
+- 時間的な制約（「2025 年 11 月時点で何が事実だったか？」）や、矛盾の解消
 
-It’s weak for:
+## 設計目標
 
-- high-recall retrieval (“what did we decide about X?”, “last time we tried Y?”)
-- entity-centric answers (“tell me about Alice / The Castle / warelay”) without rereading many files
-- opinion/preference stability (and evidence when it changes)
-- time constraints (“what was true during Nov 2025?”) and conflict resolution
+- **オフライン**: ネットワークなしで動作。ラップトップや Castle 上で実行可能。クラウド依存なし。
+- **説明可能**: 想起された項目は、ソース（ファイルと位置）が特定可能であり、推論プロセスと分離されていること。
+- **簡素**: 日次のログ記録は Markdown のままとし、複雑なスキーマ設計を強いない。
+- **段階的**: v1 は全文検索（FTS）のみで有用。セマンティック/ベクトル検索やグラフ構造はオプションのアップグレードとする。
+- **エージェント親和性**: トークン枠内での想起を容易にする（事実の小さな塊（Bundle）を返す）。
 
-## Design goals
+## 北極星モデル (Hindsight × Letta)
 
-- **Offline**: works without network; can run on laptop/Castle; no cloud dependency.
-- **Explainable**: retrieved items should be attributable (file + location) and separable from inference.
-- **Low ceremony**: daily logging stays Markdown, no heavy schema work.
-- **Incremental**: v1 is useful with FTS only; semantic/vector and graphs are optional upgrades.
-- **Agent-friendly**: makes “recall within token budgets” easy (return small bundles of facts).
+以下の 2 つの要素を組み合わせます:
 
-## North star model (Hindsight × Letta)
+1. **Letta/MemGPT スタイルの制御ループ**
+   - 小さな「コア記憶」を常にコンテキスト内に保持（ペルソナ + ユーザーに関する重要事実）。
+   - それ以外はコンテキスト外（Out-of-context）とし、ツールを介して想起。
+   - 記憶への書き込みは明示的なツール呼び出し（追記/置換/挿入）とし、永続化された後、次のターンで再注入される。
 
-Two pieces to blend:
+2. **Hindsight スタイルの記憶基盤**
+   - 観察されたこと（Observed） vs 信じていること（Believed） vs 要約されたこと（Summarized）を分離。
+   - Retain（保持）/ Recall（想起）/ Reflect（内省）をサポート。
+   - 根拠に基づいて進化する、確信度（Confidence）を伴う意見。
+   - 実体（エンティティ）を認識した想起 + 時間的なクエリ（完全なナレッジグラフがなくても実現可能）。
 
-1. **Letta/MemGPT-style control loop**
+## 提案するアーキテクチャ (Markdown ＋ 派生インデックス)
 
-- keep a small “core” always in context (persona + key user facts)
-- everything else is out-of-context and retrieved via tools
-- memory writes are explicit tool calls (append/replace/insert), persisted, then re-injected next turn
+### 正統ストア (Git 親和性)
 
-2. **Hindsight-style memory substrate**
+`~/.openclaw/workspace` を、人間が読める正統な記憶として維持します。
 
-- separate what’s observed vs what’s believed vs what’s summarized
-- support retain/recall/reflect
-- confidence-bearing opinions that can evolve with evidence
-- entity-aware retrieval + temporal queries (even without full knowledge graphs)
-
-## Proposed architecture (Markdown source-of-truth + derived index)
-
-### Canonical store (git-friendly)
-
-Keep `~/.openclaw/workspace` as canonical human-readable memory.
-
-Suggested workspace layout:
+推奨されるワークスペースのレイアウト:
 
 ```
 ~/.openclaw/workspace/
-  memory.md                    # small: durable facts + preferences (core-ish)
+  memory.md                    # 小規模: 恒久的な事実 + 好み (コアに近い記憶)
   memory/
-    YYYY-MM-DD.md              # daily log (append; narrative)
-  bank/                        # “typed” memory pages (stable, reviewable)
-    world.md                   # objective facts about the world
-    experience.md              # what the agent did (first-person)
-    opinions.md                # subjective prefs/judgments + confidence + evidence pointers
+    YYYY-MM-DD.md              # 日次ログ (追記型、物語形式)
+  bank/                        # 「型定義された」記憶ページ (安定、レビュー可能)
+    world.md                   # 世界に関する客観的な事実
+    experience.md              # エージェントが何をしたか (一人称視点)
+    opinions.md                # 主観的な好み/判断 + 確信度 + 根拠へのポインタ
     entities/
       Peter.md
       The-Castle.md
@@ -78,151 +76,136 @@ Suggested workspace layout:
       ...
 ```
 
-Notes:
+補足:
+- **日次ログは日次ログのまま維持**。JSON に変換する必要はありません。
+- `bank/` 内のファイルは、内省（Reflection）ジョブによって生成・**整理**されますが、手動での編集も可能です。
+- `memory.md` は「小規模かつコア」な状態を保ち、Clawd がすべてのセッションで目にする情報となります。
 
-- **Daily log stays daily log**. No need to turn it into JSON.
-- The `bank/` files are **curated**, produced by reflection jobs, and can still be edited by hand.
-- `memory.md` remains “small + core-ish”: the things you want Clawd to see every session.
+### 派生ストア (機械的な想起用)
 
-### Derived store (machine recall)
-
-Add a derived index under the workspace (not necessarily git tracked):
+ワークスペース配下に、派生インデックス（必ずしも Git 管理しなくてよい）を追加します:
 
 ```
 ~/.openclaw/workspace/.memory/index.sqlite
 ```
 
-Back it with:
+バックエンドの構成:
+- 事実、実体（エンティティ）リンク、意見のメタデータのための SQLite スキーマ。
+- 語彙検索（Lexical recall）のための SQLite **FTS5** (高速、軽量、オフライン)。
+- セマンティック検索のためのオプションの埋め込み（Embeddings）テーブル。
 
-- SQLite schema for facts + entity links + opinion metadata
-- SQLite **FTS5** for lexical recall (fast, tiny, offline)
-- optional embeddings table for semantic recall (still offline)
+このインデックスは、いつでも **Markdown から再構築可能** です。
 
-The index is always **rebuildable from Markdown**.
+## Retain / Recall / Reflect (運用ループ)
 
-## Retain / Recall / Reflect (operational loop)
+### Retain: 日次ログを「事実」として正規化する
 
-### Retain: normalize daily logs into “facts”
+Hindsight の重要な知見: 断片的なスニペットではなく、**物語的で自己完結した事実**を保存すること。
 
-Hindsight’s key insight that matters here: store **narrative, self-contained facts**, not tiny snippets.
+`memory/YYYY-MM-DD.md` での実践ルール:
+- 1 日の終わり（または途中）に、以下の 2〜5 個の項目を含む `## Retain` セクションを追加する:
+  - 物語形式（ターンを跨いだ文脈が保持されている）。
+  - 自己完結（後でそれ単体で見ても意味が通じる）。
+  - 型（Type）と実体（Entity）のメンションでタグ付けされている。
 
-Practical rule for `memory/YYYY-MM-DD.md`:
-
-- at end of day (or during), add a `## Retain` section with 2–5 bullets that are:
-  - narrative (cross-turn context preserved)
-  - self-contained (standalone makes sense later)
-  - tagged with type + entity mentions
-
-Example:
-
+例:
 ```
 ## Retain
-- W @Peter: Currently in Marrakech (Nov 27–Dec 1, 2025) for Andy’s birthday.
-- B @warelay: I fixed the Baileys WS crash by wrapping connection.update handlers in try/catch (see memory/2025-11-27.md).
-- O(c=0.95) @Peter: Prefers concise replies (&lt;1500 chars) on WhatsApp; long content goes into files.
+- W @Peter: アンディの誕生日のため、現在はマラケシュに滞在（2025年11月27日〜12月1日）。
+- B @warelay: try/catch で connection.update ハンドラーをラップすることで、Baileys の WS クラッシュを修正（詳細は memory/2025-11-27.md を参照）。
+- O(c=0.95) @Peter: WhatsApp では簡潔な返信（1500文字未満）を好む。長い内容はファイルに書き出すこと。
 ```
 
-Minimal parsing:
+最小限のパース（解析）ルール:
+- 型プレフィックス: `W` (世界), `B` (経験/伝記), `O` (意見), `S` (観察/要約; 通常は自動生成)
+- 実体（エンティティ）: `@Peter`, `@warelay` など（スラッグは `bank/entities/*.md` にマップ）
+- 意見の確信度: `O(c=0.0..1.0)` (オプション)
 
-- Type prefix: `W` (world), `B` (experience/biographical), `O` (opinion), `S` (observation/summary; usually generated)
-- Entities: `@Peter`, `@warelay`, etc (slugs map to `bank/entities/*.md`)
-- Opinion confidence: `O(c=0.0..1.0)` optional
+作者（ユーザー）にこれを意識させたくない場合: 内省ジョブがログの残りの部分からこれらの項目を推論することも可能ですが、明示的な `## Retain` セクションを設けることが、最も簡単な「品質向上レバー」となります。
 
-If you don’t want authors to think about it: the reflect job can infer these bullets from the rest of the log, but having an explicit `## Retain` section is the easiest “quality lever”.
+### Recall: 派生インデックスに対するクエリ
 
-### Recall: queries over the derived index
+以下の想起方法をサポートすべきです:
+- **語彙検索**: 「特定の単語、名前、コマンドを探す」 (FTS5)
+- **実体検索**: 「X について教えて」 (実体ページ + 実体にリンクされた事実)
+- **時間検索**: 「11月27日あたりに何が起きたか」「先週以降の出来事」
+- **意見検索**: 「ピーターの好みは？」 (確信度 + 根拠付き)
 
-Recall should support:
-
-- **lexical**: “find exact terms / names / commands” (FTS5)
-- **entity**: “tell me about X” (entity pages + entity-linked facts)
-- **temporal**: “what happened around Nov 27” / “since last week”
-- **opinion**: “what does Peter prefer?” (with confidence + evidence)
-
-Return format should be agent-friendly and cite sources:
-
+返信形式はエージェントが扱いやすい形式とし、出典を引用します:
 - `kind` (`world|experience|opinion|observation`)
-- `timestamp` (source day, or extracted time range if present)
+- `timestamp` (元の年月日、または抽出された期間)
 - `entities` (`["Peter","warelay"]`)
-- `content` (the narrative fact)
-- `source` (`memory/2025-11-27.md#L12` etc)
+- `content` (物語的な事実)
+- `source` (`memory/2025-11-27.md#L12` など)
 
-### Reflect: produce stable pages + update beliefs
+### Reflect: 安定したページの生成と信念の更新
 
-Reflection is a scheduled job (daily or heartbeat `ultrathink`) that:
+内省は、定期的に（日次またはハートビート時の `ultrathink` として）実行されるジョブです:
+- 最近の事実から `bank/entities/*.md` を更新（実体サマリー）。
+- 補強・矛盾する情報に基づき、`bank/opinions.md` の確信度を更新。
+- オプションで、`memory.md`（コアとなる恒久的事実）への編集を提案。
 
-- updates `bank/entities/*.md` from recent facts (entity summaries)
-- updates `bank/opinions.md` confidence based on reinforcement/contradiction
-- optionally proposes edits to `memory.md` (“core-ish” durable facts)
+意見の進化（シンプルかつ説明可能なモデル）:
+- 各意見は以下を保持:
+  - 内容（Statement）
+  - 確信度 `c ∈ [0,1]`
+  - 最終更新日時
+  - 根拠リンク（肯定・否定する事実の ID）
+- 新しい事実が届いた際:
+  - 実体の重なりと類似性（まずは FTS、後に埋め込みを使用）から候補となる意見を特定。
+  - 小さな差分（Delta）で確信度を更新。大きな変動には、強い矛盾や繰り返しの根拠が必要。
 
-Opinion evolution (simple, explainable):
+## CLI 統合: スタンドアロン vs 深い統合
 
-- each opinion has:
-  - statement
-  - confidence `c ∈ [0,1]`
-  - last_updated
-  - evidence links (supporting + contradicting fact IDs)
-- when new facts arrive:
-  - find candidate opinions by entity overlap + similarity (FTS first, embeddings later)
-  - update confidence by small deltas; big jumps require strong contradiction + repeated evidence
+推奨: **OpenClaw への深い統合**。ただし、コアライブラリは分離可能にしておきます。
 
-## CLI integration: standalone vs deep integration
-
-Recommendation: **deep integration in OpenClaw**, but keep a separable core library.
-
-### Why integrate into OpenClaw?
-
-- OpenClaw already knows:
-  - the workspace path (`agents.defaults.workspace`)
-  - the session model + heartbeats
-  - logging + troubleshooting patterns
-- You want the agent itself to call the tools:
+### なぜ OpenClaw に統合するのか？
+- OpenClaw は既に以下を把握しています:
+  - ワークスペースのパス (`agents.defaults.workspace`)
+  - セッションモデルとハートビート
+  - ロギングとトラブルシューティングのパターン
+- エージェント自身にツールを呼び出させたい:
   - `openclaw memory recall "…" --k 25 --since 30d`
   - `openclaw memory reflect --since 7d`
 
-### Why still split a library?
+### なぜライブラリを分離するのか？
+- ゲートウェイやランタイムなしで記憶ロジックをテスト可能にするため。
+- 他のコンテキスト（ローカルスクリプト、将来のデスクトップアプリなど）から再利用するため。
 
-- keep memory logic testable without gateway/runtime
-- reuse from other contexts (local scripts, future desktop app, etc.)
+形態:
+記憶ツールは、小さな CLI とライブラリのレイヤーとして意図されていますが、これはあくまで探索段階の構想です。
 
-Shape:
-The memory tooling is intended to be a small CLI + library layer, but this is exploratory only.
+## "S-Collide" / SuCo の利用タイミング (研究)
 
-## “S-Collide” / SuCo: when to use it (research)
+もし "S-Collide" が **SuCo (Subspace Collision)** を指しているのであれば、それは部分空間内での学習・構造化された衝突を利用し、想起精度と遅延のトレードオフを高度に最適化した ANN（近似最近傍探索）手法です (論文: arXiv 2411.14754, 2024)。
 
-If “S-Collide” refers to **SuCo (Subspace Collision)**: it’s an ANN retrieval approach that targets strong recall/latency tradeoffs by using learned/structured collisions in subspaces (paper: arXiv 2411.14754, 2024).
+`~/.openclaw/workspace` における現実的な見解:
+- **最初は SuCo を使わないこと**。
+- まずは SQLite FTS と（オプションの）シンプルな埋め込みから始めてください。UX 上のメリットの多くはこれで得られます。
+- SuCo, HNSW, ScaNN クラスのソリューションを検討するのは、以下の条件を満たしてからにしてください:
+  - コーパスが巨大になった場合（数十万〜数百万チャンク）。
+  - 総当たり（Brute-force）の埋め込み検索が遅すぎる場合。
+  - 想起の品質が、語彙検索（Lexical search）によって著しくボトルネックになっている場合。
 
-Pragmatic take for `~/.openclaw/workspace`:
+オフラインに適した代替案（複雑度の低い順）:
+- SQLite FTS5 + メタデータフィルタ (機械学習なし)
+- 埋め込み + 総当たり検索 (チャンク数が少なければ驚くほど長く使えます)
+- HNSW インデックス (一般的で堅牢、ライブラリのバインディングが必要)
+- SuCo (研究グレード。埋め込める堅牢な実装があれば魅力的)
 
-- **don’t start** with SuCo.
-- start with SQLite FTS + (optional) simple embeddings; you’ll get most UX wins immediately.
-- consider SuCo/HNSW/ScaNN-class solutions only once:
-  - corpus is big (tens/hundreds of thousands of chunks)
-  - brute-force embedding search becomes too slow
-  - recall quality is meaningfully bottlenecked by lexical search
+未解決の課題:
+- あなたのマシン（ラップトップ + デスクトップ）上の「パーソナルアシスタント記憶」に **最適** なオフライン埋め込みモデルは何か？
+  - すでに Ollama があるならローカルモデルで埋め込み、そうでなければツールチェーンに軽量なモデルを同梱する。
 
-Offline-friendly alternatives (in increasing complexity):
+## 最小限の有用なパイロット
 
-- SQLite FTS5 + metadata filters (zero ML)
-- Embeddings + brute force (works surprisingly far if chunk count is low)
-- HNSW index (common, robust; needs a library binding)
-- SuCo (research-grade; attractive if there’s a solid implementation you can embed)
+まずは最小限で、かつ有用なバージョンを作るなら:
+- 日次ログに `bank/` 実体ページと `## Retain` セクションを追加。
+- 出典（パスと行番号）付きの想起に SQLite FTS を使用。
+- 想起の品質や規模が求められた場合にのみ、埋め込みを追加。
 
-Open question:
+## 参考文献
 
-- what’s the **best** offline embedding model for “personal assistant memory” on your machines (laptop + desktop)?
-  - if you already have Ollama: embed with a local model; otherwise ship a small embedding model in the toolchain.
-
-## Smallest useful pilot
-
-If you want a minimal, still-useful version:
-
-- Add `bank/` entity pages and a `## Retain` section in daily logs.
-- Use SQLite FTS for recall with citations (path + line numbers).
-- Add embeddings only if recall quality or scale demands it.
-
-## References
-
-- Letta / MemGPT concepts: “core memory blocks” + “archival memory” + tool-driven self-editing memory.
-- Hindsight Technical Report: “retain / recall / reflect”, four-network memory, narrative fact extraction, opinion confidence evolution.
-- SuCo: arXiv 2411.14754 (2024): “Subspace Collision” approximate nearest neighbor retrieval.
+- Letta / MemGPT コンセプト: 「コア記憶ブロック」 ＋ 「アーカイブ記憶」 ＋ ツール駆動の自己編集記憶。
+- Hindsight テクニカルレポート: 「Retain / Recall / Reflect」、4 ネットワーク記憶、物語的事実の抽出、意見確信度の進化。
+- SuCo: arXiv 2411.14754 (2024): "Subspace Collision" 近似最近傍探索。

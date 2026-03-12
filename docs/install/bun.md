@@ -1,59 +1,59 @@
 ---
-summary: "Bun workflow (experimental): installs and gotchas vs pnpm"
+summary: "Bun ワークフロー（実験的）: インストール方法と pnpm との差分、注意点"
 read_when:
-  - You want the fastest local dev loop (bun + watch)
-  - You hit Bun install/patch/lifecycle script issues
-title: "Bun (Experimental)"
+  - 最速のローカル開発ループ（bun + watch）を使いたい
+  - Bun のインストール、パッチ、ライフサイクルスクリプトで問題が出た
+title: "Bun (実験的)"
 ---
 
-# Bun (experimental)
+# Bun (実験的)
 
-Goal: run this repo with **Bun** (optional, not recommended for WhatsApp/Telegram)
-without diverging from pnpm workflows.
+目的は、`pnpm` のワークフローから大きく外れずに、このリポジトリを **Bun** で実行できるようにすることです。Bun は任意で利用できますが、WhatsApp / Telegram 用途では推奨されません。
 
-⚠️ **Not recommended for Gateway runtime** (WhatsApp/Telegram bugs). Use Node for production.
+⚠️ **ゲートウェイのランタイムには推奨されません**。WhatsApp / Telegram まわりで不具合があるため、本番環境では Node を使用してください。
 
-## Status
+## ステータス
 
-- Bun is an optional local runtime for running TypeScript directly (`bun run …`, `bun --watch …`).
-- `pnpm` is the default for builds and remains fully supported (and used by some docs tooling).
-- Bun cannot use `pnpm-lock.yaml` and will ignore it.
+- Bun は TypeScript を直接実行するための任意のローカルランタイムです（`bun run …`、`bun --watch …`）。
+- ビルドの既定は `pnpm` で、引き続き完全にサポートされています。一部のドキュメント用ツールも `pnpm` を使います。
+- Bun は `pnpm-lock.yaml` を利用できないため、このファイルは無視されます。
 
-## Install
+## インストール
 
-Default:
+既定のインストール:
 
 ```sh
 bun install
 ```
 
-Note: `bun.lock`/`bun.lockb` are gitignored, so there’s no repo churn either way. If you want _no lockfile writes_:
+補足: `bun.lock` / `bun.lockb` は `.gitignore` に含まれているため、どちらを使ってもリポジトリに余計な差分は出ません。ロックファイルを一切書き込みたくない場合は、次を使います。
 
 ```sh
 bun install --no-save
 ```
 
-## Build / Test (Bun)
+## ビルド / テスト (Bun)
 
 ```sh
 bun run build
 bun run vitest run
 ```
 
-## Bun lifecycle scripts (blocked by default)
+## Bun のライフサイクルスクリプト (既定ではブロック)
 
-Bun may block dependency lifecycle scripts unless explicitly trusted (`bun pm untrusted` / `bun pm trust`).
-For this repo, the commonly blocked scripts are not required:
+Bun は、依存パッケージのライフサイクルスクリプトを明示的に信頼しない限り、実行をブロックすることがあります（`bun pm untrusted` / `bun pm trust`）。
 
-- `@whiskeysockets/baileys` `preinstall`: checks Node major >= 20 (we run Node 22+).
-- `protobufjs` `postinstall`: emits warnings about incompatible version schemes (no build artifacts).
+このリポジトリでは、一般にブロックされるスクリプトは通常不要です。
 
-If you hit a real runtime issue that requires these scripts, trust them explicitly:
+- `@whiskeysockets/baileys` の `preinstall`: Node のメジャーバージョンが 20 以上かを確認します。OpenClaw では Node 22+ を想定しています。
+- `protobufjs` の `postinstall`: 互換性のないバージョン体系に関する警告を出すだけで、ビルド成果物は生成しません。
+
+これらのスクリプトが本当に必要なランタイム問題に遭遇した場合のみ、明示的に信頼してください。
 
 ```sh
 bun pm trust @whiskeysockets/baileys protobufjs
 ```
 
-## Caveats
+## 注意点
 
-- Some scripts still hardcode pnpm (e.g. `docs:build`, `ui:*`, `protocol:check`). Run those via pnpm for now.
+- 一部のスクリプトはまだ `pnpm` を前提にしています。たとえば `docs:build`、`ui:*`、`protocol:check` です。現時点では、これらは `pnpm` で実行してください。

@@ -1,113 +1,108 @@
 ---
-summary: "Logging surfaces, file logs, WS log styles, and console formatting"
+summary: "ロギングの出力先、ファイルログ、WebSocket のログスタイル、およびコンソールでの表示形式"
 read_when:
-  - Changing logging output or formats
-  - Debugging CLI or gateway output
-title: "Logging"
+  - ログの出力内容や形式を変更する場合
+  - CLI やゲートウェイの出力をデバッグする場合
+title: "ロギング"
+x-i18n:
+  source_hash: "efb8eda5e77e3809369a8ff569fac110323a86b3945797093f20e9bc98f39b2e"
 ---
 
-# Logging
+# ロギング
 
-For a user-facing overview (CLI + Control UI + config), see [/logging](/logging).
+ユーザー向けの概要（CLI、コントロール UI、構成設定）については、[/logging](/logging) を参照してください。
 
-OpenClaw has two log “surfaces”:
+OpenClaw には 2 つのログ「出力先（サーフェス）」があります:
 
-- **Console output** (what you see in the terminal / Debug UI).
-- **File logs** (JSON lines) written by the gateway logger.
+- **コンソール出力**: ターミナルや Debug UI に表示されるもの。
+- **ファイルログ**: ゲートウェイのロガーによって書き出される JSONL 形式のファイル。
 
-## File-based logger
+## ファイルベースのロガー
 
-- Default rolling log file is under `/tmp/openclaw/` (one file per day): `openclaw-YYYY-MM-DD.log`
-  - Date uses the gateway host's local timezone.
-- The log file path and level can be configured via `~/.openclaw/openclaw.json`:
+- デフォルトでは、`/tmp/openclaw/` 配下に日ごとにローテーションされるログファイルが作成されます: `openclaw-YYYY-MM-DD.log`
+  - 日付はゲートウェイホストのローカルタイムゾーンに基づきます。
+- ログファイルのパスと出力レベルは `~/.openclaw/openclaw.json` で設定可能です:
   - `logging.file`
   - `logging.level`
 
-The file format is one JSON object per line.
+ファイル形式は、1 行につき 1 つの JSON オブジェクトが出力される JSONL 形式です。
 
-The Control UI Logs tab tails this file via the gateway (`logs.tail`).
-CLI can do the same:
+コントロール UI の [Logs] タブは、ゲートウェイ経由でこのファイルをリアルタイム表示（`logs.tail`）します。CLI でも同様のことが可能です:
 
 ```bash
 openclaw logs --follow
 ```
 
-**Verbose vs. log levels**
+**詳細モード（Verbose）とログレベルの違い**
 
-- **File logs** are controlled exclusively by `logging.level`.
-- `--verbose` only affects **console verbosity** (and WS log style); it does **not**
-  raise the file log level.
-- To capture verbose-only details in file logs, set `logging.level` to `debug` or
-  `trace`.
+- **ファイルログ** の出力内容は、`logging.level` によってのみ制御されます。
+- `--verbose` フラグは **コンソールへの出力レベル**（および WebSocket のログスタイル）にのみ影響し、ファイルログのレベルを引き上げることはありません。
+- 詳細なデバッグ情報をファイルログに残したい場合は、`logging.level` を `debug` または `trace` に設定してください。
 
-## Console capture
+## コンソールログのキャプチャ
 
-The CLI captures `console.log/info/warn/error/debug/trace` and writes them to file logs,
-while still printing to stdout/stderr.
+CLI は `console.log/info/warn/error/debug/trace` をキャプチャしてファイルログに書き出しつつ、標準出力/標準エラー出力にも表示します。
 
-You can tune console verbosity independently via:
+コンソールの出力レベルとスタイルは、以下で個別に調整可能です:
 
-- `logging.consoleLevel` (default `info`)
+- `logging.consoleLevel` (デフォルト `info`)
 - `logging.consoleStyle` (`pretty` | `compact` | `json`)
 
-## Tool summary redaction
+## ツールサマリーの伏せ字処理 (Redaction)
 
-Verbose tool summaries (e.g. `🛠️ Exec: ...`) can mask sensitive tokens before they hit the
-console stream. This is **tools-only** and does not alter file logs.
+詳細モード時のツール実行サマリー（例: `🛠️ Exec: ...`）において、コンソールに出力される直前に機密トークンをマスク（伏せ字に）することができます。これは **ツール実行の表示のみ** を対象としたものであり、ファイルログの内容は変更されません。
 
-- `logging.redactSensitive`: `off` | `tools` (default: `tools`)
-- `logging.redactPatterns`: array of regex strings (overrides defaults)
-  - Use raw regex strings (auto `gi`), or `/pattern/flags` if you need custom flags.
-  - Matches are masked by keeping the first 6 + last 4 chars (length >= 18), otherwise `***`.
-  - Defaults cover common key assignments, CLI flags, JSON fields, bearer headers, PEM blocks, and popular token prefixes.
+- `logging.redactSensitive`: `off` | `tools` (デフォルト: `tools`)
+- `logging.redactPatterns`: 正規表現文字列の配列（デフォルト設定を上書きします）
+  - 生の正規表現文字列（自動的に `gi` フラグが付与されます）、または `/パターン/フラグ` 形式を使用してください。
+  - 一致した箇所は、18 文字以上であれば「最初の 6 文字 + 末尾の 4 文字」を残してマスクされ、それ以外は `***` になります。
+  - デフォルトでは、一般的なキー代入、CLI フラグ、JSON フィールド、Bearer ヘッダー、PEM ブロック、および主要なトークン接頭辞をカバーしています。
 
-## Gateway WebSocket logs
+## ゲートウェイ WebSocket ログ
 
-The gateway prints WebSocket protocol logs in two modes:
+ゲートウェイは、2 つのモードで WebSocket プロトコルのログを表示します:
 
-- **Normal mode (no `--verbose`)**: only “interesting” RPC results are printed:
-  - errors (`ok=false`)
-  - slow calls (default threshold: `>= 50ms`)
-  - parse errors
-- **Verbose mode (`--verbose`)**: prints all WS request/response traffic.
+- **通常モード (`--verbose` なし)**: 「注目すべき」RPC 結果のみを表示します:
+  - エラー (`ok=false`)
+  - 低速な呼び出し（デフォルトの閾値: `>= 50ms`）
+  - パース（解析）エラー
+- **詳細モード (`--verbose`)**: すべての WebSocket リクエスト/レスポンスのトラフィックを表示します。
 
-### WS log style
+### WS ログスタイル
 
-`openclaw gateway` supports a per-gateway style switch:
+`openclaw gateway` は、ゲートウェイごとのログスタイル切り替えをサポートしています:
 
-- `--ws-log auto` (default): normal mode is optimized; verbose mode uses compact output
-- `--ws-log compact`: compact output (paired request/response) when verbose
-- `--ws-log full`: full per-frame output when verbose
-- `--compact`: alias for `--ws-log compact`
+- `--ws-log auto` (デフォルト): 通常モードは最適化され、詳細モードではコンパクトな表示になります。
+- `--ws-log compact`: 詳細モード時に、リクエストとレスポンスを対にしたコンパクトな表示を行います。
+- `--ws-log full`: 詳細モード時に、フレームごとの完全なメタデータを表示します。
+- `--compact`: `--ws-log compact` の別名です。
 
-Examples:
+実行例:
 
 ```bash
-# optimized (only errors/slow)
+# 最適化表示（エラーや低速な呼び出しのみ）
 openclaw gateway
 
-# show all WS traffic (paired)
+# すべての WS トラフィックを表示（コンパクト）
 openclaw gateway --verbose --ws-log compact
 
-# show all WS traffic (full meta)
+# すべての WS トラフィックを表示（フルメタデータ）
 openclaw gateway --verbose --ws-log full
 ```
 
-## Console formatting (subsystem logging)
+## コンソールの整形 (サブシステムロギング)
 
-The console formatter is **TTY-aware** and prints consistent, prefixed lines.
-Subsystem loggers keep output grouped and scannable.
+コンソールフォーマッタは **TTY を認識** し、一貫した接頭辞（プレフィックス）付きの行を出力します。サブシステムロガーにより、出力がグループ化され、内容を素早く把握できるようになっています。
 
-Behavior:
+主な挙動:
+- **サブシステム接頭辞**: すべての行に `[gateway]`, `[canvas]`, `[tailscale]` などの接頭辞が付与されます。
+- **色分け**: サブシステムごとに固定の色（サブシステムカラー）とログレベルによる色分けが適用されます。
+- **環境に応じた色出力**: 出力先が TTY であるか、リッチなターミナル環境（`TERM`, `COLORTERM`, `TERM_PROGRAM` 等）である場合に色を付けます。`NO_COLOR` 設定も尊重されます。
+- **接頭辞の短縮**: 先頭の `gateway/` や `channels/` を省略し、末尾の 2 セグメントのみを保持します（例: `whatsapp/outbound`）。
+- **構造化ログ**: サブシステムごとのロガーが、自動接頭辞と構造化フィールド `{ subsystem }` を付加します。
+- **`logRaw()`**: QR コードや特定の UX 出力のために、接頭辞や整形を行わずに出力します。
+- **コンソールスタイル**: `pretty`, `compact`, `json` から選択可能です。
+- **独立したログレベル**: ファイルログのレベルとは別に設定可能です（`logging.level` が `debug`/`trace` であれば、ファイル側にはすべての詳細が記録されます）。
+- **WhatsApp のメッセージ本文**: `debug` レベルで記録されます（確認するには `--verbose` が必要です）。
 
-- **Subsystem prefixes** on every line (e.g. `[gateway]`, `[canvas]`, `[tailscale]`)
-- **Subsystem colors** (stable per subsystem) plus level coloring
-- **Color when output is a TTY or the environment looks like a rich terminal** (`TERM`/`COLORTERM`/`TERM_PROGRAM`), respects `NO_COLOR`
-- **Shortened subsystem prefixes**: drops leading `gateway/` + `channels/`, keeps last 2 segments (e.g. `whatsapp/outbound`)
-- **Sub-loggers by subsystem** (auto prefix + structured field `{ subsystem }`)
-- **`logRaw()`** for QR/UX output (no prefix, no formatting)
-- **Console styles** (e.g. `pretty | compact | json`)
-- **Console log level** separate from file log level (file keeps full detail when `logging.level` is set to `debug`/`trace`)
-- **WhatsApp message bodies** are logged at `debug` (use `--verbose` to see them)
-
-This keeps existing file logs stable while making interactive output scannable.
+これにより、既存のファイルログの安定性を保ちつつ、対話型の出力をスキャン（拾い読み）しやすいものにしています。

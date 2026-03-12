@@ -1,82 +1,83 @@
 ---
-summary: "Pairing overview: approve who can DM you + which nodes can join"
+summary: "ペアリングの概要: 誰があなたに DM を送信できるか、どのノードが参加できるかを承認します"
 read_when:
-  - Setting up DM access control
-  - Pairing a new iOS/Android node
-  - Reviewing OpenClaw security posture
-title: "Pairing"
+  - DMアクセス制御の設定
+  - 新しい iOS/Android ノードのペアリング
+  - OpenClaw のセキュリティ体制の見直し
+title: "ペアリング"
+x-i18n:
+  source_hash: "65894ceee288fcd03547a4570ee06b9bdc6721cf6e32745a5f9507c34935eba3"
 ---
 
-# Pairing
+# ペアリング
 
-“Pairing” is OpenClaw’s explicit **owner approval** step.
-It is used in two places:
+「ペアリング」は、OpenClaw の明示的な **所有者の承認** ステップです。
+次の 2 つの場所で使用されます。
 
-1. **DM pairing** (who is allowed to talk to the bot)
-2. **Node pairing** (which devices/nodes are allowed to join the gateway network)
+1. **DM ペアリング** (ボットとの会話を許可されるユーザー)
+2. **ノードのペアリング** (ゲートウェイ ネットワークへの参加を許可されるデバイス/ノード)
 
-Security context: [Security](/gateway/security)
+セキュリティコンテキスト: [セキュリティ](/gateway/security)
 
-## 1) DM pairing (inbound chat access)
+## 1) DM ペアリング (インバウンド チャット アクセス)
 
-When a channel is configured with DM policy `pairing`, unknown senders get a short code and their message is **not processed** until you approve.
+チャネルが DM ポリシー `pairing` で構成されている場合、不明な送信者はショート コードを受け取り、承認されるまでメッセージは **処理されません**。
 
-Default DM policies are documented in: [Security](/gateway/security)
+デフォルトの DM ポリシーは、[セキュリティ](/gateway/security) に文書化されています。
 
-Pairing codes:
+ペアリングコード:
 
-- 8 characters, uppercase, no ambiguous chars (`0O1I`).
-- **Expire after 1 hour**. The bot only sends the pairing message when a new request is created (roughly once per hour per sender).
-- Pending DM pairing requests are capped at **3 per channel** by default; additional requests are ignored until one expires or is approved.
+- 8 文字、大文字、あいまいな文字は含まれません (`0O1I`)。
+- **1 時間後に期限切れになります**。ボットは、新しいリクエストが作成されたときにのみペアリング メッセージを送信します (送信者ごとに 1 時間に 1 回程度)。
+- 保留中の DM ペアリング要求は、デフォルトで **チャネルごとに 3** に制限されます。追加のリクエストは、期限が切れるか承認されるまで無視されます。
 
-### Approve a sender
+### 送信者を承認する
 
 ```bash
 openclaw pairing list telegram
 openclaw pairing approve telegram <CODE>
 ```
 
-Supported channels: `telegram`, `whatsapp`, `signal`, `imessage`, `discord`, `slack`, `feishu`.
+サポートされているチャネル: `telegram`、`whatsapp`、`signal`、`imessage`、`discord`、`slack`、`feishu`。
 
-### Where the state lives
+### ステータスの保存場所
 
-Stored under `~/.openclaw/credentials/`:
+`~/.openclaw/credentials/` に保存されます:
 
-- Pending requests: `<channel>-pairing.json`
-- Approved allowlist store:
-  - Default account: `<channel>-allowFrom.json`
-  - Non-default account: `<channel>-<accountId>-allowFrom.json`
+- 保留中のリクエスト: `<channel>-pairing.json`
+- 承認された許可リスト ストア:
+  - デフォルトのアカウント: `<channel>-allowFrom.json`
+  - デフォルト以外のアカウント: `<channel>-<accountId>-allowFrom.json`
 
-Account scoping behavior:
+アカウントのスコープ動作:
 
-- Non-default accounts read/write only their scoped allowlist file.
-- Default account uses the channel-scoped unscoped allowlist file.
+- デフォルト以外のアカウントは、スコープ指定された許可リスト ファイルのみを読み取り/書き込みします。
+- デフォルト アカウントは、チャネル スコープの（スコープ指定されていない）許可リスト ファイルを使用します。
 
-Treat these as sensitive (they gate access to your assistant).
+これらは機密情報として扱ってください（アシスタントへのアクセスを制限するものです）。
 
-## 2) Node device pairing (iOS/Android/macOS/headless nodes)
+## 2) ノードデバイスのペアリング (iOS/Android/macOS/ヘッドレスノード)
 
-Nodes connect to the Gateway as **devices** with `role: node`. The Gateway
-creates a device pairing request that must be approved.
+ノードは、`role: node` として **デバイス** 形式でゲートウェイに接続します。ゲートウェイは、承認が必要なデバイス ペアリング要求を作成します。
 
-### Pair via Telegram (recommended for iOS)
+### Telegram 経由でペアリング (iOS の場合推奨)
 
-If you use the `device-pair` plugin, you can do first-time device pairing entirely from Telegram:
+`device-pair` プラグインを使用すると、初回のデバイス ペアリングをすべて Telegram から行うことができます。
 
-1. In Telegram, message your bot: `/pair`
-2. The bot replies with two messages: an instruction message and a separate **setup code** message (easy to copy/paste in Telegram).
-3. On your phone, open the OpenClaw iOS app → Settings → Gateway.
-4. Paste the setup code and connect.
-5. Back in Telegram: `/pair approve`
+1. Telegram で、ボットにメッセージを送信します: `/pair`
+2. ボットは 2 つのメッセージで応答します。1 つは指示メッセージ、もう 1 つは個別の **セットアップ コード** メッセージ (Telegram で簡単にコピー/ペーストできます) です。
+3. スマートフォンで、OpenClaw iOS アプリを開き、[Settings] → [Gateway] を選択します。
+4. セットアップコードを貼り付けて接続します。
+5. Telegram に戻り、`/pair approve` を送信します。
 
-The setup code is a base64-encoded JSON payload that contains:
+セットアップ コードは base64 でエンコードされた JSON ペイロードで、以下が含まれます。
 
-- `url`: the Gateway WebSocket URL (`ws://...` or `wss://...`)
-- `token`: a short-lived pairing token
+- `url`: ゲートウェイの WebSocket URL (`ws://...` または `wss://...`)
+- `token`: 有効期間の短いペアリング トークン
 
-Treat the setup code like a password while it is valid.
+セットアップ コードは、有効な間はパスワードのように扱ってください。
 
-### Approve a node device
+### ノードデバイスを承認する
 
 ```bash
 openclaw devices list
@@ -84,27 +85,26 @@ openclaw devices approve <requestId>
 openclaw devices reject <requestId>
 ```
 
-### Node pairing state storage
+### ノードペアリング状態のストレージ
 
-Stored under `~/.openclaw/devices/`:
+`~/.openclaw/devices/` に保存されます:
 
-- `pending.json` (short-lived; pending requests expire)
-- `paired.json` (paired devices + tokens)
+- `pending.json` (短命なリクエスト。保留中のリクエストは期限切れになります)
+- `paired.json` (ペアリング済みデバイス + トークン)
 
-### Notes
+### 注記
 
-- The legacy `node.pair.*` API (CLI: `openclaw nodes pending/approve`) is a
-  separate gateway-owned pairing store. WS nodes still require device pairing.
+- 従来の `node.pair.*` API (CLI: `openclaw nodes pending/approve`) は、ゲートウェイが所有する別のペアリング ストアです。WS ノードでは引き続きデバイスのペアリングが必要です。
 
-## Related docs
+## 関連ドキュメント
 
-- Security model + prompt injection: [Security](/gateway/security)
-- Updating safely (run doctor): [Updating](/install/updating)
-- Channel configs:
+- セキュリティ モデル + プロンプト インジェクション: [セキュリティ](/gateway/security)
+- 安全に更新 (openclaw doctor を実行): [更新](/install/updating)
+- チャネル構成:
   - Telegram: [Telegram](/channels/telegram)
   - WhatsApp: [WhatsApp](/channels/whatsapp)
   - Signal: [Signal](/channels/signal)
   - BlueBubbles (iMessage): [BlueBubbles](/channels/bluebubbles)
-  - iMessage (legacy): [iMessage](/channels/imessage)
+  - iMessage (レガシー): [iMessage](/channels/imessage)
   - Discord: [Discord](/channels/discord)
   - Slack: [Slack](/channels/slack)

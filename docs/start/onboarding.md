@@ -1,91 +1,83 @@
 ---
-summary: "First-run onboarding flow for OpenClaw (macOS app)"
+summary: "OpenClaw (macOS アプリ) の初回オンボーディングフロー"
 read_when:
-  - Designing the macOS onboarding assistant
-  - Implementing auth or identity setup
-title: "Onboarding (macOS App)"
-sidebarTitle: "Onboarding: macOS App"
+  - macOS オンボーディングアシスタントの設計時
+  - 認証やアイデンティティ設定の実装時
+title: "オンボーディング (macOS アプリ)"
+sidebarTitle: "オンボーディング: macOS アプリ"
 ---
 
-# Onboarding (macOS App)
+# オンボーディング (macOS アプリ)
 
-This doc describes the **current** first‑run onboarding flow. The goal is a
-smooth “day 0” experience: pick where the Gateway runs, connect auth, run the
-wizard, and let the agent bootstrap itself.
-For a general overview of onboarding paths, see [Onboarding Overview](/start/onboarding-overview).
+このドキュメントでは、**現在の**初回オンボーディングフローについて説明します。目標はスムーズな「1日目 (day 0)」のエクスペリエンスです。Gateway をどこで実行するかを選択し、認証を接続し、ウィザードを実行して、エージェント自体にブートストラップさせます。
+オンボーディングパスの概要については、[オンボーディングの概要](/start/onboarding-overview)を参照してください。
 
 <Steps>
-<Step title="Approve macOS warning">
+<Step title="macOS の警告を承認する">
 <Frame>
 <img src="/assets/macos-onboarding/01-macos-warning.jpeg" alt="" />
 </Frame>
 </Step>
-<Step title="Approve find local networks">
+<Step title="ローカルネットワークの検索を承認する">
 <Frame>
 <img src="/assets/macos-onboarding/02-local-networks.jpeg" alt="" />
 </Frame>
 </Step>
-<Step title="Welcome and security notice">
-<Frame caption="Read the security notice displayed and decide accordingly">
+<Step title="ウェルカムとセキュリティ通知">
+<Frame caption="表示されたセキュリティ通知を読み、それに応じて決定してください">
 <img src="/assets/macos-onboarding/03-security-notice.png" alt="" />
 </Frame>
 
-Security trust model:
+セキュリティトラストモデル:
 
-- By default, OpenClaw is a personal agent: one trusted operator boundary.
-- Shared/multi-user setups require lock-down (split trust boundaries, keep tool access minimal, and follow [Security](/gateway/security)).
-- Local onboarding now defaults new configs to `tools.profile: "coding"` so fresh local setups keep filesystem/runtime tools without forcing the unrestricted `full` profile.
-- If hooks/webhooks or other untrusted content feeds are enabled, use a strong modern model tier and keep strict tool policy/sandboxing.
+- デフォルトでは、OpenClaw はパーソナルエージェントです。つまり、1つの信頼できるオペレーターの境界内にあります。
+- 共有/マルチユーザーのセットアップでは、ロックダウンが必要です (信頼境界を分割し、ツールへのアクセスを最小限に抑え、[セキュリティ](/gateway/security)に従ってください)。
+- 現在、ローカルオンボーディングでは新しい設定のデフォルトが `tools.profile: "coding"` になっているため、新規のローカルセットアップでは、無制限の `full` プロファイルを強制することなく、ファイルシステム/ランタイムツールを維持できます。
+- フック/Webhook またはその他の信頼できないコンテンツフィードが有効になっている場合は、強力で最新のモデル層を使用し、厳格なツールポリシー/サンドボックス化を維持してください。
 
 </Step>
-<Step title="Local vs Remote">
+<Step title="ローカル vs リモート">
 <Frame>
 <img src="/assets/macos-onboarding/04-choose-gateway.png" alt="" />
 </Frame>
 
-Where does the **Gateway** run?
+**Gateway** はどこで実行されますか？
 
-- **This Mac (Local only):** onboarding can configure auth and write credentials
-  locally.
-- **Remote (over SSH/Tailnet):** onboarding does **not** configure local auth;
-  credentials must exist on the gateway host.
-- **Configure later:** skip setup and leave the app unconfigured.
+- **この Mac (ローカルのみ):** オンボーディングで認証を設定し、資格情報をローカルに書き込むことができます。
+- **リモート (SSH/Tailnet 経由):** オンボーディングではローカルの認証は**設定しません**。資格情報は Gateway ホスト上に存在する必要があります。
+- **後で設定する:** セットアップをスキップし、アプリを未設定のままにします。
 
 <Tip>
-**Gateway auth tip:**
+**Gateway 認証のヒント:**
 
-- The wizard now generates a **token** even for loopback, so local WS clients must authenticate.
-- If you disable auth, any local process can connect; use that only on fully trusted machines.
-- Use a **token** for multi‑machine access or non‑loopback binds.
+- 現在のウィザードでは、ループバック用であっても**トークン**が生成されるため、ローカルの WS クライアントは認証する必要があります。
+- 認証を無効にすると、任意のローカルプロセスが接続できるようになります。これは完全に信頼できるマシンでのみ使用してください。
+- 複数マシンからのアクセスや非ループバックのバインドには、**トークン**を使用してください。
 
 </Tip>
 </Step>
-<Step title="Permissions">
-<Frame caption="Choose what permissions do you want to give OpenClaw">
+<Step title="権限 (Permissions)">
+<Frame caption="OpenClaw に付与する権限を選択してください">
 <img src="/assets/macos-onboarding/05-permissions.png" alt="" />
 </Frame>
 
-Onboarding requests TCC permissions needed for:
+オンボーディングでは、以下に必要な TCC (Transparency, Consent, and Control) 権限を要求します:
 
-- Automation (AppleScript)
-- Notifications
-- Accessibility
-- Screen Recording
-- Microphone
-- Speech Recognition
-- Camera
-- Location
+- オートメーション (AppleScript)
+- 通知
+- アクセシビリティ
+- 画面収録
+- マイク
+- 音声認識
+- カメラ
+- 位置情報
 
 </Step>
 <Step title="CLI">
-  <Info>This step is optional</Info>
-  The app can install the global `openclaw` CLI via npm/pnpm so terminal
-  workflows and launchd tasks work out of the box.
+  <Info>このステップはオプションです</Info>
+  アプリは、ターミナルのワークフローや launchd タスクがすぐに機能するように、npm/pnpm を介してグローバルの `openclaw` CLI をインストールできます。
 </Step>
-<Step title="Onboarding Chat (dedicated session)">
-  After setup, the app opens a dedicated onboarding chat session so the agent can
-  introduce itself and guide next steps. This keeps first‑run guidance separate
-  from your normal conversation. See [Bootstrapping](/start/bootstrapping) for
-  what happens on the gateway host during the first agent run.
+<Step title="オンボーディングチャット (専用セッション)">
+  セットアップ後、アプリは専用のオンボーディングチャットセッションを開き、エージェントが自己紹介を行い、次のステップを案内できるようにします。これにより、初回起動のガイダンスと通常の会話が分離されます。最初のエージェント実行時に Gateway ホストで何が起こるかについては、[ブートストラップ](/start/bootstrapping)を参照してください。
 </Step>
 </Steps>

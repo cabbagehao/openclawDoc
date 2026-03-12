@@ -1,62 +1,62 @@
 ---
-summary: "Uninstall OpenClaw completely (CLI, service, state, workspace)"
+summary: "OpenClaw を完全にアンインストールする（CLI、サービス、状態、ワークスペース）"
 read_when:
-  - You want to remove OpenClaw from a machine
-  - The gateway service is still running after uninstall
-title: "Uninstall"
+  - マシンから OpenClaw を削除したい場合
+  - アンインストール後も Gateway サービスがまだ実行されている場合
+title: "アンインストール"
 ---
 
-# Uninstall
+# アンインストール
 
-Two paths:
+方法は 2 通りあります。
 
-- **Easy path** if `openclaw` is still installed.
-- **Manual service removal** if the CLI is gone but the service is still running.
+- `openclaw` がまだ入っている場合の **簡単な方法**
+- CLI は消えているがサービスだけ残っている場合の **手動サービス削除**
 
-## Easy path (CLI still installed)
+## 簡単な方法（CLI がインストールされている場合）
 
-Recommended: use the built-in uninstaller:
+推奨: 組み込みのアンインストーラーを使います。
 
 ```bash
 openclaw uninstall
 ```
 
-Non-interactive (automation / npx):
+非対話型（自動化 / npx）：
 
 ```bash
 openclaw uninstall --all --yes --non-interactive
 npx -y openclaw uninstall --all --yes --non-interactive
 ```
 
-Manual steps (same result):
+手動で行う場合も、結果は同じです。
 
-1. Stop the gateway service:
+1. Gateway サービスを停止します：
 
 ```bash
 openclaw gateway stop
 ```
 
-2. Uninstall the gateway service (launchd/systemd/schtasks):
+2. Gateway サービス（launchd/systemd/schtasks）をアンインストールします：
 
 ```bash
 openclaw gateway uninstall
 ```
 
-3. Delete state + config:
+3. 状態（state）と設定を削除します：
 
 ```bash
 rm -rf "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 ```
 
-If you set `OPENCLAW_CONFIG_PATH` to a custom location outside the state dir, delete that file too.
+`OPENCLAW_CONFIG_PATH` を状態ディレクトリ以外のカスタムの場所に設定している場合は、そのファイルも削除してください。
 
-4. Delete your workspace (optional, removes agent files):
+4. ワークスペースを削除します（オプション。エージェントのファイルを削除します）：
 
 ```bash
 rm -rf ~/.openclaw/workspace
 ```
 
-5. Remove the CLI install (pick the one you used):
+5. CLI のインストールを削除します（使用したものを選んでください）：
 
 ```bash
 npm rm -g openclaw
@@ -64,35 +64,35 @@ pnpm remove -g openclaw
 bun remove -g openclaw
 ```
 
-6. If you installed the macOS app:
+6. macOS アプリをインストールした場合は、以下を削除します：
 
 ```bash
 rm -rf /Applications/OpenClaw.app
 ```
 
-Notes:
+注意：
 
-- If you used profiles (`--profile` / `OPENCLAW_PROFILE`), repeat step 3 for each state dir (defaults are `~/.openclaw-<profile>`).
-- In remote mode, the state dir lives on the **gateway host**, so run steps 1-4 there too.
+- プロファイル（`--profile` / `OPENCLAW_PROFILE`）を使用していた場合は、各状態ディレクトリ（デフォルトは `~/.openclaw-<profile>`）に対して手順 3 を繰り返してください。
+- リモートモードの場合、状態ディレクトリは **Gateway ホスト** 上にあるため、そこでも手順 1〜4 を実行してください。
 
-## Manual service removal (CLI not installed)
+## 手動でのサービス削除（CLI がインストールされていない場合）
 
-Use this if the gateway service keeps running but `openclaw` is missing.
+Gateway サービスは実行され続けているが `openclaw` コマンドがない場合に使用します。
 
 ### macOS (launchd)
 
-Default label is `ai.openclaw.gateway` (or `ai.openclaw.<profile>`; legacy `com.openclaw.*` may still exist):
+デフォルトのラベルは `ai.openclaw.gateway` です（または `ai.openclaw.<profile>`。レガシーな `com.openclaw.*` が残っている場合もあります）：
 
 ```bash
 launchctl bootout gui/$UID/ai.openclaw.gateway
 rm -f ~/Library/LaunchAgents/ai.openclaw.gateway.plist
 ```
 
-If you used a profile, replace the label and plist name with `ai.openclaw.<profile>`. Remove any legacy `com.openclaw.*` plists if present.
+プロファイルを使用していた場合は、ラベルと plist 名を `ai.openclaw.<profile>` に置き換えてください。古い `com.openclaw.*` の plist があれば、それも削除してください。
 
-### Linux (systemd user unit)
+### Linux (systemd ユーザーユニット)
 
-Default unit name is `openclaw-gateway.service` (or `openclaw-gateway-<profile>.service`):
+デフォルトのユニット名は `openclaw-gateway.service` です（または `openclaw-gateway-<profile>.service`）：
 
 ```bash
 systemctl --user disable --now openclaw-gateway.service
@@ -100,29 +100,29 @@ rm -f ~/.config/systemd/user/openclaw-gateway.service
 systemctl --user daemon-reload
 ```
 
-### Windows (Scheduled Task)
+### Windows (タスク スケジューラ)
 
-Default task name is `OpenClaw Gateway` (or `OpenClaw Gateway (<profile>)`).
-The task script lives under your state dir.
+デフォルトのタスク名は `OpenClaw Gateway` です（または `OpenClaw Gateway (<profile>)`）。
+タスクスクリプトは状態ディレクトリの下にあります。
 
 ```powershell
 schtasks /Delete /F /TN "OpenClaw Gateway"
 Remove-Item -Force "$env:USERPROFILE\.openclaw\gateway.cmd"
 ```
 
-If you used a profile, delete the matching task name and `~\.openclaw-<profile>\gateway.cmd`.
+プロファイルを使用していた場合は、一致するタスク名と `~\.openclaw-<profile>\gateway.cmd` を削除してください。
 
-## Normal install vs source checkout
+## 通常のインストール vs ソースチェックアウト
 
-### Normal install (install.sh / npm / pnpm / bun)
+### 通常のインストール (install.sh / npm / pnpm / bun)
 
-If you used `https://openclaw.ai/install.sh` or `install.ps1`, the CLI was installed with `npm install -g openclaw@latest`.
-Remove it with `npm rm -g openclaw` (or `pnpm remove -g` / `bun remove -g` if you installed that way).
+`https://openclaw.ai/install.sh` または `install.ps1` を使用した場合、CLI は `npm install -g openclaw@latest` でインストールされています。
+`npm rm -g openclaw` で削除してください（他の方法でインストールした場合は、`pnpm remove -g` または `bun remove -g` を使用してください）。
 
-### Source checkout (git clone)
+### ソースチェックアウト (git clone)
 
-If you run from a repo checkout (`git clone` + `openclaw ...` / `bun run openclaw ...`):
+リポジトリのチェックアウト（`git clone` + `openclaw ...` / `bun run openclaw ...`）から実行している場合：
 
-1. Uninstall the gateway service **before** deleting the repo (use the easy path above or manual service removal).
-2. Delete the repo directory.
-3. Remove state + workspace as shown above.
+1. リポジトリを削除する **前** に、Gateway サービスをアンインストールしてください（上記の「簡単な方法」または「手動でのサービス削除」を使用）。
+2. リポジトリディレクトリを削除します。
+3. 上記のように状態とワークスペースを削除します。

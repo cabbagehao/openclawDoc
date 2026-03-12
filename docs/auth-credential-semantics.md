@@ -1,15 +1,19 @@
-# Auth Credential Semantics
+---
+title: "認証情報の意味論"
+---
 
-This document defines the canonical credential eligibility and resolution semantics used across:
+# 認証情報の意味論
+
+このドキュメントでは、以下で使われる標準的な認証情報の適格性判定と解決の意味論を定義します。
 
 - `resolveAuthProfileOrder`
 - `resolveApiKeyForProfile`
 - `models status --probe`
 - `doctor-auth`
 
-The goal is to keep selection-time and runtime behavior aligned.
+目的は、選択時の挙動と実行時の挙動を一致させることです。
 
-## Stable Reason Codes
+## 安定した理由コード
 
 - `ok`
 - `missing_credential`
@@ -17,29 +21,29 @@ The goal is to keep selection-time and runtime behavior aligned.
 - `expired`
 - `unresolved_ref`
 
-## Token Credentials
+## トークン認証情報
 
-Token credentials (`type: "token"`) support inline `token` and/or `tokenRef`.
+トークン認証情報（`type: "token"`）では、インラインの `token` と `tokenRef` の両方、またはいずれか一方を使用できます。
 
-### Eligibility rules
+### 適格性ルール
 
-1. A token profile is ineligible when both `token` and `tokenRef` are absent.
-2. `expires` is optional.
-3. If `expires` is present, it must be a finite number greater than `0`.
-4. If `expires` is invalid (`NaN`, `0`, negative, non-finite, or wrong type), the profile is ineligible with `invalid_expires`.
-5. If `expires` is in the past, the profile is ineligible with `expired`.
-6. `tokenRef` does not bypass `expires` validation.
+1. `token` と `tokenRef` の両方が存在しない場合、トークンプロファイルは不適格です。
+2. `expires` は任意です。
+3. `expires` がある場合は、`0` より大きい有限の数値でなければなりません。
+4. `expires` が無効（`NaN`、`0`、負数、有限でない値、または型が不正）な場合、そのプロファイルは `invalid_expires` により不適格になります。
+5. `expires` が過去の時刻を示している場合、そのプロファイルは `expired` により不適格になります。
+6. `tokenRef` があっても、`expires` の検証は省略されません。
 
-### Resolution rules
+### 解決ルール
 
-1. Resolver semantics match eligibility semantics for `expires`.
-2. For eligible profiles, token material may be resolved from inline value or `tokenRef`.
-3. Unresolvable refs produce `unresolved_ref` in `models status --probe` output.
+1. リゾルバーにおける `expires` の扱いは、適格性判定の意味論と一致します。
+2. 適格なプロファイルでは、トークン本体をインライン値または `tokenRef` から解決できます。
+3. 参照を解決できない場合、`models status --probe` の出力では `unresolved_ref` になります。
 
-## Legacy-Compatible Messaging
+## 旧来仕様と互換性のあるメッセージ
 
-For script compatibility, probe errors keep this first line unchanged:
+スクリプト互換性のため、プローブエラーでは次の先頭行を変更せず維持します。
 
 `Auth profile credentials are missing or expired.`
 
-Human-friendly detail and stable reason codes may be added on subsequent lines.
+後続の行には、人が読みやすい詳細や安定した理由コードを追加できます。

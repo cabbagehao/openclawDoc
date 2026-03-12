@@ -1,62 +1,59 @@
 ---
-summary: "Gateway runtime on macOS (external launchd service)"
+summary: "macOS におけるゲートウェイ ランタイム（外部 launchd サービス）"
 read_when:
-  - Packaging OpenClaw.app
-  - Debugging the macOS gateway launchd service
-  - Installing the gateway CLI for macOS
-title: "Gateway on macOS"
+  - OpenClaw.app のパッケージ化
+  - macOS ゲートウェイ launchd サービスのデバッグ
+  - macOS 用のゲートウェイ CLI のインストール
+title: "macOS のゲートウェイ"
+x-i18n:
+  source_hash: "c1ba561b24f093a6bf0a5cc1258a443464cdaa7cdfae656ec1629a94442bf46d"
 ---
 
-# Gateway on macOS (external launchd)
+# macOS のゲートウェイ（外部 launchd）
 
-OpenClaw.app no longer bundles Node/Bun or the Gateway runtime. The macOS app
-expects an **external** `openclaw` CLI install, does not spawn the Gateway as a
-child process, and manages a per‑user launchd service to keep the Gateway
-running (or attaches to an existing local Gateway if one is already running).
+OpenClaw.app には、Node / Bun やゲートウェイ ランタイムは同梱されなくなりました。macOS アプリは **外部の** `openclaw` CLI がインストールされていることを前提とし、ゲートウェイを子プロセスとして起動しません。代わりに、ユーザーごとの launchd サービスでゲートウェイを常駐させるか、すでにローカルで動作している既存のゲートウェイへ接続します。
 
-## Install the CLI (required for local mode)
+## CLI のインストール（ローカル モードでは必須）
 
-You need Node 22+ on the Mac, then install `openclaw` globally:
+Mac 側に Node 22 以降を用意し、`openclaw` をグローバル インストールします。
 
 ```bash
 npm install -g openclaw@<version>
 ```
 
-The macOS app’s **Install CLI** button runs the same flow via npm/pnpm (bun not recommended for Gateway runtime).
+macOS アプリの **Install CLI** ボタンも、npm / pnpm 経由で同じ処理を実行します。ゲートウェイ ランタイムに bun を使うことは推奨されません。
 
-## Launchd (Gateway as LaunchAgent)
+## launchd（LaunchAgent としてのゲートウェイ）
 
-Label:
+レーベル:
 
-- `ai.openclaw.gateway` (or `ai.openclaw.<profile>`; legacy `com.openclaw.*` may remain)
+- `ai.openclaw.gateway`（または `ai.openclaw.<profile>`。従来の `com.openclaw.*` が残っている場合があります）
 
-Plist location (per‑user):
+plist の保存場所（ユーザーごと）:
 
 - `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
-  (or `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`)
+  （または `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`）
 
-Manager:
+管理主体:
 
-- The macOS app owns LaunchAgent install/update in Local mode.
-- The CLI can also install it: `openclaw gateway install`.
+- ローカル モードでは、macOS アプリが LaunchAgent のインストールと更新を管理します。
+- CLI から `openclaw gateway install` を実行してインストールすることもできます。
 
-Behavior:
+動作:
 
-- “OpenClaw Active” enables/disables the LaunchAgent.
-- App quit does **not** stop the gateway (launchd keeps it alive).
-- If a Gateway is already running on the configured port, the app attaches to
-  it instead of starting a new one.
+- 「OpenClaw Active」で LaunchAgent を有効化または無効化できます。
+- アプリを終了してもゲートウェイは停止しません。launchd がプロセスを維持します。
+- 設定済みポートでゲートウェイがすでに動作している場合、アプリは新しく起動せず、その既存プロセスへ接続します。
 
-Logging:
+ロギング:
 
-- launchd stdout/err: `/tmp/openclaw/openclaw-gateway.log`
+- launchd の stdout / stderr: `/tmp/openclaw/openclaw-gateway.log`
 
-## Version compatibility
+## バージョン互換性
 
-The macOS app checks the gateway version against its own version. If they’re
-incompatible, update the global CLI to match the app version.
+macOS アプリは、ゲートウェイのバージョンがアプリ自身のバージョンと互換性を持つかどうかを確認します。互換性がない場合は、アプリのバージョンに合わせてグローバル CLI を更新してください。
 
-## Smoke check
+## スモークチェック
 
 ```bash
 openclaw --version
@@ -66,7 +63,7 @@ OPENCLAW_SKIP_CANVAS_HOST=1 \
 openclaw gateway --port 18999 --bind loopback
 ```
 
-Then:
+続いて次を実行します。
 
 ```bash
 openclaw gateway call health --url ws://127.0.0.1:18999 --timeout 3000

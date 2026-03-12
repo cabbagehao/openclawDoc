@@ -1,337 +1,272 @@
 ---
-summary: "Status and next steps for decoupling Discord gateway listeners from long-running agent turns with a Discord-specific inbound worker"
+summary: "Discord ゲートウェイリスナーを、長時間実行されるエージェントターンから切り離すための Discord 専用インバウンドワーカーの現状と今後のステップ"
 owner: "openclaw"
 status: "in_progress"
 last_updated: "2026-03-05"
-title: "Discord Async Inbound Worker Plan"
+title: "Discord 非同期インバウンドワーカー計画"
+x-i18n:
+  source_hash: "7d1a5892b9b833fd68f383ace5ee0f7c054cc8f842e7933cfae1c3ce112d0455"
 ---
 
-# Discord Async Inbound Worker Plan
+# Discord 非同期インバウンドワーカー計画
 
-## Objective
+## 目的
 
-Remove Discord listener timeout as a user-facing failure mode by making inbound Discord turns asynchronous:
+インバウンド（受信）の Discord ターンを非同期化することで、Discord リスナーのタイムアウトによる失敗を解消します:
 
-1. Gateway listener accepts and normalizes inbound events quickly.
-2. A Discord run queue stores serialized jobs keyed by the same ordering boundary we use today.
-3. A worker executes the actual agent turn outside the Carbon listener lifetime.
-4. Replies are delivered back to the originating channel or thread after the run completes.
+1. ゲートウェイリスナーが受信イベントを迅速に受け取り、正規化する。
+2. Discord 実行キューが、現在と同じ順序制御の境界（キー）を用いて、シリアル化されたジョブを保存する。
+3. ワーカーが Carbon リスナーの存続期間とは無関係に、実際のエージェントターンを実行する。
+4. 実行完了後、返信が元のチャネルまたはスレッドに配信される。
 
-This is the long-term fix for queued Discord runs timing out at `channels.discord.eventQueue.listenerTimeout` while the agent run itself is still making progress.
+これは、エージェントの実行自体は正常に進んでいるにもかかわらず、キュー待ちの Discord ターンが `channels.discord.eventQueue.listenerTimeout` でタイムアウトしてしまう問題に対する長期的な解決策です。
 
-## Current status
+## 現在のステータス
 
-This plan is partially implemented.
+本計画は部分的に実装済みです。
 
-Already done:
+**実装済み:**
+- Discord リスナーのタイムアウトと、Discord 実行のタイムアウトが個別の設定になった。
+- 受理されたインバウンドの Discord ターンが `src/discord/monitor/inbound-worker.ts` にエンキューされるようになった。
+- Carbon リスナーではなく、ワーカーが長時間実行されるターンを所有するようになった。
+- キューキーにより、既存のルートごとの順序制御が維持されている。
+- Discord ワーカーパスにおけるタイムアウト回帰テスト（デグレード確認）が整備されている。
 
-- Discord listener timeout and Discord run timeout are now separate settings.
-- Accepted inbound Discord turns are enqueued into `src/discord/monitor/inbound-worker.ts`.
-- The worker now owns the long-running turn instead of the Carbon listener.
-- Existing per-route ordering is preserved by queue key.
-- Timeout regression coverage exists for the Discord worker path.
+**平易な言葉での現状説明:**
+- 本番環境でのタイムアウトバグは修正済み。
+- Discord リスナーの時間枠が切れたという理由だけで、長時間実行されるターンが終了することはなくなった。
+- ただし、ワーカーアーキテクチャ自体は未完成。
 
-What this means in plain language:
+**未実装の項目:**
+- `DiscordInboundJob` がまだ部分的にしか正規化されておらず、実行時のオブジェクト参照を保持してしまっている。
+- コマンドのセマンティクス（`stop`, `new`, `reset` および将来のセッション制御）が、まだ完全にワーカーネイティブになっていない。
+- ワーカーの可観測性（モニタリング）やオペレーター向けのステータス表示が最小限。
+- 再起動時の耐久性（ジョブの復元）が未実装。
 
-- the production timeout bug is fixed
-- the long-running turn no longer dies just because the Discord listener budget expires
-- the worker architecture is not finished yet
+## 背景
 
-What is still missing:
+現在の挙動では、エージェントのターンの全期間がリスナーの存続期間に紐付けられています:
 
-- `DiscordInboundJob` is still only partially normalized and still carries live runtime references
-- command semantics (`stop`, `new`, `reset`, future session controls) are not yet fully worker-native
-- worker observability and operator status are still minimal
-- there is still no restart durability
+- `src/discord/monitor/listeners.ts` がタイムアウトと中断の境界を適用。
+- `src/discord/monitor/message-handler.ts` が、キューに入れられた実行をその境界内に留める。
+- `src/discord/monitor/message-handler.process.ts` が、メディアのロード、ルーティング、ディスパッチ、タイピング表示、ドラフトのストリーミング、および最終返信の配信をインラインで実行。
 
-## Why this exists
+このアーキテクチャには 2 つの問題があります:
+- 正常に動作している長いターンが、リスナーのウォッチドッグによって中断される可能性がある。
+- 下流のランタイムが応答を生成できたはずの場合でも、ユーザーに返信が届かないことがある。
 
-Current behavior ties the full agent turn to the listener lifetime:
+タイムアウト時間を延ばすことは緩和策にはなりますが、根本的な失敗モード（仕組み）は変わりません。
 
-- `src/discord/monitor/listeners.ts` applies the timeout and abort boundary.
-- `src/discord/monitor/message-handler.ts` keeps the queued run inside that boundary.
-- `src/discord/monitor/message-handler.process.ts` performs media loading, routing, dispatch, typing, draft streaming, and final reply delivery inline.
+## 非目標
 
-That architecture has two bad properties:
+- 本パスにおいて、Discord 以外のチャネルを再設計すること。
+- 初回実装において、これを全チャネル共通の汎用ワーカーフレームワークに広げること。
+- 共有のクロスチャネルインバウンドワーカー抽象化を時期尚早に抽出すること。重複が明らかな低レベルのプリミティブのみを共有します。
+- 安全な着地のために必須でない限り、初回パスで永続的なクラッシュリカバリを追加すること。
+- 本計画において、ルート選択、バインディングのセマンティクス、または ACP ポリシーを変更すること。
 
-- long but healthy turns can be aborted by the listener watchdog
-- users can see no reply even when the downstream runtime would have produced one
+## 現在の制約
 
-Raising the timeout helps but does not change the failure mode.
-
-## Non-goals
-
-- Do not redesign non-Discord channels in this pass.
-- Do not broaden this into a generic all-channel worker framework in the first implementation.
-- Do not extract a shared cross-channel inbound worker abstraction yet; only share low-level primitives when duplication is obvious.
-- Do not add durable crash recovery in the first pass unless needed to land safely.
-- Do not change route selection, binding semantics, or ACP policy in this plan.
-
-## Current constraints
-
-The current Discord processing path still depends on some live runtime objects that should not stay inside the long-term job payload:
+現在の Discord 処理パスは、長期保存されるジョブのペイロードに含めるべきではない、いくつかの実行時オブジェクトに依然として依存しています:
 
 - Carbon `Client`
-- raw Discord event shapes
-- in-memory guild history map
-- thread binding manager callbacks
-- live typing and draft stream state
+- 生の Discord イベント形状
+- メモリ内のギルド履歴マップ
+- スレッドバインディングマネージャーのコールバック
+- ライブタイピングおよびドラフトストリームの状態
 
-We already moved execution onto a worker queue, but the normalization boundary is still incomplete. Right now the worker is "run later in the same process with some of the same live objects," not a fully data-only job boundary.
+実行自体はワーカーキューに移動しましたが、正規化の境界線はまだ不完全です。現状のワーカーは「同じプロセス内で、一部の同じ実行時オブジェクトを使って後で実行する」という状態であり、完全にデータのみで構成されたジョブ境界にはなっていません。
 
-## Target architecture
+## 目指すべきアーキテクチャ
 
-### 1. Listener stage
+### 1. リナーステージ
+`DiscordMessageListener` が引き続き入口となりますが、その役割は以下に限定されます:
+- プリフライト（事前チェック）とポリシーチェックの実行。
+- 受理された入力をシリアル化可能な `DiscordInboundJob` に正規化。
+- セッションごと、あるいはチャネルごとの非同期キューにジョブを投入。
+- エンキューが成功したら、即座に Carbon へ応答を返す。
 
-`DiscordMessageListener` remains the ingress point, but its job becomes:
+リスナーは、エンドツーエンドのエージェントターンの寿命を所有しなくなります。
 
-- run preflight and policy checks
-- normalize accepted input into a serializable `DiscordInboundJob`
-- enqueue the job into a per-session or per-channel async queue
-- return immediately to Carbon once the enqueue succeeds
+### 2. 正規化されたジョブペイロード
+後でターンを実行するために必要なデータのみを含む、シリアル化可能なジョブ記述子を導入します。
 
-The listener should no longer own the end-to-end LLM turn lifetime.
+最小限の構成要素:
+- **ルート識別子**: `agentId`, `sessionKey`, `accountId`, `channel`
+- **配信識別子**: 送信先チャネル ID、返信対象メッセージ ID、スレッド ID（あれば）
+- **送信者識別子**: 送信者 ID、ラベル、ユーザー名、タグ
+- **チャネルコンテキスト**: ギルド ID、チャネル名またはスラッグ、スレッドのメタデータ、解決済みのシステムプロンプト上書き設定
+- **正規化されたメッセージ本文**: ベーステキスト、実効メッセージテキスト、添付ファイル記述子、または解決済みのメディア参照
+- **判定結果**: メンション要件の結果、コマンド実行権限の結果、適用可能な場合はバインドされたセッションやエージェントのメタデータ
 
-### 2. Normalized job payload
+ジョブペイロードには、生の Carbon オブジェクトや変更可能なクロージャ（関数閉包）を含めてはなりません。
 
-Introduce a serializable job descriptor that contains only the data needed to run the turn later.
+現在の実装状況:
+- 部分的に完了。
+- `src/discord/monitor/inbound-job.ts` が存在し、ワーカーへの引き渡しを定義。
+- ただし、ペイロードに Discord の実行時コンテキストが残っているため、さらに削減が必要。
 
-Minimum shape:
+### 3. ワッカーステージ
+以下の責務を持つ Discord 専用のワーカーランナーを追加します:
+- `DiscordInboundJob` からターンコンテキストを再構築。
+- 実行に必要なメディアや追加のチャネルメタデータをロード。
+- エージェントターンをディスパッチ。
+- 最終的な返信ペイロードを配信。
+- ステータスと診断情報を更新。
 
-- route identity
-  - `agentId`
-  - `sessionKey`
-  - `accountId`
-  - `channel`
-- delivery identity
-  - destination channel id
-  - reply target message id
-  - thread id if present
-- sender identity
-  - sender id, label, username, tag
-- channel context
-  - guild id
-  - channel name or slug
-  - thread metadata
-  - resolved system prompt override
-- normalized message body
-  - base text
-  - effective message text
-  - attachment descriptors or resolved media references
-- gating decisions
-  - mention requirement outcome
-  - command authorization outcome
-  - bound session or agent metadata if applicable
-
-The job payload must not contain live Carbon objects or mutable closures.
-
-Current implementation status:
-
-- partially done
-- `src/discord/monitor/inbound-job.ts` exists and defines the worker handoff
-- the payload still contains live Discord runtime context and should be reduced further
-
-### 3. Worker stage
-
-Add a Discord-specific worker runner responsible for:
-
-- reconstructing the turn context from `DiscordInboundJob`
-- loading media and any additional channel metadata needed for the run
-- dispatching the agent turn
-- delivering final reply payloads
-- updating status and diagnostics
-
-Recommended location:
-
+推奨される配置場所:
 - `src/discord/monitor/inbound-worker.ts`
 - `src/discord/monitor/inbound-job.ts`
 
-### 4. Ordering model
+### 4. 順序制御モデル
+特定のルート境界における実行順序は、現在と同等に維持される必要があります。
 
-Ordering must remain equivalent to today for a given route boundary.
+推奨されるキー:
+- `resolveDiscordRunQueueKey(...)` と同じキューキーロジックを使用。
 
-Recommended key:
+これにより既存の挙動が維持されます:
+- 紐付けられた 1 つのエージェントとの会話が、自身と交差することはない。
+- 異なる Discord チャネルは引き続き独立して進行できる。
 
-- use the same queue key logic as `resolveDiscordRunQueueKey(...)`
+### 5. タイムアウトモデル
+切り替え後は、2 つの異なるタイムアウトカテゴリが存在することになります:
+- **リスナータイムアウト**: 正規化とエンキューのみをカバー。短く設定すべきです。
+- **実行タイムアウト**: オプション設定。ワーカーが所有し、明示的でユーザーに可視化されるもの。Carbon リスナーの設定から意図せず継承されるべきではありません。
 
-This preserves existing behavior:
+これにより、「Discord ゲートウェイリスナーが生存していること」と「エージェントの実行が正常であること」の間の、現在の偶発的な結合が解消されます。
 
-- one bound agent conversation does not interleave with itself
-- different Discord channels can still progress independently
+## 推奨される実装フェーズ
 
-### 5. Timeout model
+### フェーズ 1: 正規化の境界設定
+- ステータス: 部分的に実装済み
+- 完了項目:
+  - `buildDiscordInboundJob(...)` の抽出。
+  - ワーカー引き渡しのテスト追加。
+- 残り項目:
+  - `DiscordInboundJob` を純粋なデータのみにする。
+  - 実行時の依存関係を、ジョブごとのペイロードではなく、ワーカーが所有するサービスに移動。
+  - ライブなリスナー参照をジョブに繋ぎ戻してプロセスコンテキストを再構築するのをやめる。
 
-After cutover, there are two separate timeout classes:
+### フェーズ 2: メモリ内ワーカーキュー
+- ステータス: 実装済み
+- 完了項目:
+  - 解決された実行キューキーに基づく `DiscordInboundWorkerQueue` の追加。
+  - リスナーが `processDiscordMessage(...)` を直接待機する代わりにジョブをエンキューするように変更。
+  - ワーカーがメモリ内のみでジョブをプロセス内実行。
 
-- listener timeout
-  - only covers normalization and enqueue
-  - should be short
-- run timeout
-  - optional, worker-owned, explicit, and user-visible
-  - should not be inherited accidentally from Carbon listener settings
+これが最初の機能的な切り替え地点となります。
 
-This removes the current accidental coupling between "Discord gateway listener stayed alive" and "agent run is healthy."
+### フェーズ 3: プロセスの分離
+- ステータス: 未着手
+- 配信、タイピング、ドラフトストリーミングの所有権をワーカー向けのアダプターへ移動。
+- 生のプリフライトコンテキストの直接参照を、ワーカーによるコンテキスト再構築へ置き換え。
+- 必要に応じて、`processDiscordMessage(...)` を一時的にファサードとして残した後に分割。
 
-## Recommended implementation phases
+### フェーズ 4: コマンドのセマンティクス
+- ステータス: 未着手
+- 処理がキューに溜まっている状態でも、以下のネイティブ Discord コマンドが正しく動作することを確認:
+  - `stop`
+  - `new`
+  - `reset`
+  - 将来のセッション制御コマンド
+- ワーカーキューは、コマンドが実行中または待機中のターンを対象にできるよう、十分な実行状態を公開する必要があります。
 
-### Phase 1: normalization boundary
+### フェーズ 5: 可観測性とオペレーター体験
+- ステータス: 未着手
+- キューの深さやアクティブなワーカー数をモニターのステータスに出力。
+- エンキュー時刻、開始時刻、終了時刻、およびタイムアウトやキャンセルの理由を記録。
+- ワーカー起因のタイムアウトや配信失敗をログに明確に表示。
 
-- Status: partially implemented
-- Done:
-  - extracted `buildDiscordInboundJob(...)`
-  - added worker handoff tests
-- Remaining:
-  - make `DiscordInboundJob` plain data only
-  - move live runtime dependencies to worker-owned services instead of per-job payload
-  - stop rebuilding process context by stitching live listener refs back into the job
+### フェーズ 6: オプションの永続化対応
+- ステータス: 未着手
+- メモリ内バージョンが安定した後に検討:
+  - キューに入れられた Discord ジョブをゲートウェイ再起動後も維持すべきか。
+  - 維持する場合は、ジョブ記述子と配信チェックポイントを永続化する。
+  - 維持しない場合は、メモリ内限定の境界であることを明文化する。
 
-### Phase 2: in-memory worker queue
+これは、再起動時の復旧が必須でない限り、個別のフォローアップ課題とすべきです。
 
-- Status: implemented
-- Done:
-  - added `DiscordInboundWorkerQueue` keyed by resolved run queue key
-  - listener enqueues jobs instead of directly awaiting `processDiscordMessage(...)`
-  - worker executes jobs in-process, in memory only
+## 影響を受けるファイル
 
-This is the first functional cutover.
-
-### Phase 3: process split
-
-- Status: not started
-- Move delivery, typing, and draft streaming ownership behind worker-facing adapters.
-- Replace direct use of live preflight context with worker context reconstruction.
-- Keep `processDiscordMessage(...)` temporarily as a facade if needed, then split it.
-
-### Phase 4: command semantics
-
-- Status: not started
-  Make sure native Discord commands still behave correctly when work is queued:
-
-- `stop`
-- `new`
-- `reset`
-- any future session-control commands
-
-The worker queue must expose enough run state for commands to target the active or queued turn.
-
-### Phase 5: observability and operator UX
-
-- Status: not started
-- emit queue depth and active worker counts into monitor status
-- record enqueue time, start time, finish time, and timeout or cancellation reason
-- surface worker-owned timeout or delivery failures clearly in logs
-
-### Phase 6: optional durability follow-up
-
-- Status: not started
-  Only after the in-memory version is stable:
-
-- decide whether queued Discord jobs should survive gateway restart
-- if yes, persist job descriptors and delivery checkpoints
-- if no, document the explicit in-memory boundary
-
-This should be a separate follow-up unless restart recovery is required to land.
-
-## File impact
-
-Current primary files:
-
+現在の主要ファイル:
 - `src/discord/monitor/listeners.ts`
 - `src/discord/monitor/message-handler.ts`
 - `src/discord/monitor/message-handler.preflight.ts`
 - `src/discord/monitor/message-handler.process.ts`
 - `src/discord/monitor/status.ts`
 
-Current worker files:
-
+現在のワーカー関連ファイル:
 - `src/discord/monitor/inbound-job.ts`
 - `src/discord/monitor/inbound-worker.ts`
 - `src/discord/monitor/inbound-job.test.ts`
 - `src/discord/monitor/message-handler.queue.test.ts`
 
-Likely next touch points:
-
+今後関わる可能性のある箇所:
 - `src/auto-reply/dispatch.ts`
 - `src/discord/monitor/reply-delivery.ts`
 - `src/discord/monitor/thread-bindings.ts`
 - `src/discord/monitor/native-command.ts`
 
-## Next step now
+## 直近のステップ
 
-The next step is to make the worker boundary real instead of partial.
+次のステップは、ワーカーの境界線を「部分的」なものから「完全」なものへと昇格させることです。
 
-Do this next:
+具体的には以下を行います:
+1. `DiscordInboundJob` から実行時オブジェクトの依存関係を除去する。
+2. それらの依存関係を Discord ワーカーのインスタンス側で保持するようにする。
+3. キューイングされるジョブを、Discord 特有の純粋なデータに削減する:
+   - ルート識別情報
+   - 配信ターゲット
+   - 送信者情報
+   - 正規化されたメッセージのスナップショット
+   - ゲートおよびバインディングの判定結果
+4. ワーカー内部で、その純粋なデータから実行コンテキストを再構築する。
 
-1. Move live runtime dependencies out of `DiscordInboundJob`
-2. Keep those dependencies on the Discord worker instance instead
-3. Reduce queued jobs to plain Discord-specific data:
-   - route identity
-   - delivery target
-   - sender info
-   - normalized message snapshot
-   - gating and binding decisions
-4. Reconstruct worker execution context from that plain data inside the worker
+実務上、これは `client`, `threadBindings`, `guildHistories`, `discordRestFetch` などの変更可能な実行時限定ハンドルを、各ジョブに持たせるのではなく、ワーカー自体またはワーカーが所有するアダプター側に持たせることを意味します。
 
-In practice, that means:
+これが完了したら、次のフォローアップとして `stop`, `new`, `reset` のコマンド状態管理のクリーンアップを行います。
 
-- `client`
-- `threadBindings`
-- `guildHistories`
-- `discordRestFetch`
-- other mutable runtime-only handles
+## テスト計画
 
-should stop living on each queued job and instead live on the worker itself or behind worker-owned adapters.
-
-After that lands, the next follow-up should be command-state cleanup for `stop`, `new`, and `reset`.
-
-## Testing plan
-
-Keep the existing timeout repro coverage in:
-
+既存のタイムアウト再現テストを維持します:
 - `src/discord/monitor/message-handler.queue.test.ts`
 
-Add new tests for:
+以下の新しいテストを追加します:
+1. リスナーがターンの完了を待たずに、エンキュー後に即座に応答を返すこと。
+2. ルートごとの順序制御が維持されていること。
+3. 異なるチャネルが並列で実行されること。
+4. 返信が元のメッセージの送信先に配信されること。
+5. `stop` コマンドが、ワーカーが所有するアクティブな実行をキャンセルすること。
+6. ワーカーの失敗が、後続のジョブをブロックすることなく、可視化された診断情報を生成すること。
+7. ACP 紐付けされた Discord チャネルが、ワーカー実行下でも正しくルーティングされること。
 
-1. listener returns after enqueue without awaiting full turn
-2. per-route ordering is preserved
-3. different channels still run concurrently
-4. replies are delivered to the original message destination
-5. `stop` cancels the active worker-owned run
-6. worker failure produces visible diagnostics without blocking later jobs
-7. ACP-bound Discord channels still route correctly under worker execution
+## リスクと緩和策
 
-## Risks and mitigations
+- **リスク**: コマンドのセマンティクスが現在の同期的な挙動から乖離する。
+  - **緩和策**: コマンド状態の配管を、後回しにせず同じタイミングで実装する。
+- **リスク**: 返信配信時にスレッドや reply-to のコンテキストが失われる。
+  - **緩和策**: `DiscordInboundJob` において配信の識別情報を第一級の要素として扱う。
+- **リスク**: 再試行やキューの再起動時に二重配信が発生する。
+  - **緩和策**: 初回パスはメモリ内限定とするか、永続化の前に明示的な配信のべき等性を導入する。
+- **リスク**: 移行中に `message-handler.process.ts` の見通しが悪くなる。
+  - **緩和策**: ワーカーへの切り替え前または切り替え中に、正規化、実行、配信の各ヘルパーに分割する。
 
-- Risk: command semantics drift from current synchronous behavior
-  Mitigation: land command-state plumbing in the same cutover, not later
+## 合格基準
 
-- Risk: reply delivery loses thread or reply-to context
-  Mitigation: make delivery identity first-class in `DiscordInboundJob`
+本計画は以下の状態で完了とみなされます:
+1. Discord リスナーのタイムアウトによって、正常に動作している長時間ターンが中断されなくなること。
+2. コード上でリスナーの寿命とエージェントターンの寿命が分離されていること。
+3. 既存のセッションごとの順序制御が維持されていること。
+4. ACP 紐付けされた Discord チャネルが、同じワーカーパスを経由して動作すること。
+5. `stop` コマンドが、古いリスナー所有のコールスタックではなく、ワーカー所有の実行を対象とすること。
+6. タイムアウトや配信失敗が、リスナーによる「黙った破棄」ではなく、ワーカーによる明示的な結果として扱われること。
 
-- Risk: duplicate sends during retries or queue restarts
-  Mitigation: keep first pass in-memory only, or add explicit delivery idempotency before persistence
+## 今後の着地戦略
 
-- Risk: `message-handler.process.ts` becomes harder to reason about during migration
-  Mitigation: split into normalization, execution, and delivery helpers before or during worker cutover
+以下の PR で順次完成させます:
+1. `DiscordInboundJob` をデータのみにし、実行時オブジェクトをワーカーへ移動。
+2. `stop`, `new`, `reset` のコマンド状態の所有権をクリーンアップ。
+3. ワーカーの可観測性とオペレーター用ステータスを追加。
+4. 永続化が必要かどうかを判断し、必要なければメモリ内限定であることを明文化。
 
-## Acceptance criteria
-
-The plan is complete when:
-
-1. Discord listener timeout no longer aborts healthy long-running turns.
-2. Listener lifetime and agent-turn lifetime are separate concepts in code.
-3. Existing per-session ordering is preserved.
-4. ACP-bound Discord channels work through the same worker path.
-5. `stop` targets the worker-owned run instead of the old listener-owned call stack.
-6. Timeout and delivery failures become explicit worker outcomes, not silent listener drops.
-
-## Remaining landing strategy
-
-Finish this in follow-up PRs:
-
-1. make `DiscordInboundJob` plain-data only and move live runtime refs onto the worker
-2. clean up command-state ownership for `stop`, `new`, and `reset`
-3. add worker observability and operator status
-4. decide whether durability is needed or explicitly document the in-memory boundary
-
-This is still a bounded follow-up if kept Discord-only and if we continue to avoid a premature cross-channel worker abstraction.
+Discord 限定に留め、時期尚早なクロスチャネル抽象化を避けることで、これは管理可能な範囲のフォローアップ課題となります。

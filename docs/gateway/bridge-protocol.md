@@ -1,91 +1,79 @@
 ---
-summary: "Bridge protocol (legacy nodes): TCP JSONL, pairing, scoped RPC"
+summary: "ブリッジプロトコル (レガシーノード): TCP JSONL、ペアリング、スコープ付き RPC"
 read_when:
-  - Building or debugging node clients (iOS/Android/macOS node mode)
-  - Investigating pairing or bridge auth failures
-  - Auditing the node surface exposed by the gateway
-title: "Bridge Protocol"
+  - ノードクライアントの構築やデバッグを行う場合 (iOS/Android/macOS ノードモード)
+  - ペアリングやブリッジの認証エラーを調査する場合
+  - ゲートウェイが公開しているノード用のインターフェースを監査する場合
+title: "ブリッジプロトコル"
+x-i18n:
+  source_hash: "2923c683c77336b92b62dc6d66fa3ff5d4b4fac56c4ec2dc2cca8d8bbcc5d834"
 ---
 
-# Bridge protocol (legacy node transport)
+# ブリッジプロトコル (レガシーなノード通信路)
 
-The Bridge protocol is a **legacy** node transport (TCP JSONL). New node clients
-should use the unified Gateway WebSocket protocol instead.
+ブリッジ（Bridge）プロトコルは、**レガシー（旧式）** なノード通信路 (TCP JSONL) です。新しいノードクライアントを開発する場合は、代わりに統合されたゲートウェイ WebSocket プロトコルを使用してください。
 
-If you are building an operator or node client, use the
-[Gateway protocol](/gateway/protocol).
+オペレーター用またはノード用のクライアントを構築する場合は、[ゲートウェイプロトコル](/gateway/protocol) を参照してください。
 
-**Note:** Current OpenClaw builds no longer ship the TCP bridge listener; this document is kept for historical reference.
-Legacy `bridge.*` config keys are no longer part of the config schema.
+**注意:** 現在の OpenClaw ビルドには TCP ブリッジリスナーは同梱されていません。本ドキュメントは歴史的なリファレンスとして残されています。レガシーな `bridge.*` 構成キーは、現在の構成スキーマからは削除されています。
 
-## Why we have both
+## なぜ 2 つのプロトコルがあるのか
 
-- **Security boundary**: the bridge exposes a small allowlist instead of the
-  full gateway API surface.
-- **Pairing + node identity**: node admission is owned by the gateway and tied
-  to a per-node token.
-- **Discovery UX**: nodes can discover gateways via Bonjour on LAN, or connect
-  directly over a tailnet.
-- **Loopback WS**: the full WS control plane stays local unless tunneled via SSH.
+- **セキュリティ境界**: ブリッジは、ゲートウェイの全 API ではなく、許可リスト（allowlist）に基づいた最小限の機能のみを公開します。
+- **ペアリングとノード識別**: ノードの参加許可はゲートウェイが管理し、ノードごとのトークンに紐付けられます。
+- **検出体験 (UX)**: ノードは LAN 上の Bonjour 経由でゲートウェイを自動検出したり、Tailnet 経由で直接接続したりできます。
+- **ループバック WS**: 完全な WebSocket コントロールプレーンは、SSH トンネル等を使用しない限りローカル環境内に留まります。
 
-## Transport
+## 通信方式（トランスポート）
 
-- TCP, one JSON object per line (JSONL).
-- Optional TLS (when `bridge.tls.enabled` is true).
-- Legacy default listener port was `18790` (current builds do not start a TCP bridge).
+- TCP を使用し、1 行につき 1 つの JSON オブジェクトを送信します (JSONL)。
+- オプションで TLS に対応しています（`bridge.tls.enabled` が true の場合）。
+- レガシーなデフォルトの待機ポートは `18790` でした（現在のビルドでは TCP ブリッジは開始されません）。
 
-When TLS is enabled, discovery TXT records include `bridgeTls=1` plus
-`bridgeTlsSha256` as a non-secret hint. Note that Bonjour/mDNS TXT records are
-unauthenticated; clients must not treat the advertised fingerprint as an
-authoritative pin without explicit user intent or other out-of-band verification.
+TLS が有効な場合、検出用の TXT レコードにはヒント情報として `bridgeTls=1` と `bridgeTlsSha256` が含まれます。Bonjour/mDNS の TXT レコードは **未認証（署名なし）** であることに注意してください。ユーザーによる明示的な同意や他の手段による検証がない限り、クライアントは公開されたフィンガープリントを信頼できるピンとして扱ってはいけません。
 
-## Handshake + pairing
+## ハンドシェイクとペアリング
 
-1. Client sends `hello` with node metadata + token (if already paired).
-2. If not paired, gateway replies `error` (`NOT_PAIRED`/`UNAUTHORIZED`).
-3. Client sends `pair-request`.
-4. Gateway waits for approval, then sends `pair-ok` and `hello-ok`.
+1. クライアントが `hello` を送信します。これにはノードのメタデータと、ペアリング済みであればトークンが含まれます。
+2. ペアリングされていない場合、ゲートウェイは `error` (`NOT_PAIRED`/`UNAUTHORIZED`) を返します。
+3. クライアントが `pair-request` を送信します。
+4. ゲートウェイは承認を待ち、その後 `pair-ok` と `hello-ok` を送信します。
 
-`hello-ok` returns `serverName` and may include `canvasHostUrl`.
+`hello-ok` レスポンスには `serverName` が含まれ、オプションで `canvasHostUrl` が含まれる場合があります。
 
-## Frames
+## フレーム（データ構造）
 
-Client → Gateway:
+クライアント → ゲートウェイ:
 
-- `req` / `res`: scoped gateway RPC (chat, sessions, config, health, voicewake, skills.bins)
-- `event`: node signals (voice transcript, agent request, chat subscribe, exec lifecycle)
+- `req` / `res`: スコープ制限されたゲートウェイ RPC (chat, sessions, config, health, voicewake, skills.bins)
+- `event`: ノードからの信号 (音声の書き起こし、エージェント要求、チャット購読、exec のライフサイクル)
 
-Gateway → Client:
+ゲートウェイ → クライアント:
 
-- `invoke` / `invoke-res`: node commands (`canvas.*`, `camera.*`, `screen.record`,
-  `location.get`, `sms.send`)
-- `event`: chat updates for subscribed sessions
-- `ping` / `pong`: keepalive
+- `invoke` / `invoke-res`: ノードコマンド (`canvas.*`, `camera.*`, `screen.record`, `location.get`, `sms.send`)
+- `event`: 購読済みセッションのチャット更新情報
+- `ping` / `pong`: 生存確認（キープアライブ）
 
-Legacy allowlist enforcement lived in `src/gateway/server-bridge.ts` (removed).
+レガシーな許可リストの強制処理は、かつて `src/gateway/server-bridge.ts` に実装されていました（現在は削除済み）。
 
-## Exec lifecycle events
+## Exec ライフサイクルイベント
 
-Nodes can emit `exec.finished` or `exec.denied` events to surface system.run activity.
-These are mapped to system events in the gateway. (Legacy nodes may still emit `exec.started`.)
+ノードは `exec.finished` または `exec.denied` イベントを発行して、`system.run` の実行状況を知らせることができます。これらはゲートウェイ側でシステムイベントにマップされます（レガシーなノードは依然として `exec.started` を発行する場合があります）。
 
-Payload fields (all optional unless noted):
+ペイロードのフィールド（注記がない限りすべてオプション）:
 
-- `sessionKey` (required): agent session to receive the system event.
-- `runId`: unique exec id for grouping.
-- `command`: raw or formatted command string.
-- `exitCode`, `timedOut`, `success`, `output`: completion details (finished only).
-- `reason`: denial reason (denied only).
+- `sessionKey` (必須): システムイベントを受け取るエージェントセッション。
+- `runId`: グループ化のための一意の実行 ID。
+- `command`: 生の、または整形されたコマンド文字列。
+- `exitCode`, `timedOut`, `success`, `output`: 完了時の詳細情報（finished の場合のみ）。
+- `reason`: 拒否理由（denied の場合のみ）。
 
-## Tailnet usage
+## Tailnet での利用
 
-- Bind the bridge to a tailnet IP: `bridge.bind: "tailnet"` in
-  `~/.openclaw/openclaw.json`.
-- Clients connect via MagicDNS name or tailnet IP.
-- Bonjour does **not** cross networks; use manual host/port or wide-area DNS‑SD
-  when needed.
+- ブリッジを Tailnet IP にバインドする場合: `~/.openclaw/openclaw.json` で `bridge.bind: "tailnet"` を設定。
+- クライアントは MagicDNS 名または Tailnet IP を介して接続。
+- Bonjour はネットワークの境界を**越えられません**。必要に応じて、ホスト/ポートを手動指定するか、広域 DNS-SD を使用してください。
 
-## Versioning
+## バージョン管理
 
-Bridge is currently **implicit v1** (no min/max negotiation). Backward‑compat
-is expected; add a bridge protocol version field before any breaking changes.
+ブリッジプロトコルは現在 **暗黙的な v1** です（最小/最大バージョンの交渉機能はありません）。後方互換性が期待されます。破壊的な変更を行う前に、ブリッジプロトコルのバージョンフィールドを追加する必要があります。

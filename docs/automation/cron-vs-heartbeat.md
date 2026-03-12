@@ -1,105 +1,111 @@
 ---
-summary: "Guidance for choosing between heartbeat and cron jobs for automation"
+summary: "自動化で heartbeat と cron ジョブのどちらを選ぶか判断するためのガイド"
 read_when:
-  - Deciding how to schedule recurring tasks
-  - Setting up background monitoring or notifications
-  - Optimizing token usage for periodic checks
-title: "Cron vs Heartbeat"
+  - 定期タスクをどのようにスケジュールするか決める場合
+  - バックグラウンド監視や通知を設定する場合
+  - 定期チェックのトークン使用量を最適化したい場合
+title: "Cron と Heartbeat"
+x-i18n:
+  source_path: "automation/cron-vs-heartbeat.md"
+  source_hash: "f41e6321e67971407b9e51e8288b6215d56f0008ee5a58713789eadb6e56cba9"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:54:30.000Z"
 ---
 
-# Cron vs Heartbeat: When to Use Each
+# Cron と Heartbeat: 使い分けの目安
 
-Both heartbeats and cron jobs let you run tasks on a schedule. This guide helps you choose the right mechanism for your use case.
+Heartbeat と cron ジョブは、どちらもスケジュールに沿ってタスクを実行できます。このガイドでは、用途ごとにどちらを選ぶべきかを整理します。
 
-## Quick Decision Guide
+## まずはこれで判断する
 
-| Use Case                             | Recommended         | Why                                      |
-| ------------------------------------ | ------------------- | ---------------------------------------- |
-| Check inbox every 30 min             | Heartbeat           | Batches with other checks, context-aware |
-| Send daily report at 9am sharp       | Cron (isolated)     | Exact timing needed                      |
-| Monitor calendar for upcoming events | Heartbeat           | Natural fit for periodic awareness       |
-| Run weekly deep analysis             | Cron (isolated)     | Standalone task, can use different model |
-| Remind me in 20 minutes              | Cron (main, `--at`) | One-shot with precise timing             |
-| Background project health check      | Heartbeat           | Piggybacks on existing cycle             |
+| ユースケース                           | 推奨                 | 理由                                                 |
+| -------------------------------------- | -------------------- | ---------------------------------------------------- |
+| 30 分ごとに受信トレイを確認する        | Heartbeat            | 他のチェックとまとめて実行でき、コンテキストも使える |
+| 毎日午前 9 時ちょうどにレポートを送る  | Cron（isolated）     | 正確な時刻指定が必要                                 |
+| 予定が近いカレンダーイベントを監視する | Heartbeat            | 定期的な状況把握に自然に適している                   |
+| 毎週の詳細分析を実行する               | Cron（isolated）     | 単独タスクで、別モデルも使える                       |
+| 20 分後にリマインドする                | Cron（main, `--at`） | 正確な時刻でのワンショット実行に向いている           |
+| プロジェクト状態のバックグラウンド確認 | Heartbeat            | 既存のサイクルに相乗りできる                         |
 
-## Heartbeat: Periodic Awareness
+## Heartbeat: 定期的な状況確認
 
-Heartbeats run in the **main session** at a regular interval (default: 30 min). They're designed for the agent to check on things and surface anything important.
+Heartbeat は一定間隔（デフォルト: 30 分）で**メインセッション**内で実行されます。エージェントが状況を確認し、重要なものだけを表に出すための仕組みです。
 
-### When to use heartbeat
+### Heartbeat が向いている場面
 
-- **Multiple periodic checks**: Instead of 5 separate cron jobs checking inbox, calendar, weather, notifications, and project status, a single heartbeat can batch all of these.
-- **Context-aware decisions**: The agent has full main-session context, so it can make smart decisions about what's urgent vs. what can wait.
-- **Conversational continuity**: Heartbeat runs share the same session, so the agent remembers recent conversations and can follow up naturally.
-- **Low-overhead monitoring**: One heartbeat replaces many small polling tasks.
+- **複数の定期チェック**: 受信トレイ、カレンダー、天気、通知、プロジェクト状況を 5 つの別々の cron ジョブで監視する代わりに、1 つの heartbeat でまとめて処理できます。
+- **コンテキストを踏まえた判断**: エージェントはメインセッションの完全なコンテキストを持っているため、何が急ぎで何が後回しでよいかを賢く判断できます。
+- **会話の連続性**: Heartbeat 実行は同じセッションを共有するため、エージェントは最近の会話を覚えており、自然にフォローアップできます。
+- **低オーバーヘッドな監視**: 1 つの heartbeat で、多数の小さなポーリングタスクを置き換えられます。
 
-### Heartbeat advantages
+### Heartbeat の利点
 
-- **Batches multiple checks**: One agent turn can review inbox, calendar, and notifications together.
-- **Reduces API calls**: A single heartbeat is cheaper than 5 isolated cron jobs.
-- **Context-aware**: The agent knows what you've been working on and can prioritize accordingly.
-- **Smart suppression**: If nothing needs attention, the agent replies `HEARTBEAT_OK` and no message is delivered.
-- **Natural timing**: Drifts slightly based on queue load, which is fine for most monitoring.
+- **複数チェックをまとめて実行**: 1 回のエージェントターンで、受信トレイ、カレンダー、通知をまとめて確認できます。
+- **API 呼び出しを削減**: heartbeat 1 回の方が、独立した cron ジョブを 5 本動かすより安価です。
+- **コンテキストを考慮できる**: いま何に取り組んでいるかをエージェントが理解しており、優先度を判断できます。
+- **賢い抑制**: 注意すべきことが何もなければ、エージェントは `HEARTBEAT_OK` を返し、メッセージは配信されません。
+- **自然なタイミング**: キューの負荷に応じて多少ずれますが、多くの監視用途では問題ありません。
 
-### Heartbeat example: HEARTBEAT.md checklist
+### Heartbeat の例: `HEARTBEAT.md` のチェックリスト
 
 ```md
 # Heartbeat checklist
 
-- Check email for urgent messages
-- Review calendar for events in next 2 hours
-- If a background task finished, summarize results
-- If idle for 8+ hours, send a brief check-in
+- 緊急のメールがないか確認する
+- 今後 2 時間以内の予定をカレンダーで確認する
+- バックグラウンドタスクが完了していれば結果を要約する
+- 8 時間以上静かな状態が続いていれば短い確認メッセージを送る
 ```
 
-The agent reads this on each heartbeat and handles all items in one turn.
+エージェントは heartbeat のたびにこれを読み、すべての項目を 1 ターンで処理します。
 
-### Configuring heartbeat
+### Heartbeat の設定例
 
 ```json5
 {
   agents: {
     defaults: {
       heartbeat: {
-        every: "30m", // interval
-        target: "last", // explicit alert delivery target (default is "none")
-        activeHours: { start: "08:00", end: "22:00" }, // optional
+        every: "30m", // 間隔
+        target: "last", // 明示的なアラート配信先（デフォルトは "none"）
+        activeHours: { start: "08:00", end: "22:00" }, // 任意
       },
     },
   },
 }
 ```
 
-See [Heartbeat](/gateway/heartbeat) for full configuration.
+設定の詳細は [Heartbeat](/gateway/heartbeat) を参照してください。
 
-## Cron: Precise Scheduling
+## Cron: 正確な時刻での実行
 
-Cron jobs run at precise times and can run in isolated sessions without affecting main context.
-Recurring top-of-hour schedules are automatically spread by a deterministic
-per-job offset in a 0-5 minute window.
+Cron ジョブは正確な時刻に実行され、メインコンテキストに影響を与えない独立セッションでも実行できます。
+毎時ちょうどの繰り返しスケジュールは、自動的にジョブごとの決定論的なオフセットで 0〜5 分の範囲に分散されます。
 
-### When to use cron
+### Cron が向いている場面
 
-- **Exact timing required**: "Send this at 9:00 AM every Monday" (not "sometime around 9").
-- **Standalone tasks**: Tasks that don't need conversational context.
-- **Different model/thinking**: Heavy analysis that warrants a more powerful model.
-- **One-shot reminders**: "Remind me in 20 minutes" with `--at`.
-- **Noisy/frequent tasks**: Tasks that would clutter main session history.
-- **External triggers**: Tasks that should run independently of whether the agent is otherwise active.
+- **正確な時刻が必要**: 「毎週月曜の午前 9:00 に送る」のように、「9 時前後」でなく正確な実行時刻が必要な場合。
+- **単独タスク**: 会話コンテキストを必要としないタスク。
+- **異なるモデル / thinking**: より高性能なモデルを使う価値がある重い分析。
+- **ワンショットのリマインダー**: `--at` を使った「20 分後に知らせて」。
+- **頻繁でノイズが多いタスク**: メインセッションの履歴を散らかしたくないタスク。
+- **外部トリガー**: エージェントがほかに動いているかどうかに関係なく、独立して実行されるべきタスク。
 
-### Cron advantages
+### Cron の利点
 
-- **Precise timing**: 5-field or 6-field (seconds) cron expressions with timezone support.
-- **Built-in load spreading**: recurring top-of-hour schedules are staggered by up to 5 minutes by default.
-- **Per-job control**: override stagger with `--stagger <duration>` or force exact timing with `--exact`.
-- **Session isolation**: Runs in `cron:<jobId>` without polluting main history.
-- **Model overrides**: Use a cheaper or more powerful model per job.
-- **Delivery control**: Isolated jobs default to `announce` (summary); choose `none` as needed.
-- **Immediate delivery**: Announce mode posts directly without waiting for heartbeat.
-- **No agent context needed**: Runs even if main session is idle or compacted.
-- **One-shot support**: `--at` for precise future timestamps.
+- **正確な時刻指定**: タイムゾーン対応の 5 フィールドまたは 6 フィールド（秒付き）の cron 式を使えます。
+- **負荷分散を内蔵**: 毎時ちょうどの繰り返しスケジュールは、デフォルトで最大 5 分ずらして実行されます。
+- **ジョブ単位の制御**: `--stagger <duration>` で分散を上書きするか、`--exact` で厳密な時刻実行を強制できます。
+- **セッション分離**: `cron:<jobId>` で実行され、メイン履歴を汚しません。
+- **モデルの上書き**: ジョブごとに、より安価なモデルや高性能なモデルを指定できます。
+- **配信制御**: 独立ジョブのデフォルトは `announce`（要約配信）で、必要に応じて `none` も選べます。
+- **即時配信**: announce モードでは heartbeat を待たずに直接投稿されます。
+- **エージェントのコンテキストが不要**: メインセッションがアイドル状態でも compact 済みでも実行できます。
+- **ワンショット対応**: `--at` で将来の正確な時刻を指定できます。
 
-### Cron example: Daily morning briefing
+### Cron の例: 毎朝のブリーフィング
 
 ```bash
 openclaw cron add \
@@ -114,9 +120,9 @@ openclaw cron add \
   --to "+15551234567"
 ```
 
-This runs at exactly 7:00 AM New York time, uses Opus for quality, and announces a summary directly to WhatsApp.
+これはニューヨーク時間の午前 7:00 ちょうどに実行され、品質重視で Opus を使い、要約を WhatsApp に直接配信します。
 
-### Cron example: One-shot reminder
+### Cron の例: ワンショットのリマインダー
 
 ```bash
 openclaw cron add \
@@ -128,53 +134,53 @@ openclaw cron add \
   --delete-after-run
 ```
 
-See [Cron jobs](/automation/cron-jobs) for full CLI reference.
+CLI リファレンスの詳細は [Cron jobs](/automation/cron-jobs) を参照してください。
 
-## Decision Flowchart
+## 判断フローチャート
 
 ```
-Does the task need to run at an EXACT time?
-  YES -> Use cron
-  NO  -> Continue...
+そのタスクは「正確な時刻」に実行する必要がありますか？
+  YES -> cron を使う
+  NO  -> 次へ
 
-Does the task need isolation from main session?
-  YES -> Use cron (isolated)
-  NO  -> Continue...
+メインセッションから分離して実行する必要がありますか？
+  YES -> cron（isolated）を使う
+  NO  -> 次へ
 
-Can this task be batched with other periodic checks?
-  YES -> Use heartbeat (add to HEARTBEAT.md)
-  NO  -> Use cron
+そのタスクは他の定期チェックとまとめて実行できますか？
+  YES -> heartbeat を使う（`HEARTBEAT.md` に追加）
+  NO  -> cron を使う
 
-Is this a one-shot reminder?
-  YES -> Use cron with --at
-  NO  -> Continue...
+ワンショットのリマインダーですか？
+  YES -> `--at` 付きの cron を使う
+  NO  -> 次へ
 
-Does it need a different model or thinking level?
-  YES -> Use cron (isolated) with --model/--thinking
-  NO  -> Use heartbeat
+別の model や thinking level が必要ですか？
+  YES -> `--model` / `--thinking` 付きの cron（isolated）を使う
+  NO  -> heartbeat を使う
 ```
 
-## Combining Both
+## 両方を組み合わせる
 
-The most efficient setup uses **both**:
+最も効率的な構成は、**両方を併用すること**です。
 
-1. **Heartbeat** handles routine monitoring (inbox, calendar, notifications) in one batched turn every 30 minutes.
-2. **Cron** handles precise schedules (daily reports, weekly reviews) and one-shot reminders.
+1. **Heartbeat** は、受信トレイ、カレンダー、通知などの日常的な監視を、30 分ごとに 1 回のバッチ処理で行います。
+2. **Cron** は、毎日のレポートや週次レビューのような正確なスケジュールと、ワンショットのリマインダーを担当します。
 
-### Example: Efficient automation setup
+### 例: 効率的な自動化構成
 
-**HEARTBEAT.md** (checked every 30 min):
+**`HEARTBEAT.md`**（30 分ごとに確認）:
 
 ```md
 # Heartbeat checklist
 
-- Scan inbox for urgent emails
-- Check calendar for events in next 2h
-- Review any pending tasks
-- Light check-in if quiet for 8+ hours
+- 緊急のメールがないか受信トレイを確認する
+- 今後 2 時間以内の予定をカレンダーで確認する
+- 保留中のタスクを見直す
+- 8 時間以上静かな状態が続いていれば軽く確認する
 ```
 
-**Cron jobs** (precise timing):
+**Cron jobs**（正確なタイミング）:
 
 ```bash
 # Daily morning briefing at 7am
@@ -187,53 +193,53 @@ openclaw cron add --name "Weekly review" --cron "0 9 * * 1" --session isolated -
 openclaw cron add --name "Call back" --at "2h" --session main --system-event "Call back the client" --wake now
 ```
 
-## Lobster: Deterministic workflows with approvals
+## Lobster: 承認付きの決定論的ワークフロー
 
-Lobster is the workflow runtime for **multi-step tool pipelines** that need deterministic execution and explicit approvals.
-Use it when the task is more than a single agent turn, and you want a resumable workflow with human checkpoints.
+Lobster は、決定論的な実行と明示的な承認が必要な**複数ステップのツールパイプライン**向けのワークフローランタイムです。
+タスクが単一のエージェントターンで終わらず、人間のチェックポイントを挟める再開可能なワークフローが必要な場合に使います。
 
-### When Lobster fits
+### Lobster が適している場面
 
-- **Multi-step automation**: You need a fixed pipeline of tool calls, not a one-off prompt.
-- **Approval gates**: Side effects should pause until you approve, then resume.
-- **Resumable runs**: Continue a paused workflow without re-running earlier steps.
+- **複数ステップの自動化**: 単発プロンプトではなく、ツール呼び出しの固定パイプラインが必要。
+- **承認ゲート**: 副作用を伴う処理を一時停止し、承認後に再開したい。
+- **再開可能な実行**: 以前のステップをやり直さず、一時停止したワークフローを続行したい。
 
-### How it pairs with heartbeat and cron
+### Heartbeat / cron との関係
 
-- **Heartbeat/cron** decide _when_ a run happens.
-- **Lobster** defines _what steps_ happen once the run starts.
+- **Heartbeat / cron** は、実行が *いつ* 起きるかを決めます。
+- **Lobster** は、実行開始後に *どの手順* を踏むかを定義します。
 
-For scheduled workflows, use cron or heartbeat to trigger an agent turn that calls Lobster.
-For ad-hoc workflows, call Lobster directly.
+スケジュール実行のワークフローでは、cron または heartbeat で Lobster を呼び出すエージェントターンを起動します。
+アドホックなワークフローでは、Lobster を直接呼び出します。
 
-### Operational notes (from the code)
+### 運用上のメモ（コードベース準拠）
 
-- Lobster runs as a **local subprocess** (`lobster` CLI) in tool mode and returns a **JSON envelope**.
-- If the tool returns `needs_approval`, you resume with a `resumeToken` and `approve` flag.
-- The tool is an **optional plugin**; enable it additively via `tools.alsoAllow: ["lobster"]` (recommended).
-- Lobster expects the `lobster` CLI to be available on `PATH`.
+- Lobster はツールモードで**ローカルサブプロセス**（`lobster` CLI）として実行され、**JSON エンベロープ**を返します。
+- ツールが `needs_approval` を返した場合は、`resumeToken` と `approve` フラグを使って再開します。
+- このツールは**オプションのプラグイン**であり、`tools.alsoAllow: ["lobster"]` で追加的に有効化します（推奨）。
+- Lobster を使うには、`lobster` CLI が `PATH` 上に存在している必要があります。
 
-See [Lobster](/tools/lobster) for full usage and examples.
+使い方と例の詳細は [Lobster](/tools/lobster) を参照してください。
 
-## Main Session vs Isolated Session
+## メインセッションと独立セッション
 
-Both heartbeat and cron can interact with the main session, but differently:
+Heartbeat と cron はどちらもメインセッションと連携できますが、その方法は異なります。
 
-|         | Heartbeat                       | Cron (main)              | Cron (isolated)            |
-| ------- | ------------------------------- | ------------------------ | -------------------------- |
-| Session | Main                            | Main (via system event)  | `cron:<jobId>`             |
-| History | Shared                          | Shared                   | Fresh each run             |
-| Context | Full                            | Full                     | None (starts clean)        |
-| Model   | Main session model              | Main session model       | Can override               |
-| Output  | Delivered if not `HEARTBEAT_OK` | Heartbeat prompt + event | Announce summary (default) |
+|              | Heartbeat                     | Cron (main)               | Cron (isolated)        |
+| ------------ | ----------------------------- | ------------------------- | ---------------------- |
+| セッション   | Main                          | Main（system event 経由） | `cron:<jobId>`         |
+| 履歴         | 共有                          | 共有                      | 実行ごとに新規         |
+| コンテキスト | 完全                          | 完全                      | なし（クリーン開始）   |
+| モデル       | メインセッションのモデル      | メインセッションのモデル  | 上書き可能             |
+| 出力         | `HEARTBEAT_OK` でなければ配信 | Heartbeat prompt + event  | 要約を配信（既定）     |
 
-### When to use main session cron
+### メインセッション cron を使う場面
 
-Use `--session main` with `--system-event` when you want:
+次のような場合は、`--session main` と `--system-event` を使います。
 
-- The reminder/event to appear in main session context
-- The agent to handle it during the next heartbeat with full context
-- No separate isolated run
+- リマインダーやイベントをメインセッションのコンテキストに表示したい
+- エージェントに次の heartbeat で完全なコンテキストを使って処理させたい
+- 別の独立実行は不要
 
 ```bash
 openclaw cron add \
@@ -244,14 +250,14 @@ openclaw cron add \
   --wake now
 ```
 
-### When to use isolated cron
+### 独立 cron を使う場面
 
-Use `--session isolated` when you want:
+次のような場合は、`--session isolated` を使います。
 
-- A clean slate without prior context
-- Different model or thinking settings
-- Announce summaries directly to a channel
-- History that doesn't clutter main session
+- 事前コンテキストなしのクリーンな状態で始めたい
+- 異なるモデルや thinking 設定を使いたい
+- 要約をチャンネルに直接 announce したい
+- メインセッションを履歴で埋めたくない
 
 ```bash
 openclaw cron add \
@@ -264,23 +270,23 @@ openclaw cron add \
   --announce
 ```
 
-## Cost Considerations
+## コストに関する考慮点
 
-| Mechanism       | Cost Profile                                            |
-| --------------- | ------------------------------------------------------- |
-| Heartbeat       | One turn every N minutes; scales with HEARTBEAT.md size |
-| Cron (main)     | Adds event to next heartbeat (no isolated turn)         |
-| Cron (isolated) | Full agent turn per job; can use cheaper model          |
+| 仕組み          | コスト特性                                                 |
+| --------------- | ---------------------------------------------------------- |
+| Heartbeat       | N 分ごとに 1 ターン。`HEARTBEAT.md` の大きさに応じて増加   |
+| Cron (main)     | 次の heartbeat にイベントを追加する（独立ターンなし）      |
+| Cron (isolated) | ジョブごとに完全なエージェントターン。安価なモデルも使える |
 
-**Tips**:
+**ヒント**:
 
-- Keep `HEARTBEAT.md` small to minimize token overhead.
-- Batch similar checks into heartbeat instead of multiple cron jobs.
-- Use `target: "none"` on heartbeat if you only want internal processing.
-- Use isolated cron with a cheaper model for routine tasks.
+- トークンオーバーヘッドを抑えるため、`HEARTBEAT.md` は小さく保ってください。
+- 似たチェックは複数の cron ジョブに分けず、heartbeat にまとめてください。
+- 内部処理だけが必要なら、heartbeat で `target: "none"` を使ってください。
+- 定常タスクには、より安価なモデルを指定した独立 cron を使ってください。
 
-## Related
+## 関連
 
-- [Heartbeat](/gateway/heartbeat) - full heartbeat configuration
-- [Cron jobs](/automation/cron-jobs) - full cron CLI and API reference
-- [System](/cli/system) - system events + heartbeat controls
+- [Heartbeat](/gateway/heartbeat) - heartbeat 設定の詳細
+- [Cron jobs](/automation/cron-jobs) - cron CLI / API リファレンスの詳細
+- [System](/cli/system) - system event と heartbeat 制御

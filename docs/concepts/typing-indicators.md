@@ -1,41 +1,38 @@
 ---
-summary: "When OpenClaw shows typing indicators and how to tune them"
+summary: "OpenClaw がタイピングインジケーター（入力中表示）を出すタイミングとその調整方法"
 read_when:
-  - Changing typing indicator behavior or defaults
-title: "Typing Indicators"
+  - タイピングインジケーターの挙動やデフォルト設定を変更したい場合
+title: "タイピングインジケーター"
+x-i18n:
+  source_hash: "8ee82d02829c4ff58462be8bf5bb52f23f519aeda816c2fd8a583e7a317a2e98"
 ---
 
-# Typing indicators
+# タイピングインジケーター
 
-Typing indicators are sent to the chat channel while a run is active. Use
-`agents.defaults.typingMode` to control **when** typing starts and `typingIntervalSeconds`
-to control **how often** it refreshes.
+OpenClaw はエージェントが実行されている間、チャットチャネルに対してタイピングインジケーター（「入力中...」の表示）を送信します。`agents.defaults.typingMode` を使用して入力開始の **タイミング** を、`typingIntervalSeconds` を使用して更新の **頻度** を制御できます。
 
-## Defaults
+## デフォルト設定
 
-When `agents.defaults.typingMode` is **unset**, OpenClaw keeps the legacy behavior:
+`agents.defaults.typingMode` が **未設定** の場合、OpenClaw は以下のレガシーな挙動を維持します:
 
-- **Direct chats**: typing starts immediately once the model loop begins.
-- **Group chats with a mention**: typing starts immediately.
-- **Group chats without a mention**: typing starts only when message text begins streaming.
-- **Heartbeat runs**: typing is disabled.
+- **ダイレクトチャット**: モデルのループが開始されると即座に入力表示を開始します。
+- **メンション（言及）ありのグループチャット**: 即座に入力表示を開始します。
+- **メンションなしのグループチャット**: メッセージテキストのストリーミングが開始された時点で入力表示を開始します。
+- **ハートビート（定期実行）**: 入力表示は無効化されます。
 
-## Modes
+## モード一覧
 
-Set `agents.defaults.typingMode` to one of:
+`agents.defaults.typingMode` に以下のいずれかを設定できます:
 
-- `never` — no typing indicator, ever.
-- `instant` — start typing **as soon as the model loop begins**, even if the run
-  later returns only the silent reply token.
-- `thinking` — start typing on the **first reasoning delta** (requires
-  `reasoningLevel: "stream"` for the run).
-- `message` — start typing on the **first non-silent text delta** (ignores
-  the `NO_REPLY` silent token).
+- `never`: いかなる場合もタイピングインジケーターを表示しません。
+- `instant`: **モデルのループが開始された直後** に入力表示を開始します。たとえその後の実行結果がサイレントリプライ（返信なし）であっても表示されます。
+- `thinking`: **最初の推論（Reasoning）の差分が生成された時点** で入力表示を開始します（実行時に `reasoningLevel: "stream"` が必要です）。
+- `message`: **最初の（サイレントでない）テキストの差分が生成された時点** で入力表示を開始します（`NO_REPLY` トークンによるサイレントな応答は無視されます）。
 
-Order of “how early it fires”:
-`never` → `message` → `thinking` → `instant`
+表示開始の早さの順序:
+`never` (なし) → `message` (遅い) → `thinking` → `instant` (早い)
 
-## Configuration
+## 構成例
 
 ```json5
 {
@@ -46,7 +43,7 @@ Order of “how early it fires”:
 }
 ```
 
-You can override mode or cadence per session:
+セッションごとにモードや更新間隔を上書きすることも可能です:
 
 ```json5
 {
@@ -57,12 +54,9 @@ You can override mode or cadence per session:
 }
 ```
 
-## Notes
+## 補足事項
 
-- `message` mode won’t show typing for silent-only replies (e.g. the `NO_REPLY`
-  token used to suppress output).
-- `thinking` only fires if the run streams reasoning (`reasoningLevel: "stream"`).
-  If the model doesn’t emit reasoning deltas, typing won’t start.
-- Heartbeats never show typing, regardless of mode.
-- `typingIntervalSeconds` controls the **refresh cadence**, not the start time.
-  The default is 6 seconds.
+- `message` モードでは、サイレントリプライ（出力を抑制するために `NO_REPLY` トークンが使われた場合など）では入力表示は行われません。
+- `thinking` モードは、推論プロセスのストリーミング (`reasoningLevel: "stream"`) が行われる場合にのみ機能します。モデルが推論の差分を出力しない場合、入力表示は開始されません。
+- モードに関わらず、ハートビート実行時には入力表示は行われません。
+- `typingIntervalSeconds` は、開始タイミングではなく **更新の頻度** を制御します。デフォルトは 6 秒です。

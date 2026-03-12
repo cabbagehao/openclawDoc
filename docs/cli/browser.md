@@ -1,30 +1,31 @@
 ---
-summary: "CLI reference for `openclaw browser` (profiles, tabs, actions, extension relay)"
+summary: "`openclaw browser` の CLI リファレンス (プロファイル、タブ、アクション、拡張機能リレー)"
 read_when:
-  - You use `openclaw browser` and want examples for common tasks
-  - You want to control a browser running on another machine via a node host
-  - You want to use the Chrome extension relay (attach/detach via toolbar button)
+  - "`openclaw browser` コマンドを使用しており、よくあるタスクの実行例を確認したい場合"
+  - ノードホストを介して別のマシンで実行されているブラウザを制御したい場合
+  - Chrome 拡張機能リレーを使用したい（ツールバーのボタンによるアタッチ/デタッチ）場合
 title: "browser"
+x-i18n:
+  source_hash: "af35adfd68726fd519c704d046451effd330458c2b8305e713137fb07b2571fd"
 ---
 
 # `openclaw browser`
 
-Manage OpenClaw’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
+OpenClaw のブラウザ制御サーバーを管理し、ブラウザ操作（タブ管理、スナップショット取得、スクリーンショット、ナビゲーション、クリック、入力など）を実行します。
 
-Related:
+関連ドキュメント:
+- ブラウザツール + API: [ブラウザツール](/tools/browser)
+- Chrome 拡張機能リレー: [Chrome 拡張機能](/tools/chrome-extension)
 
-- Browser tool + API: [Browser tool](/tools/browser)
-- Chrome extension relay: [Chrome extension](/tools/chrome-extension)
+## よく使われるフラグ
 
-## Common flags
+- `--url <gatewayWsUrl>`: ゲートウェイの WebSocket URL (デフォルトは構成に従います)。
+- `--token <token>`: ゲートウェイの認証トークン (必要な場合)。
+- `--timeout <ms>`: リクエストのタイムアウト (ミリ秒)。
+- `--browser-profile <name>`: ブラウザプロファイルを選択 (デフォルトは構成に従います)。
+- `--json`: 機械可読な形式で出力。
 
-- `--url <gatewayWsUrl>`: Gateway WebSocket URL (defaults to config).
-- `--token <token>`: Gateway token (if required).
-- `--timeout <ms>`: request timeout (ms).
-- `--browser-profile <name>`: choose a browser profile (default from config).
-- `--json`: machine-readable output (where supported).
-
-## Quick start (local)
+## クイックスタート (ローカル環境)
 
 ```bash
 openclaw browser --browser-profile chrome tabs
@@ -33,12 +34,12 @@ openclaw browser --browser-profile openclaw open https://example.com
 openclaw browser --browser-profile openclaw snapshot
 ```
 
-## Profiles
+## プロファイル
 
-Profiles are named browser routing configs. In practice:
+プロファイルはブラウザのルーティング設定に名前を付けたものです。主なものは以下の通りです:
 
-- `openclaw`: launches/attaches to a dedicated OpenClaw-managed Chrome instance (isolated user data dir).
-- `chrome`: controls your existing Chrome tab(s) via the Chrome extension relay.
+- `openclaw`: OpenClaw が管理する専用の Chrome インスタンス (分離されたユーザーデータディレクトリを使用) を起動または接続します。
+- `chrome`: Chrome 拡張機能リレーを介して、既存の Chrome タブを制御します。
 
 ```bash
 openclaw browser profiles
@@ -46,13 +47,13 @@ openclaw browser create-profile --name work --color "#FF5A36"
 openclaw browser delete-profile --name work
 ```
 
-Use a specific profile:
+特定のプロファイルを使用する場合:
 
 ```bash
 openclaw browser --browser-profile work tabs
 ```
 
-## Tabs
+## タブ操作
 
 ```bash
 openclaw browser tabs
@@ -61,21 +62,21 @@ openclaw browser focus <targetId>
 openclaw browser close <targetId>
 ```
 
-## Snapshot / screenshot / actions
+## スナップショット / スクリーンショット / アクション
 
-Snapshot:
+スナップショットの取得:
 
 ```bash
 openclaw browser snapshot
 ```
 
-Screenshot:
+スクリーンショットの取得:
 
 ```bash
 openclaw browser screenshot
 ```
 
-Navigate/click/type (ref-based UI automation):
+ナビゲーション / クリック / 入力 (参照ベースの UI 自動化):
 
 ```bash
 openclaw browser navigate https://example.com
@@ -83,25 +84,25 @@ openclaw browser click <ref>
 openclaw browser type <ref> "hello"
 ```
 
-## Chrome extension relay (attach via toolbar button)
+## Chrome 拡張機能リレー (ツールバーのボタンで接続)
 
-This mode lets the agent control an existing Chrome tab that you attach manually (it does not auto-attach).
+このモードでは、手動でアタッチ（接続）した既存の Chrome タブをエージェントが制御できます（自動的にアタッチされることはありません）。
 
-Install the unpacked extension to a stable path:
+ビルド済みの拡張機能を安定したパスに配置します:
 
 ```bash
 openclaw browser extension install
 openclaw browser extension path
 ```
 
-Then Chrome → `chrome://extensions` → enable “Developer mode” → “Load unpacked” → select the printed folder.
+次に、Chrome で `chrome://extensions` を開き、「デベロッパー モード」を有効にしてから「パッケージ化されていない拡張機能を読み込む」を選択し、表示されたフォルダを選択してください。
 
-Full guide: [Chrome extension](/tools/chrome-extension)
+詳細ガイド: [Chrome 拡張機能](/tools/chrome-extension)
 
-## Remote browser control (node host proxy)
+## リモートブラウザ制御 (ノードホスト経由のプロキシ)
 
-If the Gateway runs on a different machine than the browser, run a **node host** on the machine that has Chrome/Brave/Edge/Chromium. The Gateway will proxy browser actions to that node (no separate browser control server required).
+ゲートウェイがブラウザとは別のマシンで動作している場合は、Chrome、Brave、Edge、Chromium 等がインストールされているマシンで**ノードホスト**を実行してください。ゲートウェイはブラウザ操作をそのノードにプロキシ（中継）します（別途ブラウザ制御サーバーを用意する必要はありません）。
 
-Use `gateway.nodes.browser.mode` to control auto-routing and `gateway.nodes.browser.node` to pin a specific node if multiple are connected.
+自動ルーティングの設定には `gateway.nodes.browser.mode` を、特定のノードに固定する場合は `gateway.nodes.browser.node` を使用します。
 
-Security + remote setup: [Browser tool](/tools/browser), [Remote access](/gateway/remote), [Tailscale](/gateway/tailscale), [Security](/gateway/security)
+セキュリティとリモート設定の詳細: [ブラウザツール](/tools/browser), [リモートアクセス](/gateway/remote), [Tailscale](/gateway/tailscale), [セキュリティ](/gateway/security)

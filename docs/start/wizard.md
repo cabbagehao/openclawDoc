@@ -1,29 +1,27 @@
 ---
-summary: "CLI onboarding wizard: guided setup for gateway, workspace, channels, and skills"
+summary: "CLI オンボーディング ウィザード: Gateway、ワークスペース、チャンネル、およびスキルのガイド付きセットアップ"
 read_when:
-  - Running or configuring the onboarding wizard
-  - Setting up a new machine
-title: "Onboarding Wizard (CLI)"
-sidebarTitle: "Onboarding: CLI"
+  - オンボーディング ウィザードの実行または構成時
+  - 新しいマシンのセットアップ時
+title: "オンボーディング ウィザード (CLI)"
+sidebarTitle: "オンボーディング: CLI"
 ---
 
-# Onboarding Wizard (CLI)
+# オンボーディング ウィザード (CLI)
 
-The onboarding wizard is the **recommended** way to set up OpenClaw on macOS,
-Linux, or Windows (via WSL2; strongly recommended).
-It configures a local Gateway or a remote Gateway connection, plus channels, skills,
-and workspace defaults in one guided flow.
+オンボーディング ウィザードは、macOS、Linux、または Windows (WSL2 経由。強く推奨) で OpenClaw をセットアップするための**推奨**される方法です。
+1 つのガイド付きフローで、ローカル Gateway またはリモート Gateway 接続に加え、チャンネル、スキル、およびワークスペースのデフォルトを構成します。
 
 ```bash
 openclaw onboard
 ```
 
 <Info>
-Fastest first chat: open the Control UI (no channel setup needed). Run
-`openclaw dashboard` and chat in the browser. Docs: [Dashboard](/web/dashboard).
+最速の初回チャット: Control UI を開きます (チャンネルのセットアップは不要)。
+`openclaw dashboard` を実行してブラウザでチャットします。ドキュメント: [ダッシュボード](/web/dashboard)。
 </Info>
 
-To reconfigure later:
+後で再構成する場合:
 
 ```bash
 openclaw configure
@@ -31,93 +29,86 @@ openclaw agents add <name>
 ```
 
 <Note>
-`--json` does not imply non-interactive mode. For scripts, use `--non-interactive`.
+`--json` は非対話モードを意味しません。スクリプトの場合は `--non-interactive` を使用してください。
 </Note>
 
 <Tip>
-The onboarding wizard includes a web search step where you can pick a provider
-(Perplexity, Brave, Gemini, Grok, or Kimi) and paste your API key so the agent
-can use `web_search`. You can also configure this later with
-`openclaw configure --section web`. Docs: [Web tools](/tools/web).
+オンボーディング ウィザードには、プロバイダー (Perplexity、Brave、Gemini、Grok、または Kimi) を選択し、API キーを貼り付けてエージェントが `web_search` を使用できるようにする Web 検索ステップが含まれています。これは後で `openclaw configure --section web` で構成することもできます。ドキュメント: [Web ツール](/tools/web)。
 </Tip>
 
-## QuickStart vs Advanced
+## クイックスタート vs 詳細設定
 
-The wizard starts with **QuickStart** (defaults) vs **Advanced** (full control).
+ウィザードは、**クイックスタート** (デフォルト) か **詳細設定** (フルコントロール) の選択から始まります。
 
 <Tabs>
-  <Tab title="QuickStart (defaults)">
-    - Local gateway (loopback)
-    - Workspace default (or existing workspace)
-    - Gateway port **18789**
-    - Gateway auth **Token** (auto‑generated, even on loopback)
-    - Tool policy default for new local setups: `tools.profile: "coding"` (existing explicit profile is preserved)
-    - DM isolation default: local onboarding writes `session.dmScope: "per-channel-peer"` when unset. Details: [CLI Onboarding Reference](/start/wizard-cli-reference#outputs-and-internals)
-    - Tailscale exposure **Off**
-    - Telegram + WhatsApp DMs default to **allowlist** (you'll be prompted for your phone number)
+  <Tab title="クイックスタート (デフォルト)">
+    - ローカル Gateway (ループバック)
+    - ワークスペースのデフォルト (または既存のワークスペース)
+    - Gateway ポート **18789**
+    - Gateway 認証 **トークン** (ループバックであっても自動生成)
+    - 新しいローカルセットアップのデフォルトツールポリシー: `tools.profile: "coding"` (既存の明示的なプロファイルは保持されます)
+    - DM 分離のデフォルト: 未設定の場合、ローカルオンボーディングは `session.dmScope: "per-channel-peer"` を書き込みます。詳細: [CLI オンボーディング リファレンス](/start/wizard-cli-reference#outputs-and-internals)
+    - Tailscale 公開 **オフ**
+    - Telegram + WhatsApp の DM はデフォルトで **許可リスト** (電話番号の入力を求められます)
   </Tab>
-  <Tab title="Advanced (full control)">
-    - Exposes every step (mode, workspace, gateway, channels, daemon, skills).
+  <Tab title="詳細設定 (フルコントロール)">
+    - すべてのステップ (モード、ワークスペース、Gateway、チャンネル、デーモン、スキル) を表示します。
   </Tab>
 </Tabs>
 
-## What the wizard configures
+## ウィザードが構成するもの
 
-**Local mode (default)** walks you through these steps:
+**ローカルモード (デフォルト)** では、以下のステップを順に実行します。
 
-1. **Model/Auth** — choose any supported provider/auth flow (API key, OAuth, or setup-token), including Custom Provider
-   (OpenAI-compatible, Anthropic-compatible, or Unknown auto-detect). Pick a default model.
-   Security note: if this agent will run tools or process webhook/hooks content, prefer the strongest latest-generation model available and keep tool policy strict. Weaker/older tiers are easier to prompt-inject.
-   For non-interactive runs, `--secret-input-mode ref` stores env-backed refs in auth profiles instead of plaintext API key values.
-   In non-interactive `ref` mode, the provider env var must be set; passing inline key flags without that env var fails fast.
-   In interactive runs, choosing secret reference mode lets you point at either an environment variable or a configured provider ref (`file` or `exec`), with a fast preflight validation before saving.
-2. **Workspace** — Location for agent files (default `~/.openclaw/workspace`). Seeds bootstrap files.
-3. **Gateway** — Port, bind address, auth mode, Tailscale exposure.
-   In interactive token mode, choose default plaintext token storage or opt into SecretRef.
-   Non-interactive token SecretRef path: `--gateway-token-ref-env <ENV_VAR>`.
-4. **Channels** — WhatsApp, Telegram, Discord, Google Chat, Mattermost, Signal, BlueBubbles, or iMessage.
-5. **Daemon** — Installs a LaunchAgent (macOS) or systemd user unit (Linux/WSL2).
-   If token auth requires a token and `gateway.auth.token` is SecretRef-managed, daemon install validates it but does not persist the resolved token into supervisor service environment metadata.
-   If token auth requires a token and the configured token SecretRef is unresolved, daemon install is blocked with actionable guidance.
-   If both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, daemon install is blocked until mode is set explicitly.
-6. **Health check** — Starts the Gateway and verifies it's running.
-7. **Skills** — Installs recommended skills and optional dependencies.
+1. **モデル/認証** — サポートされている任意のプロバイダー/認証フロー (API キー、OAuth、またはセットアップトークン) を選択します。カスタムプロバイダー (OpenAI 互換、Anthropic 互換、または不明な自動検出) も含まれます。デフォルトのモデルを選択します。
+   セキュリティに関する注意: このエージェントがツールを実行したり、Webhook/フックのコンテンツを処理したりする場合は、利用可能な最新世代の最も強力なモデルを優先し、ツールポリシーを厳格に保ってください。より弱く古い層はプロンプトインジェクションを受けやすくなります。
+   非対話型の実行では、`--secret-input-mode ref` を使用すると、平文の API キー値の代わりに環境変数ベースの参照を認証プロファイルに保存します。
+   非対話型の `ref` モードでは、プロバイダーの環境変数を設定する必要があります。その環境変数なしでインラインキーフラグを渡すと、すぐに失敗します。
+   対話型の実行では、シークレット参照モードを選択すると、保存前に高速なプリフライト検証を行い、環境変数または構成済みのプロバイダー参照 (`file` または `exec`) のいずれかを指すことができます。
+2. **ワークスペース** — エージェントファイルの場所 (デフォルトは `~/.openclaw/workspace`)。ブートストラップファイルを生成します。
+3. **Gateway** — ポート、バインド アドレス、認証モード、Tailscale 公開。
+   対話型のトークンモードでは、デフォルトの平文トークンストレージを選択するか、SecretRef を選択します。
+   非対話型のトークン SecretRef パス: `--gateway-token-ref-env <ENV_VAR>`。
+4. **チャンネル** — WhatsApp、Telegram、Discord、Google Chat、Mattermost、Signal、BlueBubbles、または iMessage。
+5. **デーモン** — LaunchAgent (macOS) または systemd ユーザーユニット (Linux/WSL2) をインストールします。
+   トークン認証にトークンが必要で、`gateway.auth.token` が SecretRef で管理されている場合、デーモンのインストールはそれを検証しますが、解決されたトークンをスーパーバイザーサービスの環境メタデータに永続化しません。
+   トークン認証にトークンが必要で、構成されたトークン SecretRef が解決されない場合、実用的なガイダンスとともにデーモンのインストールがブロックされます。
+   `gateway.auth.token` と `gateway.auth.password` の両方が構成され、`gateway.auth.mode` が未設定の場合、モードが明示的に設定されるまでデーモンのインストールはブロックされます。
+6. **ヘルスチェック** — Gateway を起動し、実行されていることを確認します。
+7. **スキル** — 推奨されるスキルとオプションの依存関係をインストールします。
 
 <Note>
-Re-running the wizard does **not** wipe anything unless you explicitly choose **Reset** (or pass `--reset`).
-CLI `--reset` defaults to config, credentials, and sessions; use `--reset-scope full` to include workspace.
-If the config is invalid or contains legacy keys, the wizard asks you to run `openclaw doctor` first.
+明示的に **リセット** を選択する (または `--reset` を渡す) か、構成が最新でない場合を除き、ウィザードを再実行しても何も消去されません。
+CLI の `--reset` はデフォルトで構成、認証情報、およびセッションを対象とします。ワークスペースを含めるには `--reset-scope full` を使用してください。
+構成が無効であるか、レガシーキーが含まれている場合、ウィザードは最初に `openclaw doctor` を実行するように求めます。
 </Note>
 
-**Remote mode** only configures the local client to connect to a Gateway elsewhere.
-It does **not** install or change anything on the remote host.
+**リモートモード**は、他の場所にある Gateway に接続するようにローカルクライアントを構成するだけです。
+リモートホストには何もインストールも変更もしません。
 
-## Add another agent
+## 別のエージェントを追加する
 
-Use `openclaw agents add <name>` to create a separate agent with its own workspace,
-sessions, and auth profiles. Running without `--workspace` launches the wizard.
+`openclaw agents add <name>` を使用して、独自のワークスペース、セッション、および認証プロファイルを持つ別のエージェントを作成します。`--workspace` なしで実行するとウィザードが起動します。
 
-What it sets:
+設定されるもの:
 
 - `agents.list[].name`
 - `agents.list[].workspace`
 - `agents.list[].agentDir`
 
-Notes:
+注意:
 
-- Default workspaces follow `~/.openclaw/workspace-<agentId>`.
-- Add `bindings` to route inbound messages (the wizard can do this).
-- Non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
+- デフォルトのワークスペースは `~/.openclaw/workspace-<agentId>` に従います。
+- インバウンドメッセージをルーティングするための `bindings` を追加します (ウィザードで実行可能)。
+- 非対話型フラグ: `--model`, `--agent-dir`, `--bind`, `--non-interactive`。
 
-## Full reference
+## 完全なリファレンス
 
-For detailed step-by-step breakdowns, non-interactive scripting, Signal setup,
-RPC API, and a full list of config fields the wizard writes, see the
-[Wizard Reference](/reference/wizard).
+ステップごとの詳細な内訳、非対話型スクリプト、Signal のセットアップ、RPC API、およびウィザードが書き込む構成フィールドの完全なリストについては、[ウィザードリファレンス](/reference/wizard)を参照してください。
 
-## Related docs
+## 関連ドキュメント
 
-- CLI command reference: [`openclaw onboard`](/cli/onboard)
-- Onboarding overview: [Onboarding Overview](/start/onboarding-overview)
-- macOS app onboarding: [Onboarding](/start/onboarding)
-- Agent first-run ritual: [Agent Bootstrapping](/start/bootstrapping)
+- CLI コマンドリファレンス: [`openclaw onboard`](/cli/onboard)
+- オンボーディングの概要: [オンボーディングの概要](/start/onboarding-overview)
+- macOS アプリのオンボーディング: [オンボーディング](/start/onboarding)
+- エージェントの初回実行手順: [エージェントブートストラップ](/start/bootstrapping)

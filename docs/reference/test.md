@@ -1,63 +1,62 @@
 ---
-summary: "How to run tests locally (vitest) and when to use force/coverage modes"
+summary: "テストをローカルで実行する方法 (vitest)、および強制/カバレッジ モードをいつ使用するか"
 read_when:
-  - Running or fixing tests
-title: "Tests"
+  - テストの実行または修正
+title: "テスト"
+x-i18n:
+  source_hash: "c98456042ff6ff4ba0773cb461fa85beae69864b65d41f546e0b488f60d98c26"
 ---
 
-# Tests
+# テスト
 
-- Full testing kit (suites, live, Docker): [Testing](/help/testing)
+- 完全なテスト キット (スイート、ライブ、Docker): [テスト](/help/testing)- `pnpm test:force`: デフォルトの制御ポートを保持している残留ゲートウェイ プロセスを強制終了し、分離されたゲートウェイ ポートを使用して完全な Vitest スイートを実行するため、サーバー テストは実行中のインスタンスと衝突しません。以前のゲートウェイ実行によりポート 18789 が占有されたままになっている場合にこれを使用します。
+- `pnpm test:coverage`: V8 をカバーするユニット スイートを実行します (`vitest.unit.config.ts` 経由)。グローバルしきい値は 70% の行/分岐/関数/ステートメントです。ターゲットを単体テスト可能なロジックに集中させるため、統合の重要なエントリポイント (CLI 配線、ゲートウェイ/テレグラム ブリッジ、Web チャット静的サーバー) はカバーされません。
+- ノード 24+ の `pnpm test`: OpenClaw は Vitest `vmForks` を自動無効にし、`forks` を使用して `ERR_VM_MODULE_LINK_FAILURE` / `module is already linked` を回避します。 `OPENCLAW_TEST_VM_FORKS=0|1` を使用して動作を強制できます。
+- `pnpm test`: 迅速なローカル フィードバックのために、デフォルトで高速コア ユニット レーンを実行します。
+- `pnpm test:channels`: チャネル負荷の高いスイートを実行します。
+- `pnpm test:extensions`: 拡張機能/プラグイン スイートを実行します。
+- ゲートウェイ統合: `OPENCLAW_TEST_INCLUDE_GATEWAY=1 pnpm test` または `pnpm test:gateway` 経由でオプトインします。
+- `pnpm test:e2e`: ゲートウェイのエンドツーエンドのスモーク テストを実行します (マルチインスタンス WS/HTTP/ノード ペアリング)。デフォルトは `vmForks` + `vitest.e2e.config.ts` のアダプティブ ワーカーです。 `OPENCLAW_E2E_WORKERS=<n>` で調整し、詳細ログ用に `OPENCLAW_E2E_VERBOSE=1` を設定します。- `pnpm test:live`: プロバイダーのライブ テスト (minimax/zai) を実行します。スキップを解除するには、API キーと `LIVE=1` (またはプロバイダー固有の `*_LIVE_TEST=1`) が必要です。
 
-- `pnpm test:force`: Kills any lingering gateway process holding the default control port, then runs the full Vitest suite with an isolated gateway port so server tests don’t collide with a running instance. Use this when a prior gateway run left port 18789 occupied.
-- `pnpm test:coverage`: Runs the unit suite with V8 coverage (via `vitest.unit.config.ts`). Global thresholds are 70% lines/branches/functions/statements. Coverage excludes integration-heavy entrypoints (CLI wiring, gateway/telegram bridges, webchat static server) to keep the target focused on unit-testable logic.
-- `pnpm test` on Node 24+: OpenClaw auto-disables Vitest `vmForks` and uses `forks` to avoid `ERR_VM_MODULE_LINK_FAILURE` / `module is already linked`. You can force behavior with `OPENCLAW_TEST_VM_FORKS=0|1`.
-- `pnpm test`: runs the fast core unit lane by default for quick local feedback.
-- `pnpm test:channels`: runs channel-heavy suites.
-- `pnpm test:extensions`: runs extension/plugin suites.
-- Gateway integration: opt-in via `OPENCLAW_TEST_INCLUDE_GATEWAY=1 pnpm test` or `pnpm test:gateway`.
-- `pnpm test:e2e`: Runs gateway end-to-end smoke tests (multi-instance WS/HTTP/node pairing). Defaults to `vmForks` + adaptive workers in `vitest.e2e.config.ts`; tune with `OPENCLAW_E2E_WORKERS=<n>` and set `OPENCLAW_E2E_VERBOSE=1` for verbose logs.
-- `pnpm test:live`: Runs provider live tests (minimax/zai). Requires API keys and `LIVE=1` (or provider-specific `*_LIVE_TEST=1`) to unskip.
+## ローカル PR ゲート
 
-## Local PR gate
-
-For local PR land/gate checks, run:
+ローカル PR ランド/ゲート チェックの場合は、次を実行します。
 
 - `pnpm check`
 - `pnpm build`
 - `pnpm test`
 - `pnpm check:docs`
 
-If `pnpm test` flakes on a loaded host, rerun once before treating it as a regression, then isolate with `pnpm vitest run <path/to/test>`. For memory-constrained hosts, use:
+ロードされたホストで `pnpm test` が不安定になった場合は、回帰として扱う前に 1 回再実行し、`pnpm vitest run <path/to/test>` で分離します。メモリに制約のあるホストの場合は、次を使用します。
 
 - `OPENCLAW_TEST_PROFILE=low OPENCLAW_TEST_SERIAL_GATEWAY=1 pnpm test`
 
-## Model latency bench (local keys)
+## モデル レイテンシ ベンチ (ローカル キー)
 
-Script: [`scripts/bench-model.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-model.ts)
+スクリプト: [`scripts/bench-model.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-model.ts)
 
-Usage:
+使用法:
 
 - `source ~/.profile && pnpm tsx scripts/bench-model.ts --runs 10`
-- Optional env: `MINIMAX_API_KEY`, `MINIMAX_BASE_URL`, `MINIMAX_MODEL`, `ANTHROPIC_API_KEY`
-- Default prompt: “Reply with a single word: ok. No punctuation or extra text.”
+- オプションの環境: `MINIMAX_API_KEY`、`MINIMAX_BASE_URL`、`MINIMAX_MODEL`、`ANTHROPIC_API_KEY`
+- デフォルトのプロンプト: 「一言で返信してください: ok。句読点や余分なテキストは不要です。」
 
-Last run (2025-12-31, 20 runs):
+最終実行 (2025 年 12 月 31 日、20 実行):
 
-- minimax median 1279ms (min 1114, max 2431)
-- opus median 2454ms (min 1224, max 3170)
+- ミニマックス中央値 1279 ミリ秒 (最小 1114、最大 2431)
+- 作品の中央値 2454 ミリ秒 (最小 1224、最大 3170)
 
-## CLI startup bench
+## CLI 起動ベンチ
 
-Script: [`scripts/bench-cli-startup.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-cli-startup.ts)
+スクリプト: [`scripts/bench-cli-startup.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-cli-startup.ts)
 
-Usage:
+使用法:
 
 - `pnpm tsx scripts/bench-cli-startup.ts`
 - `pnpm tsx scripts/bench-cli-startup.ts --runs 12`
 - `pnpm tsx scripts/bench-cli-startup.ts --entry dist/entry.js --timeout-ms 45000`
 
-This benchmarks these commands:
+これは次のコマンドのベンチマークを行います。
 
 - `--version`
 - `--help`
@@ -65,24 +64,22 @@ This benchmarks these commands:
 - `status --json`
 - `status`
 
-Output includes avg, p50, p95, min/max, and exit-code/signal distribution for each command.
+出力には、各コマンドの平均、p50、p95、最小/最大、終了コード/信号分布が含まれます。
 
-## Onboarding E2E (Docker)
+## E2E のオンボーディング (Docker)
 
-Docker is optional; this is only needed for containerized onboarding smoke tests.
+Docker はオプションです。これは、コンテナ化されたオンボーディングスモークテストの場合にのみ必要です。
 
-Full cold-start flow in a clean Linux container:
+クリーンな Linux コンテナーでの完全なコールド スタート フロー:
 
-```bash
+````bash
 scripts/e2e/onboard-docker.sh
-```
+```このスクリプトは、擬似 tty 経由で対話型ウィザードを起動し、config/workspace/session ファイルを検証してから、ゲートウェイを起動して `openclaw health` を実行します。
 
-This script drives the interactive wizard via a pseudo-tty, verifies config/workspace/session files, then starts the gateway and runs `openclaw health`.
+## QRインポートスモーク(Docker)
 
-## QR import smoke (Docker)
-
-Ensures `qrcode-terminal` loads under Node 22+ in Docker:
+`qrcode-terminal` が Docker のノード 22+ にロードされるようにします。
 
 ```bash
 pnpm test:docker:qr
-```
+````

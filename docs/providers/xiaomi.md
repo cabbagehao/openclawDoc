@@ -1,25 +1,27 @@
 ---
-summary: "Use Xiaomi MiMo (mimo-v2-flash) with OpenClaw"
+summary: "OpenClaw で Xiaomi MiMo (mimo-v2-flash) を使用する"
 read_when:
-  - You want Xiaomi MiMo models in OpenClaw
-  - You need XIAOMI_API_KEY setup
-title: "Xiaomi MiMo"
+  - OpenClaw で Xiaomi MiMo モデルが必要な場合
+  - XIAOMI_API_KEYの設定が必要です
+title: "シャオミ MiMo"
+x-i18n:
+  source_hash: "366fd2297b2caf8c5ad944d7f1b6d233b248fe43aedd22a28352ae7f370d2435"
 ---
 
-# Xiaomi MiMo
+# シャオミミモ
 
-Xiaomi MiMo is the API platform for **MiMo** models. It provides REST APIs compatible with
-OpenAI and Anthropic formats and uses API keys for authentication. Create your API key in
-the [Xiaomi MiMo console](https://platform.xiaomimimo.com/#/console/api-keys). OpenClaw uses
-the `xiaomi` provider with a Xiaomi MiMo API key.
+Xiaomi MiMo は **MiMo** モデル用の API プラットフォームです。と互換性のある REST API を提供します。
+OpenAI と Anthropic は認証に API キーをフォーマットし、使用します。 API キーを作成します
+[Xiaomi MiMo コンソール](https://platform.xiaomimimo.com/#/console/api-keys)。 OpenClaw の用途
+Xiaomi MiMo API キーを持つ `xiaomi` プロバイダー。
 
-## Model overview
+## モデルの概要
 
-- **mimo-v2-flash**: 262144-token context window, Anthropic Messages API compatible.
-- Base URL: `https://api.xiaomimimo.com/anthropic`
-- Authorization: `Bearer $XIAOMI_API_KEY`
+- **mimo-v2-flash**: 262144-token コンテキスト ウィンドウ、Anthropic Messages API と互換性があります。
+- ベース URL: `https://api.xiaomimimo.com/anthropic`
+- 認可: `Bearer $XIAOMI_API_KEY`
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice xiaomi-api-key
@@ -27,7 +29,7 @@ openclaw onboard --auth-choice xiaomi-api-key
 openclaw onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
 ```
 
-## Config snippet
+## 構成スニペット
 
 ```json5
 {
@@ -57,8 +59,8 @@ openclaw onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
 }
 ```
 
-## Notes
+## 注意事項
 
-- Model ref: `xiaomi/mimo-v2-flash`.
-- The provider is injected automatically when `XIAOMI_API_KEY` is set (or an auth profile exists).
-- See [/concepts/model-providers](/concepts/model-providers) for provider rules.
+- モデル参照: `xiaomi/mimo-v2-flash`。
+- `XIAOMI_API_KEY` が設定されている場合 (または認証プロファイルが存在している場合)、プロバイダーは自動的に挿入されます。
+- プロバイダーのルールについては、[/concepts/model-providers](/concepts/model-providers) を参照してください。

@@ -1,30 +1,32 @@
 ---
-summary: "Context window + compaction: how OpenClaw keeps sessions under model limits"
+summary: "コンテキストウィンドウと圧縮（コンパクション）: OpenClaw がモデルの制限内でセッションを維持する仕組み"
 read_when:
-  - You want to understand auto-compaction and /compact
-  - You are debugging long sessions hitting context limits
-title: "Compaction"
+  - 自動圧縮（コンパクション）や /compact コマンドについて知りたい場合
+  - 長いセッションでコンテキスト制限に達する問題をデバッグしている場合
+title: "圧縮（コンパクション）"
+x-i18n:
+  source_hash: "76b4029ca1343c00600fe0269a93ceaece4809250c79c5ac85e23ef1ac48d943"
 ---
 
-# Context Window & Compaction
+# コンテキストウィンドウと圧縮（コンパクション）
 
-Every model has a **context window** (max tokens it can see). Long-running chats accumulate messages and tool results; once the window is tight, OpenClaw **compacts** older history to stay within limits.
+すべての LLM モデルには **コンテキストウィンドウ**（一度に認識できる最大トークン数）があります。長時間にわたるチャットではメッセージやツールの実行結果が蓄積されていきますが、ウィンドウの空きが少なくなると、OpenClaw は制限内に収めるために古い履歴を **圧縮（コンパクション）** します。
 
-## What compaction is
+## 圧縮（コンパクション）とは
 
-Compaction **summarizes older conversation** into a compact summary entry and keeps recent messages intact. The summary is stored in the session history, so future requests use:
+圧縮とは、**古い会話内容を短い要約エントリにまとめる** 操作です。これにより、最近のメッセージはそのまま維持しつつ、過去の文脈も要約として残すことができます。要約はセッションの履歴に保存されるため、以降のリクエストでは以下の内容がモデルに送信されます:
 
-- The compaction summary
-- Recent messages after the compaction point
+- 圧縮された要約（サマリー）
+- 圧縮ポイント以降の新しいメッセージ
 
-Compaction **persists** in the session’s JSONL history.
+圧縮結果はセッションの JSONL 形式の履歴ファイルに **永続化** されます。
 
-## Configuration
+## 構成設定
 
-Use the `agents.defaults.compaction` setting in your `openclaw.json` to configure compaction behavior (mode, target tokens, etc.).
-Compaction summarization preserves opaque identifiers by default (`identifierPolicy: "strict"`). You can override this with `identifierPolicy: "off"` or provide custom text with `identifierPolicy: "custom"` and `identifierInstructions`.
+`openclaw.json` の `agents.defaults.compaction` 設定を使用して、圧縮の動作（モード、目標トークン数など）をカスタマイズできます。
+圧縮時の要約処理では、デフォルトで ID などの固有識別子が厳格に保持されます（`identifierPolicy: "strict"`）。これを `off` にしたり、`custom` を選択して `identifierInstructions` で独自の指示を与えたりすることも可能です。
 
-You can optionally specify a different model for compaction summarization via `agents.defaults.compaction.model`. This is useful when your primary model is a local or small model and you want compaction summaries produced by a more capable model. The override accepts any `provider/model-id` string:
+また、`agents.defaults.compaction.model` を使用して、要約処理専用に別のモデルを指定することも可能です。これは、メインで使用しているモデルがローカルモデルや小規模なもので、要約の品質を上げるためにより高性能なモデルを使いたい場合に有用です。この設定は `provider/model-id` 形式の文字列を受け入れます:
 
 ```json
 {
@@ -38,7 +40,7 @@ You can optionally specify a different model for compaction summarization via `a
 }
 ```
 
-This also works with local models, for example a second Ollama model dedicated to summarization or a fine-tuned compaction specialist:
+これはローカルモデルでも機能します。例えば、要約専用の別の Ollama モデルや、要約に特化して微調整されたモデルを指定できます:
 
 ```json
 {
@@ -52,53 +54,48 @@ This also works with local models, for example a second Ollama model dedicated t
 }
 ```
 
-When unset, compaction uses the agent's primary model.
+未設定の場合、圧縮にはそのエージェントのメインモデルが使用されます。
 
-## Auto-compaction (default on)
+## 自動圧縮 (デフォルトで有効)
 
-When a session nears or exceeds the model’s context window, OpenClaw triggers auto-compaction and may retry the original request using the compacted context.
+セッションがモデルのコンテキストウィンドウの限界に近づくか超過すると、OpenClaw は自動的に圧縮を実行し、圧縮後のコンテキストを使用して元のリクエストを再試行する場合があります。
 
-You’ll see:
+自動圧縮が行われると、以下の情報を確認できます:
+- 詳細モード（verbose）でのログ: `🧹 Auto-compaction complete`
+- `/status` コマンドでの表示: `🧹 Compactions: <回数>`
 
-- `🧹 Auto-compaction complete` in verbose mode
-- `/status` showing `🧹 Compactions: <count>`
+圧縮の直前に、OpenClaw は **サイレントなメモリフラッシュ** ターンを実行し、重要な情報を永続的なメモとしてディスクに保存することができます。詳細は [記憶 (Memory)](/concepts/memory) を参照してください。
 
-Before compaction, OpenClaw can run a **silent memory flush** turn to store
-durable notes to disk. See [Memory](/concepts/memory) for details and config.
+## 手動圧縮
 
-## Manual compaction
-
-Use `/compact` (optionally with instructions) to force a compaction pass:
+`/compact` コマンド（オプションで指示を追加可能）を使用して、強制的に圧縮を実行できます:
 
 ```
-/compact Focus on decisions and open questions
+/compact 決定事項と未解決の課題に焦点を当てて要約してください。
 ```
 
-## Context window source
+## コンテキストウィンドウのソース
 
-Context window is model-specific. OpenClaw uses the model definition from the configured provider catalog to determine limits.
+コンテキストウィンドウのサイズはモデルごとに異なります。OpenClaw は、構成されたプロバイダーカタログ内のモデル定義を使用して制限値を判断します。
 
-## Compaction vs pruning
+## 圧縮（Compaction）とプルーニング（Pruning）の違い
 
-- **Compaction**: summarises and **persists** in JSONL.
-- **Session pruning**: trims old **tool results** only, **in-memory**, per request.
+- **圧縮（Compaction）**: 古い履歴を要約し、JSONL ファイルに **永続化** します。
+- **セッションプルーニング（Session Pruning）**: 古い **ツールの実行結果** のみを、リクエストごとに **メモリ上（一時的）** でトリミングします。
 
-See [/concepts/session-pruning](/concepts/session-pruning) for pruning details.
+プルーニングの詳細は [/concepts/session-pruning](/concepts/session-pruning) を参照してください。
 
-## OpenAI server-side compaction
+## OpenAI サーバーサイド圧縮
 
-OpenClaw also supports OpenAI Responses server-side compaction hints for
-compatible direct OpenAI models. This is separate from local OpenClaw
-compaction and can run alongside it.
+OpenClaw は、対応している直接接続の OpenAI モデルにおいて、OpenAI Responses のサーバーサイド圧縮ヒントもサポートしています。これは OpenClaw ローカルの圧縮とは別物であり、併用が可能です。
 
-- Local compaction: OpenClaw summarizes and persists into session JSONL.
-- Server-side compaction: OpenAI compacts context on the provider side when
-  `store` + `context_management` are enabled.
+- **ローカル圧縮**: OpenClaw が要約を作成し、セッションの JSONL に保存します。
+- **サーバーサイド圧縮**: `store` と `context_management` が有効な場合、OpenAI のプロバイダー側でコンテキストが圧縮されます。
 
-See [OpenAI provider](/providers/openai) for model params and overrides.
+モデルパラメータや上書き設定については [OpenAI プロバイダー](/providers/openai) を参照してください。
 
-## Tips
+## ヒント
 
-- Use `/compact` when sessions feel stale or context is bloated.
-- Large tool outputs are already truncated; pruning can further reduce tool-result buildup.
-- If you need a fresh slate, `/new` or `/reset` starts a new session id.
+- 会話が噛み合わなくなったり、コンテキストが肥大化してきたと感じたら `/compact` を使用してください。
+- 巨大なツールの出力はすでに自動で切り詰められていますが、プルーニング設定を調整することでツール結果の蓄積をさらに抑えることができます。
+- 完全に履歴をリセットして新しく始めたい場合は、`/new` または `/reset` を使用して新しいセッション ID を開始してください。

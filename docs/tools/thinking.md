@@ -1,78 +1,77 @@
 ---
-summary: "Directive syntax for /think + /verbose and how they affect model reasoning"
+summary: "/think + /verbose のディレクティブ構文とそれらがモデル推論に与える影響"
 read_when:
-  - Adjusting thinking or verbose directive parsing or defaults
-title: "Thinking Levels"
+  - 思考または詳細なディレクティブ解析またはデフォルトの調整
+title: "思考レベル"
+x-i18n:
+  source_hash: "8553ee7532439b0c61346679a95063049c9430e6bf5307012154bb9735bed961"
 ---
 
-# Thinking Levels (/think directives)
+# 思考レベル (/think ディレクティブ)
 
-## What it does
+## 何をするのか
 
-- Inline directive in any inbound body: `/t <level>`, `/think:<level>`, or `/thinking <level>`.
-- Levels (aliases): `off | minimal | low | medium | high | xhigh | adaptive`
-  - minimal → “think”
-  - low → “think hard”
-  - medium → “think harder”
-  - high → “ultrathink” (max budget)
-  - xhigh → “ultrathink+” (GPT-5.2 + Codex models only)
-  - adaptive → provider-managed adaptive reasoning budget (supported for Anthropic Claude 4.6 model family)
-  - `x-high`, `x_high`, `extra-high`, `extra high`, and `extra_high` map to `xhigh`.
-  - `highest`, `max` map to `high`.
-- Provider notes:
-  - Anthropic Claude 4.6 models default to `adaptive` when no explicit thinking level is set.
-  - Z.AI (`zai/*`) only supports binary thinking (`on`/`off`). Any non-`off` level is treated as `on` (mapped to `low`).
-  - Moonshot (`moonshot/*`) maps `/think off` to `thinking: { type: "disabled" }` and any non-`off` level to `thinking: { type: "enabled" }`. When thinking is enabled, Moonshot only accepts `tool_choice` `auto|none`; OpenClaw normalizes incompatible values to `auto`.
+- 受信本文内のインライン ディレクティブ: `/t <level>`、`/think:<level>`、または `/thinking <level>`。
+- レベル (エイリアス): `off | minimal | low | medium | high | xhigh | adaptive`
+  - ミニマル→「考える」
+  - 低い → 「よく考える」
+  - 中 → 「もっとよく考える」
+  - 高 → 「超考える」（最大予算）
+  - xhigh → 「ultrathink+」 (GPT-5.2 + Codex モデルのみ)
+  - 適応→プロバイダー管理の適応推論バジェット (Anthropic Claude 4.6 モデル ファミリでサポート)
+  - `x-high`、`x_high`、`extra-high`、`extra high`、および `extra_high` は `xhigh` にマップされます。
+  - `highest`、`max` は `high` にマップされます。
+- プロバイダーのメモ:
+  - Anthropic Claude 4.6 モデルは、明示的思考レベルが設定されていない場合、デフォルトで `adaptive` になります。
+  - Z.AI (`zai/*`) は二項思考 (`on`/`off`) のみをサポートします。 `off` 以外のレベルは、`on` として扱われます (`low` にマップされます)。
+  - ムーンショット (`moonshot/*`) は、`/think off` を `thinking: { type: "disabled" }` にマッピングし、`off` 以外のレベルを `thinking: { type: "enabled" }` にマッピングします。思考が有効な場合、Moonshot は `tool_choice` `auto|none` のみを受け入れます。 OpenClaw は、互換性のない値を `auto` に正規化します。
 
-## Resolution order
+## 解決順序1. メッセージのインライン ディレクティブ (そのメッセージにのみ適用されます)
 
-1. Inline directive on the message (applies only to that message).
-2. Session override (set by sending a directive-only message).
-3. Global default (`agents.defaults.thinkingDefault` in config).
-4. Fallback: `adaptive` for Anthropic Claude 4.6 models, `low` for other reasoning-capable models, `off` otherwise.
+2. セッションオーバーライド (ディレクティブ専用メッセージの送信によって設定)。
+3. グローバルデフォルト (構成内の `agents.defaults.thinkingDefault`)。
+4. フォールバック: Anthropic Claude 4.6 モデルの場合は `adaptive`、他の推論可能なモデルの場合は `low`、それ以外の場合は `off`。
 
-## Setting a session default
+## セッションのデフォルトの設定
 
-- Send a message that is **only** the directive (whitespace allowed), e.g. `/think:medium` or `/t high`.
-- That sticks for the current session (per-sender by default); cleared by `/think:off` or session idle reset.
-- Confirmation reply is sent (`Thinking level set to high.` / `Thinking disabled.`). If the level is invalid (e.g. `/thinking big`), the command is rejected with a hint and the session state is left unchanged.
-- Send `/think` (or `/think:`) with no argument to see the current thinking level.
+- ディレクティブ **のみ** のメッセージを送信します (空白は許可されます)。 `/think:medium` または `/t high`。
+- 現在のセッションに適用されます (デフォルトでは送信者ごと)。 `/think:off` またはセッション アイドル リセットによってクリアされます。
+- 確認応答が送信されます (`Thinking level set to high.` / `Thinking disabled.`)。レベルが無効な場合 (`/thinking big` など)、コマンドはヒントとともに拒否され、セッション状態は変更されません。
+- 現在の思考レベルを確認するには、引数なしで `/think` (または `/think:`) を送信します。
 
-## Application by agent
+## 代理人による申請
 
-- **Embedded Pi**: the resolved level is passed to the in-process Pi agent runtime.
+- **埋め込み Pi**: 解決されたレベルは、インプロセス Pi エージェント ランタイムに渡されます。
 
-## Verbose directives (/verbose or /v)
+## 冗長ディレクティブ (/verbose または /v)- レベル: `on` (最小) | `full` | `off` (デフォルト)
 
-- Levels: `on` (minimal) | `full` | `off` (default).
-- Directive-only message toggles session verbose and replies `Verbose logging enabled.` / `Verbose logging disabled.`; invalid levels return a hint without changing state.
-- `/verbose off` stores an explicit session override; clear it via the Sessions UI by choosing `inherit`.
-- Inline directive affects only that message; session/global defaults apply otherwise.
-- Send `/verbose` (or `/verbose:`) with no argument to see the current verbose level.
-- When verbose is on, agents that emit structured tool results (Pi, other JSON agents) send each tool call back as its own metadata-only message, prefixed with `<emoji> <tool-name>: <arg>` when available (path/command). These tool summaries are sent as soon as each tool starts (separate bubbles), not as streaming deltas.
-- Tool failure summaries remain visible in normal mode, but raw error detail suffixes are hidden unless verbose is `on` or `full`.
-- When verbose is `full`, tool outputs are also forwarded after completion (separate bubble, truncated to a safe length). If you toggle `/verbose on|full|off` while a run is in-flight, subsequent tool bubbles honor the new setting.
+- ディレクティブのみのメッセージはセッションの詳細を切り替え、`Verbose logging enabled.` / `Verbose logging disabled.` を返します。無効なレベルは状態を変更せずにヒントを返します。
+- `/verbose off` は明示的なセッション オーバーライドを保存します。セッション UI から `inherit` を選択してクリアします。
+- インラインディレクティブはそのメッセージのみに影響します。それ以外の場合は、セッション/グローバルのデフォルトが適用されます。
+- 現在の冗長レベルを確認するには、引数なしで `/verbose` (または `/verbose:`) を送信します。
+- Verbose がオンの場合、構造化ツールの結果を発行するエージェント (Pi、他の JSON エージェント) は、各ツール コールバックを独自のメタデータ専用メッセージとして送信し、利用可能な場合は `<emoji> <tool-name>: <arg>` というプレフィックス (パス/コマンド) を付けます。これらのツールの概要は、ストリーミング デルタとしてではなく、各ツールが開始されるとすぐに送信されます (個別のバブル)。
+- ツール障害の概要は通常モードでも表示されたままですが、詳細が `on` または `full` でない限り、生のエラー詳細サフィックスは非表示になります。
+- 詳細が `full` の場合、ツール出力も完了後に転送されます (別個のバブル、安全な長さに切り詰められます)。実行中に `/verbose on|full|off` を切り替えると、後続のツール バブルでは新しい設定が適用されます。
 
-## Reasoning visibility (/reasoning)
+## 推論の可視性 (/reasoning)- レベル: `on|off|stream`
 
-- Levels: `on|off|stream`.
-- Directive-only message toggles whether thinking blocks are shown in replies.
-- When enabled, reasoning is sent as a **separate message** prefixed with `Reasoning:`.
-- `stream` (Telegram only): streams reasoning into the Telegram draft bubble while the reply is generating, then sends the final answer without reasoning.
-- Alias: `/reason`.
-- Send `/reasoning` (or `/reasoning:`) with no argument to see the current reasoning level.
+- ディレクティブのみのメッセージは、返信に思考ブロックを表示するかどうかを切り替えます。
+- 有効にすると、推論は `Reasoning:` というプレフィックスが付いた **別のメッセージ**として送信されます。
+- `stream` (Telegram のみ): 応答の生成中に推論を Telegram ドラフト バブルにストリーミングし、推論なしで最終的な回答を送信します。
+- エイリアス: `/reason`。
+- 現在の推論レベルを確認するには、引数なしで `/reasoning` (または `/reasoning:`) を送信します。
 
-## Related
+## 関連
 
-- Elevated mode docs live in [Elevated mode](/tools/elevated).
+- 昇格モードのドキュメントは [昇格モード](/tools/elevated) にあります。
 
-## Heartbeats
+## 心拍数
 
-- Heartbeat probe body is the configured heartbeat prompt (default: `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`). Inline directives in a heartbeat message apply as usual (but avoid changing session defaults from heartbeats).
-- Heartbeat delivery defaults to the final payload only. To also send the separate `Reasoning:` message (when available), set `agents.defaults.heartbeat.includeReasoning: true` or per-agent `agents.list[].heartbeat.includeReasoning: true`.
+- ハートビート プローブ本体は、構成されたハートビート プロンプトです (デフォルト: `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`)。ハートビート メッセージ内のインライン ディレクティブは通常どおり適用されます (ただし、ハートビートからセッションのデフォルトを変更することは避けてください)。
+- ハートビート配信のデフォルトは最終ペイロードのみです。個別の `Reasoning:` メッセージ (利用可能な場合) も送信するには、`agents.defaults.heartbeat.includeReasoning: true` またはエージェントごとに `agents.list[].heartbeat.includeReasoning: true` を設定します。
 
-## Web chat UI
+## Web チャット UI
 
-- The web chat thinking selector mirrors the session's stored level from the inbound session store/config when the page loads.
-- Picking another level applies only to the next message (`thinkingOnce`); after sending, the selector snaps back to the stored session level.
-- To change the session default, send a `/think:<level>` directive (as before); the selector will reflect it after the next reload.
+- Web チャット思考セレクターは、ページの読み込み時に受信セッション ストア/構成からセッションの保存されたレベルをミラーリングします。
+- 別のレベルを選択すると、次のメッセージ (`thinkingOnce`) にのみ適用されます。送信後、セレクターは保存されたセッション レベルに戻ります。
+- セッションのデフォルトを変更するには、(以前と同様に) `/think:<level>` ディレクティブを送信します。セレクターは次回のリロード後にそれを反映します。

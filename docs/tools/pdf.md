@@ -1,88 +1,88 @@
 ---
-title: "PDF Tool"
-summary: "Analyze one or more PDF documents with native provider support and extraction fallback"
+title: "PDFツール"
+summary: "ネイティブプロバイダーのサポートと抽出フォールバックを使用して 1 つ以上の PDF ドキュメントを分析します"
 read_when:
-  - You want to analyze PDFs from agents
-  - You need exact pdf tool parameters and limits
-  - You are debugging native PDF mode vs extraction fallback
+  - エージェントからの PDF を分析したい
+  - 正確な PDF ツールのパラメーターと制限が必要です
+  - ネイティブ PDF モードと抽出フォールバックをデバッグしています
+x-i18n:
+  source_hash: "1057349f9b2339cd79dfd1857e71b2521a75998869883609aeb399492122e0ad"
 ---
 
-# PDF tool
+# PDFツール
 
-`pdf` analyzes one or more PDF documents and returns text.
+`pdf` は 1 つ以上の PDF ドキュメントを分析し、テキストを返します。
 
-Quick behavior:
+素早い動作:
 
-- Native provider mode for Anthropic and Google model providers.
-- Extraction fallback mode for other providers (extract text first, then page images when needed).
-- Supports single (`pdf`) or multi (`pdfs`) input, max 10 PDFs per call.
+- Anthropic および Google モデル プロバイダーのネイティブ プロバイダー モード。
+- 他のプロバイダーの抽出フォールバック モード (最初にテキストを抽出し、必要に応じて画像をページングします)。
+- 単一 (`pdf`) または複数 (`pdfs`) 入力をサポートし、呼び出しごとに最大 10 個の PDF をサポートします。
 
-## Availability
+## 可用性
 
-The tool is only registered when OpenClaw can resolve a PDF-capable model config for the agent:
+このツールは、OpenClaw がエージェントの PDF 対応モデル構成を解決できる場合にのみ登録されます。
 
 1. `agents.defaults.pdfModel`
-2. fallback to `agents.defaults.imageModel`
-3. fallback to best effort provider defaults based on available auth
+2. `agents.defaults.imageModel` へのフォールバック
+3. 利用可能な認証に基づいてベスト エフォート プロバイダーのデフォルトにフォールバックする
 
-If no usable model can be resolved, the `pdf` tool is not exposed.
+使用可能なモデルを解決できない場合、`pdf` ツールは公開されません。
 
-## Input reference
+## 入力リファレンス
 
-- `pdf` (`string`): one PDF path or URL
-- `pdfs` (`string[]`): multiple PDF paths or URLs, up to 10 total
-- `prompt` (`string`): analysis prompt, default `Analyze this PDF document.`
-- `pages` (`string`): page filter like `1-5` or `1,3,7-9`
-- `model` (`string`): optional model override (`provider/model`)
-- `maxBytesMb` (`number`): per-PDF size cap in MB
+- `pdf` (`string`): 1 つの PDF パスまたは URL
+- `pdfs` (`string[]`): 複数の PDF パスまたは URL、合計 10 個まで
+- `prompt` (`string`): 分析プロンプト、デフォルト `Analyze this PDF document.`
+- `pages` (`string`): `1-5` または `1,3,7-9` のようなページ フィルター
+- `model` (`string`): オプションのモデル オーバーライド (`provider/model`)
+- `maxBytesMb` (`number`): PDF ごとのサイズ上限 (MB)
 
-Input notes:
+メモを入力します:- `pdf` と `pdfs` はロード前にマージされ、重複が排除されます。
 
-- `pdf` and `pdfs` are merged and deduplicated before loading.
-- If no PDF input is provided, the tool errors.
-- `pages` is parsed as 1-based page numbers, deduped, sorted, and clamped to the configured max pages.
-- `maxBytesMb` defaults to `agents.defaults.pdfMaxBytesMb` or `10`.
+- PDF 入力が提供されない場合、ツールはエラーになります。
+- `pages` は 1 から始まるページ番号として解析され、重複排除され、並べ替えられ、構成された最大ページに固定されます。
+- `maxBytesMb` のデフォルトは `agents.defaults.pdfMaxBytesMb` または `10` です。
 
-## Supported PDF references
+## サポートされている PDF 参照
 
-- local file path (including `~` expansion)
+- ローカル ファイル パス (`~` 拡張を含む)
 - `file://` URL
-- `http://` and `https://` URL
+- `http://` および `https://` URL
 
-Reference notes:
+参考ノート:
 
-- Other URI schemes (for example `ftp://`) are rejected with `unsupported_pdf_reference`.
-- In sandbox mode, remote `http(s)` URLs are rejected.
-- With workspace-only file policy enabled, local file paths outside allowed roots are rejected.
+- 他の URI スキーム (`ftp://` など) は `unsupported_pdf_reference` で拒否されます。
+- サンドボックス モードでは、リモート `http(s)` URL は拒否されます。
+- ワークスペースのみのファイル ポリシーが有効になっている場合、許可されたルート以外のローカル ファイル パスは拒否されます。
 
-## Execution modes
+## 実行モード
 
-### Native provider mode
+### ネイティブプロバイダーモード
 
-Native mode is used for provider `anthropic` and `google`.
-The tool sends raw PDF bytes directly to provider APIs.
+プロバイダー `anthropic` および `google` にはネイティブ モードが使用されます。
+このツールは、生の PDF バイトをプロバイダー API に直接送信します。
 
-Native mode limits:
+ネイティブ モードの制限:
 
-- `pages` is not supported. If set, the tool returns an error.
+- `pages` はサポートされていません。設定されている場合、ツールはエラーを返します。
 
-### Extraction fallback mode
+### 抽出フォールバック モード
 
-Fallback mode is used for non-native providers.
+フォールバック モードは、非ネイティブ プロバイダーに使用されます。
 
-Flow:
+フロー:
 
-1. Extract text from selected pages (up to `agents.defaults.pdfMaxPages`, default `20`).
-2. If extracted text length is below `200` chars, render selected pages to PNG images and include them.
-3. Send extracted content plus prompt to the selected model.
+1. 選択したページからテキストを抽出します (最大 `agents.defaults.pdfMaxPages`、デフォルトは `20`)。
+2. 抽出されたテキストの長さが `200` 文字未満の場合は、選択したページを PNG 画像にレンダリングして含めます。
+3. 抽出されたコンテンツとプロンプトを選択したモデルに送信します。
 
-Fallback details:
+フォールバックの詳細:- ページ画像の抽出には、`4,000,000` のピクセル バジェットが使用されます。
+・対象機種が画像入力に対応しておらず、抽出可能なテキストがない場合はエラーとなります。
 
-- Page image extraction uses a pixel budget of `4,000,000`.
-- If the target model does not support image input and there is no extractable text, the tool errors.
-- Extraction fallback requires `pdfjs-dist` (and `@napi-rs/canvas` for image rendering).
+- 抽出フォールバックには `pdfjs-dist` (およびイメージ レンダリングには `@napi-rs/canvas`) が必要です。
 
-## Config
+## 構成
 
 ```json5
 {
@@ -99,34 +99,34 @@ Fallback details:
 }
 ```
 
-See [Configuration Reference](/gateway/configuration-reference) for full field details.
+フィールドの詳細については、[構成リファレンス](/gateway/configuration-reference) を参照してください。
 
-## Output details
+## 出力の詳細
 
-The tool returns text in `content[0].text` and structured metadata in `details`.
+このツールは、`content[0].text` でテキストを返し、`details` で構造化メタデータを返します。
 
-Common `details` fields:
+共通の `details` フィールド:
 
-- `model`: resolved model ref (`provider/model`)
-- `native`: `true` for native provider mode, `false` for fallback
-- `attempts`: fallback attempts that failed before success
+- `model`: 解決されたモデル参照 (`provider/model`)
+- `native`: ネイティブ プロバイダー モードの場合は `true`、フォールバックの場合は `false`
+- `attempts`: 成功する前に失敗したフォールバック試行
 
-Path fields:
+パスフィールド:
 
-- single PDF input: `details.pdf`
-- multiple PDF inputs: `details.pdfs[]` with `pdf` entries
-- sandbox path rewrite metadata (when applicable): `rewrittenFrom`
+- 単一の PDF 入力: `details.pdf`
+- 複数の PDF 入力: `details.pdfs[]` と `pdf` エントリ
+- サンドボックス パス書き換えメタデータ (該当する場合): `rewrittenFrom`
 
-## Error behavior
+## エラー動作
 
-- Missing PDF input: throws `pdf required: provide a path or URL to a PDF document`
-- Too many PDFs: returns structured error in `details.error = "too_many_pdfs"`
-- Unsupported reference scheme: returns `details.error = "unsupported_pdf_reference"`
-- Native mode with `pages`: throws clear `pages is not supported with native PDF providers` error
+- PDF 入力がありません: `pdf required: provide a path or URL to a PDF document` がスローされます
+- PDF が多すぎます: `details.error = "too_many_pdfs"` で構造化エラーが返されます
+- サポートされていない参照スキーム: `details.error = "unsupported_pdf_reference"` を返します
+- `pages` を使用したネイティブ モード: 明確な `pages is not supported with native PDF providers` エラーがスローされます
 
-## Examples
+## 例
 
-Single PDF:
+単一の PDF:
 
 ```json
 {
@@ -135,7 +135,7 @@ Single PDF:
 }
 ```
 
-Multiple PDFs:
+複数の PDF:
 
 ```json
 {
@@ -144,7 +144,7 @@ Multiple PDFs:
 }
 ```
 
-Page-filtered fallback model:
+ページフィルターされたフォールバックモデル:
 
 ```json
 {

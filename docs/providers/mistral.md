@@ -1,18 +1,20 @@
 ---
-summary: "Use Mistral models and Voxtral transcription with OpenClaw"
+summary: "OpenClaw で Mistral モデルと Voxtral 転写を使用する"
 read_when:
-  - You want to use Mistral models in OpenClaw
-  - You need Mistral API key onboarding and model refs
-title: "Mistral"
+  - OpenClaw で Mistral モデルを使用したい
+  - Mistral API キーのオンボーディングとモデル参照が必要です
+title: "ミストラル"
+x-i18n:
+  source_hash: "4f3efe060cbaeb14e20439ade040e57d27e7d98fb9dd06e657f6a69ae808f24f"
 ---
 
-# Mistral
+# ミストラル
 
-OpenClaw supports Mistral for both text/image model routing (`mistral/...`) and
-audio transcription via Voxtral in media understanding.
-Mistral can also be used for memory embeddings (`memorySearch.provider = "mistral"`).
+OpenClaw は、テキスト/イメージ モデル ルーティング (`mistral/...`) と、
+メディア理解における Voxtral を介した音声転写。
+Mistral はメモリ埋め込みにも使用できます (`memorySearch.provider = "mistral"`)。
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice mistral-api-key
@@ -20,7 +22,7 @@ openclaw onboard --auth-choice mistral-api-key
 openclaw onboard --mistral-api-key "$MISTRAL_API_KEY"
 ```
 
-## Config snippet (LLM provider)
+## 構成スニペット (LLM プロバイダー)
 
 ```json5
 {
@@ -29,7 +31,7 @@ openclaw onboard --mistral-api-key "$MISTRAL_API_KEY"
 }
 ```
 
-## Config snippet (audio transcription with Voxtral)
+## 構成スニペット (Voxtral による音声転写)
 
 ```json5
 {
@@ -44,11 +46,11 @@ openclaw onboard --mistral-api-key "$MISTRAL_API_KEY"
 }
 ```
 
-## Notes
+## 注意事項
 
-- Mistral auth uses `MISTRAL_API_KEY`.
-- Provider base URL defaults to `https://api.mistral.ai/v1`.
-- Onboarding default model is `mistral/mistral-large-latest`.
-- Media-understanding default audio model for Mistral is `voxtral-mini-latest`.
-- Media transcription path uses `/v1/audio/transcriptions`.
-- Memory embeddings path uses `/v1/embeddings` (default model: `mistral-embed`).
+- ミストラル認証は `MISTRAL_API_KEY` を使用します。
+- プロバイダーのベース URL のデフォルトは `https://api.mistral.ai/v1` です。
+- オンボーディングのデフォルト モデルは `mistral/mistral-large-latest` です。
+- Mistral のメディアを理解するデフォルトのオーディオ モデルは `voxtral-mini-latest` です。
+- メディア転写パスは `/v1/audio/transcriptions` を使用します。
+- メモリ埋め込みパスは `/v1/embeddings` (デフォルト モデル: `mistral-embed`) を使用します。

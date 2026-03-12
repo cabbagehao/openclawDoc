@@ -1,60 +1,62 @@
 ---
-summary: "Voice overlay lifecycle when wake-word and push-to-talk overlap"
+summary: "ウェイクワードとプッシュトゥトークが重複する場合の音声オーバーレイのライフサイクル"
 read_when:
-  - Adjusting voice overlay behavior
-title: "Voice Overlay"
+  - 音声オーバーレイの挙動を調整するとき
+title: "音声オーバーレイ"
+x-i18n:
+  source_hash: "1efcc26ec05d2f421cb2cf462077d002381995b338d00db77d5fdba9b8d938b6"
 ---
 
-# Voice Overlay Lifecycle (macOS)
+# 音声オーバーレイのライフサイクル (macOS)
 
-Audience: macOS app contributors. Goal: keep the voice overlay predictable when wake-word and push-to-talk overlap.
+対象読者は macOS アプリのコントリビューターです。目的は、ウェイクワードとプッシュトゥトークが重なった場合でも、音声オーバーレイの挙動を予測可能に保つことです。
 
-## Current intent
+## 現在の意図
 
-- If the overlay is already visible from wake-word and the user presses the hotkey, the hotkey session _adopts_ the existing text instead of resetting it. The overlay stays up while the hotkey is held. When the user releases: send if there is trimmed text, otherwise dismiss.
-- Wake-word alone still auto-sends on silence; push-to-talk sends immediately on release.
+- オーバーレイがウェイクワードで既に表示されている状態でユーザーがホットキーを押した場合、ホットキー セッションは既存テキストをリセットせず、その内容を引き継ぎます。ホットキーを押している間はオーバーレイを維持し、キーを離したときに、トリミング後のテキストがあれば送信し、なければ閉じます。
+- ウェイクワード単体では無音時に自動送信し、プッシュトゥトークはキーを離した時点で即送信します。
 
-## Implemented (Dec 9, 2025)
+## 実装済み (2025-12-09)
 
-- Overlay sessions now carry a token per capture (wake-word or push-to-talk). Partial/final/send/dismiss/level updates are dropped when the token doesn’t match, avoiding stale callbacks.
-- Push-to-talk adopts any visible overlay text as a prefix (so pressing the hotkey while the wake overlay is up keeps the text and appends new speech). It waits up to 1.5s for a final transcript before falling back to the current text.
-- Chime/overlay logging is emitted at `info` in categories `voicewake.overlay`, `voicewake.ptt`, and `voicewake.chime` (session start, partial, final, send, dismiss, chime reason).
+- オーバーレイ セッションは、各キャプチャ (ウェイクワードまたはプッシュトゥトーク) ごとにトークンを持つようになりました。トークンが一致しない partial / final / send / dismiss / level の更新は破棄されるため、古いコールバックが残って誤動作するのを防げます。
+- プッシュトゥトークは、表示中のオーバーレイ テキストを prefix として引き継ぎます。つまり、ウェイク オーバーレイが表示されている間にホットキーを押すと、既存テキストを保持したまま新しい発話を追加できます。最終 transcript を待つ時間は最大 1.5 秒で、それを過ぎた場合は現在のテキストへフォールバックします。
+- chime / overlay のログは、`voicewake.overlay`、`voicewake.ptt`、`voicewake.chime` の各 category で `info` レベル出力されます。対象は session start、partial、final、send、dismiss、chime reason です。
 
-## Next steps
+## 次のステップ
 
 1. **VoiceSessionCoordinator (actor)**
-   - Owns exactly one `VoiceSession` at a time.
-   - API (token-based): `beginWakeCapture`, `beginPushToTalk`, `updatePartial`, `endCapture`, `cancel`, `applyCooldown`.
-   - Drops callbacks that carry stale tokens (prevents old recognizers from reopening the overlay).
+   - 常に 1 つの `VoiceSession` だけを管理します。
+   - API はトークン ベースで、`beginWakeCapture`、`beginPushToTalk`、`updatePartial`、`endCapture`、`cancel`、`applyCooldown` を提供します。
+   - 古いトークンを伴うコールバックは破棄し、古い recognizer がオーバーレイを再表示するのを防ぎます。
 2. **VoiceSession (model)**
-   - Fields: `token`, `source` (wakeWord|pushToTalk), committed/volatile text, chime flags, timers (auto-send, idle), `overlayMode` (display|editing|sending), cooldown deadline.
-3. **Overlay binding**
-   - `VoiceSessionPublisher` (`ObservableObject`) mirrors the active session into SwiftUI.
-   - `VoiceWakeOverlayView` renders only via the publisher; it never mutates global singletons directly.
-   - Overlay user actions (`sendNow`, `dismiss`, `edit`) call back into the coordinator with the session token.
-4. **Unified send path**
-   - On `endCapture`: if trimmed text is empty → dismiss; else `performSend(session:)` (plays send chime once, forwards, dismisses).
-   - Push-to-talk: no delay; wake-word: optional delay for auto-send.
-   - Apply a short cooldown to the wake runtime after push-to-talk finishes so wake-word doesn’t immediately retrigger.
-5. **Logging**
-   - Coordinator emits `.info` logs in subsystem `ai.openclaw`, categories `voicewake.overlay` and `voicewake.chime`.
-   - Key events: `session_started`, `adopted_by_push_to_talk`, `partial`, `finalized`, `send`, `dismiss`, `cancel`, `cooldown`.
+   - `token`、`source` (`wakeWord|pushToTalk`)、確定 / 未確定テキスト、chime flags、timer (auto-send、idle)、`overlayMode` (`display|editing|sending`)、cooldown deadline を持ちます。
+3. **オーバーレイの binding**
+   - `VoiceSessionPublisher` (`ObservableObject`) が active session を SwiftUI へ反映します。
+   - `VoiceWakeOverlayView` は publisher 経由でのみ描画し、global singleton を直接変更しません。
+   - オーバーレイのユーザー操作 (`sendNow`、`dismiss`、`edit`) は、session token とともに coordinator へ戻します。
+4. **統一された送信パス**
+   - `endCapture` 時に、トリミング後のテキストが空なら dismiss し、そうでなければ `performSend(session:)` を呼びます。ここで send chime を 1 回だけ鳴らし、転送後に閉じます。
+   - プッシュトゥトークでは遅延なし、ウェイクワードでは auto-send 用の任意の遅延を許可します。
+   - プッシュトゥトーク完了後は、ウェイク runtime に短い cooldown を適用し、ウェイクワードが直後に再トリガーされないようにします。
+5. **ロギング**
+   - coordinator は subsystem `ai.openclaw`、category `voicewake.overlay` と `voicewake.chime` に `.info` ログを出力します。
+   - 主なイベントは `session_started`、`adopted_by_push_to_talk`、`partial`、`finalized`、`send`、`dismiss`、`cancel`、`cooldown` です。
 
-## Debugging checklist
+## デバッグ チェックリスト
 
-- Stream logs while reproducing a sticky overlay:
+- オーバーレイが張り付く問題を再現しながら、次のログを流します。
 
   ```bash
   sudo log stream --predicate 'subsystem == "ai.openclaw" AND category CONTAINS "voicewake"' --level info --style compact
   ```
 
-- Verify only one active session token; stale callbacks should be dropped by the coordinator.
-- Ensure push-to-talk release always calls `endCapture` with the active token; if text is empty, expect `dismiss` without chime or send.
+- active な session token が 1 つしか存在しないことを確認します。古いコールバックは coordinator により破棄されるはずです。
+- プッシュトゥトークを離したとき、常に active token を使って `endCapture` が呼ばれていることを確認します。テキストが空なら、chime も送信も行わず `dismiss` になるのが期待動作です。
 
-## Migration steps (suggested)
+## 移行手順 (推奨)
 
-1. Add `VoiceSessionCoordinator`, `VoiceSession`, and `VoiceSessionPublisher`.
-2. Refactor `VoiceWakeRuntime` to create/update/end sessions instead of touching `VoiceWakeOverlayController` directly.
-3. Refactor `VoicePushToTalk` to adopt existing sessions and call `endCapture` on release; apply runtime cooldown.
-4. Wire `VoiceWakeOverlayController` to the publisher; remove direct calls from runtime/PTT.
-5. Add integration tests for session adoption, cooldown, and empty-text dismissal.
+1. `VoiceSessionCoordinator`、`VoiceSession`、`VoiceSessionPublisher` を追加します。
+2. `VoiceWakeRuntime` をリファクタリングし、`VoiceWakeOverlayController` を直接操作せずに session を作成 / 更新 / 終了するようにします。
+3. `VoicePushToTalk` をリファクタリングし、既存 session を引き継ぎ、キーを離したときに `endCapture` を呼ぶようにします。あわせて runtime cooldown も適用します。
+4. `VoiceWakeOverlayController` を publisher に接続し、runtime / PTT からの直接呼び出しを取り除きます。
+5. session adoption、cooldown、空テキスト時の dismiss を対象とした統合テストを追加します。

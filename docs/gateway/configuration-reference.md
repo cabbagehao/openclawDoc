@@ -1,50 +1,50 @@
 ---
-title: "Configuration Reference"
-description: "Complete field-by-field reference for ~/.openclaw/openclaw.json"
-summary: "Complete reference for every OpenClaw config key, defaults, and channel settings"
+title: "構成リファレンス"
+description: "~/.openclaw/openclaw.json の各フィールドの完全なリファレンス"
+summary: "OpenClaw のすべての構成キー、デフォルト、およびチャネル設定の完全なリファレンス"
 read_when:
-  - You need exact field-level config semantics or defaults
-  - You are validating channel, model, gateway, or tool config blocks
+  - フィールドレベルの正確な構成セマンティクスやデフォルトを確認したい場合
+  - チャネル、モデル、ゲートウェイ、またはツールの構成ブロックを検証する場合
 ---
 
-# Configuration Reference
+# 構成リファレンス
 
-Every field available in `~/.openclaw/openclaw.json`. For a task-oriented overview, see [Configuration](/gateway/configuration).
+`~/.openclaw/openclaw.json` で使用可能なすべてのフィールドについて説明します。タスク指向の概要については、[構成](/gateway/configuration) を参照してください。
 
-Config format is **JSON5** (comments + trailing commas allowed). All fields are optional — OpenClaw uses safe defaults when omitted.
+構成形式は **JSON5** です（コメントや末尾のカンマが許可されます）。すべてのフィールドはオプションです。省略された場合、OpenClaw は安全なデフォルト値を使用します。
 
 ---
 
-## Channels
+## チャネル
 
-Each channel starts automatically when its config section exists (unless `enabled: false`).
+各チャネルは、その構成セクションが存在すると自動的に開始されます（`enabled: false` を指定した場合を除く）。
 
-### DM and group access
+### DM とグループへのアクセス
 
-All channels support DM policies and group policies:
+すべてのチャネルは DM ポリシーとグループポリシーをサポートしています。
 
-| DM policy           | Behavior                                                        |
-| ------------------- | --------------------------------------------------------------- |
-| `pairing` (default) | Unknown senders get a one-time pairing code; owner must approve |
-| `allowlist`         | Only senders in `allowFrom` (or paired allow store)             |
-| `open`              | Allow all inbound DMs (requires `allowFrom: ["*"]`)             |
-| `disabled`          | Ignore all inbound DMs                                          |
+| DM ポリシー | 動作 |
+| :--- | :--- |
+| `pairing` (デフォルト) | 未知の送信者にはワンタイムペアリングコードが送信されます。所有者が承認する必要があります。 |
+| `allowlist` | `allowFrom`（またはペアリング済みの許可ストア）に含まれる送信者のみを許可します。 |
+| `open` | すべての受信 DM を許可します（`allowFrom: ["*"]` が必要）。 |
+| `disabled` | すべての受信 DM を無視します。 |
 
-| Group policy          | Behavior                                               |
-| --------------------- | ------------------------------------------------------ |
-| `allowlist` (default) | Only groups matching the configured allowlist          |
-| `open`                | Bypass group allowlists (mention-gating still applies) |
-| `disabled`            | Block all group/room messages                          |
+| グループポリシー | 動作 |
+| :--- | :--- |
+| `allowlist` (デフォルト) | 構成された許可リストに一致するグループのみを許可します。 |
+| `open` | グループの許可リストをバイパスします（メンションによる制限は引き続き適用されます）。 |
+| `disabled` | すべてのグループ/ルームメッセージをブロックします。 |
 
 <Note>
-`channels.defaults.groupPolicy` sets the default when a provider's `groupPolicy` is unset.
-Pairing codes expire after 1 hour. Pending DM pairing requests are capped at **3 per channel**.
-If a provider block is missing entirely (`channels.<provider>` absent), runtime group policy falls back to `allowlist` (fail-closed) with a startup warning.
+`channels.defaults.groupPolicy` は、プロバイダーの `groupPolicy` が設定されていない場合のデフォルト値を設定します。
+ペアリングコードは 1 時間で期限切れになります。保留中の DM ペアリングリクエストは、**1 チャネルあたり 3 つ** までに制限されます。
+プロバイダーのブロックが完全に欠落している（`channels.<provider>` が存在しない）場合、実行時のグループポリシーは起動時の警告とともに `allowlist`（フェールクローズ）にフォールバックします。
 </Note>
 
-### Channel model overrides
+### チャネルごとのモデルオーバーライド
 
-Use `channels.modelByChannel` to pin specific channel IDs to a model. Values accept `provider/model` or configured model aliases. The channel mapping applies when a session does not already have a model override (for example, set via `/model`).
+`channels.modelByChannel` を使用して、特定のチャネル ID を特定のモデルに固定します。値には `provider/model` または構成済みのモデルエイリアスを指定できます。このチャネルマッピングは、セッションにモデルオーバーライド（例：`/model` で設定されたもの）がまだ存在しない場合に適用されます。
 
 ```json5
 {
@@ -65,9 +65,9 @@ Use `channels.modelByChannel` to pin specific channel IDs to a model. Values acc
 }
 ```
 
-### Channel defaults and heartbeat
+### チャネルのデフォルトとハートビート
 
-Use `channels.defaults` for shared group-policy and heartbeat behavior across providers:
+`channels.defaults` を使用して、プロバイダー間で共通のグループポリシーやハートビートの動作を設定します。
 
 ```json5
 {
@@ -84,14 +84,14 @@ Use `channels.defaults` for shared group-policy and heartbeat behavior across pr
 }
 ```
 
-- `channels.defaults.groupPolicy`: fallback group policy when a provider-level `groupPolicy` is unset.
-- `channels.defaults.heartbeat.showOk`: include healthy channel statuses in heartbeat output.
-- `channels.defaults.heartbeat.showAlerts`: include degraded/error statuses in heartbeat output.
-- `channels.defaults.heartbeat.useIndicator`: render compact indicator-style heartbeat output.
+- `channels.defaults.groupPolicy`: プロバイダーレベルの `groupPolicy` が未設定の場合のフォールバックポリシー。
+- `channels.defaults.heartbeat.showOk`: ハートビート出力に正常なチャネルのステータスを含めます。
+- `channels.defaults.heartbeat.showAlerts`: ハートビート出力に劣化/エラーステータスを含めます。
+- `channels.defaults.heartbeat.useIndicator`: コンパクトなインジケーター形式でハートビート出力を表示します。
 
 ### WhatsApp
 
-WhatsApp runs through the gateway's web channel (Baileys Web). It starts automatically when a linked session exists.
+WhatsApp はゲートウェイの Web チャネル（Baileys Web）経由で実行されます。リンクされたセッションが存在する場合、自動的に開始されます。
 
 ```json5
 {
@@ -102,7 +102,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
       textChunkLimit: 4000,
       chunkMode: "length", // length | newline
       mediaMaxMb: 50,
-      sendReadReceipts: true, // blue ticks (false in self-chat mode)
+      sendReadReceipts: true, // 既読（青いチェックマーク）。セルフチャットモードでは false。
       groups: {
         "*": { requireMention: true },
       },
@@ -124,7 +124,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 }
 ```
 
-<Accordion title="Multi-account WhatsApp">
+<Accordion title="マルチアカウント WhatsApp">
 
 ```json5
 {
@@ -142,10 +142,10 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 }
 ```
 
-- Outbound commands default to account `default` if present; otherwise the first configured account id (sorted).
-- Optional `channels.whatsapp.defaultAccount` overrides that fallback default account selection when it matches a configured account id.
-- Legacy single-account Baileys auth dir is migrated by `openclaw doctor` into `whatsapp/default`.
-- Per-account overrides: `channels.whatsapp.accounts.<id>.sendReadReceipts`, `channels.whatsapp.accounts.<id>.dmPolicy`, `channels.whatsapp.accounts.<id>.allowFrom`.
+- アウトバウンドコマンドは、`default` アカウントが存在すればそれをデフォルトとして使用し、存在しなければ最初に構成されたアカウント ID（ソート順）を使用します。
+- オプションの `channels.whatsapp.defaultAccount` を使用すると、構成済みの ID と一致する場合に、上記のフォールバック動作をオーバーライドできます。
+- 従来のシングルアカウント形式の Baileys 認証ディレクトリは、`openclaw doctor` によって `whatsapp/default` に移行されます。
+- アカウントごとのオーバーライド: `channels.whatsapp.accounts.<id>.sendReadReceipts`, `channels.whatsapp.accounts.<id>.dmPolicy`, `channels.whatsapp.accounts.<id>.allowFrom`。
 
 </Accordion>
 
@@ -163,24 +163,24 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
         "*": { requireMention: true },
         "-1001234567890": {
           allowFrom: ["@admin"],
-          systemPrompt: "Keep answers brief.",
+          systemPrompt: "回答は簡潔にしてください。",
           topics: {
             "99": {
               requireMention: false,
               skills: ["search"],
-              systemPrompt: "Stay on topic.",
+              systemPrompt: "トピックから逸れないでください。",
             },
           },
         },
       },
       customCommands: [
-        { command: "backup", description: "Git backup" },
-        { command: "generate", description: "Create an image" },
+        { command: "backup", description: "Git バックアップ" },
+        { command: "generate", description: "画像を生成" },
       ],
       historyLimit: 50,
       replyToMode: "first", // off | first | all
       linkPreview: true,
-      streaming: "partial", // off | partial | block | progress (default: off)
+      streaming: "partial", // off | partial | block | progress (デフォルトは off)
       actions: { reactions: true, sendMessage: true },
       reactionNotifications: "own", // off | own | all
       mediaMaxMb: 100,
@@ -203,13 +203,13 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 }
 ```
 
-- Bot token: `channels.telegram.botToken` or `channels.telegram.tokenFile`, with `TELEGRAM_BOT_TOKEN` as fallback for the default account.
-- Optional `channels.telegram.defaultAccount` overrides default account selection when it matches a configured account id.
-- In multi-account setups (2+ account ids), set an explicit default (`channels.telegram.defaultAccount` or `channels.telegram.accounts.default`) to avoid fallback routing; `openclaw doctor` warns when this is missing or invalid.
-- `configWrites: false` blocks Telegram-initiated config writes (supergroup ID migrations, `/config set|unset`).
-- Top-level `bindings[]` entries with `type: "acp"` configure persistent ACP bindings for forum topics (use canonical `chatId:topic:topicId` in `match.peer.id`). Field semantics are shared in [ACP Agents](/tools/acp-agents#channel-specific-settings).
-- Telegram stream previews use `sendMessage` + `editMessageText` (works in direct and group chats).
-- Retry policy: see [Retry policy](/concepts/retry).
+- ボットトークン: `channels.telegram.botToken` または `channels.telegram.tokenFile`。デフォルトアカウントのフォールバックとして `TELEGRAM_BOT_TOKEN` 環境変数が使用されます。
+- オプションの `channels.telegram.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
+- マルチアカウント設定（2 つ以上のアカウント ID）では、フォールバックルーティングを避けるために、明示的なデフォルト（`channels.telegram.defaultAccount` または `channels.telegram.accounts.default`）を設定してください。設定が欠落していたり無効な場合、`openclaw doctor` が警告を表示します。
+- `configWrites: false` は、Telegram 主導の構成書き込み（スーパーグループ ID の移行や `/config set|unset`）をブロックします。
+- `type: "acp"` を持つトップレベルの `bindings[]` エントリは、フォーラムトピック用の永続的な ACP バインディングを構成します（`match.peer.id` に正規の `chatId:topic:topicId` を使用）。フィールドのセマンティクスは [ACP エージェント](/tools/acp-agents#channel-specific-settings) と共通です。
+- Telegram のストリームプレビューは `sendMessage` + `editMessageText` を使用します（ダイレクトチャットおよびグループチャットで機能します）。
+- 再試行ポリシーについては、[再試行ポリシー](/concepts/retry) を参照してください。
 
 ### Discord
 
@@ -256,7 +256,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
               requireMention: true,
               users: ["987654321098765432"],
               skills: ["docs"],
-              systemPrompt: "Short answers only.",
+              systemPrompt: "回答は簡潔にしてください。",
             },
           },
         },
@@ -264,7 +264,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
       historyLimit: 20,
       textChunkLimit: 2000,
       chunkMode: "length", // length | newline
-      streaming: "off", // off | partial | block | progress (progress maps to partial on Discord)
+      streaming: "off", // off | partial | block | progress (Discord では progress は partial にマップされます)
       maxLinesPerMessage: 17,
       ui: {
         components: {
@@ -275,7 +275,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
         enabled: true,
         idleHours: 24,
         maxAgeHours: 0,
-        spawnSubagentSessions: false, // opt-in for sessions_spawn({ thread: true })
+        spawnSubagentSessions: false, // sessions_spawn({ thread: true }) による自動スレッド作成を有効にする
       },
       voice: {
         enabled: true,
@@ -303,28 +303,28 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 }
 ```
 
-- Token: `channels.discord.token`, with `DISCORD_BOT_TOKEN` as fallback for the default account.
-- Optional `channels.discord.defaultAccount` overrides default account selection when it matches a configured account id.
-- Use `user:<id>` (DM) or `channel:<id>` (guild channel) for delivery targets; bare numeric IDs are rejected.
-- Guild slugs are lowercase with spaces replaced by `-`; channel keys use the slugged name (no `#`). Prefer guild IDs.
-- Bot-authored messages are ignored by default. `allowBots: true` enables them; use `allowBots: "mentions"` to only accept bot messages that mention the bot (own messages still filtered).
-- `channels.discord.guilds.<id>.ignoreOtherMentions` (and channel overrides) drops messages that mention another user or role but not the bot (excluding @everyone/@here).
-- `maxLinesPerMessage` (default 17) splits tall messages even when under 2000 chars.
-- `channels.discord.threadBindings` controls Discord thread-bound routing:
-  - `enabled`: Discord override for thread-bound session features (`/focus`, `/unfocus`, `/agents`, `/session idle`, `/session max-age`, and bound delivery/routing)
-  - `idleHours`: Discord override for inactivity auto-unfocus in hours (`0` disables)
-  - `maxAgeHours`: Discord override for hard max age in hours (`0` disables)
-  - `spawnSubagentSessions`: opt-in switch for `sessions_spawn({ thread: true })` auto thread creation/binding
-- Top-level `bindings[]` entries with `type: "acp"` configure persistent ACP bindings for channels and threads (use channel/thread id in `match.peer.id`). Field semantics are shared in [ACP Agents](/tools/acp-agents#channel-specific-settings).
-- `channels.discord.ui.components.accentColor` sets the accent color for Discord components v2 containers.
-- `channels.discord.voice` enables Discord voice channel conversations and optional auto-join + TTS overrides.
-- `channels.discord.voice.daveEncryption` and `channels.discord.voice.decryptionFailureTolerance` pass through to `@discordjs/voice` DAVE options (`true` and `24` by default).
-- OpenClaw additionally attempts voice receive recovery by leaving/rejoining a voice session after repeated decrypt failures.
-- `channels.discord.streaming` is the canonical stream mode key. Legacy `streamMode` and boolean `streaming` values are auto-migrated.
-- `channels.discord.autoPresence` maps runtime availability to bot presence (healthy => online, degraded => idle, exhausted => dnd) and allows optional status text overrides.
-- `channels.discord.dangerouslyAllowNameMatching` re-enables mutable name/tag matching (break-glass compatibility mode).
+- トークン: `channels.discord.token`。デフォルトアカウントのフォールバックとして `DISCORD_BOT_TOKEN` 環境変数が使用されます。
+- オプションの `channels.discord.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
+- 配信ターゲットには `user:<id>` (DM) または `channel:<id>` (サーバーチャネル) を使用してください。数値のみの ID は拒否されます。
+- ギルドスラッグ（Slug）は小文字で、スペースは `-` に置き換えられます。チャネルキーはスラッグ名を使用します（`#` は不要）。ギルド ID の使用を推奨します。
+- ボットが作成したメッセージはデフォルトで無視されます。`allowBots: true` で有効化できます。`allowBots: "mentions"` を使用すると、ボットに言及しているボットメッセージのみを受け入れます（自分自身のメッセージは引き続き除外されます）。
+- `channels.discord.guilds.<id>.ignoreOtherMentions`（およびチャネルごとのオーバーライド）は、ボット以外（@everyone/@here を除く）のユーザーやロールに言及しているメッセージを無視します。
+- `maxLinesPerMessage`（デフォルト 17）は、2000 文字未満であっても、行数の多いメッセージを分割します。
+- `channels.discord.threadBindings` は Discord のスレッドバインドルーティングを制御します。
+  - `enabled`: スレッドバインドセッション機能（`/focus`, `/unfocus`, `/agents`, `/session idle`, `/session max-age`, バインドされた配信/ルーティング）の Discord 用オーバーライド。
+  - `idleHours`: 非アクティブによる自動フォーカス解除までの時間（時間単位）の Discord 用オーバーライド（`0` で無効）。
+  - `maxAgeHours`: セッションの最大存続時間（時間単位）の Discord 用オーバーライド（`0` で無効）。
+  - `spawnSubagentSessions`: `sessions_spawn({ thread: true })` による自動スレッド作成/バインドを有効にするスイッチ。
+- `type: "acp"` を持つトップレベルの `bindings[]` エントリは、チャネルとスレッド用の永続的な ACP バインディングを構成します（`match.peer.id` にチャネル/スレッド ID を使用）。フィールドのセマンティクスは [ACP エージェント](/tools/acp-agents#channel-specific-settings) と共通です。
+- `channels.discord.ui.components.accentColor` は、Discord コンポーネント v2 コンテナのアクセントカラーを設定します。
+- `channels.discord.voice` は、Discord ボイスチャネルでの会話、オプションの自動参加、および TTS オーバーライドを有効にします。
+- `channels.discord.voice.daveEncryption` および `channels.discord.voice.decryptionFailureTolerance` は、`@discordjs/voice` の DAVE オプションに渡されます（デフォルトはそれぞれ `true` と `24`）。
+- OpenClaw は、復号エラーが繰り返された場合にボイスセッションを一度退出して再参加することで、音声受信の回復を試みます。
+- `channels.discord.streaming` は標準のストリームモードキーです。従来の `streamMode` やブール値の `streaming` は自動的に移行されます。
+- `channels.discord.autoPresence` は、実行時の可用性をボットのプレゼンス状態にマップします（正常 => オンライン、劣化 => アイドル、枯渇 => 取り込み中）。オプションでステータステキストのオーバーライドも可能です。
+- `channels.dangerouslyAllowNameMatching` は、名前やタグによる一致を再度有効にします（互換性のための非推奨モード）。
 
-**Reaction notification modes:** `off` (none), `own` (bot's messages, default), `all` (all messages), `allowlist` (from `guilds.<id>.users` on all messages).
+**反応通知モード:** `off`（なし）、`own`（ボット自身のメッセージ、デフォルト）、`all`（すべてのメッセージ）、`allowlist`（すべてのメッセージのうち `guilds.<id>.users` に含まれるユーザーによるもの）。
 
 ### Google Chat
 
@@ -355,11 +355,11 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 }
 ```
 
-- Service account JSON: inline (`serviceAccount`) or file-based (`serviceAccountFile`).
-- Service account SecretRef is also supported (`serviceAccountRef`).
-- Env fallbacks: `GOOGLE_CHAT_SERVICE_ACCOUNT` or `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE`.
-- Use `spaces/<spaceId>` or `users/<userId>` for delivery targets.
-- `channels.googlechat.dangerouslyAllowNameMatching` re-enables mutable email principal matching (break-glass compatibility mode).
+- サービスアカウント JSON: インライン（`serviceAccount`）またはファイルベース（`serviceAccountFile`）。
+- サービスアカウントの SecretRef もサポートされています（`serviceAccountRef`）。
+- 環境変数のフォールバック: `GOOGLE_CHAT_SERVICE_ACCOUNT` または `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE`。
+- 配信ターゲットには `spaces/<spaceId>` または `users/<userId>` を使用してください。
+- `channels.googlechat.dangerouslyAllowNameMatching` は、変更可能なメールアドレスによる一致を再度有効にします（互換性のための非推奨モード）。
 
 ### Slack
 
@@ -381,7 +381,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
           allowBots: false,
           users: ["U123"],
           skills: ["docs"],
-          systemPrompt: "Short answers only.",
+          systemPrompt: "回答は簡潔にしてください。",
         },
       },
       historyLimit: 50,
@@ -409,38 +409,38 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
       typingReaction: "hourglass_flowing_sand",
       textChunkLimit: 4000,
       chunkMode: "length",
-      streaming: "partial", // off | partial | block | progress (preview mode)
-      nativeStreaming: true, // use Slack native streaming API when streaming=partial
+      streaming: "partial", // off | partial | block | progress (プレビューモード)
+      nativeStreaming: true, // streaming=partial の場合に Slack ネイティブのストリーミング API を使用する
       mediaMaxMb: 20,
     },
   },
 }
 ```
 
-- **Socket mode** requires both `botToken` and `appToken` (`SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN` for default account env fallback).
-- **HTTP mode** requires `botToken` plus `signingSecret` (at root or per-account).
-- `configWrites: false` blocks Slack-initiated config writes.
-- Optional `channels.slack.defaultAccount` overrides default account selection when it matches a configured account id.
-- `channels.slack.streaming` is the canonical stream mode key. Legacy `streamMode` and boolean `streaming` values are auto-migrated.
-- Use `user:<id>` (DM) or `channel:<id>` for delivery targets.
+- **ソケットモード（Socket mode）**: `botToken` と `appToken` の両方が必要です（デフォルトアカウントのフォールバックとして `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN`）。
+- **HTTP モード**: `botToken` と `signingSecret`（ルートまたはアカウントごと）が必要です。
+- `configWrites: false` は、Slack 主導の構成書き込みをブロックします。
+- オプションの `channels.slack.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
+- `channels.slack.streaming` は標準のストリームモードキーです。従来の `streamMode` やブール値の `streaming` は自動的に移行されます。
+- 配信ターゲットには `user:<id>` (DM) または `channel:<id>` を使用してください。
 
-**Reaction notification modes:** `off`, `own` (default), `all`, `allowlist` (from `reactionAllowlist`).
+**反応通知モード:** `off`, `own`（デフォルト）, `all`, `allowlist`（`reactionAllowlist` に基づく）。
 
-**Thread session isolation:** `thread.historyScope` is per-thread (default) or shared across channel. `thread.inheritParent` copies parent channel transcript to new threads.
+**スレッドセッションの分離:** `thread.historyScope` は、スレッドごと（デフォルト）かチャネル全体で共有するかを選択します。`thread.inheritParent` を true にすると、親チャネルのログが新しいスレッドにコピーされます。
 
-- `typingReaction` adds a temporary reaction to the inbound Slack message while a reply is running, then removes it on completion. Use a Slack emoji shortcode such as `"hourglass_flowing_sand"`.
+- `typingReaction`: 返信の実行中に、受信した Slack メッセージに一時的なリアクションを追加し、完了時に削除します。`"hourglass_flowing_sand"` などの Slack 絵文字ショートコードを使用します。
 
-| Action group | Default | Notes                  |
-| ------------ | ------- | ---------------------- |
-| reactions    | enabled | React + list reactions |
-| messages     | enabled | Read/send/edit/delete  |
-| pins         | enabled | Pin/unpin/list         |
-| memberInfo   | enabled | Member info            |
-| emojiList    | enabled | Custom emoji list      |
+| アクショングループ | デフォルト | 備考 |
+| :--- | :--- | :--- |
+| `reactions` | 有効 | リアクションの追加と一覧取得 |
+| `messages` | 有効 | 読み取り/送信/編集/削除 |
+| `pins` | 有効 | ピン留め/解除/一覧取得 |
+| `memberInfo` | 有効 | メンバー情報 |
+| `emojiList` | 有効 | カスタム絵文字リスト |
 
 ### Mattermost
 
-Mattermost ships as a plugin: `openclaw plugins install @openclaw/mattermost`.
+Mattermost はプラグインとして提供されます: `openclaw plugins install @openclaw/mattermost`。
 
 ```json5
 {
@@ -453,10 +453,10 @@ Mattermost ships as a plugin: `openclaw plugins install @openclaw/mattermost`.
       chatmode: "oncall", // oncall | onmessage | onchar
       oncharPrefixes: [">", "!"],
       commands: {
-        native: true, // opt-in
+        native: true, // オプトイン
         nativeSkills: true,
         callbackPath: "/api/channels/mattermost/command",
-        // Optional explicit URL for reverse-proxy/public deployments
+        // リバースプロキシや公開デプロイ用のオプションの明示的な URL
         callbackUrl: "https://gateway.example.com/api/channels/mattermost/command",
       },
       textChunkLimit: 4000,
@@ -466,18 +466,16 @@ Mattermost ships as a plugin: `openclaw plugins install @openclaw/mattermost`.
 }
 ```
 
-Chat modes: `oncall` (respond on @-mention, default), `onmessage` (every message), `onchar` (messages starting with trigger prefix).
+チャットモード: `oncall`（@メンションで応答、デフォルト）、`onmessage`（すべてのメッセージに応答）、`onchar`（特定のプレフィックスで始まるメッセージに応答）。
 
-When Mattermost native commands are enabled:
+Mattermost ネイティブコマンドが有効な場合:
 
-- `commands.callbackPath` must be a path (for example `/api/channels/mattermost/command`), not a full URL.
-- `commands.callbackUrl` must resolve to the OpenClaw gateway endpoint and be reachable from the Mattermost server.
-- For private/tailnet/internal callback hosts, Mattermost may require
-  `ServiceSettings.AllowedUntrustedInternalConnections` to include the callback host/domain.
-  Use host/domain values, not full URLs.
-- `channels.mattermost.configWrites`: allow or deny Mattermost-initiated config writes.
-- `channels.mattermost.requireMention`: require `@mention` before replying in channels.
-- Optional `channels.mattermost.defaultAccount` overrides default account selection when it matches a configured account id.
+- `commands.callbackPath` は、完全な URL ではなく `/api/channels/mattermost/command` のようなパスである必要があります。
+- `commands.callbackUrl` は OpenClaw ゲートウェイのエンドポイントに解決され、Mattermost サーバーからアクセス可能である必要があります。
+- プライベートネットワークや Tailscale 内のコールバックホストの場合、Mattermost の `ServiceSettings.AllowedUntrustedInternalConnections` にコールバックホスト/ドメインを含める必要がある場合があります。完全な URL ではなく、ホスト/ドメインの値のみを使用してください。
+- `channels.mattermost.configWrites`: Mattermost 主導の構成書き込みを許可または拒否します。
+- `channels.mattermost.requireMention`: チャネルで返信する前に `@mention` を必須にします。
+- オプションの `channels.mattermost.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
 
 ### Signal
 
@@ -486,7 +484,7 @@ When Mattermost native commands are enabled:
   channels: {
     signal: {
       enabled: true,
-      account: "+15555550123", // optional account binding
+      account: "+15555550123", // オプションのアカウントバインディング
       dmPolicy: "pairing",
       allowFrom: ["+15551234567", "uuid:123e4567-e89b-12d3-a456-426614174000"],
       configWrites: true,
@@ -498,15 +496,15 @@ When Mattermost native commands are enabled:
 }
 ```
 
-**Reaction notification modes:** `off`, `own` (default), `all`, `allowlist` (from `reactionAllowlist`).
+**リアクション通知モード:** `off`, `own` (デフォルト), `all`, `allowlist` (`reactionAllowlist` に基づく)。
 
-- `channels.signal.account`: pin channel startup to a specific Signal account identity.
-- `channels.signal.configWrites`: allow or deny Signal-initiated config writes.
-- Optional `channels.signal.defaultAccount` overrides default account selection when it matches a configured account id.
+- `channels.signal.account`: チャネルの開始を特定の Signal アカウント ID に固定します。
+- `channels.signal.configWrites`: Signal 主導の構成書き込みを許可または拒否します。
+- オプションの `channels.signal.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
 
 ### BlueBubbles
 
-BlueBubbles is the recommended iMessage path (plugin-backed, configured under `channels.bluebubbles`).
+BlueBubbles は、推奨される iMessage の利用方法です（プラグインを利用し、`channels.bluebubbles` で構成されます）。
 
 ```json5
 {
@@ -514,20 +512,20 @@ BlueBubbles is the recommended iMessage path (plugin-backed, configured under `c
     bluebubbles: {
       enabled: true,
       dmPolicy: "pairing",
-      // serverUrl, password, webhookPath, group controls, and advanced actions:
-      // see /channels/bluebubbles
+      // serverUrl, password, webhookPath, グループ制御、高度なアクションなど
+      // 詳細は /channels/bluebubbles を参照
     },
   },
 }
 ```
 
-- Core key paths covered here: `channels.bluebubbles`, `channels.bluebubbles.dmPolicy`.
-- Optional `channels.bluebubbles.defaultAccount` overrides default account selection when it matches a configured account id.
-- Full BlueBubbles channel configuration is documented in [BlueBubbles](/channels/bluebubbles).
+- ここで扱う主要なキー: `channels.bluebubbles`, `channels.bluebubbles.dmPolicy`。
+- オプションの `channels.bluebubbles.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
+- BlueBubbles チャネルの完全な構成については、[BlueBubbles](/channels/bluebubbles) を参照してください。
 
 ### iMessage
 
-OpenClaw spawns `imsg rpc` (JSON-RPC over stdio). No daemon or port required.
+OpenClaw は `imsg rpc` (stdio 経由の JSON-RPC) を起動します。デーモンやポートは不要です。
 
 ```json5
 {
@@ -551,16 +549,15 @@ OpenClaw spawns `imsg rpc` (JSON-RPC over stdio). No daemon or port required.
 }
 ```
 
-- Optional `channels.imessage.defaultAccount` overrides default account selection when it matches a configured account id.
+- オプションの `channels.imessage.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
+- メッセージ DB への「フルディスクアクセス」権限が必要です。
+- ターゲットには `chat_id:<id>` を推奨します。チャット一覧を取得するには `imsg chats --limit 20` を実行してください。
+- `cliPath` には SSH ラッパーを指定できます。添付ファイルを SCP で取得するには `remoteHost` (`host` または `user@host`) を設定してください。
+- `attachmentRoots` と `remoteAttachmentRoots` は、受信した添付ファイルのパスを制限します（デフォルト: `/Users/*/Library/Messages/Attachments`）。
+- SCP は厳密なホストキーチェックを行うため、リレーホストのキーが `~/.ssh/known_hosts` に存在することを確認してください。
+- `channels.imessage.configWrites`: iMessage 主導の構成書き込みを許可または拒否します。
 
-- Requires Full Disk Access to the Messages DB.
-- Prefer `chat_id:<id>` targets. Use `imsg chats --limit 20` to list chats.
-- `cliPath` can point to an SSH wrapper; set `remoteHost` (`host` or `user@host`) for SCP attachment fetching.
-- `attachmentRoots` and `remoteAttachmentRoots` restrict inbound attachment paths (default: `/Users/*/Library/Messages/Attachments`).
-- SCP uses strict host-key checking, so ensure the relay host key already exists in `~/.ssh/known_hosts`.
-- `channels.imessage.configWrites`: allow or deny iMessage-initiated config writes.
-
-<Accordion title="iMessage SSH wrapper example">
+<Accordion title="iMessage SSH ラッパーの例">
 
 ```bash
 #!/usr/bin/env bash
@@ -571,7 +568,7 @@ exec ssh -T gateway-host imsg "$@"
 
 ### Microsoft Teams
 
-Microsoft Teams is extension-backed and configured under `channels.msteams`.
+Microsoft Teams はプラグイン経由で動作し、`channels.msteams` で構成されます。
 
 ```json5
 {
@@ -579,19 +576,19 @@ Microsoft Teams is extension-backed and configured under `channels.msteams`.
     msteams: {
       enabled: true,
       configWrites: true,
-      // appId, appPassword, tenantId, webhook, team/channel policies:
-      // see /channels/msteams
+      // appId, appPassword, tenantId, webhook, チーム/チャネルポリシーなど
+      // 詳細は /channels/msteams を参照
     },
   },
 }
 ```
 
-- Core key paths covered here: `channels.msteams`, `channels.msteams.configWrites`.
-- Full Teams config (credentials, webhook, DM/group policy, per-team/per-channel overrides) is documented in [Microsoft Teams](/channels/msteams).
+- ここで扱う主要なキー: `channels.msteams`, `channels.msteams.configWrites`。
+- 完全な Teams 構成（認証情報、Webhook、DM/グループポリシー、チーム/チャネルごとのオーバーライド）については、[Microsoft Teams](/channels/msteams) を参照してください。
 
 ### IRC
 
-IRC is extension-backed and configured under `channels.irc`.
+IRC はプラグイン経由で動作し、`channels.irc` で構成されます。
 
 ```json5
 {
@@ -612,13 +609,13 @@ IRC is extension-backed and configured under `channels.irc`.
 }
 ```
 
-- Core key paths covered here: `channels.irc`, `channels.irc.dmPolicy`, `channels.irc.configWrites`, `channels.irc.nickserv.*`.
-- Optional `channels.irc.defaultAccount` overrides default account selection when it matches a configured account id.
-- Full IRC channel configuration (host/port/TLS/channels/allowlists/mention gating) is documented in [IRC](/channels/irc).
+- ここで扱う主要なキー: `channels.irc`, `channels.irc.dmPolicy`, `channels.irc.configWrites`, `channels.irc.nickserv.*`。
+- オプションの `channels.irc.defaultAccount` は、構成済みの ID と一致する場合にデフォルトのアカウント選択をオーバーライドします。
+- IRC チャネルの完全な構成（ホスト/ポート/TLS/チャネル/許可リスト/メンション制限）については、[IRC](/channels/irc) を参照してください。
 
-### Multi-account (all channels)
+### マルチアカウント (すべてのチャネル共通)
 
-Run multiple accounts per channel (each with its own `accountId`):
+各チャネルで、独自の一意な `accountId` を持つ複数のアカウントを実行できます。
 
 ```json5
 {
@@ -626,11 +623,11 @@ Run multiple accounts per channel (each with its own `accountId`):
     telegram: {
       accounts: {
         default: {
-          name: "Primary bot",
+          name: "メインボット",
           botToken: "123456:ABC...",
         },
         alerts: {
-          name: "Alerts bot",
+          name: "アラートボット",
           botToken: "987654:XYZ...",
         },
       },
@@ -639,28 +636,28 @@ Run multiple accounts per channel (each with its own `accountId`):
 }
 ```
 
-- `default` is used when `accountId` is omitted (CLI + routing).
-- Env tokens only apply to the **default** account.
-- Base channel settings apply to all accounts unless overridden per account.
-- Use `bindings[].match.accountId` to route each account to a different agent.
-- If you add a non-default account via `openclaw channels add` (or channel onboarding) while still on a single-account top-level channel config, OpenClaw moves account-scoped top-level single-account values into `channels.<channel>.accounts.default` first so the original account keeps working.
-- Existing channel-only bindings (no `accountId`) keep matching the default account; account-scoped bindings remain optional.
-- `openclaw doctor --fix` also repairs mixed shapes by moving account-scoped top-level single-account values into `accounts.default` when named accounts exist but `default` is missing.
+- `accountId` が省略された場合、`default` アカウントが使用されます（CLI およびルーティング）。
+- 環境変数によるトークン指定は、**デフォルト**アカウントにのみ適用されます。
+- 基本的なチャネル設定は、アカウントごとにオーバーライドされない限り、すべてのアカウントに適用されます。
+- `bindings[].match.accountId` を使用して、各アカウントを異なるエージェントにルーティングできます。
+- シングルアカウント形式の構成から、`openclaw channels add` 等で別のアカウントを追加した場合、OpenClaw は既存のアカウントが動作し続けるよう、トップレベルの設定値を自動的に `channels.<channel>.accounts.default` に移動します。
+- 既存のチャネルのみを指定したバインディング（`accountId` なし）は、引き続きデフォルトアカウントと一致します。
+- `openclaw doctor --fix` は、名前付きアカウントが存在するのに `default` が欠落している場合などの混在した構成を修復します。
 
-### Other extension channels
+### その他の拡張チャネル
 
-Many extension channels are configured as `channels.<id>` and documented in their dedicated channel pages (for example Feishu, Matrix, LINE, Nostr, Zalo, Nextcloud Talk, Synology Chat, and Twitch).
-See the full channel index: [Channels](/channels).
+多くの拡張チャネルは `channels.<id>` として構成され、各専用ページ（Feishu, Matrix, LINE, Nostr, Zalo, Nextcloud Talk, Synology Chat, Twitch など）にドキュメントがあります。
+詳細はチャネルインデックス [チャネル](/channels) を参照してください。
 
-### Group chat mention gating
+### グループチャットのメンション制限
 
-Group messages default to **require mention** (metadata mention or regex patterns). Applies to WhatsApp, Telegram, Discord, Google Chat, and iMessage group chats.
+グループメッセージはデフォルトで **メンションを必須** とします（メタデータのメンションまたは正規表現パターン）。これは WhatsApp, Telegram, Discord, Google Chat, iMessage のグループチャットに適用されます。
 
-**Mention types:**
+**メンションの種類:**
 
-- **Metadata mentions**: Native platform @-mentions. Ignored in WhatsApp self-chat mode.
-- **Text patterns**: Regex patterns in `agents.list[].groupChat.mentionPatterns`. Always checked.
-- Mention gating is enforced only when detection is possible (native mentions or at least one pattern).
+- **メタデータのメンション**: プラットフォーム固有の @メンション。WhatsApp のセルフチャットモードでは無視されます。
+- **テキストパターン**: `agents.list[].groupChat.mentionPatterns` で定義された正規表現パターン。常にチェックされます。
+- メンション制限は、検出が可能な場合（ネイティブメンションまたは少なくとも 1 つのテキストパターンが存在する場合）にのみ適用されます。
 
 ```json5
 {
@@ -673,9 +670,9 @@ Group messages default to **require mention** (metadata mention or regex pattern
 }
 ```
 
-`messages.groupChat.historyLimit` sets the global default. Channels can override with `channels.<channel>.historyLimit` (or per-account). Set `0` to disable.
+`messages.groupChat.historyLimit` はグローバルなデフォルトを設定します。チャネルごとに `channels.<channel>.historyLimit`（またはアカウントごと）でオーバーライド可能です。`0` に設定すると履歴は保持されません。
 
-#### DM history limits
+#### DM 履歴の制限
 
 ```json5
 {
@@ -690,13 +687,13 @@ Group messages default to **require mention** (metadata mention or regex pattern
 }
 ```
 
-Resolution: per-DM override → provider default → no limit (all retained).
+解決順序: DM ごとのオーバーライド → プロバイダーのデフォルト → 制限なし（すべて保持）。
 
-Supported: `telegram`, `whatsapp`, `discord`, `slack`, `signal`, `imessage`, `msteams`.
+サポート対象: `telegram`, `whatsapp`, `discord`, `slack`, `signal`, `imessage`, `msteams`。
 
-#### Self-chat mode
+#### セルフチャットモード
 
-Include your own number in `allowFrom` to enable self-chat mode (ignores native @-mentions, only responds to text patterns):
+`allowFrom` に自身の番号を含めることで、セルフチャットモードを有効にできます（ネイティブの @メンションを無視し、テキストパターンにのみ応答します）。
 
 ```json5
 {
@@ -717,18 +714,18 @@ Include your own number in `allowFrom` to enable self-chat mode (ignores native 
 }
 ```
 
-### Commands (chat command handling)
+### コマンド (チャット内のコマンド処理)
 
 ```json5
 {
   commands: {
-    native: "auto", // register native commands when supported
-    text: true, // parse /commands in chat messages
-    bash: false, // allow ! (alias: /bash)
+    native: "auto", // サポートされている場合にネイティブコマンドを登録
+    text: true, // チャットメッセージ内の /commands を解析
+    bash: false, // ! によるコマンド実行を許可 (別名: /bash)
     bashForegroundMs: 2000,
-    config: false, // allow /config
-    debug: false, // allow /debug
-    restart: false, // allow /restart + gateway restart tool
+    config: false, // /config を許可
+    debug: false, // /debug を許可
+    restart: false, // /restart およびゲートウェイ再起動ツールを許可
     allowFrom: {
       "*": ["user1"],
       discord: ["user:123"],
@@ -738,27 +735,25 @@ Include your own number in `allowFrom` to enable self-chat mode (ignores native 
 }
 ```
 
-<Accordion title="Command details">
+<Accordion title="コマンドの詳細">
 
-- Text commands must be **standalone** messages with leading `/`.
-- `native: "auto"` turns on native commands for Discord/Telegram, leaves Slack off.
-- Override per channel: `channels.discord.commands.native` (bool or `"auto"`). `false` clears previously registered commands.
-- `channels.telegram.customCommands` adds extra Telegram bot menu entries.
-- `bash: true` enables `! <cmd>` for host shell. Requires `tools.elevated.enabled` and sender in `tools.elevated.allowFrom.<channel>`.
-- `config: true` enables `/config` (reads/writes `openclaw.json`). For gateway `chat.send` clients, persistent `/config set|unset` writes also require `operator.admin`; read-only `/config show` stays available to normal write-scoped operator clients.
-- `channels.<provider>.configWrites` gates config mutations per channel (default: true).
-- `allowFrom` is per-provider. When set, it is the **only** authorization source (channel allowlists/pairing and `useAccessGroups` are ignored).
-- `useAccessGroups: false` allows commands to bypass access-group policies when `allowFrom` is not set.
-
+- テキストコマンドは、先頭に `/` が付いた **単独の** メッセージである必要があります。
+- `native: "auto"` は Discord/Telegram では有効、Slack では無効のままにします。
+- チャネルごとのオーバーライド: `channels.discord.commands.native` (ブール値または `"auto"`)。`false` は登録済みのコマンドをクリアします。
+- `channels.telegram.customCommands` は Telegram のボットメニュー項目を追加します。
+- `bash: true` は、ホストシェルの `! <cmd>` を有効にします。`tools.elevated.enabled` と、チャネルごとの `tools.elevated.allowFrom.<channel>` による許可が必要です。
+- `config: true` は `/config`（`openclaw.json` の読み書き）を有効にします。ゲートウェイの `chat.send` クライアントにおいて、永続的な `/config set|unset` を行うには `operator.admin` 権限も必要です。読み取り専用の `/config show` は、通常の書き込み権限を持つオペレータークライアントでも利用可能です。
+- `channels.<provider>.configWrites` は、チャネル経由での構成変更をゲート（制限）します（デフォルト: true）。
+- `allowFrom` はプロバイダーごとに設定可能です。これが設定されている場合、それが **唯一の** 認証ソースとなります（チャネルの許可リスト/ペアリングや `useAccessGroups` は無視されます）。
 </Accordion>
 
 ---
 
-## Agent defaults
+## エージェントのデフォルト設定
 
 ### `agents.defaults.workspace`
 
-Default: `~/.openclaw/workspace`.
+デフォルト: `~/.openclaw/workspace`。
 
 ```json5
 {
@@ -768,7 +763,7 @@ Default: `~/.openclaw/workspace`.
 
 ### `agents.defaults.repoRoot`
 
-Optional repository root shown in the system prompt's Runtime line. If unset, OpenClaw auto-detects by walking upward from the workspace.
+システムプロンプトの Runtime 行に表示されるオプションのリポジトリルート。未設定の場合、OpenClaw はワークスペースから上位ディレクトリに向かって自動検出します。
 
 ```json5
 {
@@ -778,7 +773,7 @@ Optional repository root shown in the system prompt's Runtime line. If unset, Op
 
 ### `agents.defaults.skipBootstrap`
 
-Disables automatic creation of workspace bootstrap files (`AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md`).
+ワークスペースのブートストラップファイル（`AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md`）の自動作成を無効にします。
 
 ```json5
 {
@@ -788,7 +783,7 @@ Disables automatic creation of workspace bootstrap files (`AGENTS.md`, `SOUL.md`
 
 ### `agents.defaults.bootstrapMaxChars`
 
-Max characters per workspace bootstrap file before truncation. Default: `20000`.
+ワークスペースの各ブートストラップファイルが切り詰められる前の最大文字数。デフォルト: `20000`。
 
 ```json5
 {
@@ -798,7 +793,7 @@ Max characters per workspace bootstrap file before truncation. Default: `20000`.
 
 ### `agents.defaults.bootstrapTotalMaxChars`
 
-Max total characters injected across all workspace bootstrap files. Default: `150000`.
+すべてのワークスペースブートストラップファイルから注入される合計最大文字数。デフォルト: `150000`。
 
 ```json5
 {
@@ -808,12 +803,12 @@ Max total characters injected across all workspace bootstrap files. Default: `15
 
 ### `agents.defaults.bootstrapPromptTruncationWarning`
 
-Controls agent-visible warning text when bootstrap context is truncated.
-Default: `"once"`.
+ブートストラップコンテキストが切り詰められた際に、エージェントに表示される警告テキストを制御します。
+デフォルト: `"once"`。
 
-- `"off"`: never inject warning text into the system prompt.
-- `"once"`: inject warning once per unique truncation signature (recommended).
-- `"always"`: inject warning on every run when truncation exists.
+- `"off"`: システムプロンプトに警告テキストを注入しません。
+- `"once"`: 切り捨てのパターン（署名）ごとに 1 回だけ警告を注入します（推奨）。
+- `"always"`: 切り捨てが存在する場合、実行ごとに警告を注入します。
 
 ```json5
 {
@@ -823,11 +818,11 @@ Default: `"once"`.
 
 ### `agents.defaults.imageMaxDimensionPx`
 
-Max pixel size for the longest image side in transcript/tool image blocks before provider calls.
-Default: `1200`.
+プロバイダー呼び出し前の、ログやツール画像ブロック内の画像の長辺の最大ピクセルサイズ。
+デフォルト: `1200`。
 
-Lower values usually reduce vision-token usage and request payload size for screenshot-heavy runs.
-Higher values preserve more visual detail.
+低い値を設定するとビジョントークンの消費を抑えられ、スクリーンショットを多用する実行時のペイロードサイズを削減できます。
+高い値を設定すると、より多くの視覚的詳細が保持されます。
 
 ```json5
 {
@@ -837,7 +832,7 @@ Higher values preserve more visual detail.
 
 ### `agents.defaults.userTimezone`
 
-Timezone for system prompt context (not message timestamps). Falls back to host timezone.
+システムプロンプトのコンテキストに使用されるタイムゾーン（メッセージのタイムスタンプではありません）。未設定の場合はホストのタイムゾーンが使用されます。
 
 ```json5
 {
@@ -847,7 +842,7 @@ Timezone for system prompt context (not message timestamps). Falls back to host 
 
 ### `agents.defaults.timeFormat`
 
-Time format in system prompt. Default: `auto` (OS preference).
+システムプロンプト内の時刻形式。デフォルト: `auto` (OS の設定に従う)。
 
 ```json5
 {
@@ -891,44 +886,44 @@ Time format in system prompt. Default: `auto` (OS preference).
 }
 ```
 
-- `model`: accepts either a string (`"provider/model"`) or an object (`{ primary, fallbacks }`).
-  - String form sets only the primary model.
-  - Object form sets primary plus ordered failover models.
-- `imageModel`: accepts either a string (`"provider/model"`) or an object (`{ primary, fallbacks }`).
-  - Used by the `image` tool path as its vision-model config.
-  - Also used as fallback routing when the selected/default model cannot accept image input.
-- `pdfModel`: accepts either a string (`"provider/model"`) or an object (`{ primary, fallbacks }`).
-  - Used by the `pdf` tool for model routing.
-  - If omitted, the PDF tool falls back to `imageModel`, then to best-effort provider defaults.
-- `pdfMaxBytesMb`: default PDF size limit for the `pdf` tool when `maxBytesMb` is not passed at call time.
-- `pdfMaxPages`: default maximum pages considered by extraction fallback mode in the `pdf` tool.
-- `model.primary`: format `provider/model` (e.g. `anthropic/claude-opus-4-6`). If you omit the provider, OpenClaw assumes `anthropic` (deprecated).
-- `models`: the configured model catalog and allowlist for `/model`. Each entry can include `alias` (shortcut) and `params` (provider-specific, for example `temperature`, `maxTokens`, `cacheRetention`, `context1m`).
-- `params` merge precedence (config): `agents.defaults.models["provider/model"].params` is the base, then `agents.list[].params` (matching agent id) overrides by key.
-- Config writers that mutate these fields (for example `/models set`, `/models set-image`, and fallback add/remove commands) save canonical object form and preserve existing fallback lists when possible.
-- `maxConcurrent`: max parallel agent runs across sessions (each session still serialized). Default: 1.
+- `model`: 文字列 (`"provider/model"`) またはオブジェクト (`{ primary, fallbacks }`) を指定します。
+  - 文字列形式はメインモデルのみを設定します。
+  - オブジェクト形式は、メインモデルと順序付けられたフェイルオーバー用モデルを設定します。
+- `imageModel`: 文字列 (`"provider/model"`) またはオブジェクト (`{ primary, fallbacks }`) を指定します。
+  - `image` ツールのビジョンモデル構成として使用されます。
+  - また、選択されたモデルが画像入力を受け付けない場合のフォールバックルーティングとしても使用されます。
+- `pdfModel`: 文字列 (`"provider/model"`) またはオブジェクト (`{ primary, fallbacks }`) を指定します。
+  - `pdf` ツールのモデルルーティングに使用されます。
+  - 省略された場合、PDF ツールは `imageModel` にフォールバックし、さらにプロバイダーのデフォルトへとフォールバックします。
+- `pdfMaxBytesMb`: 呼び出し時に `maxBytesMb` が渡されない場合の、`pdf` ツールのデフォルト PDF サイズ制限。
+- `pdfMaxPages`: `pdf` ツールのテキスト抽出フォールバックモードで処理されるデフォルトの最大ページ数。
+- `model.primary`: `provider/model` 形式（例: `anthropic/claude-opus-4-6`）。プロバイダーを省略した場合、OpenClaw は `anthropic` (非推奨) とみなします。
+- `models`: `/model` コマンドで利用可能なモデルカタログと許可リスト。各エントリには `alias`（ショートカット）や `params`（`temperature`, `maxTokens`, `cacheRetention` などのプロバイダー固有パラメータ）を含めることができます。
+- `params` のマージ優先順位: `agents.defaults.models["provider/model"].params` がベースとなり、`agents.list[].params` (エージェント ID が一致する場合) でキーごとに上書きされます。
+- これらのフィールドを変更するコマンド（`/models set`, `/models set-image` など）は、可能な限り正規のオブジェクト形式を維持し、既存のフォールバックリストを保持します。
+- `maxConcurrent`: セッションをまたいで並列実行できるエージェントの最大数（各セッション内は依然として直列実行されます）。デフォルト: 1。
 
-**Built-in alias shorthands** (only apply when the model is in `agents.defaults.models`):
+**組み込みのエイリアス（短縮名）** (`agents.defaults.models` に含まれる場合に適用):
 
-| Alias               | Model                                  |
-| ------------------- | -------------------------------------- |
-| `opus`              | `anthropic/claude-opus-4-6`            |
-| `sonnet`            | `anthropic/claude-sonnet-4-6`          |
-| `gpt`               | `openai/gpt-5.4`                       |
-| `gpt-mini`          | `openai/gpt-5-mini`                    |
-| `gemini`            | `google/gemini-3.1-pro-preview`        |
-| `gemini-flash`      | `google/gemini-3-flash-preview`        |
+| エイリアス | モデル名 |
+| :--- | :--- |
+| `opus` | `anthropic/claude-opus-4-6` |
+| `sonnet` | `anthropic/claude-sonnet-4-6` |
+| `gpt` | `openai/gpt-5.4` |
+| `gpt-mini` | `openai/gpt-5-mini` |
+| `gemini` | `google/gemini-3.1-pro-preview` |
+| `gemini-flash` | `google/gemini-3-flash-preview` |
 | `gemini-flash-lite` | `google/gemini-3.1-flash-lite-preview` |
 
-Your configured aliases always win over defaults.
+ユーザーが構成したエイリアスは常にデフォルトより優先されます。
 
-Z.AI GLM-4.x models automatically enable thinking mode unless you set `--thinking off` or define `agents.defaults.models["zai/<model>"].params.thinking` yourself.
-Z.AI models enable `tool_stream` by default for tool call streaming. Set `agents.defaults.models["zai/<model>"].params.tool_stream` to `false` to disable it.
-Anthropic Claude 4.6 models default to `adaptive` thinking when no explicit thinking level is set.
+Z.AI GLM-4.x モデルは、`--thinking off` を設定するか、`agents.defaults.models["zai/<model>"].params.thinking` を明示的に定義しない限り、思考モードが自動的に有効になります。
+Z.AI モデルはデフォルトでツール呼び出しのストリーミング (`tool_stream`) が有効です。無効にするには `false` を設定してください。
+Anthropic Claude 4.6 モデルは、明示的な思考レベルが設定されていない場合、デフォルトで `adaptive` 思考になります。
 
 ### `agents.defaults.cliBackends`
 
-Optional CLI backends for text-only fallback runs (no tool calls). Useful as a backup when API providers fail.
+テキストのみのフォールバック実行（ツール呼び出しなし）用のオプションの CLI バックエンド。API プロバイダーがダウンした場合のバックアップとして有用です。
 
 ```json5
 {
@@ -956,28 +951,28 @@ Optional CLI backends for text-only fallback runs (no tool calls). Useful as a b
 }
 ```
 
-- CLI backends are text-first; tools are always disabled.
-- Sessions supported when `sessionArg` is set.
-- Image pass-through supported when `imageArg` accepts file paths.
+- CLI バックエンドはテキスト専用であり、ツールは常に無効になります。
+- `sessionArg` が設定されている場合、セッションがサポートされます。
+- `imageArg` がファイルパスを受け付ける場合、画像のパススルーがサポートされます。
 
 ### `agents.defaults.heartbeat`
 
-Periodic heartbeat runs.
+定期的な心跳（ハートビート）の実行設定。
 
 ```json5
 {
   agents: {
     defaults: {
       heartbeat: {
-        every: "30m", // 0m disables
+        every: "30m", // 0m で無効
         model: "openai/gpt-5.2-mini",
         includeReasoning: false,
-        lightContext: false, // default: false; true keeps only HEARTBEAT.md from workspace bootstrap files
+        lightContext: false, // true の場合、ワークスペースのブートストラップファイルから HEARTBEAT.md のみを使用
         session: "main",
         to: "+15555550123",
-        directPolicy: "allow", // allow (default) | block
-        target: "none", // default: none | options: last | whatsapp | telegram | discord | ...
-        prompt: "Read HEARTBEAT.md if it exists...",
+        directPolicy: "allow", // allow (デフォルト) | block
+        target: "none", // デフォルト: none | オプション: last | whatsapp | telegram | discord など
+        prompt: "HEARTBEAT.md が存在すれば読み込んでください...",
         ackMaxChars: 300,
         suppressToolErrorWarnings: false,
       },
@@ -986,12 +981,12 @@ Periodic heartbeat runs.
 }
 ```
 
-- `every`: duration string (ms/s/m/h). Default: `30m`.
-- `suppressToolErrorWarnings`: when true, suppresses tool error warning payloads during heartbeat runs.
-- `directPolicy`: direct/DM delivery policy. `allow` (default) permits direct-target delivery. `block` suppresses direct-target delivery and emits `reason=dm-blocked`.
-- `lightContext`: when true, heartbeat runs use lightweight bootstrap context and keep only `HEARTBEAT.md` from workspace bootstrap files.
-- Per-agent: set `agents.list[].heartbeat`. When any agent defines `heartbeat`, **only those agents** run heartbeats.
-- Heartbeats run full agent turns — shorter intervals burn more tokens.
+- `every`: 間隔を表す文字列 (ms/s/m/h)。デフォルト: `30m`。
+- `suppressToolErrorWarnings`: true の場合、ハートビート実行中のツールエラー警告を抑制します。
+- `directPolicy`: 直接送信/DM のポリシー。`allow` (デフォルト) は直接ターゲットへの配信を許可します。`block` は配信を抑制し、`reason=dm-blocked` を発行します。
+- `lightContext`: true の場合、軽量なブートストラップコンテキストを使用し、ワークスペースファイルから `HEARTBEAT.md` のみを保持します。
+- エージェントごとの設定: `agents.list[].heartbeat` を設定します。いずれかのエージェントで `heartbeat` が定義されている場合、**そのエージェントのみ**がハートビートを実行します。
+- ハートビートはエージェントのフルターンを実行するため、間隔が短いほどトークンを多く消費します。
 
 ### `agents.defaults.compaction`
 
@@ -1003,14 +998,14 @@ Periodic heartbeat runs.
         mode: "safeguard", // default | safeguard
         reserveTokensFloor: 24000,
         identifierPolicy: "strict", // strict | off | custom
-        identifierInstructions: "Preserve deployment IDs, ticket IDs, and host:port pairs exactly.", // used when identifierPolicy=custom
-        postCompactionSections: ["Session Startup", "Red Lines"], // [] disables reinjection
-        model: "openrouter/anthropic/claude-sonnet-4-5", // optional compaction-only model override
+        identifierInstructions: "デプロイ ID、チケット ID、ホスト:ポートのペアを正確に保持してください。", // identifierPolicy=custom の場合に使用
+        postCompactionSections: ["Session Startup", "Red Lines"], // [] で再注入を無効化
+        model: "openrouter/anthropic/claude-sonnet-4-5", // 圧縮要約専用のオプションのモデルオーバーライド
         memoryFlush: {
           enabled: true,
           softThresholdTokens: 6000,
-          systemPrompt: "Session nearing compaction. Store durable memories now.",
-          prompt: "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store.",
+          systemPrompt: "セッションがコンパクションに近づいています。重要な記憶を保存してください。",
+          prompt: "永続的なメモを memory/YYYY-MM-DD.md に書き込んでください。保存するものがない場合は NO_REPLY と返してください。",
         },
       },
     },
@@ -1018,16 +1013,16 @@ Periodic heartbeat runs.
 }
 ```
 
-- `mode`: `default` or `safeguard` (chunked summarization for long histories). See [Compaction](/concepts/compaction).
-- `identifierPolicy`: `strict` (default), `off`, or `custom`. `strict` prepends built-in opaque identifier retention guidance during compaction summarization.
-- `identifierInstructions`: optional custom identifier-preservation text used when `identifierPolicy=custom`.
-- `postCompactionSections`: optional AGENTS.md H2/H3 section names to re-inject after compaction. Defaults to `["Session Startup", "Red Lines"]`; set `[]` to disable reinjection. When unset or explicitly set to that default pair, older `Every Session`/`Safety` headings are also accepted as a legacy fallback.
-- `model`: optional `provider/model-id` override for compaction summarization only. Use this when the main session should keep one model but compaction summaries should run on another; when unset, compaction uses the session's primary model.
-- `memoryFlush`: silent agentic turn before auto-compaction to store durable memories. Skipped when workspace is read-only.
+- `mode`: `default` または `safeguard` (長い履歴向けのチャンク化された要約)。詳細は [コンパクション（圧縮）](/concepts/compaction) を参照してください。
+- `identifierPolicy`: `strict` (デフォルト), `off`, または `custom`。`strict` は要約中に識別子を保持するためのガイドラインを付加します。
+- `identifierInstructions`: `identifierPolicy=custom` の場合に使用されるカスタムテキスト。
+- `postCompactionSections`: 圧縮後に再注入する `AGENTS.md` 内の H2/H3 セクション名のリスト。デフォルトは `["Session Startup", "Red Lines"]` です。空の配列 `[]` を指定すると再注入が無効になります。未設定またはデフォルト値の場合、古い `Every Session`/`Safety` 見出しも互換性のために受け入れられます。
+- `model`: 圧縮要約のみに使用するオプションのモデル。メインセッションとは別のモデルで要約を行いたい場合に使用します。未設定の場合はセッションのメインモデルが使用されます。
+- `memoryFlush`: 自動コンパクションの前に、エージェントが記憶を保存するためのサイレントなターンを実行します。ワークスペースが読み取り専用の場合はスキップされます。
 
 ### `agents.defaults.contextPruning`
 
-Prunes **old tool results** from in-memory context before sending to the LLM. Does **not** modify session history on disk.
+LLM へ送信する前に、メモリ内のコンテキストから **古いツールの実行結果** を削除します。ディスク上のセッション履歴は **変更されません**。
 
 ```json5
 {
@@ -1035,13 +1030,13 @@ Prunes **old tool results** from in-memory context before sending to the LLM. Do
     defaults: {
       contextPruning: {
         mode: "cache-ttl", // off | cache-ttl
-        ttl: "1h", // duration (ms/s/m/h), default unit: minutes
+        ttl: "1h", // 期間 (ms/s/m/h)、デフォルト単位は分
         keepLastAssistants: 3,
         softTrimRatio: 0.3,
         hardClearRatio: 0.5,
         minPrunableToolChars: 50000,
         softTrim: { maxChars: 4000, headChars: 1500, tailChars: 1500 },
-        hardClear: { enabled: true, placeholder: "[Old tool result content cleared]" },
+        hardClear: { enabled: true, placeholder: "[古いツールの結果が消去されました]" },
         tools: { deny: ["browser", "canvas"] },
       },
     },
@@ -1049,27 +1044,26 @@ Prunes **old tool results** from in-memory context before sending to the LLM. Do
 }
 ```
 
-<Accordion title="cache-ttl mode behavior">
+<Accordion title="cache-ttl モードの動作">
 
-- `mode: "cache-ttl"` enables pruning passes.
-- `ttl` controls how often pruning can run again (after the last cache touch).
-- Pruning soft-trims oversized tool results first, then hard-clears older tool results if needed.
+- `mode: "cache-ttl"` はプルーニング（削減）パスを有効にします。
+- `ttl` は、プルーニングを再実行するまでの頻度（最後にキャッシュに触れてからの経過時間）を制御します。
+- プルーニングは、まずサイズ超過したツールの結果を「ソフトトリム」し、必要に応じて古いツールの結果を「ハードクリア」します。
 
-**Soft-trim** keeps beginning + end and inserts `...` in the middle.
+**ソフトトリム (Soft-trim)** は、最初と最後を保持し、中間を `...` で置き換えます。
 
-**Hard-clear** replaces the entire tool result with the placeholder.
+**ハードクリア (Hard-clear)** は、ツールの結果全体をプレースホルダーテキストに置き換えます。
 
-Notes:
-
-- Image blocks are never trimmed/cleared.
-- Ratios are character-based (approximate), not exact token counts.
-- If fewer than `keepLastAssistants` assistant messages exist, pruning is skipped.
+注意点:
+- 画像ブロックはトリミングや消去の対象になりません。
+- 比率はトークン数ではなく、文字数に基づいた概算値です。
+- アシスタントのメッセージ数が `keepLastAssistants` 未満の場合、プルーニングはスキップされます。
 
 </Accordion>
 
-See [Session Pruning](/concepts/session-pruning) for behavior details.
+動作の詳細は [セッションプルーニング](/concepts/session-pruning) を参照してください。
 
-### Block streaming
+### ブロックストリーミング (Block streaming)
 
 ```json5
 {
@@ -1079,19 +1073,19 @@ See [Session Pruning](/concepts/session-pruning) for behavior details.
       blockStreamingBreak: "text_end", // text_end | message_end
       blockStreamingChunk: { minChars: 800, maxChars: 1200 },
       blockStreamingCoalesce: { idleMs: 1000 },
-      humanDelay: { mode: "natural" }, // off | natural | custom (use minMs/maxMs)
+      humanDelay: { mode: "natural" }, // off | natural | custom (minMs/maxMs を使用)
     },
   },
 }
 ```
 
-- Non-Telegram channels require explicit `*.blockStreaming: true` to enable block replies.
-- Channel overrides: `channels.<channel>.blockStreamingCoalesce` (and per-account variants). Signal/Slack/Discord/Google Chat default `minChars: 1500`.
-- `humanDelay`: randomized pause between block replies. `natural` = 800–2500ms. Per-agent override: `agents.list[].humanDelay`.
+- Telegram 以外のチャネルでブロック返信を有効にするには、明示的に `*.blockStreaming: true` を設定する必要があります。
+- チャネルごとのオーバーライド: `channels.<channel>.blockStreamingCoalesce`（およびアカウントごとのバリアント）。Signal/Slack/Discord/Google Chat のデフォルトは `minChars: 1500` です。
+- `humanDelay`: ブロック返信の間のランダムな一時停止。`natural` = 800〜2500ms。エージェントごとのオーバーライドは `agents.list[].humanDelay` です。
 
-See [Streaming](/concepts/streaming) for behavior + chunking details.
+動作とチャンク化の詳細は [ストリーミング](/concepts/streaming) を参照してください。
 
-### Typing indicators
+### タイピングインジケーター
 
 ```json5
 {
@@ -1104,14 +1098,14 @@ See [Streaming](/concepts/streaming) for behavior + chunking details.
 }
 ```
 
-- Defaults: `instant` for direct chats/mentions, `message` for unmentioned group chats.
-- Per-session overrides: `session.typingMode`, `session.typingIntervalSeconds`.
+- デフォルト値: ダイレクトチャットやメンション時は `instant`、メンションされていないグループチャット時は `message`。
+- セッションごとのオーバーライド: `session.typingMode`, `session.typingIntervalSeconds`。
 
-See [Typing Indicators](/concepts/typing-indicators).
+詳細は [タイピングインジケーター](/concepts/typing-indicators) を参照してください。
 
 ### `agents.defaults.sandbox`
 
-Optional **Docker sandboxing** for the embedded agent. See [Sandboxing](/gateway/sandboxing) for the full guide.
+埋め込みエージェント用のオプションの **Docker サンドボックス** 設定。詳細は [サンドボックス](/gateway/sandboxing) を参照してください。
 
 ```json5
 {
@@ -1191,77 +1185,62 @@ Optional **Docker sandboxing** for the embedded agent. See [Sandboxing](/gateway
 }
 ```
 
-<Accordion title="Sandbox details">
+<Accordion title="サンドボックスの詳細">
 
-**Workspace access:**
+**ワークスペースへのアクセス (`workspaceAccess`):**
 
-- `none`: per-scope sandbox workspace under `~/.openclaw/sandboxes`
-- `ro`: sandbox workspace at `/workspace`, agent workspace mounted read-only at `/agent`
-- `rw`: agent workspace mounted read/write at `/workspace`
+- `none`: `~/.openclaw/sandboxes` 配下のスコープごとのサンドボックス用ワークスペースを使用。
+- `ro`: サンドボックス用ワークスペースを `/workspace` に、エージェントのワークスペースを `/agent` に読み取り専用でマウント。
+- `rw`: エージェントのワークスペースを `/workspace` に読み書き可能でマウント。
 
-**Scope:**
+**スコープ (`scope`):**
 
-- `session`: per-session container + workspace
-- `agent`: one container + workspace per agent (default)
-- `shared`: shared container and workspace (no cross-session isolation)
+- `session`: セッションごとに個別のコンテナとワークスペースを作成。
+- `agent`: エージェントごとに 1 つのコンテナとワークスペースを作成（デフォルト）。
+- `shared`: すべてで共有のコンテナとワークスペースを使用（セッション間の分離なし）。
 
-**`setupCommand`** runs once after container creation (via `sh -lc`). Needs network egress, writable root, root user.
+**`setupCommand`** は、コンテナ作成後に 1 回だけ実行されます（`sh -lc` 経由）。ネットワークへの外部アクセス権限、書き込み可能なルート、およびルートユーザー権限が必要です。
 
-**Containers default to `network: "none"`** — set to `"bridge"` (or a custom bridge network) if the agent needs outbound access.
-`"host"` is blocked. `"container:<id>"` is blocked by default unless you explicitly set
-`sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true` (break-glass).
+**コンテナのネットワークはデフォルトで `network: "none"`** です。エージェントが外部アクセスを必要とする場合は、`"bridge"`（またはカスタムブリッジネットワーク）に設定してください。`"host"` はブロックされます。`"container:<id>"` は、`sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true` を明示的に設定しない限り、デフォルトでブロックされます。
 
-**Inbound attachments** are staged into `media/inbound/*` in the active workspace.
+**受信した添付ファイル** は、アクティブなワークスペースの `media/inbound/*` に配置されます。
 
-**`docker.binds`** mounts additional host directories; global and per-agent binds are merged.
+**`docker.binds`** を使用して、ホスト上の追加ディレクトリをマウントできます。グローバル設定とエージェントごとの設定はマージされます。
 
-**Sandboxed browser** (`sandbox.browser.enabled`): Chromium + CDP in a container. noVNC URL injected into system prompt. Does not require `browser.enabled` in `openclaw.json`.
-noVNC observer access uses VNC auth by default and OpenClaw emits a short-lived token URL (instead of exposing the password in the shared URL).
+**サンドボックス内ブラウザ** (`sandbox.browser.enabled`): コンテナ内で Chromium と CDP を実行します。noVNC の URL がシステムプロンプトに注入されます。`openclaw.json` で別途 `browser.enabled` を設定する必要はありません。
+noVNC による閲覧にはデフォルトで VNC 認証が使用されます。OpenClaw は共有 URL にパスワードを直接含める代わりに、短寿命のトークン付き URL を発行します。
 
-- `allowHostControl: false` (default) blocks sandboxed sessions from targeting the host browser.
-- `network` defaults to `openclaw-sandbox-browser` (dedicated bridge network). Set to `bridge` only when you explicitly want global bridge connectivity.
-- `cdpSourceRange` optionally restricts CDP ingress at the container edge to a CIDR range (for example `172.21.0.1/32`).
-- `sandbox.browser.binds` mounts additional host directories into the sandbox browser container only. When set (including `[]`), it replaces `docker.binds` for the browser container.
-- Launch defaults are defined in `scripts/sandbox-browser-entrypoint.sh` and tuned for container hosts:
+- `allowHostControl: false` (デフォルト): サンドボックス化されたセッションがホスト側のブラウザを操作することを防ぎます。
+- `network`: デフォルトは `openclaw-sandbox-browser` (専用ブリッジネットワーク) です。明示的にグローバルなブリッジ接続が必要な場合にのみ `bridge` に設定してください。
+- `cdpSourceRange`: オプションで、コンテナ境界での CDP への流入を CIDR 範囲 (例: `172.21.0.1/32`) に制限できます。
+- `sandbox.browser.binds`: 追加のホストディレクトリをサンドボックスブラウザコンテナにのみマウントします。設定されている場合（空の配列 `[]` を含む）、ブラウザコンテナについては `docker.binds` の内容を置き換えます。
+- 起動時のデフォルト設定は `scripts/sandbox-browser-entrypoint.sh` で定義されており、コンテナホスト向けに最適化されています。
   - `--remote-debugging-address=127.0.0.1`
-  - `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
+  - `--remote-debugging-port=<OPENCLAW_BROWSER_CDP_PORT から派生>`
   - `--user-data-dir=${HOME}/.chrome`
-  - `--no-first-run`
-  - `--no-default-browser-check`
-  - `--disable-3d-apis`
-  - `--disable-gpu`
-  - `--disable-software-rasterizer`
-  - `--disable-dev-shm-usage`
-  - `--disable-background-networking`
-  - `--disable-features=TranslateUI`
-  - `--disable-breakpad`
-  - `--disable-crash-reporter`
+  - `--no-first-run`, `--no-default-browser-check`
+  - `--disable-3d-apis`, `--disable-gpu`, `--disable-software-rasterizer`
+  - `--disable-dev-shm-usage`, `--disable-background-networking`
+  - `--disable-features=TranslateUI`, `--disable-breakpad`, `--disable-crash-reporter`
   - `--renderer-process-limit=2`
-  - `--no-zygote`
-  - `--metrics-recording-only`
-  - `--disable-extensions` (default enabled)
-  - `--disable-3d-apis`, `--disable-software-rasterizer`, and `--disable-gpu` are
-    enabled by default and can be disabled with
-    `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` if WebGL/3D usage requires it.
-  - `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` re-enables extensions if your workflow
-    depends on them.
-  - `--renderer-process-limit=2` can be changed with
-    `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>`; set `0` to use Chromium's
-    default process limit.
-  - plus `--no-sandbox` and `--disable-setuid-sandbox` when `noSandbox` is enabled.
-  - Defaults are the container image baseline; use a custom browser image with a custom
-    entrypoint to change container defaults.
+  - `--no-zygote`, `--metrics-recording-only`
+  - `--disable-extensions` (デフォルトで有効)
+  - 3D/GPU 関連のフラグはデフォルトで有効ですが、WebGL/3D が必要な場合は `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` で無効化できます。
+  - 拡張機能が必要な場合は `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` で再有効化できます。
+  - プロセス制限は `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>` で変更可能です。`0` を指定すると Chromium のデフォルト値になります。
+  - `noSandbox` が有効な場合は、`--no-sandbox` と `--disable-setuid-sandbox` が追加されます。
+  - これらの設定はコンテナイメージのベースラインに基づいています。変更したい場合は、カスタムエントリポイントを持つカスタムブラウザイメージを使用してください。
 
 </Accordion>
 
-Build images:
+イメージのビルドコマンド:
 
 ```bash
-scripts/sandbox-setup.sh           # main sandbox image
-scripts/sandbox-browser-setup.sh   # optional browser image
+scripts/sandbox-setup.sh           # メインのサンドボックスイメージ
+scripts/sandbox-browser-setup.sh   # オプションのブラウザイメージ
 ```
 
-### `agents.list` (per-agent overrides)
+### `agents.list` (エージェントごとのオーバーライド)
 
 ```json5
 {
@@ -1270,14 +1249,14 @@ scripts/sandbox-browser-setup.sh   # optional browser image
       {
         id: "main",
         default: true,
-        name: "Main Agent",
+        name: "メインエージェント",
         workspace: "~/.openclaw/workspace",
         agentDir: "~/.openclaw/agents/main/agent",
-        model: "anthropic/claude-opus-4-6", // or { primary, fallbacks }
-        params: { cacheRetention: "none" }, // overrides matching defaults.models params by key
+        model: "anthropic/claude-opus-4-6", // または { primary, fallbacks }
+        params: { cacheRetention: "none" }, // defaults.models のパラメータをキーで上書き
         identity: {
           name: "Samantha",
-          theme: "helpful sloth",
+          theme: "親切なナマケモノ",
           emoji: "🦥",
           avatar: "avatars/samantha.png",
         },
@@ -1305,21 +1284,21 @@ scripts/sandbox-browser-setup.sh   # optional browser image
 }
 ```
 
-- `id`: stable agent id (required).
-- `default`: when multiple are set, first wins (warning logged). If none set, first list entry is default.
-- `model`: string form overrides `primary` only; object form `{ primary, fallbacks }` overrides both (`[]` disables global fallbacks). Cron jobs that only override `primary` still inherit default fallbacks unless you set `fallbacks: []`.
-- `params`: per-agent stream params merged over the selected model entry in `agents.defaults.models`. Use this for agent-specific overrides like `cacheRetention`, `temperature`, or `maxTokens` without duplicating the whole model catalog.
-- `runtime`: optional per-agent runtime descriptor. Use `type: "acp"` with `runtime.acp` defaults (`agent`, `backend`, `mode`, `cwd`) when the agent should default to ACP harness sessions.
-- `identity.avatar`: workspace-relative path, `http(s)` URL, or `data:` URI.
-- `identity` derives defaults: `ackReaction` from `emoji`, `mentionPatterns` from `name`/`emoji`.
-- `subagents.allowAgents`: allowlist of agent ids for `sessions_spawn` (`["*"]` = any; default: same agent only).
-- Sandbox inheritance guard: if the requester session is sandboxed, `sessions_spawn` rejects targets that would run unsandboxed.
+- `id`: 固定のエージェント ID (必須)。
+- `default`: 複数が設定されている場合、最初のものが優先されます（ログに警告が出ます）。未設定の場合、リストの最初のエントリがデフォルトになります。
+- `model`: 文字列形式は `primary` のみを上書きします。オブジェクト形式 `{ primary, fallbacks }` は両方を上書きします（`[]` を指定するとグローバルフォールバックが無効になります）。メインモデルのみを上書きする Cron ジョブなどは、`fallbacks: []` を指定しない限りデフォルトのフォールバック設定を継承します。
+- `params`: `agents.defaults.models` で選択されたモデルエントリにマージされる、エージェントごとのストリームパラメータ。モデルカタログ全体を複製することなく、`cacheRetention`, `temperature`, `maxTokens` などのエージェント固有の上書きを行いたい場合に使用します。
+- `runtime`: オプションのエージェントごとのランタイム記述子。エージェントがデフォルトで ACP ハーネスセッションを使用する場合は、`type: "acp"` を `runtime.acp` のデフォルト値（`agent`, `backend`, `mode`, `cwd`）と共に指定します。
+- `identity.avatar`: ワークスペースの相対パス、`http(s)` URL、または `data:` URI。
+- `identity` はデフォルト値を導出します: `emoji` から `ackReaction`、`name`/`emoji` から `mentionPatterns`。
+- `subagents.allowAgents`: `sessions_spawn` で許可するエージェント ID のリスト（`["*"]` はすべて許可。デフォルトは自身のエージェントのみ）。
+- サンドボックス継承ガード: 要求元セッションがサンドボックス化されている場合、`sessions_spawn` はサンドボックスなしで実行されるターゲットを拒否します。
 
 ---
 
-## Multi-agent routing
+## マルチエージェントルーティング
 
-Run multiple isolated agents inside one Gateway. See [Multi-Agent](/concepts/multi-agent).
+1つのゲートウェイ内で、複数の分離されたエージェントを実行します。詳細は [マルチエージェント](/concepts/multi-agent) を参照してください。
 
 ```json5
 {
@@ -1336,31 +1315,31 @@ Run multiple isolated agents inside one Gateway. See [Multi-Agent](/concepts/mul
 }
 ```
 
-### Binding match fields
+### バインディングの一致フィールド
 
-- `type` (optional): `route` for normal routing (missing type defaults to route), `acp` for persistent ACP conversation bindings.
-- `match.channel` (required)
-- `match.accountId` (optional; `*` = any account; omitted = default account)
-- `match.peer` (optional; `{ kind: direct|group|channel, id }`)
-- `match.guildId` / `match.teamId` (optional; channel-specific)
-- `acp` (optional; only for `type: "acp"`): `{ mode, label, cwd, backend }`
+- `type` (オプション): 通常のルーティングは `route` (省略時のデフォルト)、永続的な ACP 会話バインディングは `acp`。
+- `match.channel` (必須)
+- `match.accountId` (オプション: `*` はすべてのアカウントに一致。省略時はデフォルトアカウント)
+- `match.peer` (オプション: `{ kind: direct|group|channel, id }`)
+- `match.guildId` / `match.teamId` (オプション: チャネル固有)
+- `acp` (オプション: `type: "acp"` の場合のみ): `{ mode, label, cwd, backend }`
 
-**Deterministic match order:**
+**決定的な一致順序:**
 
 1. `match.peer`
 2. `match.guildId`
 3. `match.teamId`
-4. `match.accountId` (exact, no peer/guild/team)
-5. `match.accountId: "*"` (channel-wide)
-6. Default agent
+4. `match.accountId` (正確な一致。ピア/ギルド/チーム指定なし)
+5. `match.accountId: "*"` (チャネル全体)
+6. デフォルトエージェント
 
-Within each tier, the first matching `bindings` entry wins.
+各階層内では、`bindings` リストで最初に一致したエントリが優先されます。
 
-For `type: "acp"` entries, OpenClaw resolves by exact conversation identity (`match.channel` + account + `match.peer.id`) and does not use the route binding tier order above.
+`type: "acp"` のエントリについては、会話の ID（チャネル + アカウント + ピア ID）による正確な一致で解決され、上記のルーティング階層の順序は使用されません。
 
-### Per-agent access profiles
+### エージェントごとのアクセスプロファイル
 
-<Accordion title="Full access (no sandbox)">
+<Accordion title="フルアクセス (サンドボックスなし)">
 
 ```json5
 {
@@ -1378,7 +1357,7 @@ For `type: "acp"` entries, OpenClaw resolves by exact conversation identity (`ma
 
 </Accordion>
 
-<Accordion title="Read-only tools + workspace">
+<Accordion title="読み取り専用ツール + ワークスペース">
 
 ```json5
 {
@@ -1407,7 +1386,7 @@ For `type: "acp"` entries, OpenClaw resolves by exact conversation identity (`ma
 
 </Accordion>
 
-<Accordion title="No filesystem access (messaging only)">
+<Accordion title="ファイルシステムへのアクセスなし (メッセージングのみ)">
 
 ```json5
 {
@@ -1453,11 +1432,11 @@ For `type: "acp"` entries, OpenClaw resolves by exact conversation identity (`ma
 
 </Accordion>
 
-See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for precedence details.
+優先順位の詳細については、[マルチエージェント サンドボックスとツール](/tools/multi-agent-sandbox-tools) を参照してください。
 
 ---
 
-## Session
+## セッション
 
 ```json5
 {
@@ -1479,22 +1458,22 @@ See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for preceden
     },
     resetTriggers: ["/new", "/reset"],
     store: "~/.openclaw/agents/{agentId}/sessions/sessions.json",
-    parentForkMaxTokens: 100000, // skip parent-thread fork above this token count (0 disables)
+    parentForkMaxTokens: 100000, // このトークン数を超えると親スレッドのフォークをスキップ（0で無効）
     maintenance: {
       mode: "warn", // warn | enforce
       pruneAfter: "30d",
       maxEntries: 500,
       rotateBytes: "10mb",
-      resetArchiveRetention: "30d", // duration or false
-      maxDiskBytes: "500mb", // optional hard budget
-      highWaterBytes: "400mb", // optional cleanup target
+      resetArchiveRetention: "30d", // 期間または false
+      maxDiskBytes: "500mb", // オプションのハード予算
+      highWaterBytes: "400mb", // オプションのクリーンアップ目標
     },
     threadBindings: {
       enabled: true,
-      idleHours: 24, // default inactivity auto-unfocus in hours (`0` disables)
-      maxAgeHours: 0, // default hard max age in hours (`0` disables)
+      idleHours: 24, // デフォルトの非アクティブによる自動フォーカス解除（時間単位。0で無効）
+      maxAgeHours: 0, // デフォルトの最大存続時間（時間単位。0で無効）
     },
-    mainKey: "main", // legacy (runtime always uses "main")
+    mainKey: "main", // レガシー（ランタイムは常に "main" を使用）
     agentToAgent: { maxPingPongTurns: 5 },
     sendPolicy: {
       rules: [{ action: "deny", match: { channel: "discord", chatType: "group" } }],
@@ -1504,44 +1483,44 @@ See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for preceden
 }
 ```
 
-<Accordion title="Session field details">
+<Accordion title="セッションフィールドの詳細">
 
-- **`dmScope`**: how DMs are grouped.
-  - `main`: all DMs share the main session.
-  - `per-peer`: isolate by sender id across channels.
-  - `per-channel-peer`: isolate per channel + sender (recommended for multi-user inboxes).
-  - `per-account-channel-peer`: isolate per account + channel + sender (recommended for multi-account).
-- **`identityLinks`**: map canonical ids to provider-prefixed peers for cross-channel session sharing.
-- **`reset`**: primary reset policy. `daily` resets at `atHour` local time; `idle` resets after `idleMinutes`. When both configured, whichever expires first wins.
-- **`resetByType`**: per-type overrides (`direct`, `group`, `thread`). Legacy `dm` accepted as alias for `direct`.
-- **`parentForkMaxTokens`**: max parent-session `totalTokens` allowed when creating a forked thread session (default `100000`).
-  - If parent `totalTokens` is above this value, OpenClaw starts a fresh thread session instead of inheriting parent transcript history.
-  - Set `0` to disable this guard and always allow parent forking.
-- **`mainKey`**: legacy field. Runtime now always uses `"main"` for the main direct-chat bucket.
-- **`sendPolicy`**: match by `channel`, `chatType` (`direct|group|channel`, with legacy `dm` alias), `keyPrefix`, or `rawKeyPrefix`. First deny wins.
-- **`maintenance`**: session-store cleanup + retention controls.
-  - `mode`: `warn` emits warnings only; `enforce` applies cleanup.
-  - `pruneAfter`: age cutoff for stale entries (default `30d`).
-  - `maxEntries`: maximum number of entries in `sessions.json` (default `500`).
-  - `rotateBytes`: rotate `sessions.json` when it exceeds this size (default `10mb`).
-  - `resetArchiveRetention`: retention for `*.reset.<timestamp>` transcript archives. Defaults to `pruneAfter`; set `false` to disable.
-  - `maxDiskBytes`: optional sessions-directory disk budget. In `warn` mode it logs warnings; in `enforce` mode it removes oldest artifacts/sessions first.
-  - `highWaterBytes`: optional target after budget cleanup. Defaults to `80%` of `maxDiskBytes`.
-- **`threadBindings`**: global defaults for thread-bound session features.
-  - `enabled`: master default switch (providers can override; Discord uses `channels.discord.threadBindings.enabled`)
-  - `idleHours`: default inactivity auto-unfocus in hours (`0` disables; providers can override)
-  - `maxAgeHours`: default hard max age in hours (`0` disables; providers can override)
+- **`dmScope`**: DM をどのようにグループ化するか。
+  - `main`: すべての DM がメインセッションを共有。
+  - `per-peer`: チャネルをまたいで送信者 ID ごとに分離。
+  - `per-channel-peer`: チャネルと送信者の組み合わせごとに分離（マルチユーザーの受信トレイに推奨）。
+  - `per-account-channel-peer`: アカウント、チャネル、送信者の組み合わせごとに分離（マルチアカウント運用に推奨）。
+- **`identityLinks`**: 正規の ID をプロバイダーのプレフィックス付きピアにマップし、チャネルを越えてセッションを共有。
+- **`reset`**: 主要なリセットポリシー。`daily` は現地時間の `atHour` に、`idle` は `idleMinutes` 経過後にリセット。両方設定されている場合は先に到達した方が優先されます。
+- **`resetByType`**: タイプごとのオーバーライド（`direct`, `group`, `thread`）。レガシーな `dm` は `direct` のエイリアスとして扱われます。
+- **`parentForkMaxTokens`**: スレッドセッションをフォークする際に許可される親セッションの最大 `totalTokens`（デフォルト `100000`）。
+  - 親のトークン数がこの値を超えている場合、履歴を継承せずに新しいスレッドセッションを開始します。
+  - `0` を設定するとこの制限が無効になり、常にフォークを試みます。
+- **`mainKey`**: レガシーフィールド。ランタイムは現在、メインのダイレクトチャットバケットに常に `"main"` を使用します。
+- **`sendPolicy`**: `channel`, `chatType` (`direct|group|channel`), `keyPrefix`, `rawKeyPrefix` による一致判定。最初にマッチした `deny` ルールが適用されます。
+- **`maintenance`**: セッションストアのクリーンアップと保持制御。
+  - `mode`: `warn` は警告のみ、`enforce` は実際にクリーンアップを適用。
+  - `pruneAfter`: 古いエントリの削除期限（デフォルト `30d`）。
+  - `maxEntries`: `sessions.json` の最大エントリ数（デフォルト `500`）。
+  - `rotateBytes`: このサイズを超えたら `sessions.json` をローテーション（デフォルト `10mb`）。
+  - `resetArchiveRetention`: `*.reset.<timestamp>` トランスクリプトアーカイブの保持期間。デフォルトは `pruneAfter` と同じ。`false` で無効化。
+  - `maxDiskBytes`: セッションディレクトリのディスク予算。`warn` モードでは警告をログ出力し、`enforce` モードでは古いセッションから順に削除。
+  - `highWaterBytes`: 予算制限後のクリーンアップ目標。デフォルトは `maxDiskBytes` の 80%。
+- **`threadBindings`**: スレッドバインドセッション機能のグローバルデフォルト。
+  - `enabled`: 全体スイッチ（プロバイダーごとに上書き可能。Discord は `channels.discord.threadBindings.enabled` を使用）。
+  - `idleHours`: 非アクティブ時の自動フォーカス解除時間（デフォルト。`0` で無効。プロバイダーごとに上書き可能）。
+  - `maxAgeHours`: 最大存続時間（デフォルト。`0` で無効。プロバイダーごとに上書き可能）。
 
 </Accordion>
 
 ---
 
-## Messages
+## メッセージ
 
 ```json5
 {
   messages: {
-    responsePrefix: "🦞", // or "auto"
+    responsePrefix: "🦞", // または "auto"
     ackReaction: "👀",
     ackReactionScope: "group-mentions", // group-mentions | group-all | direct | all
     removeAckAfterReply: false,
@@ -1556,7 +1535,7 @@ See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for preceden
       },
     },
     inbound: {
-      debounceMs: 2000, // 0 disables
+      debounceMs: 2000, // 0 で無効
       byChannel: {
         whatsapp: 5000,
         slack: 1500,
@@ -1566,37 +1545,37 @@ See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for preceden
 }
 ```
 
-### Response prefix
+### 応答プレフィックス (Response prefix)
 
-Per-channel/account overrides: `channels.<channel>.responsePrefix`, `channels.<channel>.accounts.<id>.responsePrefix`.
+チャネル/アカウントごとのオーバーライド: `channels.<channel>.responsePrefix`, `channels.<channel>.accounts.<id>.responsePrefix`。
 
-Resolution (most specific wins): account → channel → global. `""` disables and stops cascade. `"auto"` derives `[{identity.name}]`.
+解決順序（最も具体的なものが優先）: アカウント → チャネル → グローバル。`""` を設定すると継承が停止します。`"auto"` は `[{identity.name}]` を使用します。
 
-**Template variables:**
+**テンプレート変数:**
 
-| Variable          | Description            | Example                     |
-| ----------------- | ---------------------- | --------------------------- |
-| `{model}`         | Short model name       | `claude-opus-4-6`           |
-| `{modelFull}`     | Full model identifier  | `anthropic/claude-opus-4-6` |
-| `{provider}`      | Provider name          | `anthropic`                 |
-| `{thinkingLevel}` | Current thinking level | `high`, `low`, `off`        |
-| `{identity.name}` | Agent identity name    | (same as `"auto"`)          |
+| 変数名 | 説明 | 例 |
+| :--- | :--- | :--- |
+| `{model}` | 短いモデル名 | `claude-opus-4-6` |
+| `{modelFull}` | 完全なモデル識別子 | `anthropic/claude-opus-4-6` |
+| `{provider}` | プロバイダー名 | `anthropic` |
+| `{thinkingLevel}` | 現在の思考レベル | `high`, `low`, `off` |
+| `{identity.name}` | エージェントの名前 | (`"auto"` と同じ) |
 
-Variables are case-insensitive. `{think}` is an alias for `{thinkingLevel}`.
+変数は大文字小文字を区別しません。`{think}` は `{thinkingLevel}` の短縮形です。
 
-### Ack reaction
+### 確認リアクション (Ack reaction)
 
-- Defaults to active agent's `identity.emoji`, otherwise `"👀"`. Set `""` to disable.
-- Per-channel overrides: `channels.<channel>.ackReaction`, `channels.<channel>.accounts.<id>.ackReaction`.
-- Resolution order: account → channel → `messages.ackReaction` → identity fallback.
-- Scope: `group-mentions` (default), `group-all`, `direct`, `all`.
-- `removeAckAfterReply`: removes ack after reply (Slack/Discord/Telegram/Google Chat only).
+- デフォルトはアクティブなエージェントの `identity.emoji`、未設定なら `"👀"`。`""` で無効化。
+- チャネル/アカウントごとのオーバーライド: `channels.<channel>.ackReaction`, `channels.<channel>.accounts.<id>.ackReaction`。
+- 解決順序: アカウント → チャネル → `messages.ackReaction` → アイデンティティのフォールバック。
+- スコープ: `group-mentions` (デフォルト), `group-all`, `direct`, `all`。
+- `removeAckAfterReply`: 返信後にリアクションを削除（Slack/Discord/Telegram/Google Chat のみ）。
 
-### Inbound debounce
+### インバウンドデバウンス (Inbound debounce)
 
-Batches rapid text-only messages from the same sender into a single agent turn. Media/attachments flush immediately. Control commands bypass debouncing.
+同じ送信者からの連続したテキストメッセージを 1 つのエージェントターンにまとめます。メディアや添付ファイルは即座に処理されます。制御コマンドはデバウンスをバイパスします。
 
-### TTS (text-to-speech)
+### TTS (テキスト読み上げ)
 
 ```json5
 {
@@ -1637,18 +1616,18 @@ Batches rapid text-only messages from the same sender into a single agent turn. 
 }
 ```
 
-- `auto` controls auto-TTS. `/tts off|always|inbound|tagged` overrides per session.
-- `summaryModel` overrides `agents.defaults.model.primary` for auto-summary.
-- `modelOverrides` is enabled by default; `modelOverrides.allowProvider` defaults to `false` (opt-in).
-- API keys fall back to `ELEVENLABS_API_KEY`/`XI_API_KEY` and `OPENAI_API_KEY`.
-- `openai.baseUrl` overrides the OpenAI TTS endpoint. Resolution order is config, then `OPENAI_TTS_BASE_URL`, then `https://api.openai.com/v1`.
-- When `openai.baseUrl` points to a non-OpenAI endpoint, OpenClaw treats it as an OpenAI-compatible TTS server and relaxes model/voice validation.
+- `auto`: 自動 TTS を制御。`/tts off|always|inbound|tagged` でセッションごとに変更可能。
+- `summaryModel`: 自動要約用のモデル。`agents.defaults.model.primary` を上書きします。
+- `modelOverrides`: デフォルトで有効。`modelOverrides.allowProvider` のデフォルトは `false`（オプトイン）です。
+- API キーは `ELEVENLABS_API_KEY`/`XI_API_KEY` または `OPENAI_API_KEY` 環境変数にフォールバックします。
+- `openai.baseUrl`: OpenAI TTS エンドポイントを上書き。解決順序は 構成 > `OPENAI_TTS_BASE_URL` > `https://api.openai.com/v1`。
+- `openai.baseUrl` が非 OpenAI エンドポイントを指している場合、OpenClaw はそれを互換サーバーとして扱い、バリデーションを緩和します。
 
 ---
 
-## Talk
+## 話す (トークモード)
 
-Defaults for Talk mode (macOS/iOS/Android).
+macOS/iOS/Android のトークモードのデフォルト設定。
 
 ```json5
 {
@@ -1667,47 +1646,47 @@ Defaults for Talk mode (macOS/iOS/Android).
 }
 ```
 
-- Voice IDs fall back to `ELEVENLABS_VOICE_ID` or `SAG_VOICE_ID`.
-- `apiKey` and `providers.*.apiKey` accept plaintext strings or SecretRef objects.
-- `ELEVENLABS_API_KEY` fallback applies only when no Talk API key is configured.
-- `voiceAliases` lets Talk directives use friendly names.
-- `silenceTimeoutMs` controls how long Talk mode waits after user silence before it sends the transcript. Unset keeps the platform default pause window (`700 ms on macOS and Android, 900 ms on iOS`).
+- 音声 ID は `ELEVENLABS_VOICE_ID` または `SAG_VOICE_ID` 環境変数にフォールバックします。
+- `apiKey` および `providers.*.apiKey` はプレーンテキストまたは SecretRef オブジェクトを受け入れます。
+- `ELEVENLABS_API_KEY` へのフォールバックは、Talk 構成にキーが設定されていない場合にのみ適用されます。
+- `voiceAliases`: トークディレクティブでフレンドリーな名称を使用できるようにします。
+- `silenceTimeoutMs`: ユーザーが話をやめてから送信を開始するまでの待機時間。未設定の場合はプラットフォームのデフォルト（macOS/Android: 700ms, iOS: 900ms）が使用されます。
 
 ---
 
-## Tools
+## ツール (Tools)
 
-### Tool profiles
+### ツールプロファイル
 
-`tools.profile` sets a base allowlist before `tools.allow`/`tools.deny`:
+`tools.profile` は、`tools.allow`/`tools.deny` が適用される前の基本的なホワイトリストを設定します。
 
-Local onboarding defaults new local configs to `tools.profile: "coding"` when unset (existing explicit profiles are preserved).
+オンボーディング時に未設定の場合、新規のローカル構成ではデフォルトで `tools.profile: "coding"` に設定されます（既存のプロファイルは保持されます）。
 
-| Profile     | Includes                                                                                  |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| `minimal`   | `session_status` only                                                                     |
-| `coding`    | `group:fs`, `group:runtime`, `group:sessions`, `group:memory`, `image`                    |
+| プロファイル | 含まれるツール |
+| :--- | :--- |
+| `minimal` | `session_status` のみ |
+| `coding` | `group:fs`, `group:runtime`, `group:sessions`, `group:memory`, `image` |
 | `messaging` | `group:messaging`, `sessions_list`, `sessions_history`, `sessions_send`, `session_status` |
-| `full`      | No restriction (same as unset)                                                            |
+| `full` | 制限なし（未設定と同じ） |
 
-### Tool groups
+### ツールグループ
 
-| Group              | Tools                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------- |
-| `group:runtime`    | `exec`, `process` (`bash` is accepted as an alias for `exec`)                            |
-| `group:fs`         | `read`, `write`, `edit`, `apply_patch`                                                   |
-| `group:sessions`   | `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status` |
-| `group:memory`     | `memory_search`, `memory_get`                                                            |
-| `group:web`        | `web_search`, `web_fetch`                                                                |
-| `group:ui`         | `browser`, `canvas`                                                                      |
-| `group:automation` | `cron`, `gateway`                                                                        |
-| `group:messaging`  | `message`                                                                                |
-| `group:nodes`      | `nodes`                                                                                  |
-| `group:openclaw`   | All built-in tools (excludes provider plugins)                                           |
+| グループ名 | ツール |
+| :--- | :--- |
+| `group:runtime` | `exec`, `process` (`bash` は `exec` のエイリアスとして許可) |
+| `group:fs` | `read`, `write`, `edit`, `apply_patch` |
+| `group:sessions` | `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status` |
+| `group:memory` | `memory_search`, `memory_get` |
+| `group:web` | `web_search`, `web_fetch` |
+| `group:ui` | `browser`, `canvas` |
+| `group:automation` | `cron`, `gateway` |
+| `group:messaging` | `message` |
+| `group:nodes` | `nodes` |
+| `group:openclaw` | すべての組み込みツール（プロバイダープラグインを除く） |
 
 ### `tools.allow` / `tools.deny`
 
-Global tool allow/deny policy (deny wins). Case-insensitive, supports `*` wildcards. Applied even when Docker sandbox is off.
+ツール許可/拒否のグローバルポリシー（拒否が優先）。大文字小文字を区別せず、`*` ワイルドカードをサポートします。Docker サンドボックスが無効でも適用されます。
 
 ```json5
 {
@@ -1717,7 +1696,7 @@ Global tool allow/deny policy (deny wins). Case-insensitive, supports `*` wildca
 
 ### `tools.byProvider`
 
-Further restrict tools for specific providers or models. Order: base profile → provider profile → allow/deny.
+特定のプロバイダーやモデルに対して、さらにツールを制限します。適用順序: 基本プロファイル → プロバイダープロファイル → 許可/拒否設定。
 
 ```json5
 {
@@ -1733,7 +1712,7 @@ Further restrict tools for specific providers or models. Order: base profile →
 
 ### `tools.elevated`
 
-Controls elevated (host) exec access:
+昇格された権限（ホスト上での実行）を制御します。
 
 ```json5
 {
@@ -1749,9 +1728,9 @@ Controls elevated (host) exec access:
 }
 ```
 
-- Per-agent override (`agents.list[].tools.elevated`) can only further restrict.
-- `/elevated on|off|ask|full` stores state per session; inline directives apply to single message.
-- Elevated `exec` runs on the host, bypasses sandboxing.
+- エージェントごとのオーバーライド（`agents.list[].tools.elevated`）は、グローバル設定をより厳しくすることのみ可能です。
+- `/elevated on|off|ask|full` はセッションごとに状態を保存します。インラインディレクティブは単一のメッセージに適用されます。
+- 昇格された `exec` はホスト上で直接実行され、サンドボックスをバイパスします。
 
 ### `tools.exec`
 
@@ -1773,10 +1752,10 @@ Controls elevated (host) exec access:
 }
 ```
 
-### `tools.loopDetection`
+### `tools.loopDetection` (ループ検出)
 
-Tool-loop safety checks are **disabled by default**. Set `enabled: true` to activate detection.
-Settings can be defined globally in `tools.loopDetection` and overridden per-agent at `agents.list[].tools.loopDetection`.
+ツールループの安全性チェックは **デフォルトで無効** です。有効にするには `enabled: true` を設定してください。
+設定は `tools.loopDetection` でグローバルに定義でき、`agents.list[].tools.loopDetection` でエージェントごとに上書き可能です。
 
 ```json5
 {
@@ -1797,14 +1776,14 @@ Settings can be defined globally in `tools.loopDetection` and overridden per-age
 }
 ```
 
-- `historySize`: max tool-call history retained for loop analysis.
-- `warningThreshold`: repeating no-progress pattern threshold for warnings.
-- `criticalThreshold`: higher repeating threshold for blocking critical loops.
-- `globalCircuitBreakerThreshold`: hard stop threshold for any no-progress run.
-- `detectors.genericRepeat`: warn on repeated same-tool/same-args calls.
-- `detectors.knownPollNoProgress`: warn/block on known poll tools (`process.poll`, `command_status`, etc.).
-- `detectors.pingPong`: warn/block on alternating no-progress pair patterns.
-- If `warningThreshold >= criticalThreshold` or `criticalThreshold >= globalCircuitBreakerThreshold`, validation fails.
+- `historySize`: ループ分析のために保持されるツール呼び出し履歴の最大数。
+- `warningThreshold`: 進行のないパターンの繰り返しに対する警告しきい値。
+- `criticalThreshold`: クリティカルなループをブロックするための、より高い繰り返ししきい値。
+- `globalCircuitBreakerThreshold`: 進行のない実行を強制停止するためのハードしきい値。
+- `detectors.genericRepeat`: 同じツールや引数での繰り返し呼び出しを警告。
+- `detectors.knownPollNoProgress`: 既知のポーリングツール（`process.poll`, `command_status` など）を警告/ブロック。
+- `detectors.pingPong`: 交互に繰り返される進行のないペアパターンを警告/ブロック。
+- `warningThreshold >= criticalThreshold` または `criticalThreshold >= globalCircuitBreakerThreshold` の場合はバリデーションエラーになります。
 
 ### `tools.web`
 
@@ -1814,7 +1793,7 @@ Settings can be defined globally in `tools.loopDetection` and overridden per-age
     web: {
       search: {
         enabled: true,
-        apiKey: "brave_api_key", // or BRAVE_API_KEY env
+        apiKey: "brave_api_key", // または BRAVE_API_KEY 環境変数
         maxResults: 5,
         timeoutSeconds: 30,
         cacheTtlMinutes: 15,
@@ -1834,7 +1813,7 @@ Settings can be defined globally in `tools.loopDetection` and overridden per-age
 
 ### `tools.media`
 
-Configures inbound media understanding (image/audio/video):
+受信メディア（画像、音声、動画）の解析設定です。
 
 ```json5
 {
@@ -1863,26 +1842,26 @@ Configures inbound media understanding (image/audio/video):
 }
 ```
 
-<Accordion title="Media model entry fields">
+<Accordion title="メディアモデルのエントリフィールド">
 
-**Provider entry** (`type: "provider"` or omitted):
+**プロバイダーエントリ** (`type: "provider"` または省略時):
 
-- `provider`: API provider id (`openai`, `anthropic`, `google`/`gemini`, `groq`, etc.)
-- `model`: model id override
-- `profile` / `preferredProfile`: `auth-profiles.json` profile selection
+- `provider`: API プロバイダー ID (`openai`, `anthropic`, `google`/`gemini`, `groq` など)。
+- `model`: モデル ID のオーバーライド。
+- `profile` / `preferredProfile`: `auth-profiles.json` 内のプロファイル選択。
 
-**CLI entry** (`type: "cli"`):
+**CLI エントリ** (`type: "cli"`):
 
-- `command`: executable to run
-- `args`: templated args (supports `{{MediaPath}}`, `{{Prompt}}`, `{{MaxChars}}`, etc.)
+- `command`: 実行するコマンド名。
+- `args`: テンプレート引数（`{{MediaPath}}`, `{{Prompt}}`, `{{MaxChars}}` などをサポート）。
 
-**Common fields:**
+**共通フィールド:**
 
-- `capabilities`: optional list (`image`, `audio`, `video`). Defaults: `openai`/`anthropic`/`minimax` → image, `google` → image+audio+video, `groq` → audio.
-- `prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`: per-entry overrides.
-- Failures fall back to the next entry.
+- `capabilities`: 対応機能のリスト (`image`, `audio`, `video`)。デフォルト設定: `openai`/`anthropic`/`minimax` は画像、`google` は画像・音声・動画、`groq` は音声。
+- `prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`: エントリごとのオーバーライド。
+- 失敗した場合はリスト内の次のエントリへフォールバックします。
 
-Provider auth follows standard order: `auth-profiles.json` → env vars → `models.providers.*.apiKey`.
+プロバイダーの認証は、`auth-profiles.json` → 環境変数 → `models.providers.*.apiKey` の順で解決されます。
 
 </Accordion>
 
@@ -1901,9 +1880,9 @@ Provider auth follows standard order: `auth-profiles.json` → env vars → `mod
 
 ### `tools.sessions`
 
-Controls which sessions can be targeted by the session tools (`sessions_list`, `sessions_history`, `sessions_send`).
+セッション操作ツール（`sessions_list`, `sessions_history`, `sessions_send`）が対象にできる範囲を制御します。
 
-Default: `tree` (current session + sessions spawned by it, such as subagents).
+デフォルト: `tree`（現在のセッションと、そこから生成されたサブエージェントなどのセッション）。
 
 ```json5
 {
@@ -1916,42 +1895,40 @@ Default: `tree` (current session + sessions spawned by it, such as subagents).
 }
 ```
 
-Notes:
-
-- `self`: only the current session key.
-- `tree`: current session + sessions spawned by the current session (subagents).
-- `agent`: any session belonging to the current agent id (can include other users if you run per-sender sessions under the same agent id).
-- `all`: any session. Cross-agent targeting still requires `tools.agentToAgent`.
-- Sandbox clamp: when the current session is sandboxed and `agents.defaults.sandbox.sessionToolsVisibility="spawned"`, visibility is forced to `tree` even if `tools.sessions.visibility="all"`.
+備考:
+- `self`: 現在のセッションのみ。
+- `tree`: 現在のセッションと、そのセッションから派生したすべてのセッション。
+- `agent`: 現在のエージェント ID に属するすべてのセッション。
+- `all`: すべてのセッション。エージェントをまたぐ場合は `tools.agentToAgent` の許可も必要です。
+- サンドボックスの制限: セッションがサンドボックス化されており、`agents.defaults.sandbox.sessionToolsVisibility="spawned"` が設定されている場合、この設定が `all` であっても強制的に `tree` に制限されます。
 
 ### `tools.sessions_spawn`
 
-Controls inline attachment support for `sessions_spawn`.
+`sessions_spawn` におけるインライン添付ファイルのサポートを制御します。
 
 ```json5
 {
   tools: {
     sessions_spawn: {
       attachments: {
-        enabled: false, // opt-in: set true to allow inline file attachments
-        maxTotalBytes: 5242880, // 5 MB total across all files
+        enabled: false, // 有効にする場合は true に設定
+        maxTotalBytes: 5242880, // 合計 5 MB まで
         maxFiles: 50,
-        maxFileBytes: 1048576, // 1 MB per file
-        retainOnSessionKeep: false, // keep attachments when cleanup="keep"
+        maxFileBytes: 1048576, // 1ファイルあたり 1 MB まで
+        retainOnSessionKeep: false, // cleanup="keep" の際に添付ファイルを保持するかどうか
       },
     },
   },
 }
 ```
 
-Notes:
-
-- Attachments are only supported for `runtime: "subagent"`. ACP runtime rejects them.
-- Files are materialized into the child workspace at `.openclaw/attachments/<uuid>/` with a `.manifest.json`.
-- Attachment content is automatically redacted from transcript persistence.
-- Base64 inputs are validated with strict alphabet/padding checks and a pre-decode size guard.
-- File permissions are `0700` for directories and `0600` for files.
-- Cleanup follows the `cleanup` policy: `delete` always removes attachments; `keep` retains them only when `retainOnSessionKeep: true`.
+備考:
+- 添付ファイルは `runtime: "subagent"` でのみサポートされます。ACP ランタイムでは拒否されます。
+- ファイルは子ワークスペースの `.openclaw/attachments/<uuid>/` に配置されます。
+- 添付ファイルの内容は、ログの永続化時に自動的に伏せ字（redact）処理されます。
+- Base64 入力は厳密にチェックされ、デコード前のサイズ制限が適用されます。
+- ファイル権限はディレクトリが `0700`、ファイルが `0600` に設定されます。
+- クリーンアップは `cleanup` ポリシーに従います。`delete` は常に削除し、`keep` は `retainOnSessionKeep: true` の場合のみ保持します。
 
 ### `tools.subagents`
 
@@ -1970,20 +1947,20 @@ Notes:
 }
 ```
 
-- `model`: default model for spawned sub-agents. If omitted, sub-agents inherit the caller's model.
-- `runTimeoutSeconds`: default timeout (seconds) for `sessions_spawn` when the tool call omits `runTimeoutSeconds`. `0` means no timeout.
-- Per-subagent tool policy: `tools.subagents.tools.allow` / `tools.subagents.tools.deny`.
+- `model`: 生成されるサブエージェントのデフォルトモデル。省略時は呼び出し元のモデルを継承します。
+- `runTimeoutSeconds`: ツール呼び出しで指定されなかった場合のデフォルトタイムアウト。`0` は無制限を意味します。
+- サブエージェントごとのツールポリシー: `tools.subagents.tools.allow` / `tools.subagents.tools.deny` で設定します。
 
 ---
 
-## Custom providers and base URLs
+## カスタムプロバイダーとベース URL
 
-OpenClaw uses the pi-coding-agent model catalog. Add custom providers via `models.providers` in config or `~/.openclaw/agents/<agentId>/agent/models.json`.
+OpenClaw は pi-coding-agent のモデルカタログを使用します。構成ファイルの `models.providers` または `~/.openclaw/agents/<agentId>/agent/models.json` を通じてカスタムプロバイダーを追加できます。
 
 ```json5
 {
   models: {
-    mode: "merge", // merge (default) | replace
+    mode: "merge", // merge (デフォルト) | replace
     providers: {
       "custom-proxy": {
         baseUrl: "http://localhost:4000/v1",
@@ -2006,38 +1983,35 @@ OpenClaw uses the pi-coding-agent model catalog. Add custom providers via `model
 }
 ```
 
-- Use `authHeader: true` + `headers` for custom auth needs.
-- Override agent config root with `OPENCLAW_AGENT_DIR` (or `PI_CODING_AGENT_DIR`).
-- Merge precedence for matching provider IDs:
-  - Non-empty agent `models.json` `baseUrl` values win.
-  - Non-empty agent `apiKey` values win only when that provider is not SecretRef-managed in current config/auth-profile context.
-  - SecretRef-managed provider `apiKey` values are refreshed from source markers (`ENV_VAR_NAME` for env refs, `secretref-managed` for file/exec refs) instead of persisting resolved secrets.
-  - Empty or missing agent `apiKey`/`baseUrl` fall back to `models.providers` in config.
-  - Matching model `contextWindow`/`maxTokens` use the higher value between explicit config and implicit catalog values.
-  - Use `models.mode: "replace"` when you want config to fully rewrite `models.json`.
+- 特殊な認証が必要な場合は `authHeader: true` と `headers` を組み合わせて使用します。
+- エージェント設定のルートディレクトリは `OPENCLAW_AGENT_DIR` 環境変数で変更可能です。
+- プロバイダー ID が一致する場合のマージ優先順位:
+  - エージェント個別の `models.json` 内の `baseUrl` が最優先されます。
+  - `apiKey` は、そのプロバイダーが SecretRef で管理されていない場合にのみ優先されます。
+  - 空または欠落している項目は、メイン構成の `models.providers` にフォールバックします。
+  - `contextWindow` / `maxTokens` は、明示的な設定値とカタログ値のうち高い方が採用されます。
+  - `models.mode: "replace"` を使用すると、カタログをマージせずに構成ファイルの内容で完全に置き換えます。
 
-### Provider field details
+### プロバイダーフィールドの詳細
 
-- `models.mode`: provider catalog behavior (`merge` or `replace`).
-- `models.providers`: custom provider map keyed by provider id.
-- `models.providers.*.api`: request adapter (`openai-completions`, `openai-responses`, `anthropic-messages`, `google-generative-ai`, etc).
-- `models.providers.*.apiKey`: provider credential (prefer SecretRef/env substitution).
-- `models.providers.*.auth`: auth strategy (`api-key`, `token`, `oauth`, `aws-sdk`).
-- `models.providers.*.injectNumCtxForOpenAICompat`: for Ollama + `openai-completions`, inject `options.num_ctx` into requests (default: `true`).
-- `models.providers.*.authHeader`: force credential transport in the `Authorization` header when required.
-- `models.providers.*.baseUrl`: upstream API base URL.
-- `models.providers.*.headers`: extra static headers for proxy/tenant routing.
-- `models.providers.*.models`: explicit provider model catalog entries.
-- `models.providers.*.models.*.compat.supportsDeveloperRole`: optional compatibility hint. For `api: "openai-completions"` with a non-empty non-native `baseUrl` (host not `api.openai.com`), OpenClaw forces this to `false` at runtime. Empty/omitted `baseUrl` keeps default OpenAI behavior.
-- `models.bedrockDiscovery`: Bedrock auto-discovery settings root.
-- `models.bedrockDiscovery.enabled`: turn discovery polling on/off.
-- `models.bedrockDiscovery.region`: AWS region for discovery.
-- `models.bedrockDiscovery.providerFilter`: optional provider-id filter for targeted discovery.
-- `models.bedrockDiscovery.refreshInterval`: polling interval for discovery refresh.
-- `models.bedrockDiscovery.defaultContextWindow`: fallback context window for discovered models.
-- `models.bedrockDiscovery.defaultMaxTokens`: fallback max output tokens for discovered models.
+- `models.mode`: カタログの動作 (`merge` または `replace`)。
+- `models.providers`: プロバイダー ID をキーとするカスタムプロバイダーのマップ。
+- `models.providers.*.api`: リダプターの種類 (`openai-completions`, `openai-responses`, `anthropic-messages`, `google-generative-ai` など)。
+- `models.providers.*.apiKey`: 認証情報（SecretRef や環境変数参照を推奨）。
+- `models.providers.*.auth`: 認証戦略 (`api-key`, `token`, `oauth`, `aws-sdk`)。
+- `models.providers.*.injectNumCtxForOpenAICompat`: Ollama 等で `options.num_ctx` を注入するかどうか (デフォルト: `true`)。
+- `models.providers.*.baseUrl`: アップストリームの API ベース URL。
+- `models.providers.*.headers`: プロキシやルーティング用の追加ヘッダー。
+- `models.providers.*.models`: プロバイダーごとの明示的なモデルカタログ。
+- `models.providers.*.models.*.compat.supportsDeveloperRole`: `api: "openai-completions"` で `baseUrl` が `api.openai.com` 以外の場合、OpenClaw はこれを強制的に `false` に設定して互換性を確保します。
+- `models.bedrockDiscovery`: Bedrock 自動検出の設定。
+  - `enabled`: 検出の有効/無効。
+  - `region`: AWS リージョン。
+  - `providerFilter`: 特定のプロバイダー ID で絞り込むオプション。
+  - `refreshInterval`: 検出の更新間隔。
+  - `defaultContextWindow` / `defaultMaxTokens`: 検出されたモデルのフォールバック値。
 
-### Provider examples
+### プロバイダーの例
 
 <Accordion title="Cerebras (GLM 4.6 / 4.7)">
 
@@ -2073,7 +2047,7 @@ OpenClaw uses the pi-coding-agent model catalog. Add custom providers via `model
 }
 ```
 
-Use `cerebras/zai-glm-4.7` for Cerebras; `zai/glm-4.7` for Z.AI direct.
+Cerebras を経由する場合は `cerebras/zai-glm-4.7` を、Z.AI 直販を使用する場合は `zai/glm-4.7` を使用します。
 
 </Accordion>
 
@@ -2090,7 +2064,7 @@ Use `cerebras/zai-glm-4.7` for Cerebras; `zai/glm-4.7` for Z.AI direct.
 }
 ```
 
-Set `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`). Shortcut: `openclaw onboard --auth-choice opencode-zen`.
+`OPENCODE_API_KEY` (または `OPENCODE_ZEN_API_KEY`) を設定してください。ショートカット: `openclaw onboard --auth-choice opencode-zen`。
 
 </Accordion>
 
@@ -2107,11 +2081,11 @@ Set `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`). Shortcut: `openclaw onboard 
 }
 ```
 
-Set `ZAI_API_KEY`. `z.ai/*` and `z-ai/*` are accepted aliases. Shortcut: `openclaw onboard --auth-choice zai-api-key`.
+`ZAI_API_KEY` を設定してください。`z.ai/*` や `z-ai/*` もエイリアスとして受け入れられます。ショートカット: `openclaw onboard --auth-choice zai-api-key`。
 
-- General endpoint: `https://api.z.ai/api/paas/v4`
-- Coding endpoint (default): `https://api.z.ai/api/coding/paas/v4`
-- For the general endpoint, define a custom provider with the base URL override.
+- 一般的なエンドポイント: `https://api.z.ai/api/paas/v4`
+- コーディング用エンドポイント (デフォルト): `https://api.z.ai/api/coding/paas/v4`
+- 一般的なエンドポイントを使用する場合は、ベース URL を上書きしてカスタムプロバイダーを定義してください。
 
 </Accordion>
 
@@ -2150,7 +2124,7 @@ Set `ZAI_API_KEY`. `z.ai/*` and `z-ai/*` are accepted aliases. Shortcut: `opencl
 }
 ```
 
-For the China endpoint: `baseUrl: "https://api.moonshot.cn/v1"` or `openclaw onboard --auth-choice moonshot-api-key-cn`.
+中国向けエンドポイントを使用する場合: `baseUrl: "https://api.moonshot.cn/v1"` または `openclaw onboard --auth-choice moonshot-api-key-cn`。
 
 </Accordion>
 
@@ -2168,11 +2142,11 @@ For the China endpoint: `baseUrl: "https://api.moonshot.cn/v1"` or `openclaw onb
 }
 ```
 
-Anthropic-compatible, built-in provider. Shortcut: `openclaw onboard --auth-choice kimi-code-api-key`.
+Anthropic 互換の組み込みプロバイダーです。ショートカット: `openclaw onboard --auth-choice kimi-code-api-key`。
 
 </Accordion>
 
-<Accordion title="Synthetic (Anthropic-compatible)">
+<Accordion title="Synthetic (Anthropic 互換)">
 
 ```json5
 {
@@ -2207,11 +2181,11 @@ Anthropic-compatible, built-in provider. Shortcut: `openclaw onboard --auth-choi
 }
 ```
 
-Base URL should omit `/v1` (Anthropic client appends it). Shortcut: `openclaw onboard --auth-choice synthetic-api-key`.
+ベース URL から `/v1` を除外する必要があります（Anthropic クライアントが自動付加します）。ショートカット: `openclaw onboard --auth-choice synthetic-api-key`。
 
 </Accordion>
 
-<Accordion title="MiniMax M2.5 (direct)">
+<Accordion title="MiniMax M2.5 (直接利用)">
 
 ```json5
 {
@@ -2247,19 +2221,19 @@ Base URL should omit `/v1` (Anthropic client appends it). Shortcut: `openclaw on
 }
 ```
 
-Set `MINIMAX_API_KEY`. Shortcut: `openclaw onboard --auth-choice minimax-api`.
+`MINIMAX_API_KEY` を設定してください。ショートカット: `openclaw onboard --auth-choice minimax-api`。
 
 </Accordion>
 
-<Accordion title="Local models (LM Studio)">
+<Accordion title="ローカルモデル (LM Studio)">
 
-See [Local Models](/gateway/local-models). TL;DR: run MiniMax M2.5 via LM Studio Responses API on serious hardware; keep hosted models merged for fallback.
+[ローカルモデル](/gateway/local-models) を参照してください。要約: ハイスペックなハードウェア上の LM Studio Responses API 経由で MiniMax M2.5 を実行し、フォールバック用にクラウド版をマージしておきます。
 
 </Accordion>
 
 ---
 
-## Skills
+## スキル (Skills)
 
 ```json5
 {
@@ -2274,7 +2248,7 @@ See [Local Models](/gateway/local-models). TL;DR: run MiniMax M2.5 via LM Studio
     },
     entries: {
       "nano-banana-pro": {
-        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // or plaintext string
+        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // またはプレーンテキスト
         env: { GEMINI_API_KEY: "GEMINI_KEY_HERE" },
       },
       peekaboo: { enabled: true },
@@ -2284,13 +2258,13 @@ See [Local Models](/gateway/local-models). TL;DR: run MiniMax M2.5 via LM Studio
 }
 ```
 
-- `allowBundled`: optional allowlist for bundled skills only (managed/workspace skills unaffected).
-- `entries.<skillKey>.enabled: false` disables a skill even if bundled/installed.
-- `entries.<skillKey>.apiKey`: convenience for skills declaring a primary env var (plaintext string or SecretRef object).
+- `allowBundled`: 同梱されているスキルのみを許可するオプションのホワイトリスト（管理済み/ワークスペーススキルには影響しません）。
+- `entries.<skillKey>.enabled: false`: 同梱またはインストールされているスキルを無効化します。
+- `entries.<skillKey>.apiKey`: 主要な環境変数を宣言するための便利なフィールド（プレーンテキストまたは SecretRef）。
 
 ---
 
-## Plugins
+## プラグイン (Plugins)
 
 ```json5
 {
@@ -2314,24 +2288,23 @@ See [Local Models](/gateway/local-models). TL;DR: run MiniMax M2.5 via LM Studio
 }
 ```
 
-- Loaded from `~/.openclaw/extensions`, `<workspace>/.openclaw/extensions`, plus `plugins.load.paths`.
-- **Config changes require a gateway restart.**
-- `allow`: optional allowlist (only listed plugins load). `deny` wins.
-- `plugins.entries.<id>.apiKey`: plugin-level API key convenience field (when supported by the plugin).
-- `plugins.entries.<id>.env`: plugin-scoped env var map.
-- `plugins.entries.<id>.hooks.allowPromptInjection`: when `false`, core blocks `before_prompt_build` and ignores prompt-mutating fields from legacy `before_agent_start`, while preserving legacy `modelOverride` and `providerOverride`.
-- `plugins.entries.<id>.config`: plugin-defined config object (validated by plugin schema).
-- `plugins.slots.memory`: pick the active memory plugin id, or `"none"` to disable memory plugins.
-- `plugins.slots.contextEngine`: pick the active context engine plugin id; defaults to `"legacy"` unless you install and select another engine.
-- `plugins.installs`: CLI-managed install metadata used by `openclaw plugins update`.
-  - Includes `source`, `spec`, `sourcePath`, `installPath`, `version`, `resolvedName`, `resolvedVersion`, `resolvedSpec`, `integrity`, `shasum`, `resolvedAt`, `installedAt`.
-  - Treat `plugins.installs.*` as managed state; prefer CLI commands over manual edits.
+- `~/.openclaw/extensions`, `<workspace>/.openclaw/extensions`, および `plugins.load.paths` からロードされます。
+- **構成を変更した場合はゲートウェイの再起動が必要です。**
+- `allow`: 許可リスト（リストにないプラグインはロードされません）。`deny` が優先されます。
+- `plugins.entries.<id>.apiKey`: プラグイン固有の API キー用フィールド（プラグインが対応している場合）。
+- `plugins.entries.<id>.env`: プラグインスコープの環境変数マップ。
+- `plugins.entries.<id>.hooks.allowPromptInjection`: `false` の場合、`before_prompt_build` によるプロンプト変更をブロックし、レガシーな `before_agent_start` からのプロンプト変更フィールドを無視します（`modelOverride` や `providerOverride` は維持されます）。
+- `plugins.entries.<id>.config`: プラグインが定義する設定オブジェクト（プラグインのスキーマで検証されます）。
+- `plugins.slots.memory`: 使用するメモリプラグインの ID を指定。無効にする場合は `"none"` を指定します。
+- `plugins.slots.contextEngine`: 使用するコンテキストエンジンプラグインの ID。デフォルトは `"legacy"` です。
+- `plugins.installs`: `openclaw plugins update` 等で使用される CLI 管理のインストール用メタデータ。
+  - `source`, `spec`, `version`, `integrity` 等が含まれます。これらは CLI によって自動管理されるため、手動編集は避けてください。
 
-See [Plugins](/tools/plugin).
+詳細は [プラグイン](/tools/plugin) を参照してください。
 
 ---
 
-## Browser
+## ブラウザ (Browser)
 
 ```json5
 {
@@ -2340,8 +2313,8 @@ See [Plugins](/tools/plugin).
     evaluateEnabled: true,
     defaultProfile: "chrome",
     ssrfPolicy: {
-      dangerouslyAllowPrivateNetwork: true, // default trusted-network mode
-      // allowPrivateNetwork: true, // legacy alias
+      dangerouslyAllowPrivateNetwork: true, // デフォルト: 信頼されたネットワークモード
+      // allowPrivateNetwork: true, // レガシーエイリアス
       // hostnameAllowlist: ["*.example.com", "example.com"],
       // allowedHostnames: ["localhost"],
     },
@@ -2354,24 +2327,22 @@ See [Plugins](/tools/plugin).
     // headless: false,
     // noSandbox: false,
     // extraArgs: [],
-    // relayBindHost: "0.0.0.0", // only when the extension relay must be reachable across namespaces (for example WSL2)
+    // relayBindHost: "0.0.0.0", // 名前空間をまたぐ必要がある場合（WSL2等）のみ
     // executablePath: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
     // attachOnly: false,
   },
 }
 ```
 
-- `evaluateEnabled: false` disables `act:evaluate` and `wait --fn`.
-- `ssrfPolicy.dangerouslyAllowPrivateNetwork` defaults to `true` when unset (trusted-network model).
-- Set `ssrfPolicy.dangerouslyAllowPrivateNetwork: false` for strict public-only browser navigation.
-- `ssrfPolicy.allowPrivateNetwork` remains supported as a legacy alias.
-- In strict mode, use `ssrfPolicy.hostnameAllowlist` and `ssrfPolicy.allowedHostnames` for explicit exceptions.
-- Remote profiles are attach-only (start/stop/reset disabled).
-- Auto-detect order: default browser if Chromium-based → Chrome → Brave → Edge → Chromium → Chrome Canary.
-- Control service: loopback only (port derived from `gateway.port`, default `18791`).
-- `extraArgs` appends extra launch flags to local Chromium startup (for example
-  `--disable-gpu`, window sizing, or debug flags).
-- `relayBindHost` changes where the Chrome extension relay listens. Leave unset for loopback-only access; set an explicit non-loopback bind address such as `0.0.0.0` only when the relay must cross a namespace boundary (for example WSL2) and the host network is already trusted.
+- `evaluateEnabled: false`: `act:evaluate` や `wait --fn` を無効化します。
+- `ssrfPolicy.dangerouslyAllowPrivateNetwork`: 未設定時はデフォルトで `true`（信頼されたネットワークモデル）。パブリックな Web 閲覧のみに制限したい場合は `false` に設定してください。
+- `ssrfPolicy.allowPrivateNetwork` もレガシーエイリアスとしてサポートされます。
+- 制限モードでは、`hostnameAllowlist` や `allowedHostnames` で例外を定義できます。
+- リモートプロファイルは接続専用です（開始/停止/リセットは不可）。
+- 自動検出順序: Chromium ベースのデフォルトブラウザ → Chrome → Brave → Edge → Chromium → Chrome Canary。
+- 制御サービス: ループバックのみ（ポートは `gateway.port` から派生。デフォルトは `18791`）。
+- `extraArgs`: 起動時の追加フラグ（GPU 無効化、ウィンドウサイズ指定、デバッグフラグ等）。
+- `relayBindHost`: Chrome 拡張機能のリレーがリッスンするアドレス。ループバックのみの場合は未設定のままにしてください。名前空間の境界（WSL2 等）を越える必要があり、かつホストネットワークが信頼できる場合のみ `0.0.0.0` 等を設定してください。
 
 ---
 
@@ -2383,18 +2354,18 @@ See [Plugins](/tools/plugin).
     seamColor: "#FF4500",
     assistant: {
       name: "OpenClaw",
-      avatar: "CB", // emoji, short text, image URL, or data URI
+      avatar: "CB", // 絵文字、短いテキスト、画像 URL、または data URI
     },
   },
 }
 ```
 
-- `seamColor`: accent color for native app UI chrome (Talk Mode bubble tint, etc.).
-- `assistant`: Control UI identity override. Falls back to active agent identity.
+- `seamColor`: ネイティブアプリの UI アクセントカラー（トークモードのバブルの色など）。
+- `assistant`: コントロール UI におけるアイデンティティのオーバーライド。未設定時はアクティブなエージェントのアイデンティティが使用されます。
 
 ---
 
-## Gateway
+## ゲートウェイ (Gateway)
 
 ```json5
 {
@@ -2405,8 +2376,8 @@ See [Plugins](/tools/plugin).
     auth: {
       mode: "token", // none | token | password | trusted-proxy
       token: "your-token",
-      // password: "your-password", // or OPENCLAW_GATEWAY_PASSWORD
-      // trustedProxy: { userHeader: "x-forwarded-user" }, // for mode=trusted-proxy; see /gateway/trusted-proxy-auth
+      // password: "your-password", // または OPENCLAW_GATEWAY_PASSWORD
+      // trustedProxy: { userHeader: "x-forwarded-user" }, // mode=trusted-proxy の場合。詳細は /gateway/trusted-proxy-auth
       allowTailscale: true,
       rateLimit: {
         maxAttempts: 10,
@@ -2423,8 +2394,8 @@ See [Plugins](/tools/plugin).
       enabled: true,
       basePath: "/openclaw",
       // root: "dist/control-ui",
-      // allowedOrigins: ["https://control.example.com"], // required for non-loopback Control UI
-      // dangerouslyAllowHostHeaderOriginFallback: false, // dangerous Host-header origin fallback mode
+      // allowedOrigins: ["https://control.example.com"], // ループバック以外のコントロール UI で必要
+      // dangerouslyAllowHostHeaderOriginFallback: false, // 危険な Host ヘッダーによる Origin フォールバックモード
       // allowInsecureAuth: false,
       // dangerouslyDisableDeviceAuth: false,
     },
@@ -2435,61 +2406,61 @@ See [Plugins](/tools/plugin).
       // password: "your-password",
     },
     trustedProxies: ["10.0.0.1"],
-    // Optional. Default false.
+    // オプション。デフォルトは false。
     allowRealIpFallback: false,
     tools: {
-      // Additional /tools/invoke HTTP denies
+      // HTTP 経由のツール実行（/tools/invoke）に対する追加の拒否リスト
       deny: ["browser"],
-      // Remove tools from the default HTTP deny list
+      // デフォルトの HTTP 拒否リストからツールを除外
       allow: ["gateway"],
     },
   },
 }
 ```
 
-<Accordion title="Gateway field details">
+<Accordion title="ゲートウェイフィールドの詳細">
 
-- `mode`: `local` (run gateway) or `remote` (connect to remote gateway). Gateway refuses to start unless `local`.
-- `port`: single multiplexed port for WS + HTTP. Precedence: `--port` > `OPENCLAW_GATEWAY_PORT` > `gateway.port` > `18789`.
-- `bind`: `auto`, `loopback` (default), `lan` (`0.0.0.0`), `tailnet` (Tailscale IP only), or `custom`.
-- **Legacy bind aliases**: use bind mode values in `gateway.bind` (`auto`, `loopback`, `lan`, `tailnet`, `custom`), not host aliases (`0.0.0.0`, `127.0.0.1`, `localhost`, `::`, `::1`).
-- **Docker note**: the default `loopback` bind listens on `127.0.0.1` inside the container. With Docker bridge networking (`-p 18789:18789`), traffic arrives on `eth0`, so the gateway is unreachable. Use `--network host`, or set `bind: "lan"` (or `bind: "custom"` with `customBindHost: "0.0.0.0"`) to listen on all interfaces.
-- **Auth**: required by default. Non-loopback binds require a shared token/password. Onboarding wizard generates a token by default.
-- If both `gateway.auth.token` and `gateway.auth.password` are configured (including SecretRefs), set `gateway.auth.mode` explicitly to `token` or `password`. Startup and service install/repair flows fail when both are configured and mode is unset.
-- `gateway.auth.mode: "none"`: explicit no-auth mode. Use only for trusted local loopback setups; this is intentionally not offered by onboarding prompts.
-- `gateway.auth.mode: "trusted-proxy"`: delegate auth to an identity-aware reverse proxy and trust identity headers from `gateway.trustedProxies` (see [Trusted Proxy Auth](/gateway/trusted-proxy-auth)).
-- `gateway.auth.allowTailscale`: when `true`, Tailscale Serve identity headers can satisfy Control UI/WebSocket auth (verified via `tailscale whois`); HTTP API endpoints still require token/password auth. This tokenless flow assumes the gateway host is trusted. Defaults to `true` when `tailscale.mode = "serve"`.
-- `gateway.auth.rateLimit`: optional failed-auth limiter. Applies per client IP and per auth scope (shared-secret and device-token are tracked independently). Blocked attempts return `429` + `Retry-After`.
-  - `gateway.auth.rateLimit.exemptLoopback` defaults to `true`; set `false` when you intentionally want localhost traffic rate-limited too (for test setups or strict proxy deployments).
-- Browser-origin WS auth attempts are always throttled with loopback exemption disabled (defense-in-depth against browser-based localhost brute force).
-- `tailscale.mode`: `serve` (tailnet only, loopback bind) or `funnel` (public, requires auth).
-- `controlUi.allowedOrigins`: explicit browser-origin allowlist for Gateway WebSocket connects. Required when browser clients are expected from non-loopback origins.
-- `controlUi.dangerouslyAllowHostHeaderOriginFallback`: dangerous mode that enables Host-header origin fallback for deployments that intentionally rely on Host-header origin policy.
-- `remote.transport`: `ssh` (default) or `direct` (ws/wss). For `direct`, `remote.url` must be `ws://` or `wss://`.
-- `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`: client-side break-glass override that allows plaintext `ws://` to trusted private-network IPs; default remains loopback-only for plaintext.
-- `gateway.remote.token` / `.password` are remote-client credential fields. They do not configure gateway auth by themselves.
-- Local gateway call paths can use `gateway.remote.*` as fallback when `gateway.auth.*` is unset.
-- `trustedProxies`: reverse proxy IPs that terminate TLS. Only list proxies you control.
-- `allowRealIpFallback`: when `true`, the gateway accepts `X-Real-IP` if `X-Forwarded-For` is missing. Default `false` for fail-closed behavior.
-- `gateway.tools.deny`: extra tool names blocked for HTTP `POST /tools/invoke` (extends default deny list).
-- `gateway.tools.allow`: remove tool names from the default HTTP deny list.
+- `mode`: `local` (ゲートウェイを実行) または `remote` (リモートゲートウェイに接続)。`local` でない限りゲートウェイは起動しません。
+- `port`: WebSocket と HTTP で共用される単一のポート。優先順位: `--port` 引数 > `OPENCLAW_GATEWAY_PORT` > `gateway.port` > `18789`。
+- `bind`: `auto`, `loopback` (デフォルト), `lan` (`0.0.0.0`), `tailnet` (Tailscale IP のみ), または `custom`。
+- **レガシーなバインドエイリアス**: `gateway.bind` にはホストのエイリアス（`0.0.0.0`, `127.0.0.1` 等）ではなく、上記のバインドモード値を指定してください。
+- **Docker に関する注意**: デフォルトの `loopback` はコンテナ内の `127.0.0.1` でリッスンします。Docker のブリッジネットワーク（`-p 18789:18789`）を使用する場合、トラフィックは `eth0` に到達するため、ゲートウェイにアクセスできなくなります。`--network host` を使用するか、`bind: "lan"`（または `bind: "custom"` かつ `customBindHost: "0.0.0.0"`）を設定してすべてのインターフェースでリッスンするようにしてください。
+- **認証 (Auth)**: デフォルトで必須です。ループバック以外のバインドには共通のトークン/パスワードが必要です。オンボーディングウィザードはデフォルトでトークンを生成します。
+- `gateway.auth.token` と `gateway.auth.password` の両方が構成されている場合（SecretRef を含む）、`gateway.auth.mode` を明示的に `token` または `password` に設定してください。モードが未設定で両方が存在する場合、起動やサービスのインストール/修復に失敗します。
+- `gateway.auth.mode: "none"`: 明示的な無認証モード。信頼されたローカルループバック環境でのみ使用してください。オンボーディングのプロンプトでは意図的に提供されません。
+- `gateway.auth.mode: "trusted-proxy"`: 認証を ID 認識リバースプロキシに委任し、`gateway.trustedProxies` からの ID ヘッダーを信頼します（[信頼されたプロキシ認証](/gateway/trusted-proxy-auth) を参照）。
+- `gateway.auth.allowTailscale`: `true` の場合、Tailscale Serve の ID ヘッダーをコントロール UI/WebSocket の認証に使用できます（`tailscale whois` で検証）。HTTP API エンドポイントには引き続きトークン/パスワード認証が必要です。このトークンレスフローは、ゲートウェイホストが信頼されていることを前提としています。`tailscale.mode = "serve"` の場合はデフォルトで `true` になります。
+- `gateway.auth.rateLimit`: オプションの認証失敗リミッター。クライアント IP ごと、および認証スコープ（共通シークレットとデバイス用トークンは個別に追跡）ごとに適用されます。ブロックされた試行は `429` (Retry-After 付き) を返します。
+  - `gateway.auth.rateLimit.exemptLoopback`: デフォルトは `true` です。テスト環境や厳格なプロキシ運用のためにローカルホストからのトラフィックも制限したい場合は `false` に設定してください。
+- ブラウザをオリジンとする WebSocket 認証の試行は、常にデバウンスが有効な状態でスロットル制限されます（ブラウザベースのローカルホストへのブルートフォース攻撃に対する多層防御のため）。
+- `tailscale.mode`: `serve` (Tailnet 内のみ、ループバックバインド) または `funnel` (公開、認証必須)。
+- `controlUi.allowedOrigins`: ゲートウェイ WebSocket 接続を許可する明示的なブラウザオリジンのリスト。ループバック以外のオリジンからブラウザクライアントが接続する場合に必要です。
+- `controlUi.dangerouslyAllowHostHeaderOriginFallback`: Host ヘッダーによるオリジンポリシーに依存するデプロイ環境向けの、Host ヘッダーによる Origin フォールバックを有効にする危険なモードです。
+- `remote.transport`: `ssh` (デフォルト) または `direct` (ws/wss)。`direct` の場合、`remote.url` は `ws://` または `wss://` である必要があります。
+- `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`: クライアント側の非常用オーバーライド設定で、信頼されたプライベートネットワーク IP へのプレーンテキスト `ws://` 接続を許可します。デフォルトではプレーンテキストはループバックのみに制限されています。
+- `gateway.remote.token` / `.password` はリモートクライアント用の認証情報フィールドです。これら自体がゲートウェイの認証を構成するものではありません。
+- ローカルからのゲートウェイ呼び出しにおいて、`gateway.auth.*` が未設定の場合、`gateway.remote.*` がフォールバックとして使用されることがあります。
+- `trustedProxies`: TLS を終端するリバースプロキシの IP アドレス。自身が管理するプロキシのみをリストしてください。
+- `allowRealIpFallback`: `true` の場合、`X-Forwarded-For` が存在しない場合に `X-Real-IP` を受け入れます。デフォルトは `false` です（安全側に倒す動作）。
+- `gateway.tools.deny`: HTTP `POST /tools/invoke` でブロックする追加のツール名（デフォルトの拒否リストを拡張）。
+- `gateway.tools.allow`: デフォルトの HTTP 拒否リストからツール名を除外します。
 
 </Accordion>
 
-### OpenAI-compatible endpoints
+### OpenAI 互換エンドポイント
 
-- Chat Completions: disabled by default. Enable with `gateway.http.endpoints.chatCompletions.enabled: true`.
-- Responses API: `gateway.http.endpoints.responses.enabled`.
-- Responses URL-input hardening:
+- チャット完了 (Chat Completions): デフォルトでは無効です。`gateway.http.endpoints.chatCompletions.enabled: true` で有効にします。
+- 応答 API (Responses API): `gateway.http.endpoints.responses.enabled`。
+- 応答 URL 入力の強化:
   - `gateway.http.endpoints.responses.maxUrlParts`
   - `gateway.http.endpoints.responses.files.urlAllowlist`
   - `gateway.http.endpoints.responses.images.urlAllowlist`
-- Optional response hardening header:
-  - `gateway.http.securityHeaders.strictTransportSecurity` (set only for HTTPS origins you control; see [Trusted Proxy Auth](/gateway/trusted-proxy-auth#tls-termination-and-hsts))
+- オプションの応答強化ヘッダー:
+  - `gateway.http.securityHeaders.strictTransportSecurity` (自身が管理する HTTPS オリジンに対してのみ設定してください。[信頼されたプロキシ認証](/gateway/trusted-proxy-auth#tls-termination-and-hsts) を参照)
 
-### Multi-instance isolation
+### マルチインスタンスの分離
 
-Run multiple gateways on one host with unique ports and state dirs:
+1つのホスト上で、一意のポートと状態ディレクトリを使用して複数のゲートウェイを実行できます。
 
 ```bash
 OPENCLAW_CONFIG_PATH=~/.openclaw/a.json \
@@ -2497,13 +2468,13 @@ OPENCLAW_STATE_DIR=~/.openclaw-a \
 openclaw gateway --port 19001
 ```
 
-Convenience flags: `--dev` (uses `~/.openclaw-dev` + port `19001`), `--profile <name>` (uses `~/.openclaw-<name>`).
+便利なフラグ: `--dev` (`~/.openclaw-dev` + ポート `19001` を使用)、`--profile <name>` (`~/.openclaw-<name>` を使用)。
 
-See [Multiple Gateways](/gateway/multiple-gateways).
+詳細は [マルチゲートウェイ](/gateway/multiple-gateways) を参照してください。
 
 ---
 
-## Hooks
+## フック (Hooks)
 
 ```json5
 {
@@ -2536,33 +2507,33 @@ See [Multiple Gateways](/gateway/multiple-gateways).
 }
 ```
 
-Auth: `Authorization: Bearer <token>` or `x-openclaw-token: <token>`.
+認証: `Authorization: Bearer <token>` または `x-openclaw-token: <token>` ヘッダーを使用します。
 
-**Endpoints:**
+**エンドポイント:**
 
 - `POST /hooks/wake` → `{ text, mode?: "now"|"next-heartbeat" }`
 - `POST /hooks/agent` → `{ message, name?, agentId?, sessionKey?, wakeMode?, deliver?, channel?, to?, model?, thinking?, timeoutSeconds? }`
-  - `sessionKey` from request payload is accepted only when `hooks.allowRequestSessionKey=true` (default: `false`).
-- `POST /hooks/<name>` → resolved via `hooks.mappings`
+  - リクエストペイロードからの `sessionKey` は、`hooks.allowRequestSessionKey=true` (デフォルト: `false`) の場合にのみ受け入れられます。
+- `POST /hooks/<name>` → `hooks.mappings` を介して解決されます。
 
-<Accordion title="Mapping details">
+<Accordion title="マッピングの詳細">
 
-- `match.path` matches sub-path after `/hooks` (e.g. `/hooks/gmail` → `gmail`).
-- `match.source` matches a payload field for generic paths.
-- Templates like `{{messages[0].subject}}` read from the payload.
-- `transform` can point to a JS/TS module returning a hook action.
-  - `transform.module` must be a relative path and stays within `hooks.transformsDir` (absolute paths and traversal are rejected).
-- `agentId` routes to a specific agent; unknown IDs fall back to default.
-- `allowedAgentIds`: restricts explicit routing (`*` or omitted = allow all, `[]` = deny all).
-- `defaultSessionKey`: optional fixed session key for hook agent runs without explicit `sessionKey`.
-- `allowRequestSessionKey`: allow `/hooks/agent` callers to set `sessionKey` (default: `false`).
-- `allowedSessionKeyPrefixes`: optional prefix allowlist for explicit `sessionKey` values (request + mapping), e.g. `["hook:"]`.
-- `deliver: true` sends final reply to a channel; `channel` defaults to `last`.
-- `model` overrides LLM for this hook run (must be allowed if model catalog is set).
+- `match.path`: `/hooks` 以降のサブパスに一致します（例: `/hooks/gmail` → `gmail`）。
+- `match.source`: 汎用的なパスに対してペイロード内のフィールドで一致を判定します。
+- `{{messages[0].subject}}` のようなテンプレートはペイロードから値を読み取ります。
+- `transform`: フックアクションを返す JS/TS モジュールを指定できます。
+  - `transform.module` は相対パスである必要があり、`hooks.transformsDir` 内にある必要があります（絶対パスやディレクトリトラバーサルは拒否されます）。
+- `agentId`: 特定のエージェントにルーティングします。未知の ID はデフォルトにフォールバックします。
+- `allowedAgentIds`: 明示的なルーティングを制限します（`*` または省略で全許可、`[]` で全拒否）。
+- `defaultSessionKey`: 明示的な `sessionKey` がないフックエージェント実行用の、オプションの固定セッションキー。
+- `allowRequestSessionKey`: `/hooks/agent` の呼び出し元が `sessionKey` を設定することを許可します (デフォルト: `false`)。
+- `allowedSessionKeyPrefixes`: 明示的な `sessionKey` 値に対するオプションのプレフィックス許可リスト（例: `["hook:"]`）。
+- `deliver: true`: 最終的な返信をチャネルに送信します。`channel` はデフォルトで `last` になります。
+- `model`: このフック実行の LLM を上書きします（モデルカタログで許可されている必要があります）。
 
 </Accordion>
 
-### Gmail integration
+### Gmail 連携
 
 ```json5
 {
@@ -2585,39 +2556,39 @@ Auth: `Authorization: Bearer <token>` or `x-openclaw-token: <token>`.
 }
 ```
 
-- Gateway auto-starts `gog gmail watch serve` on boot when configured. Set `OPENCLAW_SKIP_GMAIL_WATCHER=1` to disable.
-- Don't run a separate `gog gmail watch serve` alongside the Gateway.
+- ゲートウェイは、構成されている場合、起動時に `gog gmail watch serve` を自動的に開始します。無効にするには `OPENCLAW_SKIP_GMAIL_WATCHER=1` を設定してください。
+- ゲートウェイと並行して個別の `gog gmail watch serve` を実行しないでください。
 
 ---
 
-## Canvas host
+## キャンバスホスト (Canvas host)
 
 ```json5
 {
   canvasHost: {
     root: "~/.openclaw/workspace/canvas",
     liveReload: true,
-    // enabled: false, // or OPENCLAW_SKIP_CANVAS_HOST=1
+    // enabled: false, // または OPENCLAW_SKIP_CANVAS_HOST=1
   },
 }
 ```
 
-- Serves agent-editable HTML/CSS/JS and A2UI over HTTP under the Gateway port:
+- エージェントが編集可能な HTML/CSS/JS および A2UI を、ゲートウェイのポート経由で HTTP 配信します。
   - `http://<gateway-host>:<gateway.port>/__openclaw__/canvas/`
   - `http://<gateway-host>:<gateway.port>/__openclaw__/a2ui/`
-- Local-only: keep `gateway.bind: "loopback"` (default).
-- Non-loopback binds: canvas routes require Gateway auth (token/password/trusted-proxy), same as other Gateway HTTP surfaces.
-- Node WebViews typically don't send auth headers; after a node is paired and connected, the Gateway advertises node-scoped capability URLs for canvas/A2UI access.
-- Capability URLs are bound to the active node WS session and expire quickly. IP-based fallback is not used.
-- Injects live-reload client into served HTML.
-- Auto-creates starter `index.html` when empty.
-- Also serves A2UI at `/__openclaw__/a2ui/`.
-- Changes require a gateway restart.
-- Disable live reload for large directories or `EMFILE` errors.
+- ローカルのみの利用: `gateway.bind: "loopback"` (デフォルト) のままにしてください。
+- ループバック以外のバインド: キャンバスのルートへのアクセスには、ゲートウェイの他の HTTP 面と同様に認証（トークン/パスワード/信頼されたプロキシ）が必要です。
+- ノード上の WebView は通常、認証ヘッダーを送信しません。ノードがペアリングされ接続されると、ゲートウェイはそのノード専用のキャンバス/A2UI アクセス用「機能 URL（Capability URL）」を通知します。
+- 機能 URL はアクティブなノードの WS セッションに紐付けられており、短時間で期限切れになります。IP ベースのフォールバックは使用されません。
+- 配信される HTML にライブリロード用クライアントを注入します。
+- ディレクトリが空の場合、スターター用の `index.html` を自動生成します。
+- `/__openclaw__/a2ui/` で A2UI も配信します。
+- 設定の変更にはゲートウェイの再起動が必要です。
+- 大規模なディレクトリや `EMFILE` エラーが発生する場合は、ライブリロードを無効にしてください。
 
 ---
 
-## Discovery
+## 検出 (Discovery)
 
 ### mDNS (Bonjour)
 
@@ -2631,11 +2602,11 @@ Auth: `Authorization: Bearer <token>` or `x-openclaw-token: <token>`.
 }
 ```
 
-- `minimal` (default): omit `cliPath` + `sshPort` from TXT records.
-- `full`: include `cliPath` + `sshPort`.
-- Hostname defaults to `openclaw`. Override with `OPENCLAW_MDNS_HOSTNAME`.
+- `minimal` (デフォルト): TXT レコードから `cliPath` と `sshPort` を除外します。
+- `full`: `cliPath` と `sshPort` を含めます。
+- ホスト名はデフォルトで `openclaw` になります。`OPENCLAW_MDNS_HOSTNAME` で上書き可能です。
 
-### Wide-area (DNS-SD)
+### 広域検出 (DNS-SD)
 
 ```json5
 {
@@ -2645,15 +2616,15 @@ Auth: `Authorization: Bearer <token>` or `x-openclaw-token: <token>`.
 }
 ```
 
-Writes a unicast DNS-SD zone under `~/.openclaw/dns/`. For cross-network discovery, pair with a DNS server (CoreDNS recommended) + Tailscale split DNS.
+`~/.openclaw/dns/` 配下にユニキャスト DNS-SD ゾーンファイルを書き出します。ネットワークを越えた検出を行うには、DNS サーバー（CoreDNS 推奨）と Tailscale の Split DNS を組み合わせてください。
 
-Setup: `openclaw dns setup --apply`.
+セットアップ: `openclaw dns setup --apply`。
 
 ---
 
-## Environment
+## 環境設定 (Environment)
 
-### `env` (inline env vars)
+### `env` (インライン環境変数)
 
 ```json5
 {
@@ -2670,14 +2641,14 @@ Setup: `openclaw dns setup --apply`.
 }
 ```
 
-- Inline env vars are only applied if the process env is missing the key.
-- `.env` files: CWD `.env` + `~/.openclaw/.env` (neither overrides existing vars).
-- `shellEnv`: imports missing expected keys from your login shell profile.
-- See [Environment](/help/environment) for full precedence.
+- インライン環境変数は、プロセスの環境変数にそのキーが存在しない場合にのみ適用されます。
+- `.env` ファイル: カレントディレクトリの `.env` と `~/.openclaw/.env` が読み込まれます（既存の変数は上書きしません）。
+- `shellEnv`: ログインシェルのプロファイルから、不足している期待されるキーをインポートします。
+- 詳細は [環境設定](/help/environment) を参照してください。
 
-### Env var substitution
+### 環境変数の置換
 
-Reference env vars in any config string with `${VAR_NAME}`:
+構成ファイル内の任意の文字列で `${VAR_NAME}` の形式で環境変数を参照できます。
 
 ```json5
 {
@@ -2687,45 +2658,45 @@ Reference env vars in any config string with `${VAR_NAME}`:
 }
 ```
 
-- Only uppercase names matched: `[A-Z_][A-Z0-9_]*`.
-- Missing/empty vars throw an error at config load.
-- Escape with `$${VAR}` for a literal `${VAR}`.
-- Works with `$include`.
+- 大文字の名前のみが一致します: `[A-Z_][A-Z0-9_]*`。
+- 変数が欠落しているか空の場合、構成のロード時にエラーが発生します。
+- リテラルとして `${VAR}` と記述したい場合は `$${VAR}` のようにエスケープしてください。
+- `$include` 内でも動作します。
 
 ---
 
-## Secrets
+## シークレット (Secrets)
 
-Secret refs are additive: plaintext values still work.
+シークレット参照（SecretRef）は加算的です。プレーンテキストの値も引き続き動作します。
 
 ### `SecretRef`
 
-Use one object shape:
+以下のオブジェクト形式を使用します。
 
 ```json5
 { source: "env" | "file" | "exec", provider: "default", id: "..." }
 ```
 
-Validation:
+バリデーション規則:
 
-- `provider` pattern: `^[a-z][a-z0-9_-]{0,63}$`
-- `source: "env"` id pattern: `^[A-Z][A-Z0-9_]{0,127}$`
-- `source: "file"` id: absolute JSON pointer (for example `"/providers/openai/apiKey"`)
-- `source: "exec"` id pattern: `^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
+- `provider` パターン: `^[a-z][a-z0-9_-]{0,63}$`
+- `source: "env"` の ID パターン: `^[A-Z][A-Z0-9_]{0,127}$`
+- `source: "file"` の ID: 絶対パス形式の JSON ポインター（例: `"/providers/openai/apiKey"`）
+- `source: "exec"` の ID パターン: `^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
 
-### Supported credential surface
+### サポートされている認証情報箇所
 
-- Canonical matrix: [SecretRef Credential Surface](/reference/secretref-credential-surface)
-- `secrets apply` targets supported `openclaw.json` credential paths.
-- `auth-profiles.json` refs are included in runtime resolution and audit coverage.
+- 対応表: [SecretRef 対応箇所一覧](/reference/secretref-credential-surface)
+- `secrets apply` コマンドは、`openclaw.json` 内のサポートされている認証情報パスを対象にします。
+- `auth-profiles.json` 内の参照も、実行時の解決および監査の対象に含まれます。
 
-### Secret providers config
+### シークレットプロバイダーの構成
 
 ```json5
 {
   secrets: {
     providers: {
-      default: { source: "env" }, // optional explicit env provider
+      default: { source: "env" }, // 明示的な環境変数プロバイダー（オプション）
       filemain: {
         source: "file",
         path: "~/.openclaw/secrets.json",
@@ -2747,19 +2718,19 @@ Validation:
 }
 ```
 
-Notes:
+備考:
 
-- `file` provider supports `mode: "json"` and `mode: "singleValue"` (`id` must be `"value"` in singleValue mode).
-- `exec` provider requires an absolute `command` path and uses protocol payloads on stdin/stdout.
-- By default, symlink command paths are rejected. Set `allowSymlinkCommand: true` to allow symlink paths while validating the resolved target path.
-- If `trustedDirs` is configured, the trusted-dir check applies to the resolved target path.
-- `exec` child environment is minimal by default; pass required variables explicitly with `passEnv`.
-- Secret refs are resolved at activation time into an in-memory snapshot, then request paths read the snapshot only.
-- Active-surface filtering applies during activation: unresolved refs on enabled surfaces fail startup/reload, while inactive surfaces are skipped with diagnostics.
+- `file` プロバイダーは `mode: "json"` および `mode: "singleValue"` をサポートします（singleValue モードでは `id` を `"value"` にする必要があります）。
+- `exec` プロバイダーは絶対パスによる `command` 指定が必要で、標準入出力を介したプロトコルを使用します。
+- デフォルトではシンボリックリンクのコマンドパスは拒否されます。`allowSymlinkCommand: true` を設定すると、解決後のターゲットパスを検証した上で許可されます。
+- `trustedDirs` が構成されている場合、解決後のターゲットパスに対してチェックが行われます。
+- `exec` で起動される子プロセスの環境変数はデフォルトで最小限です。必要な変数は `passEnv` で明示的に渡してください。
+- シークレットの参照はアクティベーション時にメモリ上のスナップショットへと解決され、以降のリクエストパスではそのスナップショットのみを読み取ります。
+- 有効な箇所（Surface）での解決失敗は起動/リロードのエラーとなりますが、無効な箇所にある参照は診断情報と共にスキップされます。
 
 ---
 
-## Auth storage
+## 認証情報の保存 (Auth storage)
 
 ```json5
 {
@@ -2775,16 +2746,16 @@ Notes:
 }
 ```
 
-- Per-agent profiles are stored at `<agentDir>/auth-profiles.json`.
-- `auth-profiles.json` supports value-level refs (`keyRef` for `api_key`, `tokenRef` for `token`).
-- Static runtime credentials come from in-memory resolved snapshots; legacy static `auth.json` entries are scrubbed when discovered.
-- Legacy OAuth imports from `~/.openclaw/credentials/oauth.json`.
-- See [OAuth](/concepts/oauth).
-- Secrets runtime behavior and `audit/configure/apply` tooling: [Secrets Management](/gateway/secrets).
+- エージェントごとのプロファイルは `<agentDir>/auth-profiles.json` に保存されます。
+- `auth-profiles.json` は値レベルでの参照（`api_key` 用の `keyRef`、`token` 用の `tokenRef`）をサポートしています。
+- 実行時の静的な認証情報はメモリ上の解決済みスナップショットから取得されます。従来の静的な `auth.json` エントリは検出時に削除されます。
+- 従来の OAuth インポートは `~/.openclaw/credentials/oauth.json` から行われます。
+- 詳細は [OAuth](/concepts/oauth) を参照してください。
+- シークレットの実行時の動作および `audit/configure/apply` ツールについては、[シークレット管理](/gateway/secrets) を参照してください。
 
 ---
 
-## Logging
+## ロギング (Logging)
 
 ```json5
 {
@@ -2799,9 +2770,9 @@ Notes:
 }
 ```
 
-- Default log file: `/tmp/openclaw/openclaw-YYYY-MM-DD.log`.
-- Set `logging.file` for a stable path.
-- `consoleLevel` bumps to `debug` when `--verbose`.
+- デフォルトのログファイル: `/tmp/openclaw/openclaw-YYYY-MM-DD.log`。
+- 固定のパスを使用したい場合は `logging.file` を設定してください。
+- `--verbose` 指定時は `consoleLevel` が `debug` に引き上げられます。
 
 ---
 
@@ -2817,17 +2788,17 @@ Notes:
 }
 ```
 
-- `cli.banner.taglineMode` controls banner tagline style:
-  - `"random"` (default): rotating funny/seasonal taglines.
-  - `"default"`: fixed neutral tagline (`All your chats, one OpenClaw.`).
-  - `"off"`: no tagline text (banner title/version still shown).
-- To hide the entire banner (not just taglines), set env `OPENCLAW_HIDE_BANNER=1`.
+- `cli.banner.taglineMode` はバナーのタグライン（標語）スタイルを制御します。
+  - `"random"` (デフォルト): 面白いものや季節ごとのタグラインを入れ替えて表示します。
+  - `"default"`: 固定の中立的なタグライン（`All your chats, one OpenClaw.`）を表示します。
+  - `"off"`: タグラインを表示しません（バナーのタイトルとバージョンは引き続き表示されます）。
+- タグラインだけでなくバナー全体を非表示にするには、環境変数 `OPENCLAW_HIDE_BANNER=1` を設定してください。
 
 ---
 
-## Wizard
+## ウィザード (Wizard)
 
-Metadata written by CLI wizards (`onboard`, `configure`, `doctor`):
+CLI ウィザード（`onboard`, `configure`, `doctor`）によって書き込まれるメタデータです。
 
 ```json5
 {
@@ -2843,7 +2814,7 @@ Metadata written by CLI wizards (`onboard`, `configure`, `doctor`):
 
 ---
 
-## Identity
+## アイデンティティ (Identity)
 
 ```json5
 {
@@ -2853,7 +2824,7 @@ Metadata written by CLI wizards (`onboard`, `configure`, `doctor`):
         id: "main",
         identity: {
           name: "Samantha",
-          theme: "helpful sloth",
+          theme: "親切なナマケモノ",
           emoji: "🦥",
           avatar: "avatars/samantha.png",
         },
@@ -2863,19 +2834,19 @@ Metadata written by CLI wizards (`onboard`, `configure`, `doctor`):
 }
 ```
 
-Written by the macOS onboarding assistant. Derives defaults:
+macOS のオンボーディングアシスタントによって書き込まれます。以下のデフォルト値が導出されます。
 
-- `messages.ackReaction` from `identity.emoji` (falls back to 👀)
-- `mentionPatterns` from `identity.name`/`identity.emoji`
-- `avatar` accepts: workspace-relative path, `http(s)` URL, or `data:` URI
+- `identity.emoji` から `messages.ackReaction` (未設定なら 👀)
+- `identity.name` / `identity.emoji` から `mentionPatterns`
+- `avatar` にはワークスペース相対パス、`http(s)` URL、または `data:` URI を指定可能
 
 ---
 
-## Bridge (legacy, removed)
+## ブリッジ (Bridge - レガシー、削除済み)
 
-Current builds no longer include the TCP bridge. Nodes connect over the Gateway WebSocket. `bridge.*` keys are no longer part of the config schema (validation fails until removed; `openclaw doctor --fix` can strip unknown keys).
+現在のビルドには TCP ブリッジは含まれていません。ノードはゲートウェイの WebSocket 経由で接続します。`bridge.*` キーは構成スキーマから削除されています（削除しないと検証エラーになります。`openclaw doctor --fix` で不明なキーを削除できます）。
 
-<Accordion title="Legacy bridge config (historical reference)">
+<Accordion title="旧ブリッジ構成 (歴史的リファレンス)">
 
 ```json
 {
@@ -2902,59 +2873,59 @@ Current builds no longer include the TCP bridge. Nodes connect over the Gateway 
   cron: {
     enabled: true,
     maxConcurrentRuns: 2,
-    webhook: "https://example.invalid/legacy", // deprecated fallback for stored notify:true jobs
-    webhookToken: "replace-with-dedicated-token", // optional bearer token for outbound webhook auth
-    sessionRetention: "24h", // duration string or false
+    webhook: "https://example.invalid/legacy", // notify:true が設定された古いジョブ用の非推奨フォールバック
+    webhookToken: "固有のトークンに置き換え", // アウトバウンド Webhook 認証用のオプションの Bearer トークン
+    sessionRetention: "24h", // 期間を表す文字列または false
     runLog: {
-      maxBytes: "2mb", // default 2_000_000 bytes
-      keepLines: 2000, // default 2000
+      maxBytes: "2mb", // デフォルト 2,000,000 バイト
+      keepLines: 2000, // デフォルト 2000 行
     },
   },
 }
 ```
 
-- `sessionRetention`: how long to keep completed isolated cron run sessions before pruning from `sessions.json`. Also controls cleanup of archived deleted cron transcripts. Default: `24h`; set `false` to disable.
-- `runLog.maxBytes`: max size per run log file (`cron/runs/<jobId>.jsonl`) before pruning. Default: `2_000_000` bytes.
-- `runLog.keepLines`: newest lines retained when run-log pruning is triggered. Default: `2000`.
-- `webhookToken`: bearer token used for cron webhook POST delivery (`delivery.mode = "webhook"`), if omitted no auth header is sent.
-- `webhook`: deprecated legacy fallback webhook URL (http/https) used only for stored jobs that still have `notify: true`.
+- `sessionRetention`: 完了した分離 Cron 実行セッションを `sessions.json` から削除するまでの期間。アーカイブされた削除済み Cron ログのクリーンアップも制御します。デフォルトは `24h` です。無効にするには `false` を設定します。
+- `runLog.maxBytes`: 各実行ログファイル (`cron/runs/<jobId>.jsonl`) がクリーンアップされる前の最大サイズ。
+- `runLog.keepLines`: 実行ログのクリーンアップ時に保持される最新の行数。
+- `webhookToken`: Cron Webhook の送信 (`delivery.mode = "webhook"`) に使用される Bearer トークン。省略された場合、認証ヘッダーは送信されません。
+- `webhook`: `notify: true` が設定されたままの古いジョブのために残されている、非推奨のフォールバック用 Webhook URL (http/https)。
 
-See [Cron Jobs](/automation/cron-jobs).
-
----
-
-## Media model template variables
-
-Template placeholders expanded in `tools.media.models[].args`:
-
-| Variable           | Description                                       |
-| ------------------ | ------------------------------------------------- |
-| `{{Body}}`         | Full inbound message body                         |
-| `{{RawBody}}`      | Raw body (no history/sender wrappers)             |
-| `{{BodyStripped}}` | Body with group mentions stripped                 |
-| `{{From}}`         | Sender identifier                                 |
-| `{{To}}`           | Destination identifier                            |
-| `{{MessageSid}}`   | Channel message id                                |
-| `{{SessionId}}`    | Current session UUID                              |
-| `{{IsNewSession}}` | `"true"` when new session created                 |
-| `{{MediaUrl}}`     | Inbound media pseudo-URL                          |
-| `{{MediaPath}}`    | Local media path                                  |
-| `{{MediaType}}`    | Media type (image/audio/document/…)               |
-| `{{Transcript}}`   | Audio transcript                                  |
-| `{{Prompt}}`       | Resolved media prompt for CLI entries             |
-| `{{MaxChars}}`     | Resolved max output chars for CLI entries         |
-| `{{ChatType}}`     | `"direct"` or `"group"`                           |
-| `{{GroupSubject}}` | Group subject (best effort)                       |
-| `{{GroupMembers}}` | Group members preview (best effort)               |
-| `{{SenderName}}`   | Sender display name (best effort)                 |
-| `{{SenderE164}}`   | Sender phone number (best effort)                 |
-| `{{Provider}}`     | Provider hint (whatsapp, telegram, discord, etc.) |
+詳細は [Cron ジョブ](/automation/cron-jobs) を参照してください。
 
 ---
 
-## Config includes (`$include`)
+## メディアモデルのテンプレート変数
 
-Split config into multiple files:
+`tools.media.models[].args` 内で展開されるテンプレートプレースホルダーです。
+
+| 変数 | 説明 |
+| :--- | :--- |
+| `{{Body}}` | 受信メッセージの全文 |
+| `{{RawBody}}` | 生の本文（履歴や送信者情報を含まない） |
+| `{{BodyStripped}}` | 本文からグループメンションを除去したもの |
+| `{{From}}` | 送信者識別子 |
+| `{{To}}` | 宛先識別子 |
+| `{{MessageSid}}` | チャネルにおけるメッセージ ID |
+| `{{SessionId}}` | 現在のセッション UUID |
+| `{{IsNewSession}}` | 新しいセッションが作成された場合に `"true"` |
+| `{{MediaUrl}}` | 受信メディアの疑似 URL |
+| `{{MediaPath}}` | ローカルのメディアパス |
+| `{{MediaType}}` | メディアの種類 (image/audio/document/...) |
+| `{{Transcript}}` | 音声の書き起こし内容 |
+| `{{Prompt}}` | CLI エントリ用に解決されたメディアプロンプト |
+| `{{MaxChars}}` | CLI エントリ用に解決された最大出力文字数 |
+| `{{ChatType}}` | `"direct"` または `"group"` |
+| `{{GroupSubject}}` | グループの件名 (ベストエフォート) |
+| `{{GroupMembers}}` | グループメンバーのプレビュー (ベストエフォート) |
+| `{{SenderName}}` | 送信者の表示名 (ベストエフォート) |
+| `{{SenderE164}}` | 送信者の電話番号 (ベストエフォート) |
+| `{{Provider}}` | プロバイダーのヒント (whatsapp, telegram, discord など) |
+
+---
+
+## 構成のインクルード (`$include`)
+
+構成を複数のファイルに分割できます。
 
 ```json5
 // ~/.openclaw/openclaw.json
@@ -2967,15 +2938,25 @@ Split config into multiple files:
 }
 ```
 
-**Merge behavior:**
+**マージ動作:**
 
-- Single file: replaces the containing object.
-- Array of files: deep-merged in order (later overrides earlier).
-- Sibling keys: merged after includes (override included values).
-- Nested includes: up to 10 levels deep.
-- Paths: resolved relative to the including file, but must stay inside the top-level config directory (`dirname` of `openclaw.json`). Absolute/`../` forms are allowed only when they still resolve inside that boundary.
-- Errors: clear messages for missing files, parse errors, and circular includes.
+- 単一ファイル: 含まれているオブジェクトで置き換えます。
+- ファイルの配列: 順番にディープマージされます（後のファイルが前のファイルを上書きします）。
+- 兄弟キー: インクルード後にマージされます（インクルードされた値を上書きします）。
+- ネストされたインクルード: 最大 10 レベルまで。
+- パス: インクルード元のファイルを基準に解決されますが、最上位の構成ディレクトリ（`openclaw.json` のディレクトリ）内にある必要があります。絶対パスや `../` は、その境界内で解決される場合にのみ許可されます。
+- エラー: ファイルの欠落、解析エラー、循環参照に関する明確なメッセージを表示します。
 
 ---
 
-_Related: [Configuration](/gateway/configuration) · [Configuration Examples](/gateway/configuration-examples) · [Doctor](/gateway/doctor)_
+_関連: [構成](/gateway/configuration) · [構成例](/gateway/configuration-examples) · [ドクター](/gateway/doctor)_
+
+
+
+
+
+
+
+
+
+

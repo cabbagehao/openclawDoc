@@ -1,417 +1,410 @@
 ---
-summary: "Clawnet refactor: unify network protocol, roles, auth, approvals, identity"
+summary: "Clawnet リファクタリング: ネットワーク プロトコル、ロール、認証、承認、ID を統合する"
 read_when:
-  - Planning a unified network protocol for nodes + operator clients
-  - Reworking approvals, pairing, TLS, and presence across devices
-title: "Clawnet Refactor"
+  - ノード + オペレータークライアント用の統合ネットワークプロトコルの計画
+  - 承認、ペアリング、TLS、およびデバイス間のプレゼンスを再処理する
+title: "クローネットのリファクタリング"
+x-i18n:
+  source_hash: "719b219c3b326479658fe6101c80d5273fc56eb3baf50be8535e0d1d2bb7987f"
 ---
 
-# Clawnet refactor (protocol + auth unification)
+# Clawnet リファクタリング (プロトコル + 認証の統合)
 
-## Hi
+## こんにちは
 
-Hi Peter — great direction; this unlocks simpler UX + stronger security.
+こんにちはピーター — 素晴らしい方向性です。これにより、よりシンプルな UX と強力なセキュリティが実現します。
 
-## Purpose
+## 目的
 
-Single, rigorous document for:
+以下に関する単一の厳密な文書:
 
-- Current state: protocols, flows, trust boundaries.
-- Pain points: approvals, multi‑hop routing, UI duplication.
-- Proposed new state: one protocol, scoped roles, unified auth/pairing, TLS pinning.
-- Identity model: stable IDs + cute slugs.
-- Migration plan, risks, open questions.
+- 現在の状態: プロトコル、フロー、信頼境界。
+- 問題点: 承認、マルチホップルーティング、UI の重複。
+- 提案された新しい状態: 1 つのプロトコル、範囲指定された役割、統合認証/ペアリング、TLS ピニング。
+- アイデンティティ モデル: 安定した ID + かわいいナメクジ。
+- 移行計画、リスク、未解決の質問。
 
-## Goals (from discussion)
+## 目標 (ディスカッションから)
 
-- One protocol for all clients (mac app, CLI, iOS, Android, headless node).
-- Every network participant authenticated + paired.
-- Role clarity: nodes vs operators.
-- Central approvals routed to where the user is.
-- TLS encryption + optional pinning for all remote traffic.
-- Minimal code duplication.
-- Single machine should appear once (no UI/node duplicate entry).
+- すべてのクライアントに 1 つのプロトコル (Mac アプリ、CLI、iOS、Android、ヘッドレス ノード)。
+- すべてのネットワーク参加者が認証され、ペアリングされます。
+- 役割の明確化: ノードとオペレーター。
+- 中央の承認はユーザーのいる場所にルーティングされます。
+- すべてのリモート トラフィックに対する TLS 暗号化 + オプションのピン留め。
+- コードの重複を最小限に抑えます。
+- 単一マシンは 1 回表示される必要があります (UI/ノードの重複エントリはありません)。
 
-## Non‑goals (explicit)
+## 非目標 (明示的)
 
-- Remove capability separation (still need least‑privilege).
-- Expose full gateway control plane without scope checks.
-- Make auth depend on human labels (slugs remain non‑security).
+- 機能の分離を削除します (それでも最小限の権限が必要です)。
+- スコープチェックなしで完全なゲートウェイコントロールプレーンを公開します。
+- 認証を人間のラベルに依存させます (スラッグは非セキュリティのままです)。
 
 ---
 
-# Current state (as‑is)
+# 現在の状態 (現状のまま)
 
-## Two protocols
+## 2 つのプロトコル
 
-### 1) Gateway WebSocket (control plane)
+### 1) ゲートウェイ WebSocket (コントロール プレーン)- 完全な API サーフェス: 構成、チャネル、モデル、セッション、エージェントの実行、ログ、ノードなど
 
-- Full API surface: config, channels, models, sessions, agent runs, logs, nodes, etc.
-- Default bind: loopback. Remote access via SSH/Tailscale.
-- Auth: token/password via `connect`.
-- No TLS pinning (relies on loopback/tunnel).
-- Code:
+- デフォルトのバインド: ループバック。 SSH/Tailscale経由のリモートアクセス。
+- 認証: `connect` 経由のトークン/パスワード。
+- TLS ピンニングなし (ループバック/トンネルに依存)。
+- コード:
   - `src/gateway/server/ws-connection/message-handler.ts`
   - `src/gateway/client.ts`
   - `docs/gateway/protocol.md`
 
-### 2) Bridge (node transport)
+### 2) ブリッジ (ノードトランスポート)
 
-- Narrow allowlist surface, node identity + pairing.
-- JSONL over TCP; optional TLS + cert fingerprint pinning.
-- TLS advertises fingerprint in discovery TXT.
-- Code:
+- 狭いホワイトリスト サーフェス、ノード ID + ペアリング。
+- TCP 上の JSONL。オプションの TLS + 証明書フィンガープリントの固定。
+- TLS は、ディスカバリー TXT でフィンガープリントをアドバタイズします。
+- コード:
   - `src/infra/bridge/server/connection.ts`
   - `src/gateway/server-bridge.ts`
   - `src/node-host/bridge-client.ts`
   - `docs/gateway/bridge-protocol.md`
 
-## Control plane clients today
+## 現在のコントロール プレーン クライアント
 
-- CLI → Gateway WS via `callGateway` (`src/gateway/call.ts`).
-- macOS app UI → Gateway WS (`GatewayConnection`).
-- Web Control UI → Gateway WS.
-- ACP → Gateway WS.
-- Browser control uses its own HTTP control server.
+- `callGateway` (`src/gateway/call.ts`) 経由の CLI → ゲートウェイ WS。
+- macOS アプリ UI → ゲートウェイ WS (`GatewayConnection`)。
+- Web コントロール UI → ゲートウェイ WS。
+- ACP → ゲートウェイ WS。
+- ブラウザ制御は独自の HTTP 制御サーバーを使用します。
 
-## Nodes today
+## 今日のノード
 
-- macOS app in node mode connects to Gateway bridge (`MacNodeBridgeSession`).
-- iOS/Android apps connect to Gateway bridge.
-- Pairing + per‑node token stored on gateway.
+- ノード モードの macOS アプリはゲートウェイ ブリッジ (`MacNodeBridgeSession`) に接続します。
+- iOS/Android アプリはゲートウェイ ブリッジに接続します。
+- ペアリング + ゲートウェイに保存されるノードごとのトークン。
 
-## Current approval flow (exec)
+## 現在の承認フロー (実行)
 
-- Agent uses `system.run` via Gateway.
-- Gateway invokes node over bridge.
-- Node runtime decides approval.
-- UI prompt shown by mac app (when node == mac app).
-- Node returns `invoke-res` to Gateway.
-- Multi‑hop, UI tied to node host.
+- エージェントはゲートウェイ経由で `system.run` を使用します。
+- ゲートウェイはブリッジ経由でノードを呼び出します。
+- ノードのランタイムが承認を決定します。
+- Mac アプリによって表示される UI プロンプト (node == Mac アプリの場合)。
+- ノードは `invoke-res` をゲートウェイに返します。
+- マルチホップ、ノードホストに関連付けられた UI。
 
-## Presence + identity today
+## 今日のプレゼンス + アイデンティティ- WS クライアントからのゲートウェイ プレゼンス エントリ
 
-- Gateway presence entries from WS clients.
-- Node presence entries from bridge.
-- mac app can show two entries for same machine (UI + node).
-- Node identity stored in pairing store; UI identity separate.
-
----
-
-# Problems / pain points
-
-- Two protocol stacks to maintain (WS + Bridge).
-- Approvals on remote nodes: prompt appears on node host, not where user is.
-- TLS pinning only exists for bridge; WS depends on SSH/Tailscale.
-- Identity duplication: same machine shows as multiple instances.
-- Ambiguous roles: UI + node + CLI capabilities not clearly separated.
+- ブリッジからのノード存在エントリ。
+- Mac アプリでは、同じマシン (UI + ノード) に対して 2 つのエントリを表示できます。
+- ノード ID はペアリング ストアに保存されます。 UI ID は別。
 
 ---
 
-# Proposed new state (Clawnet)
+# 問題/問題点
 
-## One protocol, two roles
-
-Single WS protocol with role + scope.
-
-- **Role: node** (capability host)
-- **Role: operator** (control plane)
-- Optional **scope** for operator:
-  - `operator.read` (status + viewing)
-  - `operator.write` (agent run, sends)
-  - `operator.admin` (config, channels, models)
-
-### Role behaviors
-
-**Node**
-
-- Can register capabilities (`caps`, `commands`, permissions).
-- Can receive `invoke` commands (`system.run`, `camera.*`, `canvas.*`, `screen.record`, etc).
-- Can send events: `voice.transcript`, `agent.request`, `chat.subscribe`.
-- Cannot call config/models/channels/sessions/agent control plane APIs.
-
-**Operator**
-
-- Full control plane API, gated by scope.
-- Receives all approvals.
-- Does not directly execute OS actions; routes to nodes.
-
-### Key rule
-
-Role is per‑connection, not per device. A device may open both roles, separately.
+- 維持する 2 つのプロトコル スタック (WS + ブリッジ)。
+- リモート ノードでの承認: プロンプトはユーザーがいる場所ではなく、ノード ホストに表示されます。
+- TLS ピニングはブリッジに対してのみ存在します。 WS は SSH/Tailscale に依存します。
+- ID の重複: 同じマシンが複数のインスタンスとして表示されます。
+- あいまいな役割: UI + ノード + CLI 機能が明確に分離されていません。
 
 ---
 
-# Unified authentication + pairing
+# 提案された新しい状態 (Clawnet)
 
-## Client identity
+## 1 つのプロトコルで 2 つの役割
 
-Every client provides:
+ロール + スコープを持つ単一の WS プロトコル。
 
-- `deviceId` (stable, derived from device key).
-- `displayName` (human name).
-- `role` + `scope` + `caps` + `commands`.
+- **役割: ノード** (機能ホスト)
+- **役割: オペレーター** (コントロール プレーン)
+- オペレーターのオプション **スコープ**:
+  - `operator.read` (ステータス + 表示)
+  - `operator.write` (エージェントの実行、送信)
+  - `operator.admin` (構成、チャネル、モデル)
 
-## Pairing flow (unified)
+### 役割の動作
 
-- Client connects unauthenticated.
-- Gateway creates a **pairing request** for that `deviceId`.
-- Operator receives prompt; approves/denies.
-- Gateway issues credentials bound to:
-  - device public key
-  - role(s)
-  - scope(s)
-  - capabilities/commands
-- Client persists token, reconnects authenticated.
+**ノード**
 
-## Device‑bound auth (avoid bearer token replay)
+- 機能 (`caps`、`commands`、権限) を登録できます。
+- `invoke` コマンド (`system.run`、`camera.*`、`canvas.*`、`screen.record` など) を受信できます。
+- イベントを送信できます: `voice.transcript`、`agent.request`、`chat.subscribe`。
+- config/models/channels/sessions/agent コントロール プレーン API を呼び出すことができません。
 
-Preferred: device keypairs.
+**オペレーター**- スコープごとにゲートされた完全なコントロール プレーン API。
 
-- Device generates keypair once.
-- `deviceId = fingerprint(publicKey)`.
-- Gateway sends nonce; device signs; gateway verifies.
-- Tokens are issued to a public key (proof‑of‑possession), not a string.
+- すべての承認を受け取ります。
+- OS アクションを直接実行しません。ノードへのルート。
 
-Alternatives:
+### 重要なルール
 
-- mTLS (client certs): strongest, more ops complexity.
-- Short‑lived bearer tokens only as a temporary phase (rotate + revoke early).
-
-## Silent approval (SSH heuristic)
-
-Define it precisely to avoid a weak link. Prefer one:
-
-- **Local‑only**: auto‑pair when client connects via loopback/Unix socket.
-- **Challenge via SSH**: gateway issues nonce; client proves SSH by fetching it.
-- **Physical presence window**: after a local approval on gateway host UI, allow auto‑pair for a short window (e.g. 10 minutes).
-
-Always log + record auto‑approvals.
+役割はデバイスごとではなく接続ごとです。デバイスは両方の役割を別々に開くことができます。
 
 ---
 
-# TLS everywhere (dev + prod)
+# 統合認証+ペアリング
 
-## Reuse existing bridge TLS
+## クライアント ID
 
-Use current TLS runtime + fingerprint pinning:
+すべてのクライアントが以下を提供します。
+
+- `deviceId` (安定、デバイス キーから派生)。
+- `displayName` (人間の名前)。
+- `role` + `scope` + `caps` + `commands`。
+
+## ペアリングの流れ（統一）
+
+- クライアントは認証されずに接続します。
+- ゲートウェイは、`deviceId` の **ペアリング リクエスト**を作成します。
+- オペレーターはプロンプトを受け取ります。承認/拒否します。
+- ゲートウェイは、以下にバインドされた資格情報を発行します。
+  - デバイスの公開キー
+  - 役割
+  - スコープ
+  - 機能/コマンド
+- クライアントはトークンを保持し、認証されて再接続します。
+
+## デバイスバインド認証 (ベアラー トークンのリプレイを回避)
+
+推奨: デバイスのキーペア。
+
+- デバイスはキーペアを 1 回生成します。
+- `deviceId = fingerprint(publicKey)`。
+- ゲートウェイは nonce を送信します。デバイスの兆候。ゲートウェイが検証します。
+- トークンは文字列ではなく、公開キー (所有証明) に対して発行されます。
+
+代替案:
+
+- mTLS (クライアント証明書): 最も強力で、運用がより複雑になります。
+- 有効期間の短いベアラー トークンは、一時的なフェーズとしてのみ使用されます (ローテーションと早期取り消し)。
+
+## サイレント承認 (SSH ヒューリスティック)
+
+弱いリンクを避けるために正確に定義してください。 1 つを優先します:- **ローカルのみ**: クライアントがループバック/Unix ソケット経由で接続する場合は自動ペアリングします。
+
+- **SSH 経由のチャレンジ**: ゲートウェイは nonce を発行します。クライアントは SSH を取得することで SSH を証明します。
+- **物理的プレゼンス ウィンドウ**: ゲートウェイ ホスト UI でのローカル承認後、短いウィンドウ (例: 10 分) で自動ペアリングを許可します。
+
+自動承認を常にログに記録します。
+
+---
+
+# どこでも TLS (開発 + 製品)
+
+## 既存のブリッジ TLS を再利用する
+
+現在の TLS ランタイム + フィンガープリント ピンニングを使用します。
 
 - `src/infra/bridge/server/tls.ts`
-- fingerprint verification logic in `src/node-host/bridge-client.ts`
+- `src/node-host/bridge-client.ts` の指紋検証ロジック
 
-## Apply to WS
+## WS に申し込む
 
-- WS server supports TLS with same cert/key + fingerprint.
-- WS clients can pin fingerprint (optional).
-- Discovery advertises TLS + fingerprint for all endpoints.
-  - Discovery is locator hints only; never a trust anchor.
+- WS サーバーは、同じ証明書/キー + フィンガープリントを使用した TLS をサポートします。
+- WS クライアントは指紋を固定できます (オプション)。
+- Discovery は、すべてのエンドポイントの TLS + フィンガープリントをアドバタイズします。
+  - ディスカバリーはロケーターヒントのみです。決してトラストアンカーではありません。
 
-## Why
+## なぜ
 
-- Reduce reliance on SSH/Tailscale for confidentiality.
-- Make remote mobile connections safe by default.
-
----
-
-# Approvals redesign (centralized)
-
-## Current
-
-Approval happens on node host (mac app node runtime). Prompt appears where node runs.
-
-## Proposed
-
-Approval is **gateway‑hosted**, UI delivered to operator clients.
-
-### New flow
-
-1. Gateway receives `system.run` intent (agent).
-2. Gateway creates approval record: `approval.requested`.
-3. Operator UI(s) show prompt.
-4. Approval decision sent to gateway: `approval.resolve`.
-5. Gateway invokes node command if approved.
-6. Node executes, returns `invoke-res`.
-
-### Approval semantics (hardening)
-
-- Broadcast to all operators; only the active UI shows a modal (others get a toast).
-- First resolution wins; gateway rejects subsequent resolves as already settled.
-- Default timeout: deny after N seconds (e.g. 60s), log reason.
-- Resolution requires `operator.approvals` scope.
-
-## Benefits
-
-- Prompt appears where user is (mac/phone).
-- Consistent approvals for remote nodes.
-- Node runtime stays headless; no UI dependency.
+- 機密性を確保するための SSH/Tailscale への依存を軽減します。
+- デフォルトでリモートモバイル接続を安全にします。
 
 ---
 
-# Role clarity examples
+# 承認の再設計 (一元化)
 
-## iPhone app
+## 現在
 
-- **Node role** for: mic, camera, voice chat, location, push‑to‑talk.
-- Optional **operator.read** for status and chat view.
-- Optional **operator.write/admin** only when explicitly enabled.
+承認はノード ホスト (Mac アプリ ノード ランタイム) で行われます。ノードが実行される場所にプロンプ​​トが表示されます。
 
-## macOS app
+## 提案されました
 
-- Operator role by default (control UI).
-- Node role when “Mac node” enabled (system.run, screen, camera).
-- Same deviceId for both connections → merged UI entry.
+承認は **ゲートウェイでホストされ**、UI はオペレーター クライアントに配信されます。
+
+### 新しいフロー
+
+1. ゲートウェイは `system.run` インテント (エージェント) を受信します。
+2. ゲートウェイは承認レコード `approval.requested` を作成します。
+3. オペレーター UI にプロンプ​​トが表示されます。
+4. 承認決定はゲートウェイに送信されます: `approval.resolve`。
+5. 承認された場合、ゲートウェイはノード コマンドを呼び出します。
+6. ノードが実行され、`invoke-res` が返されます。### 承認セマンティクス (強化)
+
+- すべてのオペレーターにブロードキャストします。アクティブな UI のみにモーダルが表示されます (その他の UI にはトーストが表示されます)。
+- 最初の解決が優先されます。ゲートウェイは、それ以降の解決をすでに解決されているとして拒否します。
+- デフォルトのタイムアウト: N 秒 (例: 60 秒) 後に拒否し、理由をログに記録します。
+- 解決には `operator.approvals` スコープが必要です。
+
+## メリット
+
+- ユーザーがいる場所 (Mac/電話) にプロンプトが表示されます。
+- リモート ノードに対する一貫した承認。
+- ノードのランタイムはヘッドレスのままです。 UIの依存性はありません。
+
+---
+
+# 役割の明確化の例
+
+## iPhone アプリ
+
+- **ノードの役割**: マイク、カメラ、音声チャット、位置情報、プッシュツートーク。
+- ステータスとチャット ビュー用のオプションの **operator.read**。
+- 明示的に有効にした場合のみ、オプションの **operator.write/admin**。
+
+## macOS アプリ
+
+- デフォルトでオペレーターの役割 (コントロール UI)。
+- 「Mac ノード」が有効な場合のノードの役割 (system.run、screen、camera)。
+- 両方の接続で同じ deviceId → 統合された UI エントリ。
 
 ## CLI
 
-- Operator role always.
-- Scope derived by subcommand:
-  - `status`, `logs` → read
-  - `agent`, `message` → write
-  - `config`, `channels` → admin
-  - approvals + pairing → `operator.approvals` / `operator.pairing`
+- オペレーターの役割は常にあります。
+- サブコマンドによって導出されるスコープ:
+  - `status`、`logs` → 読む
+  - `agent`、`message` → 書き込み
+  - `config`、`channels` → 管理者
+  - 承認 + ペアリング → `operator.approvals` / `operator.pairing`
 
 ---
 
-# Identity + slugs
+# アイデンティティ + ナメクジ
 
-## Stable ID
+## 安定した ID
 
-Required for auth; never changes.
-Preferred:
+認証には必須です。決して変わりません。
+好ましい:
 
-- Keypair fingerprint (public key hash).
+- キーペアのフィンガープリント (公開キーのハッシュ)。
 
-## Cute slug (lobster‑themed)
+## かわいいナメクジ (ロブスターをテーマにした)
 
-Human label only.
+人間ラベルのみ。- 例: `scarlet-claw`、`saltwave`、`mantis-pinch`。
 
-- Example: `scarlet-claw`, `saltwave`, `mantis-pinch`.
-- Stored in gateway registry, editable.
-- Collision handling: `-2`, `-3`.
+- ゲートウェイ レジストリに保存され、編集可能。
+- 衝突処理: `-2`、`-3`。
 
-## UI grouping
+## UI のグループ化
 
-Same `deviceId` across roles → single “Instance” row:
+ロール間で同じ `deviceId` → 単一の「インスタンス」行:
 
-- Badge: `operator`, `node`.
-- Shows capabilities + last seen.
-
----
-
-# Migration strategy
-
-## Phase 0: Document + align
-
-- Publish this doc.
-- Inventory all protocol calls + approval flows.
-
-## Phase 1: Add roles/scopes to WS
-
-- Extend `connect` params with `role`, `scope`, `deviceId`.
-- Add allowlist gating for node role.
-
-## Phase 2: Bridge compatibility
-
-- Keep bridge running.
-- Add WS node support in parallel.
-- Gate features behind config flag.
-
-## Phase 3: Central approvals
-
-- Add approval request + resolve events in WS.
-- Update mac app UI to prompt + respond.
-- Node runtime stops prompting UI.
-
-## Phase 4: TLS unification
-
-- Add TLS config for WS using bridge TLS runtime.
-- Add pinning to clients.
-
-## Phase 5: Deprecate bridge
-
-- Migrate iOS/Android/mac node to WS.
-- Keep bridge as fallback; remove once stable.
-
-## Phase 6: Device‑bound auth
-
-- Require key‑based identity for all non‑local connections.
-- Add revocation + rotation UI.
+- バッジ: `operator`、`node`。
+- 機能と最後に確認された内容を表示します。
 
 ---
 
-# Security notes
+# 移行戦略
 
-- Role/allowlist enforced at gateway boundary.
-- No client gets “full” API without operator scope.
-- Pairing required for _all_ connections.
-- TLS + pinning reduces MITM risk for mobile.
-- SSH silent approval is a convenience; still recorded + revocable.
-- Discovery is never a trust anchor.
-- Capability claims are verified against server allowlists by platform/type.
+## フェーズ 0: 文書化 + 整列
 
-# Streaming + large payloads (node media)
+- このドキュメントを公開します。
+- すべてのプロトコル呼び出しと承認フローを一覧表示します。
 
-WS control plane is fine for small messages, but nodes also do:
+## フェーズ 1: WS にロール/スコープを追加する
 
-- camera clips
-- screen recordings
-- audio streams
+- `connect` パラメータを `role`、`scope`、`deviceId` で拡張します。
+- ノード ロールのホワイトリスト ゲーティングを追加します。
 
-Options:
+## フェーズ 2: ブリッジの互換性
 
-1. WS binary frames + chunking + backpressure rules.
-2. Separate streaming endpoint (still TLS + auth).
-3. Keep bridge longer for media‑heavy commands, migrate last.
+- 橋を動かし続けます。
+- WS ノードのサポートを並行して追加します。
+- 設定フラグの背後にあるゲート機能。
 
-Pick one before implementation to avoid drift.
+## フェーズ 3: 中央の承認
 
-# Capability + command policy
+- WS で承認リクエストを追加し、イベントを解決します。
+- Mac アプリの UI を更新してプロンプトと応答を表示します。
+- ノードのランタイムが UI のプロンプトを停止します。
 
-- Node‑reported caps/commands are treated as **claims**.
-- Gateway enforces per‑platform allowlists.
-- Any new command requires operator approval or explicit allowlist change.
-- Audit changes with timestamps.
+## フェーズ 4: TLS の統合
 
-# Audit + rate limiting
+- ブリッジ TLS ランタイムを使用して WS の TLS 構成を追加します。
+- クライアントにピン留めを追加します。
 
-- Log: pairing requests, approvals/denials, token issuance/rotation/revocation.
-- Rate‑limit pairing spam and approval prompts.
+## フェーズ 5: ブリッジの廃止
 
-# Protocol hygiene
+- iOS/Android/mac ノードを WS に移行します。
+- ブリッジをフォールバックとして保持します。安定したら取り外します。
 
-- Explicit protocol version + error codes.
-- Reconnect rules + heartbeat policy.
-- Presence TTL and last‑seen semantics.
+## フェーズ 6: デバイスバインド認証
+
+- すべての非ローカル接続にキーベースの ID が必要です。
+- 失効 + ローテーション UI を追加します。
 
 ---
 
-# Open questions
+# セキュリティに関する注意事項- ゲートウェイ境界で強制される役割/許可リスト
 
-1. Single device running both roles: token model
-   - Recommend separate tokens per role (node vs operator).
-   - Same deviceId; different scopes; clearer revocation.
+- オペレータースコープのない「完全な」API をクライアントが取得することはありません。
+- すべての接続にはペアリングが必要です。
+- TLS + ピニングにより、モバイルの MITM リスクが軽減されます。
+- SSH サイレント承認は便利です。記録済み + 取り消し可能。
+- ディスカバリーは決してトラストアンカーではありません。
+- 機能の主張は、プラットフォーム/タイプごとにサーバーのホワイトリストに対して検証されます。
 
-2. Operator scope granularity
-   - read/write/admin + approvals + pairing (minimum viable).
-   - Consider per‑feature scopes later.
+# ストリーミング + 大きなペイロード (ノード メディア)
 
-3. Token rotation + revocation UX
-   - Auto‑rotate on role change.
-   - UI to revoke by deviceId + role.
+WS コントロール プレーンは小さなメッセージには適していますが、ノードでも次のことが可能です。
 
-4. Discovery
-   - Extend current Bonjour TXT to include WS TLS fingerprint + role hints.
-   - Treat as locator hints only.
+- カメラクリップ
+- 画面録画
+- オーディオストリーム
 
-5. Cross‑network approval
-   - Broadcast to all operator clients; active UI shows modal.
-   - First response wins; gateway enforces atomicity.
+オプション:
+
+1. WS バイナリ フレーム + チャンキング + バックプレッシャー ルール。
+2. 個別のストリーミング エンドポイント (TLS + 認証のまま)。
+3. メディアを大量に使用するコマンドの場合はブリッジを長く維持し、最後に移行します。
+
+ドリフトを避けるために、実装前にいずれかを選択してください。
+
+# 能力 + コマンドポリシー
+
+- ノードで報告されたキャップ/コマンドは **クレーム** として扱われます。
+- ゲートウェイはプラットフォームごとの許可リストを強制します。
+- 新しいコマンドには、オペレーターの承認または明示的な許可リストの変更が必要です。
+- タイムスタンプを使用して変更を監査します。
+
+# 監査 + レート制限
+
+- ログ: ペアリング要求、承認/拒否、トークンの発行/ローテーション/取り消し。
+- スパムと承認プロンプトのペアリングを制限します。
+
+# プロトコルの衛生管理
+
+- 明示的なプロトコル バージョン + エラー コード。
+- 再接続ルール + ハートビート ポリシー。
+- プレゼンス TTL と最後に確認されたセマンティクス。
 
 ---
 
-# Summary (TL;DR)
+# 未解決の質問1. 両方の役割を実行する単一デバイス: トークン モデル
 
-- Today: WS control plane + Bridge node transport.
-- Pain: approvals + duplication + two stacks.
-- Proposal: one WS protocol with explicit roles + scopes, unified pairing + TLS pinning, gateway‑hosted approvals, stable device IDs + cute slugs.
-- Outcome: simpler UX, stronger security, less duplication, better mobile routing.
+- 役割ごとに個別のトークンを推奨します (ノードとオペレーター)。
+- 同じデバイス ID。異なる範囲。より明確な取り消し。
+
+2. 演算子のスコープの粒度
+   - 読み取り/書き込み/管理 + 承認 + ペアリング (実行可能な最小限)。
+   - 機能ごとのスコープについては後で検討します。
+
+3. トークンのローテーション + 失効の UX
+   - 役割変更時に自動回転します。
+   - deviceId + ロールによって取り消す UI。
+
+4. 発見
+   - 現在の Bonjour TXT を拡張して、WS TLS フィンガープリントとロール ヒントを含めます。
+   - ロケーターヒントとしてのみ扱います。
+
+5. クロスネットワークの承認
+   - すべてのオペレータクライアントにブロードキャストします。アクティブな UI にはモーダルが表示されます。
+   - 最初の応答が優先されます。ゲートウェイはアトミック性を強制します。
+
+---
+
+# 概要 (TL;DR)
+
+- 現在: WS コントロール プレーン + ブリッジ ノード トランスポート。
+- 苦痛: 承認 + 重複 + 2 つのスタック。
+- 提案: 明示的なロール + スコープ、統合ペアリング + TLS ピニング、ゲートウェイでホストされる承認、安定したデバイス ID + かわいいスラッグを備えた 1 つの WS プロトコル。
+- 結果: UX がシンプルになり、セキュリティが強化され、重複が減り、モバイル ルーティングが向上します。

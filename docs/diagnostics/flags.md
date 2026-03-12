@@ -1,24 +1,28 @@
 ---
-summary: "Diagnostics flags for targeted debug logs"
+summary: "特定のデバッグログを有効にするための診断フラグ（Diagnostics Flags）"
 read_when:
-  - You need targeted debug logs without raising global logging levels
-  - You need to capture subsystem-specific logs for support
-title: "Diagnostics Flags"
+  - 全体のログレベルを上げずに、特定のサブシステムのデバッグログを確認したい場合
+  - サポートのためにサブシステム固有のログを取得する必要がある場合
+title: "診断フラグ"
+x-i18n:
+  source_hash: "daf0eca0e6bd1cbc2c400b2e94e1698709a96b9cdba1a8cf00bd580a61829124"
 ---
 
-# Diagnostics Flags
+# 診断フラグ (Diagnostics Flags)
 
-Diagnostics flags let you enable targeted debug logs without turning on verbose logging everywhere. Flags are opt-in and have no effect unless a subsystem checks them.
+診断フラグを使用すると、システム全体で詳細な（verbose）ログを有効にすることなく、特定の箇所に絞ってデバッグログを出力させることができます。フラグはオプトイン方式であり、サブシステム側でチェックが行われない限り、パフォーマンスに影響を与えることはありません。
 
-## How it works
+## 仕組み
 
-- Flags are strings (case-insensitive).
-- You can enable flags in config or via an env override.
-- Wildcards are supported:
-  - `telegram.*` matches `telegram.http`
-  - `*` enables all flags
+- フラグは文字列として扱われ、大文字と小文字を区別しません。
+- 構成ファイルまたは環境変数の上書きによって有効化できます。
+- ワイルドカード（`*`）をサポートしています:
+  - `telegram.*` は `telegram.http` や `telegram.payload` に一致します。
+  - `*` はすべての診断フラグを有効にします。
 
-## Enable via config
+## 構成ファイルによる有効化
+
+`openclaw.json` で設定します:
 
 ```json
 {
@@ -28,7 +32,7 @@ Diagnostics flags let you enable targeted debug logs without turning on verbose 
 }
 ```
 
-Multiple flags:
+複数のフラグを指定する場合:
 
 ```json
 {
@@ -38,54 +42,54 @@ Multiple flags:
 }
 ```
 
-Restart the gateway after changing flags.
+フラグを変更した後は、ゲートウェイを再起動してください。
 
-## Env override (one-off)
+## 環境変数の上書き (一時的な利用)
 
 ```bash
 OPENCLAW_DIAGNOSTICS=telegram.http,telegram.payload
 ```
 
-Disable all flags:
+すべてのフラグを無効にする場合:
 
 ```bash
 OPENCLAW_DIAGNOSTICS=0
 ```
 
-## Where logs go
+## ログの出力先
 
-Flags emit logs into the standard diagnostics log file. By default:
+診断フラグによるログは、標準の診断ログファイルに出力されます。デフォルトのパスは以下の通りです:
 
 ```
 /tmp/openclaw/openclaw-YYYY-MM-DD.log
 ```
 
-If you set `logging.file`, use that path instead. Logs are JSONL (one JSON object per line). Redaction still applies based on `logging.redactSensitive`.
+`logging.file` で出力先を変更している場合は、そのパスを確認してください。ログは 1 行 1 オブジェクトの JSONL 形式です。機密情報の伏せ字（redaction）は、`logging.redactSensitive` の設定に基づいて適用されます。
 
-## Extract logs
+## ログの抽出と確認
 
-Pick the latest log file:
+最新のログファイルを見つける:
 
 ```bash
 ls -t /tmp/openclaw/openclaw-*.log | head -n 1
 ```
 
-Filter for Telegram HTTP diagnostics:
+Telegram の HTTP エラーに関連するログをフィルタリングする:
 
 ```bash
 rg "telegram http error" /tmp/openclaw/openclaw-*.log
 ```
 
-Or tail while reproducing:
+リアルタイムで監視（tail）しながら問題を再現させる:
 
 ```bash
 tail -f /tmp/openclaw/openclaw-$(date +%F).log | rg "telegram http error"
 ```
 
-For remote gateways, you can also use `openclaw logs --follow` (see [/cli/logs](/cli/logs)).
+リモートゲートウェイの場合は、`openclaw logs --follow` コマンドも利用可能です（詳細は [/cli/logs](/cli/logs) を参照）。
 
-## Notes
+## 補足事項
 
-- If `logging.level` is set higher than `warn`, these logs may be suppressed. Default `info` is fine.
-- Flags are safe to leave enabled; they only affect log volume for the specific subsystem.
-- Use [/logging](/logging) to change log destinations, levels, and redaction.
+- `logging.level` が `warn` より高いレベル（`error` など）に設定されている場合、これらの診断ログが抑制される可能性があります。デフォルトの `info` であれば問題ありません。
+- フラグを有効にしたままにしても基本的には安全です。影響を受けるのは、指定した特定のサブシステムのログ出力ボリュームのみです。
+- ログの出力先、レベル、および伏せ字設定を変更するには、[/logging](/logging) を参照してください。

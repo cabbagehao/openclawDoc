@@ -1,22 +1,24 @@
 ---
-summary: "JSON-only LLM tasks for workflows (optional plugin tool)"
+summary: "ワークフロー用の JSON のみの LLM タスク (オプションのプラグイン ツール)"
 read_when:
-  - You want a JSON-only LLM step inside workflows
-  - You need schema-validated LLM output for automation
-title: "LLM Task"
+  - ワークフロー内に JSON のみの LLM ステップが必要な場合
+  - 自動化にはスキーマ検証された LLM 出力が必要です
+title: "LLM タスク"
+x-i18n:
+  source_hash: "7a951601416cfa898168b32fb6103b2b3c788b2ce1e2a0a80896beb14a6454ce"
 ---
 
-# LLM Task
+# LLM タスク
 
-`llm-task` is an **optional plugin tool** that runs a JSON-only LLM task and
-returns structured output (optionally validated against JSON Schema).
+`llm-task` は、JSON のみの LLM タスクを実行する **オプションのプラグイン ツール** です。
+構造化された出力を返します (オプションで JSON スキーマに対して検証されます)。
 
-This is ideal for workflow engines like Lobster: you can add a single LLM step
-without writing custom OpenClaw code for each workflow.
+これは、Lobster のようなワークフロー エンジンに最適です。単一の LLM ステップを追加できます。
+ワークフローごとにカスタム OpenClaw コードを記述する必要はありません。
 
-## Enable the plugin
+## プラグインを有効にする
 
-1. Enable the plugin:
+1. プラグインを有効にします。
 
 ```json
 {
@@ -28,7 +30,7 @@ without writing custom OpenClaw code for each workflow.
 }
 ```
 
-2. Allowlist the tool (it is registered with `optional: true`):
+2. ツールをホワイトリストに登録します (`optional: true` で登録されています)。
 
 ```json
 {
@@ -43,7 +45,7 @@ without writing custom OpenClaw code for each workflow.
 }
 ```
 
-## Config (optional)
+## 構成 (オプション)
 
 ```json
 {
@@ -65,27 +67,27 @@ without writing custom OpenClaw code for each workflow.
 }
 ```
 
-`allowedModels` is an allowlist of `provider/model` strings. If set, any request
-outside the list is rejected.
+`allowedModels` は、`provider/model` 文字列の許可リストです。設定されている場合、任意のリクエスト
+リスト外のものは拒否されます。
 
-## Tool parameters
+## ツールパラメータ
 
-- `prompt` (string, required)
-- `input` (any, optional)
-- `schema` (object, optional JSON Schema)
-- `provider` (string, optional)
-- `model` (string, optional)
-- `authProfileId` (string, optional)
-- `temperature` (number, optional)
-- `maxTokens` (number, optional)
-- `timeoutMs` (number, optional)
+- `prompt` (文字列、必須)
+- `input` (任意、オプション)
+- `schema` (オブジェクト、オプションの JSON スキーマ)
+- `provider` (文字列、オプション)
+- `model` (文字列、オプション)
+- `authProfileId` (文字列、オプション)
+- `temperature` (数字、オプション)
+- `maxTokens` (数字、オプション)
+- `timeoutMs` (数字、オプション)
 
-## Output
+## 出力
 
-Returns `details.json` containing the parsed JSON (and validates against
-`schema` when provided).
+解析された JSON を含む `details.json` を返します (および検証
+`schema` (提供されている場合)。
 
-## Example: Lobster workflow step
+## 例: ロブスターのワークフロー ステップ
 
 ```lobster
 openclaw.invoke --tool llm-task --action json --args-json '{
@@ -106,10 +108,10 @@ openclaw.invoke --tool llm-task --action json --args-json '{
 }'
 ```
 
-## Safety notes
+## 安全上の注意事項- このツールは **JSON のみ**であり、JSON のみを出力するようにモデルに指示します (
 
-- The tool is **JSON-only** and instructs the model to output only JSON (no
-  code fences, no commentary).
-- No tools are exposed to the model for this run.
-- Treat output as untrusted unless you validate with `schema`.
-- Put approvals before any side-effecting step (send, post, exec).
+コードフェンス、コメントなし)。
+
+- この実行ではモデルに公開されるツールはありません。
+- `schema` で検証しない限り、出力を信頼できないものとして扱います。
+- 副作用のあるステップ (送信、投稿、実行) の前に承認を置きます。

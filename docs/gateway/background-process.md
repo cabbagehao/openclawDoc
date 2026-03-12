@@ -1,80 +1,80 @@
 ---
-summary: "Background exec execution and process management"
+summary: "バックグラウンドでの exec 実行とプロセス管理"
 read_when:
-  - Adding or modifying background exec behavior
-  - Debugging long-running exec tasks
-title: "Background Exec and Process Tool"
+  - バックグラウンドでの `exec` 挙動を追加・変更する場合
+  - 長時間実行される `exec` タスクをデバッグする場合
+title: "バックグラウンド実行およびプロセスツール"
 ---
 
-# Background Exec + Process Tool
+# バックグラウンド実行 + プロセスツール
 
-OpenClaw runs shell commands through the `exec` tool and keeps long‑running tasks in memory. The `process` tool manages those background sessions.
+OpenClaw は `exec` ツールを介してシェルコマンドを実行し、長時間実行されるタスクをメモリ内に保持します。それらのバックグラウンドセッションの管理には `process` ツールを使用します。
 
-## exec tool
+## `exec` ツール
 
-Key parameters:
+主なパラメータ:
 
-- `command` (required)
-- `yieldMs` (default 10000): auto‑background after this delay
-- `background` (bool): background immediately
-- `timeout` (seconds, default 1800): kill the process after this timeout
-- `elevated` (bool): run on host if elevated mode is enabled/allowed
-- Need a real TTY? Set `pty: true`.
+- `command` (必須)
+- `yieldMs` (デフォルト 10000): この時間が経過すると自動的にバックグラウンドへ移行します。
+- `background` (boolean): 即座にバックグラウンドで実行します。
+- `timeout` (秒、デフォルト 1800): 指定した時間が経過するとプロセスを強制終了します。
+- `elevated` (boolean): 権限昇格モードが有効かつ許可されている場合に、ホスト上で実行します。
+- 本物の TTY が必要ですか？ `pty: true` を設定してください。
 - `workdir`, `env`
 
-Behavior:
+挙動:
 
-- Foreground runs return output directly.
-- When backgrounded (explicit or timeout), the tool returns `status: "running"` + `sessionId` and a short tail.
-- Output is kept in memory until the session is polled or cleared.
-- If the `process` tool is disallowed, `exec` runs synchronously and ignores `yieldMs`/`background`.
-- Spawned exec commands receive `OPENCLAW_SHELL=exec` for context-aware shell/profile rules.
+- フォアグラウンド（同期）実行時は、出力を直接返します。
+- バックグラウンド（明示的な指定、またはタイムアウトによる移行）の場合、ツールは `status: "running"`, `sessionId` および出力の短い末尾部分を返します。
+- 出力内容は、セッションがポーリング（poll）されるか削除されるまでメモリ内に保持されます。
+- `process` ツールの使用が許可されていない場合、`exec` は常に同期的に実行され、`yieldMs` や `background` 指定は無視されます。
+- 生成された `exec` コマンドは `OPENCLAW_SHELL=exec` 環境変数を受け取ります。これは、コンテキストに応じたシェルやプロファイルの設定に使用できます。
 
-## Child process bridging
+## 子プロセスのブリッジング
 
-When spawning long-running child processes outside the exec/process tools (for example, CLI respawns or gateway helpers), attach the child-process bridge helper so termination signals are forwarded and listeners are detached on exit/error. This avoids orphaned processes on systemd and keeps shutdown behavior consistent across platforms.
+`exec`/`process` ツールの外部で長時間実行される子プロセス（CLI の再起動やゲートウェイのヘルパーなど）を生成する場合は、子プロセスブリッジ（child-process bridge）ヘルパーをアタッチしてください。これにより、終了信号が適切に転送され、プロセス終了時やエラー時にリスナーが確実に解除されます。これは、systemd 環境などでの孤立プロセスの発生を防ぎ、プラットフォームを跨いで一貫したシャットダウン挙動を維持するために重要です。
 
-Environment overrides:
+環境変数による上書き設定:
 
-- `PI_BASH_YIELD_MS`: default yield (ms)
-- `PI_BASH_MAX_OUTPUT_CHARS`: in‑memory output cap (chars)
-- `OPENCLAW_BASH_PENDING_MAX_OUTPUT_CHARS`: pending stdout/stderr cap per stream (chars)
-- `PI_BASH_JOB_TTL_MS`: TTL for finished sessions (ms, bounded to 1m–3h)
+- `PI_BASH_YIELD_MS`: デフォルトの yield 時間（ミリ秒）。
+- `PI_BASH_MAX_OUTPUT_CHARS`: メモリ内に保持する出力の上限文字数。
+- `OPENCLAW_BASH_PENDING_MAX_OUTPUT_CHARS`: ストリームごとの未処理（pending）な標準出力/標準エラー出力の上限文字数。
+- `PI_BASH_JOB_TTL_MS`: 終了したセッションの保持期間（1分〜3時間の範囲。ミリ秒指定）。
 
-Config (preferred):
+構成設定 (こちらを推奨):
 
-- `tools.exec.backgroundMs` (default 10000)
-- `tools.exec.timeoutSec` (default 1800)
-- `tools.exec.cleanupMs` (default 1800000)
-- `tools.exec.notifyOnExit` (default true): enqueue a system event + request heartbeat when a backgrounded exec exits.
-- `tools.exec.notifyOnExitEmptySuccess` (default false): when true, also enqueue completion events for successful backgrounded runs that produced no output.
+- `tools.exec.backgroundMs` (デフォルト 10000)
+- `tools.exec.timeoutSec` (デフォルト 1800)
+- `tools.exec.cleanupMs` (デフォルト 1800000)
+- `tools.exec.notifyOnExit` (デフォルト true): バックグラウンド実行が終了した際、システムイベントを投入し、ハートビートを要求します。
+- `tools.exec.notifyOnExitEmptySuccess` (デフォルト false): true の場合、出力を生成せずに成功終了したバックグラウンド実行に対しても、完了イベントを投入します。
 
-## process tool
+## `process` ツール
 
-Actions:
+アクション一覧:
 
-- `list`: running + finished sessions
-- `poll`: drain new output for a session (also reports exit status)
-- `log`: read the aggregated output (supports `offset` + `limit`)
-- `write`: send stdin (`data`, optional `eof`)
-- `kill`: terminate a background session
-- `clear`: remove a finished session from memory
-- `remove`: kill if running, otherwise clear if finished
+- `list`: 実行中および終了したセッションの一覧を表示。
+- `poll`: セッションの新しい出力を取得（終了ステータスも併せて報告）。
+- `log`: 蓄積された出力を読み取り（`offset` と `limit` による範囲指定が可能）。
+- `write`: 標準入力（stdin）を送信 (`data`, オプションで `eof`)。
+- `kill`: バックグラウンドセッションを強制終了。
+- `clear`: 終了したセッションをメモリから削除。
+- `remove`: 実行中の場合は強制終了し、終了済みの場合はメモリから削除。
 
-Notes:
+補足事項:
 
-- Only backgrounded sessions are listed/persisted in memory.
-- Sessions are lost on process restart (no disk persistence).
-- Session logs are only saved to chat history if you run `process poll/log` and the tool result is recorded.
-- `process` is scoped per agent; it only sees sessions started by that agent.
-- `process list` includes a derived `name` (command verb + target) for quick scans.
-- `process log` uses line-based `offset`/`limit`.
-- When both `offset` and `limit` are omitted, it returns the last 200 lines and includes a paging hint.
-- When `offset` is provided and `limit` is omitted, it returns from `offset` to the end (not capped to 200).
+- バックグラウンド化されたセッションのみが一覧表示され、メモリ内に保持されます。
+- プロセス（ゲートウェイ）の再起動時にセッションは失われます（ディスクへの永続化は行われません）。
+- セッションのログが会話履歴に保存されるのは、`process poll/log` を実行し、その結果が記録された場合のみです。
+- `process` ツールはエージェントごとにスコープが分かれています。自身が開始したセッションのみを操作できます。
+- `process list` の出力には、中身を素早く把握するための `name`（コマンド動詞 + ターゲット）が含まれます。
+- `process log` は行ベースの `offset`/`limit` を使用します。
+- `offset` と `limit` の両方を省略した場合、直近の 200 行を返し、ページングのヒントを付加します。
+- `offset` を指定し `limit` を省略した場合は、指定位置から最後までを返します（200 行の制限は適用されません）。
 
-## Examples
+## 実行例
 
-Run a long task and poll later:
+長時間タスクを実行し、後で結果を確認する:
 
 ```json
 { "tool": "exec", "command": "sleep 5 && echo done", "yieldMs": 1000 }
@@ -84,13 +84,13 @@ Run a long task and poll later:
 { "tool": "process", "action": "poll", "sessionId": "<id>" }
 ```
 
-Start immediately in background:
+最初からバックグラウンドで開始する:
 
 ```json
 { "tool": "exec", "command": "npm run build", "background": true }
 ```
 
-Send stdin:
+標準入力を送る:
 
 ```json
 { "tool": "process", "action": "write", "sessionId": "<id>", "data": "y\n" }

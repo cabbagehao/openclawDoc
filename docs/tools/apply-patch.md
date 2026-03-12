@@ -1,17 +1,19 @@
 ---
-summary: "Apply multi-file patches with the apply_patch tool"
+summary: "apply_patch ツールを使用して複数ファイルのパッチを適用する"
 read_when:
-  - You need structured file edits across multiple files
-  - You want to document or debug patch-based edits
-title: "apply_patch Tool"
+  - 複数のファイルにわたって構造化されたファイル編集が必要である
+  - パッチベースの編集を文書化またはデバッグしたい場合
+title: "apply_patch ツール"
+x-i18n:
+  source_hash: "a1b251e8327228ff327eda8989626421edbe75cd1483acfc6a2f2fd31ed6cfc2"
 ---
 
-# apply_patch tool
+# apply_patch ツール
 
-Apply file changes using a structured patch format. This is ideal for multi-file
-or multi-hunk edits where a single `edit` call would be brittle.
+構造化されたパッチ形式を使用してファイルの変更を適用します。これはマルチファイルに最適です
+または、単一の `edit` 呼び出しが脆弱になるマルチハンク編集。
 
-The tool accepts a single `input` string that wraps one or more file operations:
+このツールは、1 つ以上のファイル操作をラップする単一の `input` 文字列を受け入れます。
 
 ```
 *** Begin Patch
@@ -26,22 +28,22 @@ The tool accepts a single `input` string that wraps one or more file operations:
 *** End Patch
 ```
 
-## Parameters
+## パラメータ
 
-- `input` (required): Full patch contents including `*** Begin Patch` and `*** End Patch`.
+- `input` (必須): `*** Begin Patch` および `*** End Patch` を含む完全なパッチ コンテンツ。
 
-## Notes
+## 注意事項
 
-- Patch paths support relative paths (from the workspace directory) and absolute paths.
-- `tools.exec.applyPatch.workspaceOnly` defaults to `true` (workspace-contained). Set it to `false` only if you intentionally want `apply_patch` to write/delete outside the workspace directory.
-- Use `*** Move to:` within an `*** Update File:` hunk to rename files.
-- `*** End of File` marks an EOF-only insert when needed.
-- Experimental and disabled by default. Enable with `tools.exec.applyPatch.enabled`.
-- OpenAI-only (including OpenAI Codex). Optionally gate by model via
-  `tools.exec.applyPatch.allowModels`.
-- Config is only under `tools.exec`.
+- パッチ パスは、(ワークスペース ディレクトリからの) 相対パスと絶対パスをサポートします。
+- `tools.exec.applyPatch.workspaceOnly` のデフォルトは `true` (ワークスペースを含む) です。意図的に `apply_patch` をワークスペース ディレクトリの外に書き込み/削除する場合にのみ、これを `false` に設定します。
+- ファイルの名前を変更するには、`*** Update File:` ハンク内で `*** Move to:` を使用します。
+- `*** End of File` は、必要に応じて EOF のみの挿入をマークします。
+- 実験的であり、デフォルトでは無効になっています。 `tools.exec.applyPatch.enabled` で有効にします。
+- OpenAI のみ (OpenAI Codex を含む)。オプションでモデルごとにゲートします。
+  `tools.exec.applyPatch.allowModels`。
+- 構成は `tools.exec` の下にのみあります。
 
-## Example
+## 例
 
 ```json
 {

@@ -1,42 +1,43 @@
 ---
-summary: "How inbound audio/voice notes are downloaded, transcribed, and injected into replies"
+summary: "受信した音声 / ボイスメモがどのようにダウンロード、文字起こしされ、返信に反映されるか"
 read_when:
-  - Changing audio transcription or media handling
+  - 音声文字起こしやメディア処理を変更するとき
 title: "Audio and Voice Notes"
+x-i18n:
+  source_hash: "c694fd66dde1fad196da5addd6533d7b7874f3cfa5f266f4ee0253996fc7e600"
 ---
 
 # Audio / Voice Notes — 2026-01-17
 
-## What works
+## 現在できること
 
-- **Media understanding (audio)**: If audio understanding is enabled (or auto‑detected), OpenClaw:
-  1. Locates the first audio attachment (local path or URL) and downloads it if needed.
-  2. Enforces `maxBytes` before sending to each model entry.
-  3. Runs the first eligible model entry in order (provider or CLI).
-  4. If it fails or skips (size/timeout), it tries the next entry.
-  5. On success, it replaces `Body` with an `[Audio]` block and sets `{{Transcript}}`.
-- **Command parsing**: When transcription succeeds, `CommandBody`/`RawBody` are set to the transcript so slash commands still work.
-- **Verbose logging**: In `--verbose`, we log when transcription runs and when it replaces the body.
+- **メディア理解（音声）**: 音声理解が有効、または自動検出された場合、OpenClaw は次の順で処理します。
+  1. 最初の音声添付ファイル（ローカルパスまたは URL）を見つけ、必要であればダウンロードする
+  2. 各モデルエントリへ送る前に `maxBytes` 制限を適用する
+  3. 順番に、条件を満たす最初のモデルエントリ（provider または CLI）を実行する
+  4. 失敗またはスキップ（サイズ超過 / timeout）した場合は次のエントリを試す
+  5. 成功した場合は `Body` を `[Audio]` ブロックに置き換え、`{{Transcript}}` を設定する
+- **コマンド解析**: 文字起こしに成功すると、`CommandBody` / `RawBody` に transcript が設定されるため、slash command も引き続き機能します
+- **詳細ログ**: `--verbose` では、文字起こしを実行したタイミングと本文を置き換えたタイミングがログに出力されます
 
-## Auto-detection (default)
+## 自動検出（デフォルト）
 
-If you **don’t configure models** and `tools.media.audio.enabled` is **not** set to `false`,
-OpenClaw auto-detects in this order and stops at the first working option:
+**モデルを明示設定しておらず**、かつ `tools.media.audio.enabled` が **`false` でない** 場合、OpenClaw は次の順序で自動検出を行い、最初に動作した選択肢を採用します。
 
-1. **Local CLIs** (if installed)
-   - `sherpa-onnx-offline` (requires `SHERPA_ONNX_MODEL_DIR` with encoder/decoder/joiner/tokens)
-   - `whisper-cli` (from `whisper-cpp`; uses `WHISPER_CPP_MODEL` or the bundled tiny model)
-   - `whisper` (Python CLI; downloads models automatically)
-2. **Gemini CLI** (`gemini`) using `read_many_files`
-3. **Provider keys** (OpenAI → Groq → Deepgram → Google)
+1. **ローカル CLI**（インストール済みの場合）
+   - `sherpa-onnx-offline`（encoder / decoder / joiner / tokens を含む `SHERPA_ONNX_MODEL_DIR` が必要）
+   - `whisper-cli`（`whisper-cpp` 由来。`WHISPER_CPP_MODEL` または同梱 tiny model を使用）
+   - `whisper`（Python CLI。モデルは自動ダウンロード）
+2. **Gemini CLI**（`gemini`）を `read_many_files` 付きで使う
+3. **provider key**（OpenAI → Groq → Deepgram → Google）
 
-To disable auto-detection, set `tools.media.audio.enabled: false`.
-To customize, set `tools.media.audio.models`.
-Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI is on `PATH` (we expand `~`), or set an explicit CLI model with a full command path.
+自動検出を無効にするには `tools.media.audio.enabled: false` を設定します。挙動をカスタマイズするには `tools.media.audio.models` を設定してください。
 
-## Config examples
+注: バイナリ検出は macOS / Linux / Windows をまたいだ best-effort 実装です。CLI が `PATH` 上にあること（`~` は展開されます）を確認するか、完全なコマンドパスを持つ明示的な CLI model を設定してください。
 
-### Provider + CLI fallback (OpenAI + Whisper CLI)
+## 設定例
+
+### provider + CLI フォールバック（OpenAI + Whisper CLI）
 
 ```json5
 {
@@ -60,7 +61,7 @@ Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI
 }
 ```
 
-### Provider-only with scope gating
+### provider のみ + scope 制御
 
 ```json5
 {
@@ -79,7 +80,7 @@ Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI
 }
 ```
 
-### Provider-only (Deepgram)
+### provider のみ（Deepgram）
 
 ```json5
 {
@@ -94,7 +95,7 @@ Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI
 }
 ```
 
-### Provider-only (Mistral Voxtral)
+### provider のみ（Mistral Voxtral）
 
 ```json5
 {
@@ -109,7 +110,7 @@ Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI
 }
 ```
 
-### Echo transcript to chat (opt-in)
+### transcript をチャットへそのまま返す（opt-in）
 
 ```json5
 {
@@ -126,62 +127,62 @@ Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI
 }
 ```
 
-## Notes & limits
+## 注意点と制限
 
-- Provider auth follows the standard model auth order (auth profiles, env vars, `models.providers.*.apiKey`).
-- Deepgram picks up `DEEPGRAM_API_KEY` when `provider: "deepgram"` is used.
-- Deepgram setup details: [Deepgram (audio transcription)](/providers/deepgram).
-- Mistral setup details: [Mistral](/providers/mistral).
-- Audio providers can override `baseUrl`, `headers`, and `providerOptions` via `tools.media.audio`.
-- Default size cap is 20MB (`tools.media.audio.maxBytes`). Oversize audio is skipped for that model and the next entry is tried.
-- Tiny/empty audio files below 1024 bytes are skipped before provider/CLI transcription.
-- Default `maxChars` for audio is **unset** (full transcript). Set `tools.media.audio.maxChars` or per-entry `maxChars` to trim output.
-- OpenAI auto default is `gpt-4o-mini-transcribe`; set `model: "gpt-4o-transcribe"` for higher accuracy.
-- Use `tools.media.audio.attachments` to process multiple voice notes (`mode: "all"` + `maxAttachments`).
-- Transcript is available to templates as `{{Transcript}}`.
-- `tools.media.audio.echoTranscript` is off by default; enable it to send transcript confirmation back to the originating chat before agent processing.
-- `tools.media.audio.echoFormat` customizes the echo text (placeholder: `{transcript}`).
-- CLI stdout is capped (5MB); keep CLI output concise.
+- provider 認証は、標準の model 認証順序（auth profile、環境変数、`models.providers.*.apiKey`）に従います
+- `provider: "deepgram"` を使う場合、Deepgram は `DEEPGRAM_API_KEY` を参照します
+- Deepgram の設定詳細: [Deepgram (audio transcription)](/providers/deepgram)
+- Mistral の設定詳細: [Mistral](/providers/mistral)
+- 音声 provider では、`tools.media.audio` から `baseUrl`、`headers`、`providerOptions` を上書きできます
+- デフォルトのサイズ上限は 20MB（`tools.media.audio.maxBytes`）です。サイズ超過の音声はそのモデルではスキップされ、次のエントリが試されます
+- 1024 バイト未満の極端に小さい、または空の音声ファイルは provider / CLI に送る前にスキップされます
+- 音声のデフォルト `maxChars` は **未設定** です（全文 transcript）。出力を切り詰めたい場合は `tools.media.audio.maxChars` または各エントリの `maxChars` を設定してください
+- OpenAI の自動デフォルトは `gpt-4o-mini-transcribe` です。精度を優先する場合は `model: "gpt-4o-transcribe"` を設定します
+- 複数のボイスメモを処理するには `tools.media.audio.attachments` を使います（`mode: "all"` と `maxAttachments`）
+- transcript はテンプレート内で `{{Transcript}}` として参照できます
+- `tools.media.audio.echoTranscript` はデフォルトで無効です。有効にすると、エージェント処理前に transcript 確認を元のチャットへ返せます
+- `tools.media.audio.echoFormat` で echo 文字列をカスタマイズできます（プレースホルダー: `{transcript}`）
+- CLI の stdout には上限があります（5MB）。CLI 出力は簡潔に保ってください
 
-### Proxy environment support
+### プロキシ環境のサポート
 
-Provider-based audio transcription honors standard outbound proxy env vars:
+provider ベースの音声文字起こしでは、標準的な outbound proxy 環境変数が利用されます。
 
 - `HTTPS_PROXY`
 - `HTTP_PROXY`
 - `https_proxy`
 - `http_proxy`
 
-If no proxy env vars are set, direct egress is used. If proxy config is malformed, OpenClaw logs a warning and falls back to direct fetch.
+proxy 環境変数が設定されていなければ直接外向き通信を行います。proxy 設定が不正な場合、OpenClaw は警告をログに残し、直接取得へフォールバックします。
 
-## Mention Detection in Groups
+## グループでの mention 検出
 
-When `requireMention: true` is set for a group chat, OpenClaw now transcribes audio **before** checking for mentions. This allows voice notes to be processed even when they contain mentions.
+グループチャットで `requireMention: true` が設定されている場合、OpenClaw は mention 判定の **前に** 音声を文字起こしします。これにより、音声メモ内に mention が含まれている場合でも処理できるようになります。
 
-**How it works:**
+**動作:**
 
-1. If a voice message has no text body and the group requires mentions, OpenClaw performs a "preflight" transcription.
-2. The transcript is checked for mention patterns (e.g., `@BotName`, emoji triggers).
-3. If a mention is found, the message proceeds through the full reply pipeline.
-4. The transcript is used for mention detection so voice notes can pass the mention gate.
+1. 音声メッセージにテキスト本文がなく、かつグループで mention が必須の場合、OpenClaw は preflight 文字起こしを行います
+2. transcript に対して mention pattern（例: `@BotName`、絵文字トリガー）をチェックします
+3. mention が見つかった場合、メッセージは通常の返信パイプラインへ進みます
+4. 音声メモでも mention gate を通過できるよう、mention 判定には transcript が使われます
 
-**Fallback behavior:**
+**フォールバック挙動:**
 
-- If transcription fails during preflight (timeout, API error, etc.), the message is processed based on text-only mention detection.
-- This ensures that mixed messages (text + audio) are never incorrectly dropped.
+- preflight 中の文字起こしが失敗した場合（timeout、API error など）、メッセージはテキストのみの mention 判定に基づいて処理されます
+- これにより、テキスト + 音声の混在メッセージが誤って落とされることを防げます
 
-**Opt-out per Telegram group/topic:**
+**Telegram グループ / トピックごとの opt-out:**
 
-- Set `channels.telegram.groups.<chatId>.disableAudioPreflight: true` to skip preflight transcript mention checks for that group.
-- Set `channels.telegram.groups.<chatId>.topics.<threadId>.disableAudioPreflight` to override per-topic (`true` to skip, `false` to force-enable).
-- Default is `false` (preflight enabled when mention-gated conditions match).
+- グループ単位で preflight transcript mention check を無効にするには `channels.telegram.groups.<chatId>.disableAudioPreflight: true` を設定します
+- topic 単位で上書きするには `channels.telegram.groups.<chatId>.topics.<threadId>.disableAudioPreflight` を設定します（`true` でスキップ、`false` で強制有効）
+- デフォルトは `false` です（mention gate 条件に一致した場合は preflight が有効）
 
-**Example:** A user sends a voice note saying "Hey @Claude, what's the weather?" in a Telegram group with `requireMention: true`. The voice note is transcribed, the mention is detected, and the agent replies.
+**例:** `requireMention: true` が設定された Telegram グループで、ユーザーが「Hey @Claude, what's the weather?」と話した音声メモを送るとします。音声が文字起こしされ、mention が検出され、エージェントが返信します。
 
-## Gotchas
+## 注意すべき点
 
-- Scope rules use first-match wins. `chatType` is normalized to `direct`, `group`, or `room`.
-- Ensure your CLI exits 0 and prints plain text; JSON needs to be massaged via `jq -r .text`.
-- For `parakeet-mlx`, if you pass `--output-dir`, OpenClaw reads `<output-dir>/<media-basename>.txt` when `--output-format` is `txt` (or omitted); non-`txt` output formats fall back to stdout parsing.
-- Keep timeouts reasonable (`timeoutSeconds`, default 60s) to avoid blocking the reply queue.
-- Preflight transcription only processes the **first** audio attachment for mention detection. Additional audio is processed during the main media understanding phase.
+- scope rule は first-match wins です。`chatType` は `direct`、`group`、`room` に正規化されます
+- CLI は終了コード 0 で終わり、プレーンテキストを出力するようにしてください。JSON を返す場合は `jq -r .text` などで整形が必要です
+- `parakeet-mlx` で `--output-dir` を渡した場合、`--output-format` が `txt`（または未指定）なら OpenClaw は `<output-dir>/<media-basename>.txt` を読みます。`txt` 以外の出力形式では stdout パースへフォールバックします
+- 返信キューを詰まらせないよう、timeout は妥当な値（`timeoutSeconds`、デフォルト 60 秒）に保ってください
+- mention 検出用の preflight 文字起こしでは、**最初の** 音声添付だけを処理します。追加の音声は通常の media understanding フェーズで処理されます

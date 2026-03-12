@@ -1,28 +1,30 @@
 ---
-summary: "CLI reference for `openclaw setup` (initialize config + workspace)"
+summary: "「openclaw セットアップ」の CLI リファレンス (設定 + ワークスペースの初期化)"
 read_when:
-  - You’re doing first-run setup without the full onboarding wizard
-  - You want to set the default workspace path
-title: "setup"
+  - 完全なオンボーディング ウィザードを使用せずに初回実行セットアップを実行している
+  - デフォルトのワークスペースパスを設定したい
+title: "設定"
+x-i18n:
+  source_hash: "7f3fc8b246924edf48501785be2c0d356bd31bfbb133e75a139a5ee41dbf57f4"
 ---
 
 # `openclaw setup`
 
-Initialize `~/.openclaw/openclaw.json` and the agent workspace.
+`~/.openclaw/openclaw.json` とエージェント ワークスペースを初期化します。
 
-Related:
+関連:
 
-- Getting started: [Getting started](/start/getting-started)
-- Wizard: [Onboarding](/start/onboarding)
+- はじめに: [はじめに](/start/getting-started)
+- ウィザード: [オンボーディング](/start/onboarding)
 
-## Examples
+## 例
 
 ```bash
 openclaw setup
 openclaw setup --workspace ~/.openclaw/workspace
 ```
 
-To run the wizard via setup:
+セットアップ経由でウィザードを実行するには:
 
 ```bash
 openclaw setup --wizard

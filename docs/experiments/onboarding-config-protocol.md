@@ -1,43 +1,46 @@
 ---
-summary: "RPC protocol notes for onboarding wizard and config schema"
-read_when: "Changing onboarding wizard steps or config schema endpoints"
-title: "Onboarding and Config Protocol"
+summary: "オンボーディングウィザードと構成スキーマに関する RPC プロトコルの仕様メモ"
+read_when:
+  - オンボーディングウィザードのステップや構成スキーマのエンドポイントを変更する場合
+title: "オンボーディングと構成プロトコル"
+x-i18n:
+  source_hash: "0e324d71e0e7df239f146c3e3a47acfa8ad92f2afbf4370d42c248d55fc926d7"
 ---
 
-# Onboarding + Config Protocol
+# オンボーディング + 構成プロトコル
 
-Purpose: shared onboarding + config surfaces across CLI, macOS app, and Web UI.
+目的: CLI、macOS アプリ、および Web UI の間で共有される、オンボーディングと構成（Config）操作のための共通プロトコルを定義すること。
 
-## Components
+## コンポーネント
 
-- Wizard engine (shared session + prompts + onboarding state).
-- CLI onboarding uses the same wizard flow as the UI clients.
-- Gateway RPC exposes wizard + config schema endpoints.
-- macOS onboarding uses the wizard step model.
-- Web UI renders config forms from JSON Schema + UI hints.
+- ウィザードエンジン: 共有セッション、プロンプト、およびオンボーディング状態を管理します。
+- CLI オンボーディング: UI クライアント（アプリ等）と同じウィザードフローを使用します。
+- ゲートウェイ RPC: ウィザード操作および構成スキーマ取得用のエンドポイントを公開します。
+- macOS オンボーディング: ウィザードのステップモデルを採用しています。
+- Web UI: JSON スキーマと UI ヒント（UI Hints）を元に、構成設定用のフォームを自動生成します。
 
-## Gateway RPC
+## ゲートウェイ RPC
 
-- `wizard.start` params: `{ mode?: "local"|"remote", workspace?: string }`
-- `wizard.next` params: `{ sessionId, answer?: { stepId, value? } }`
-- `wizard.cancel` params: `{ sessionId }`
-- `wizard.status` params: `{ sessionId }`
-- `config.schema` params: `{}`
-- `config.schema.lookup` params: `{ path }`
-  - `path` accepts standard config segments plus slash-delimited plugin ids, for example `plugins.entries.pack/one.config`.
+- `wizard.start` パラメータ: `{ mode?: "local"|"remote", workspace?: string }`
+- `wizard.next` パラメータ: `{ sessionId, answer?: { stepId, value? } }`
+- `wizard.cancel` パラメータ: `{ sessionId }`
+- `wizard.status` パラメータ: `{ sessionId }`
+- `config.schema` パラメータ: `{}`
+- `config.schema.lookup` パラメータ: `{ path }`
+  - `path` は標準の構成セグメントに加え、スラッシュ区切りのプラグイン ID（例: `plugins.entries.pack/one.config`）を受け入れます。
 
-Responses (shape)
+レスポンスの構造:
 
-- Wizard: `{ sessionId, done, step?, status?, error? }`
-- Config schema: `{ schema, uiHints, version, generatedAt }`
-- Config schema lookup: `{ path, schema, hint?, hintPath?, children[] }`
+- ウィザード: `{ sessionId, done, step?, status?, error? }`
+- 構成スキーマ: `{ schema, uiHints, version, generatedAt }`
+- スキーマ検索 (lookup): `{ path, schema, hint?, hintPath?, children[] }`
 
-## UI Hints
+## UI ヒント (UI Hints)
 
-- `uiHints` keyed by path; optional metadata (label/help/group/order/advanced/sensitive/placeholder).
-- Sensitive fields render as password inputs; no redaction layer.
-- Unsupported schema nodes fall back to the raw JSON editor.
+- `uiHints` はパスをキーとした、オプションのメタデータ（`label`, `help`, `group`, `order`, `advanced`, `sensitive`, `placeholder`）です。
+- `sensitive`（機密）フィールドは、UI 上ではパスワード入力としてレンダリングされます。伏せ字処理のレイヤーは別途存在しません。
+- 未対応のスキーマノードは、生の JSON エディターにフォールバックして表示されます。
 
-## Notes
+## 補足事項
 
-- This doc is the single place to track protocol refactors for onboarding/config.
+- 本ドキュメントは、オンボーディングおよび構成に関するプロトコルのリファクタリング状況を一元管理するためのものです。

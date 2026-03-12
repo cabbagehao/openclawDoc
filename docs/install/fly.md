@@ -1,54 +1,54 @@
 ---
 title: Fly.io
-description: Deploy OpenClaw on Fly.io
-summary: "Step-by-step Fly.io deployment for OpenClaw with persistent storage and HTTPS"
+description: OpenClaw を Fly.io にデプロイする
+summary: "永続ストレージと HTTPS を備えた OpenClaw のための Fly.io デプロイのステップバイステップ"
 read_when:
-  - Deploying OpenClaw on Fly.io
-  - Setting up Fly volumes, secrets, and first-run config
+  - OpenClaw を Fly.io にデプロイする場合
+  - Fly のボリューム、シークレット、および初回実行時の設定を行う場合
 ---
 
-# Fly.io Deployment
+# Fly.io へのデプロイ
 
-**Goal:** OpenClaw Gateway running on a [Fly.io](https://fly.io) machine with persistent storage, automatic HTTPS, and Discord/channel access.
+**目標:** 永続ストレージ、自動 HTTPS、Discord などのチャネル接続を備えた [Fly.io](https://fly.io) マシン上で OpenClaw ゲートウェイを実行することです。
 
-## What you need
+## 必要なもの
 
-- [flyctl CLI](https://fly.io/docs/hands-on/install-flyctl/) installed
-- Fly.io account (free tier works)
-- Model auth: API key for your chosen model provider
-- Channel credentials: Discord bot token, Telegram token, etc.
+- インストール済みの [flyctl CLI](https://fly.io/docs/hands-on/install-flyctl/)
+- Fly.io アカウント (無料枠で機能します)
+- モデル認証: 使用するモデルプロバイダーの API キー
+- チャネル認証情報: Discord ボットトークン、Telegram トークンなど
 
-## Beginner quick path
+## 初心者向けのクイックパス
 
-1. Clone repo → customize `fly.toml`
-2. Create app + volume → set secrets
-3. Deploy with `fly deploy`
-4. SSH in to create config or use Control UI
+1. リポジトリのクローン → `fly.toml` のカスタマイズ
+2. アプリ + ボリュームの作成 → シークレットの設定
+3. `fly deploy` でデプロイ
+4. SSH で接続して設定を作成するか、Control UI を使用する
 
-## 1) Create the Fly app
+## 1) Fly アプリの作成
 
 ```bash
-# Clone the repo
+# リポジトリのクローン
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 
-# Create a new Fly app (pick your own name)
+# 新しい Fly アプリを作成します (自分の名前を選択してください)
 fly apps create my-openclaw
 
-# Create a persistent volume (1GB is usually enough)
+# 永続ボリュームを作成します (通常は 1GB で十分です)
 fly volumes create openclaw_data --size 1 --region iad
 ```
 
-**Tip:** Choose a region close to you. Common options: `lhr` (London), `iad` (Virginia), `sjc` (San Jose).
+**ヒント:** 自分に近いリージョンを選択してください。一般的なオプション: `lhr` (ロンドン)、`iad` (バージニア)、`sjc` (サンノゼ)。
 
-## 2) Configure fly.toml
+## 2) fly.toml の設定
 
-Edit `fly.toml` to match your app name and requirements.
+アプリ名と要件に合わせて `fly.toml` を編集します。
 
-**Security note:** The default config exposes a public URL. For a hardened deployment with no public IP, see [Private Deployment](#private-deployment-hardened) or use `fly.private.toml`.
+**セキュリティに関する注意:** デフォルトの設定では、パブリック URL が公開されます。パブリック IP のない強化されたデプロイメントについては、[プライベートデプロイメント](#プライベートデプロイメント-強化版) を参照するか、`fly.private.toml` を使用してください。
 
 ```toml
-app = "my-openclaw"  # Your app name
+app = "my-openclaw"  # あなたのアプリ名
 primary_region = "iad"
 
 [build]
@@ -80,70 +80,70 @@ primary_region = "iad"
   destination = "/data"
 ```
 
-**Key settings:**
+**主な設定:**
 
-| Setting                        | Why                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------- |
-| `--bind lan`                   | Binds to `0.0.0.0` so Fly's proxy can reach the gateway                     |
-| `--allow-unconfigured`         | Starts without a config file (you'll create one after)                      |
-| `internal_port = 3000`         | Must match `--port 3000` (or `OPENCLAW_GATEWAY_PORT`) for Fly health checks |
-| `memory = "2048mb"`            | 512MB is too small; 2GB recommended                                         |
-| `OPENCLAW_STATE_DIR = "/data"` | Persists state on the volume                                                |
+| 設定                           | 理由                                                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `--bind lan`                   | Fly のプロキシが Gateway に到達できるように `0.0.0.0` にバインドします                                 |
+| `--allow-unconfigured`         | 設定ファイルなしで起動します (後で作成します)                                                          |
+| `internal_port = 3000`         | Fly のヘルスチェックのために `--port 3000` (または `OPENCLAW_GATEWAY_PORT`) と一致させる必要があります |
+| `memory = "2048mb"`            | 512MB では小さすぎます。2GB を推奨します                                                               |
+| `OPENCLAW_STATE_DIR = "/data"` | ボリューム上に状態を永続化します                                                                       |
 
-## 3) Set secrets
+## 3) シークレットの設定
 
 ```bash
-# Required: Gateway token (for non-loopback binding)
+# 必須: Gateway トークン (非ループバックバインディング用)
 fly secrets set OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
 
-# Model provider API keys
+# モデルプロバイダの API キー
 fly secrets set ANTHROPIC_API_KEY=sk-ant-...
 
-# Optional: Other providers
+# オプション: その他のプロバイダ
 fly secrets set OPENAI_API_KEY=sk-...
 fly secrets set GOOGLE_API_KEY=...
 
-# Channel tokens
+# チャネルトークン
 fly secrets set DISCORD_BOT_TOKEN=MTQ...
 ```
 
-**Notes:**
+**注意:**
 
-- Non-loopback binds (`--bind lan`) require `OPENCLAW_GATEWAY_TOKEN` for security.
-- Treat these tokens like passwords.
-- **Prefer env vars over config file** for all API keys and tokens. This keeps secrets out of `openclaw.json` where they could be accidentally exposed or logged.
+- 非ループバックバインド (`--bind lan`) には、セキュリティのために `OPENCLAW_GATEWAY_TOKEN` が必要です。
+- これらのトークンはパスワードのように扱ってください。
+- すべての API キーとトークンには、**設定ファイルよりも環境変数を優先**してください。これにより、シークレットが誤って公開されたりログに記録されたりする可能性がある `openclaw.json` からシークレットを遠ざけることができます。
 
-## 4) Deploy
+## 4) デプロイ
 
 ```bash
 fly deploy
 ```
 
-First deploy builds the Docker image (~2-3 minutes). Subsequent deploys are faster.
+最初のデプロイでは Docker イメージがビルドされます (約 2〜3 分)。以降のデプロイはより高速になります。
 
-After deployment, verify:
+デプロイ後、確認します:
 
 ```bash
 fly status
 fly logs
 ```
 
-You should see:
+以下のように表示されるはずです:
 
 ```
 [gateway] listening on ws://0.0.0.0:3000 (PID xxx)
 [discord] logged in to discord as xxx
 ```
 
-## 5) Create config file
+## 5) 設定ファイルの作成
 
-SSH into the machine to create a proper config:
+マシンに SSH で接続して、適切な設定を作成します:
 
 ```bash
 fly ssh console
 ```
 
-Create the config directory and file:
+設定ディレクトリとファイルを作成します:
 
 ```bash
 mkdir -p /data
@@ -199,248 +199,248 @@ cat > /data/openclaw.json << 'EOF'
 EOF
 ```
 
-**Note:** With `OPENCLAW_STATE_DIR=/data`, the config path is `/data/openclaw.json`.
+**注意:** `OPENCLAW_STATE_DIR=/data` の場合、設定パスは `/data/openclaw.json` です。
 
-**Note:** The Discord token can come from either:
+**注意:** Discord トークンは次のいずれかから取得できます:
 
-- Environment variable: `DISCORD_BOT_TOKEN` (recommended for secrets)
-- Config file: `channels.discord.token`
+- 環境変数: `DISCORD_BOT_TOKEN` (シークレットに推奨)
+- 設定ファイル: `channels.discord.token`
 
-If using env var, no need to add token to config. The gateway reads `DISCORD_BOT_TOKEN` automatically.
+環境変数を使用する場合、設定にトークンを追加する必要はありません。Gateway は自動的に `DISCORD_BOT_TOKEN` を読み取ります。
 
-Restart to apply:
+再起動して適用します:
 
 ```bash
 exit
 fly machine restart <machine-id>
 ```
 
-## 6) Access the Gateway
+## 6) ゲートウェイへのアクセス
 
 ### Control UI
 
-Open in browser:
+ブラウザで開きます:
 
 ```bash
 fly open
 ```
 
-Or visit `https://my-openclaw.fly.dev/`
+または `https://my-openclaw.fly.dev/` にアクセスします。
 
-Paste your gateway token (the one from `OPENCLAW_GATEWAY_TOKEN`) to authenticate.
+ゲートウェイトークン (`OPENCLAW_GATEWAY_TOKEN` の値) を貼り付けて認証します。
 
-### Logs
+### ログ
 
 ```bash
-fly logs              # Live logs
-fly logs --no-tail    # Recent logs
+fly logs              # ライブログ
+fly logs --no-tail    # 最近のログ
 ```
 
-### SSH Console
+### SSH コンソール
 
 ```bash
 fly ssh console
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
 ### "App is not listening on expected address"
 
-The gateway is binding to `127.0.0.1` instead of `0.0.0.0`.
+ゲートウェイが `0.0.0.0` ではなく `127.0.0.1` に bind しています。
 
-**Fix:** Add `--bind lan` to your process command in `fly.toml`.
+**修正:** `fly.toml` のプロセスコマンドに `--bind lan` を追加します。
 
-### Health checks failing / connection refused
+### ヘルスチェック失敗 / connection refused
 
-Fly can't reach the gateway on the configured port.
+Fly が設定ポート上のゲートウェイへ到達できません。
 
-**Fix:** Ensure `internal_port` matches the gateway port (set `--port 3000` or `OPENCLAW_GATEWAY_PORT=3000`).
+**修正:** `internal_port` が Gateway のポートと一致していることを確認します (`--port 3000` または `OPENCLAW_GATEWAY_PORT=3000` を設定します)。
 
-### OOM / Memory Issues
+### OOM / メモリ不足
 
-Container keeps restarting or getting killed. Signs: `SIGABRT`, `v8::internal::Runtime_AllocateInYoungGeneration`, or silent restarts.
+コンテナが再起動を繰り返すか、強制終了されます。兆候: `SIGABRT`、`v8::internal::Runtime_AllocateInYoungGeneration`、またはサイレントな再起動。
 
-**Fix:** Increase memory in `fly.toml`:
+**修正:** `fly.toml` でメモリを増やします:
 
 ```toml
 [[vm]]
   memory = "2048mb"
 ```
 
-Or update an existing machine:
+または、既存のマシンを更新します:
 
 ```bash
 fly machine update <machine-id> --vm-memory 2048 -y
 ```
 
-**Note:** 512MB is too small. 1GB may work but can OOM under load or with verbose logging. **2GB is recommended.**
+**注意:** 512MB では小さすぎます。1GB でも機能する可能性がありますが、負荷がかかったり、冗長なログ記録が行われたりすると OOM になる可能性があります。**2GB を推奨します。**
 
-### Gateway Lock Issues
+### ゲートウェイのロック問題
 
-Gateway refuses to start with "already running" errors.
+「すでに実行中です (already running)」というエラーで Gateway が起動を拒否します。
 
-This happens when the container restarts but the PID lock file persists on the volume.
+これは、コンテナは再起動したものの、PID ロックファイルがボリューム上に残っている場合に発生します。
 
-**Fix:** Delete the lock file:
+**修正:** ロックファイルを削除します:
 
 ```bash
 fly ssh console --command "rm -f /data/gateway.*.lock"
 fly machine restart <machine-id>
 ```
 
-The lock file is at `/data/gateway.*.lock` (not in a subdirectory).
+ロックファイルは `/data/gateway.*.lock` にあります (サブディレクトリではありません)。
 
-### Config Not Being Read
+### 設定が読み込まれない
 
-If using `--allow-unconfigured`, the gateway creates a minimal config. Your custom config at `/data/openclaw.json` should be read on restart.
+`--allow-unconfigured` を使用している場合、Gateway は最小限の設定を作成します。`/data/openclaw.json` にあるカスタム設定は、再起動時に読み込まれるはずです。
 
-Verify the config exists:
+設定が存在することを確認します:
 
 ```bash
 fly ssh console --command "cat /data/openclaw.json"
 ```
 
-### Writing Config via SSH
+### SSH 経由での設定の書き込み
 
-The `fly ssh console -C` command doesn't support shell redirection. To write a config file:
+`fly ssh console -C` コマンドはシェルのリダイレクトをサポートしていません。設定ファイルを書き込むには:
 
 ```bash
-# Use echo + tee (pipe from local to remote)
+# echo + tee を使用します (ローカルからリモートへパイプします)
 echo '{"your":"config"}' | fly ssh console -C "tee /data/openclaw.json"
 
-# Or use sftp
+# または sftp を使用します
 fly sftp shell
 > put /local/path/config.json /data/openclaw.json
 ```
 
-**Note:** `fly sftp` may fail if the file already exists. Delete first:
+**注意:** ファイルがすでに存在する場合、`fly sftp` は失敗する可能性があります。最初に削除します:
 
 ```bash
 fly ssh console --command "rm /data/openclaw.json"
 ```
 
-### State Not Persisting
+### 状態が永続化されない
 
-If you lose credentials or sessions after a restart, the state dir is writing to the container filesystem.
+再起動後に認証情報やセッションが失われる場合、状態ディレクトリがコンテナのファイルシステムに書き込まれています。
 
-**Fix:** Ensure `OPENCLAW_STATE_DIR=/data` is set in `fly.toml` and redeploy.
+**修正:** `fly.toml` で `OPENCLAW_STATE_DIR=/data` が設定されていることを確認し、再デプロイします。
 
-## Updates
+## アップデート
 
 ```bash
-# Pull latest changes
+# 最新の変更を取得します
 git pull
 
-# Redeploy
+# 再デプロイします
 fly deploy
 
-# Check health
+# 正常性を確認します
 fly status
 fly logs
 ```
 
-### Updating Machine Command
+### マシンコマンドの更新
 
-If you need to change the startup command without a full redeploy:
+完全な再デプロイを行わずに起動コマンドを変更する必要がある場合:
 
 ```bash
-# Get machine ID
+# マシン ID を取得します
 fly machines list
 
-# Update command
+# コマンドを更新します
 fly machine update <machine-id> --command "node dist/index.js gateway --port 3000 --bind lan" -y
 
-# Or with memory increase
+# またはメモリの増加と一緒に
 fly machine update <machine-id> --vm-memory 2048 --command "node dist/index.js gateway --port 3000 --bind lan" -y
 ```
 
-**Note:** After `fly deploy`, the machine command may reset to what's in `fly.toml`. If you made manual changes, re-apply them after deploy.
+**注意:** `fly deploy` の後、マシンコマンドは `fly.toml` にあるものにリセットされる可能性があります。手動で変更を加えた場合は、デプロイ後に再適用してください。
 
-## Private Deployment (Hardened)
+## プライベートデプロイメント (強化版)
 
-By default, Fly allocates public IPs, making your gateway accessible at `https://your-app.fly.dev`. This is convenient but means your deployment is discoverable by internet scanners (Shodan, Censys, etc.).
+デフォルトでは、Fly はパブリック IP を割り当てるため、`https://your-app.fly.dev` で Gateway にアクセスできるようになります。これは便利ですが、インターネットスキャナー (Shodan、Censys など) によってデプロイメントが発見される可能性があることを意味します。
 
-For a hardened deployment with **no public exposure**, use the private template.
+**パブリックに公開しない**強化されたデプロイメントの場合は、プライベートテンプレートを使用してください。
 
-### When to use private deployment
+### プライベートデプロイメントを使用する場合
 
-- You only make **outbound** calls/messages (no inbound webhooks)
-- You use **ngrok or Tailscale** tunnels for any webhook callbacks
-- You access the gateway via **SSH, proxy, or WireGuard** instead of browser
-- You want the deployment **hidden from internet scanners**
+- **アウトバウンド**の呼び出し/メッセージのみを行う場合 (インバウンドの Webhook なし)
+- Webhook コールバックに **ngrok または Tailscale** トンネルを使用する場合
+- ブラウザの代わりに **SSH、プロキシ、または WireGuard** 経由でゲートウェイへアクセスする場合
+- **インターネットスキャナーからデプロイメントを隠したい**場合
 
-### Setup
+### セットアップ
 
-Use `fly.private.toml` instead of the standard config:
+標準の設定の代わりに `fly.private.toml` を使用します:
 
 ```bash
-# Deploy with private config
+# プライベート設定でデプロイします
 fly deploy -c fly.private.toml
 ```
 
-Or convert an existing deployment:
+または、既存のデプロイメントを変換します:
 
 ```bash
-# List current IPs
+# 現在の IP を一覧表示します
 fly ips list -a my-openclaw
 
-# Release public IPs
+# パブリック IP を解放します
 fly ips release <public-ipv4> -a my-openclaw
 fly ips release <public-ipv6> -a my-openclaw
 
-# Switch to private config so future deploys don't re-allocate public IPs
-# (remove [http_service] or deploy with the private template)
+# 今後のデプロイでパブリック IP が再割り当てされないように、プライベート設定に切り替えます
+# ([http_service] を削除するか、プライベートテンプレートを使用してデプロイします)
 fly deploy -c fly.private.toml
 
-# Allocate private-only IPv6
+# プライベート専用の IPv6 を割り当てます
 fly ips allocate-v6 --private -a my-openclaw
 ```
 
-After this, `fly ips list` should show only a `private` type IP:
+この後、`fly ips list` は `private` タイプの IP のみを表示するはずです:
 
 ```
 VERSION  IP                   TYPE             REGION
 v6       fdaa:x:x:x:x::x      private          global
 ```
 
-### Accessing a private deployment
+### プライベートデプロイメントへのアクセス
 
-Since there's no public URL, use one of these methods:
+パブリック URL がないため、以下のいずれかの方法を使用します:
 
-**Option 1: Local proxy (simplest)**
+**オプション 1: ローカルプロキシ (最も簡単)**
 
 ```bash
-# Forward local port 3000 to the app
+# ローカルポート 3000 をアプリに転送します
 fly proxy 3000:3000 -a my-openclaw
 
-# Then open http://localhost:3000 in browser
+# その後、ブラウザで http://localhost:3000 を開きます
 ```
 
-**Option 2: WireGuard VPN**
+**オプション 2: WireGuard VPN**
 
 ```bash
-# Create WireGuard config (one-time)
+# WireGuard 設定を作成します (1 回限り)
 fly wireguard create
 
-# Import to WireGuard client, then access via internal IPv6
-# Example: http://[fdaa:x:x:x:x::x]:3000
+# WireGuard クライアントにインポートし、内部 IPv6 経由でアクセスします
+# 例: http://[fdaa:x:x:x:x::x]:3000
 ```
 
-**Option 3: SSH only**
+**オプション 3: SSH のみ**
 
 ```bash
 fly ssh console -a my-openclaw
 ```
 
-### Webhooks with private deployment
+### プライベートデプロイメントでの webhook
 
-If you need webhook callbacks (Twilio, Telnyx, etc.) without public exposure:
+パブリックに公開せずに Webhook コールバック (Twilio、Telnyx など) が必要な場合:
 
-1. **ngrok tunnel** - Run ngrok inside the container or as a sidecar
-2. **Tailscale Funnel** - Expose specific paths via Tailscale
-3. **Outbound-only** - Some providers (Twilio) work fine for outbound calls without webhooks
+1. **ngrok トンネル** - コンテナ内またはサイドカーとして ngrok を実行します
+2. **Tailscale Funnel** - Tailscale 経由で特定のパスを公開します
+3. **アウトバウンドのみ** - 一部のプロバイダ (Twilio) は、Webhook なしでもアウトバウンド通話で問題なく機能します
 
-Example voice-call config with ngrok:
+ngrok を使用した voice-call 設定の例:
 
 ```json
 {
@@ -461,30 +461,30 @@ Example voice-call config with ngrok:
 }
 ```
 
-The ngrok tunnel runs inside the container and provides a public webhook URL without exposing the Fly app itself. Set `webhookSecurity.allowedHosts` to the public tunnel hostname so forwarded host headers are accepted.
+ngrok トンネルはコンテナ内で実行され、Fly アプリ自体を公開することなくパブリックな Webhook URL を提供します。転送されたホストヘッダーが受け入れられるように、`webhookSecurity.allowedHosts` をパブリックなトンネルのホスト名に設定してください。
 
-### Security benefits
+### セキュリティ上の利点
 
-| Aspect            | Public       | Private    |
-| ----------------- | ------------ | ---------- |
-| Internet scanners | Discoverable | Hidden     |
-| Direct attacks    | Possible     | Blocked    |
-| Control UI access | Browser      | Proxy/VPN  |
-| Webhook delivery  | Direct       | Via tunnel |
+| 側面                     | パブリック | プライベート |
+| ------------------------ | ---------- | ------------ |
+| インターネットスキャナー | 発見可能   | 隠蔽         |
+| 直接攻撃                 | 可能       | ブロック     |
+| Control UI アクセス      | ブラウザ   | プロキシ/VPN |
+| Webhook の配信           | 直接       | トンネル経由 |
 
-## Notes
+## 備考
 
-- Fly.io uses **x86 architecture** (not ARM)
-- The Dockerfile is compatible with both architectures
-- For WhatsApp/Telegram onboarding, use `fly ssh console`
-- Persistent data lives on the volume at `/data`
-- Signal requires Java + signal-cli; use a custom image and keep memory at 2GB+.
+- Fly.io は **x86 アーキテクチャ** を使用します (ARM ではありません)。
+- Dockerfile は両方のアーキテクチャと互換性があります。
+- WhatsApp/Telegram のオンボーディングには、`fly ssh console` を使用します。
+- 永続データは `/data` のボリューム上にあります。
+- Signal には Java + signal-cli が必要です。カスタムイメージを使用し、メモリを 2GB 以上に保ってください。
 
-## Cost
+## コスト
 
-With the recommended config (`shared-cpu-2x`, 2GB RAM):
+推奨される設定 (`shared-cpu-2x`、2GB RAM) の場合:
 
-- ~$10-15/month depending on usage
-- Free tier includes some allowance
+- 使用量に応じて月額約 10〜15 ドル
+- 無料枠には一定の余裕が含まれています
 
-See [Fly.io pricing](https://fly.io/docs/about/pricing/) for details.
+詳細については、[Fly.io の価格](https://fly.io/docs/about/pricing/)を参照してください。

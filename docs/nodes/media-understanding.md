@@ -1,50 +1,51 @@
 ---
-summary: "Inbound image/audio/video understanding (optional) with provider + CLI fallbacks"
+summary: "受信した画像 / 音声 / 動画の理解（オプション）。provider と CLI のフォールバックに対応"
 read_when:
-  - Designing or refactoring media understanding
-  - Tuning inbound audio/video/image preprocessing
+  - media understanding を設計またはリファクタリングするとき
+  - 受信した音声 / 動画 / 画像の前処理を調整するとき
 title: "Media Understanding"
+x-i18n:
+  source_hash: "3f4364c2744a9d48f6b7863d1e6ad495b7706af57fa7509f83dde4448e22f151"
 ---
 
 # Media Understanding (Inbound) — 2026-01-17
 
-OpenClaw can **summarize inbound media** (image/audio/video) before the reply pipeline runs. It auto‑detects when local tools or provider keys are available, and can be disabled or customized. If understanding is off, models still receive the original files/URLs as usual.
+OpenClaw は、返信パイプラインに入る前に **受信メディア**（画像 / 音声 / 動画）を要約できます。ローカルツールや provider key が利用可能な場合は自動検出され、必要に応じて無効化やカスタマイズも可能です。understanding を無効にしても、model には従来どおり元のファイル / URL が渡されます。
 
-## Goals
+## 目標
 
-- Optional: pre‑digest inbound media into short text for faster routing + better command parsing.
-- Preserve original media delivery to the model (always).
-- Support **provider APIs** and **CLI fallbacks**.
-- Allow multiple models with ordered fallback (error/size/timeout).
+- オプションとして、受信メディアを短いテキストへ事前要約し、ルーティングとコマンド解析を速く・安定させる
+- 元のメディアは必ず model へ渡し続ける
+- **provider API** と **CLI fallback** の両方をサポートする
+- error / size / timeout に応じて順序付き fallback を使えるようにする
 
-## High‑level behavior
+## 高レベル挙動
 
-1. Collect inbound attachments (`MediaPaths`, `MediaUrls`, `MediaTypes`).
-2. For each enabled capability (image/audio/video), select attachments per policy (default: **first**).
-3. Choose the first eligible model entry (size + capability + auth).
-4. If a model fails or the media is too large, **fall back to the next entry**.
-5. On success:
-   - `Body` becomes `[Image]`, `[Audio]`, or `[Video]` block.
-   - Audio sets `{{Transcript}}`; command parsing uses caption text when present,
-     otherwise the transcript.
-   - Captions are preserved as `User text:` inside the block.
+1. 受信添付（`MediaPaths`、`MediaUrls`、`MediaTypes`）を収集する
+2. 有効な capability（image / audio / video）ごとに、policy に従って添付を選ぶ（デフォルトは **最初の 1 件**）
+3. サイズ、capability、認証条件を満たす最初の model entry を選ぶ
+4. model が失敗するか、メディアが大きすぎる場合は **次の entry へ fallback** する
+5. 成功した場合:
+   - `Body` は `[Image]`、`[Audio]`、`[Video]` ブロックになる
+   - 音声では `{{Transcript}}` を設定し、caption があればそれを、なければ transcript を command parsing に使う
+   - caption はブロック内に `User text:` として保持される
 
-If understanding fails or is disabled, **the reply flow continues** with the original body + attachments.
+understanding が失敗した場合や無効な場合でも、**返信フローは元の本文と添付付きで継続** します。
 
-## Config overview
+## 設定の概要
 
-`tools.media` supports **shared models** plus per‑capability overrides:
+`tools.media` は **共有 models** と、capability ごとの override をサポートします。
 
-- `tools.media.models`: shared model list (use `capabilities` to gate).
+- `tools.media.models`: 共有 model list（`capabilities` で適用先を制御）
 - `tools.media.image` / `tools.media.audio` / `tools.media.video`:
-  - defaults (`prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`)
-  - provider overrides (`baseUrl`, `headers`, `providerOptions`)
-  - Deepgram audio options via `tools.media.audio.providerOptions.deepgram`
-  - audio transcript echo controls (`echoTranscript`, default `false`; `echoFormat`)
-  - optional **per‑capability `models` list** (preferred before shared models)
-  - `attachments` policy (`mode`, `maxAttachments`, `prefer`)
-  - `scope` (optional gating by channel/chatType/session key)
-- `tools.media.concurrency`: max concurrent capability runs (default **2**).
+  - デフォルト値（`prompt`、`maxChars`、`maxBytes`、`timeoutSeconds`、`language`）
+  - provider override（`baseUrl`、`headers`、`providerOptions`）
+  - `tools.media.audio.providerOptions.deepgram` 経由の Deepgram 音声オプション
+  - 音声 transcript echo 制御（`echoTranscript`、デフォルト `false`、`echoFormat`）
+  - capability ごとの **専用 `models` list**（共有 model より優先）
+  - `attachments` policy（`mode`、`maxAttachments`、`prefer`）
+  - `scope`（channel / chatType / session key 単位での optional gating）
+- `tools.media.concurrency`: capability 実行の最大並列数（デフォルト **2**）
 
 ```json5
 {
@@ -69,9 +70,9 @@ If understanding fails or is disabled, **the reply flow continues** with the ori
 }
 ```
 
-### Model entries
+### model entry
 
-Each `models[]` entry can be **provider** or **CLI**:
+各 `models[]` entry は **provider** または **CLI** です。
 
 ```json5
 {
@@ -82,7 +83,7 @@ Each `models[]` entry can be **provider** or **CLI**:
   maxChars: 500,
   maxBytes: 10485760,
   timeoutSeconds: 60,
-  capabilities: ["image"], // optional, used for multi‑modal entries
+  capabilities: ["image"], // optional, used for multi-modal entries
   profile: "vision-profile",
   preferredProfile: "vision-fallback",
 }
@@ -106,49 +107,46 @@ Each `models[]` entry can be **provider** or **CLI**:
 }
 ```
 
-CLI templates can also use:
+CLI template では次の変数も使えます。
 
-- `{{MediaDir}}` (directory containing the media file)
-- `{{OutputDir}}` (scratch dir created for this run)
-- `{{OutputBase}}` (scratch file base path, no extension)
+- `{{MediaDir}}`（メディアファイルを含む directory）
+- `{{OutputDir}}`（この run 用に作られる scratch directory）
+- `{{OutputBase}}`（拡張子なしの scratch file base path）
 
-## Defaults and limits
+## デフォルトと制限
 
-Recommended defaults:
+推奨デフォルト:
 
-- `maxChars`: **500** for image/video (short, command‑friendly)
-- `maxChars`: **unset** for audio (full transcript unless you set a limit)
+- `maxChars`: image / video は **500**（短く、command-friendly）
+- `maxChars`: audio は **未設定**（制限を指定しない限り全文 transcript）
 - `maxBytes`:
   - image: **10MB**
   - audio: **20MB**
   - video: **50MB**
 
-Rules:
+ルール:
 
-- If media exceeds `maxBytes`, that model is skipped and the **next model is tried**.
-- Audio files smaller than **1024 bytes** are treated as empty/corrupt and skipped before provider/CLI transcription.
-- If the model returns more than `maxChars`, output is trimmed.
-- `prompt` defaults to simple “Describe the {media}.” plus the `maxChars` guidance (image/video only).
-- If `<capability>.enabled: true` but no models are configured, OpenClaw tries the
-  **active reply model** when its provider supports the capability.
+- メディアが `maxBytes` を超える場合、その model はスキップされ、**次の model を試します**
+- **1024 バイト未満** の audio file は空または破損として扱い、provider / CLI に渡す前にスキップします
+- model の出力が `maxChars` を超えた場合は切り詰めます
+- `prompt` のデフォルトは単純な “Describe the {media}.” に `maxChars` の指示を足したものです（image / video のみ）
+- `<capability>.enabled: true` でも model が未設定なら、その capability をサポートする **現在の reply model** を試します
 
-### Auto-detect media understanding (default)
+### media understanding の自動検出（デフォルト）
 
-If `tools.media.<capability>.enabled` is **not** set to `false` and you haven’t
-configured models, OpenClaw auto-detects in this order and **stops at the first
-working option**:
+`tools.media.<capability>.enabled` が **`false` でなく**、かつ model を設定していない場合、OpenClaw は次の順で自動検出し、**最初に動作したもの** を使います。
 
-1. **Local CLIs** (audio only; if installed)
-   - `sherpa-onnx-offline` (requires `SHERPA_ONNX_MODEL_DIR` with encoder/decoder/joiner/tokens)
-   - `whisper-cli` (`whisper-cpp`; uses `WHISPER_CPP_MODEL` or the bundled tiny model)
-   - `whisper` (Python CLI; downloads models automatically)
-2. **Gemini CLI** (`gemini`) using `read_many_files`
-3. **Provider keys**
-   - Audio: OpenAI → Groq → Deepgram → Google
-   - Image: OpenAI → Anthropic → Google → MiniMax
-   - Video: Google
+1. **ローカル CLI**（audio のみ。インストール済みなら）
+   - `sherpa-onnx-offline`（encoder / decoder / joiner / tokens を含む `SHERPA_ONNX_MODEL_DIR` が必要）
+   - `whisper-cli`（`whisper-cpp`。`WHISPER_CPP_MODEL` または同梱 tiny model を使用）
+   - `whisper`（Python CLI。model は自動ダウンロード）
+2. **Gemini CLI**（`gemini`）を `read_many_files` 付きで使用
+3. **provider key**
+   - audio: OpenAI → Groq → Deepgram → Google
+   - image: OpenAI → Anthropic → Google → MiniMax
+   - video: Google
 
-To disable auto-detection, set:
+無効にするには次のように設定します。
 
 ```json5
 {
@@ -162,64 +160,59 @@ To disable auto-detection, set:
 }
 ```
 
-Note: Binary detection is best-effort across macOS/Linux/Windows; ensure the CLI is on `PATH` (we expand `~`), or set an explicit CLI model with a full command path.
+注: バイナリ検出は macOS / Linux / Windows をまたいだ best-effort 実装です。CLI が `PATH` 上にあること（`~` は展開されます）を確認するか、完全な command path を持つ明示的な CLI model を設定してください。
 
-### Proxy environment support (provider models)
+### proxy 環境のサポート（provider model）
 
-When provider-based **audio** and **video** media understanding is enabled, OpenClaw
-honors standard outbound proxy environment variables for provider HTTP calls:
+provider ベースの **audio** と **video** の media understanding では、provider HTTP call に対して標準的な outbound proxy 環境変数を尊重します。
 
 - `HTTPS_PROXY`
 - `HTTP_PROXY`
 - `https_proxy`
 - `http_proxy`
 
-If no proxy env vars are set, media understanding uses direct egress.
-If the proxy value is malformed, OpenClaw logs a warning and falls back to direct
-fetch.
+proxy 環境変数が未設定なら直接通信します。proxy 値の形式が不正な場合、OpenClaw は warning を記録し、直接 fetch へフォールバックします。
 
-## Capabilities (optional)
+## capabilities（任意）
 
-If you set `capabilities`, the entry only runs for those media types. For shared
-lists, OpenClaw can infer defaults:
+`capabilities` を設定した場合、その entry は指定した media type に対してのみ実行されます。shared list では、OpenClaw が次のようにデフォルト推定できます。
 
-- `openai`, `anthropic`, `minimax`: **image**
-- `google` (Gemini API): **image + audio + video**
+- `openai`、`anthropic`、`minimax`: **image**
+- `google`（Gemini API）: **image + audio + video**
 - `groq`: **audio**
 - `deepgram`: **audio**
 
-For CLI entries, **set `capabilities` explicitly** to avoid surprising matches.
-If you omit `capabilities`, the entry is eligible for the list it appears in.
+CLI entry では、予期しない一致を避けるため **`capabilities` を明示指定** してください。`capabilities` を省略した場合、その entry は所属する list に対して有効になります。
 
-## Provider support matrix (OpenClaw integrations)
+## provider support matrix（OpenClaw integration）
 
 | Capability | Provider integration                             | Notes                                                     |
 | ---------- | ------------------------------------------------ | --------------------------------------------------------- |
-| Image      | OpenAI / Anthropic / Google / others via `pi-ai` | Any image-capable model in the registry works.            |
-| Audio      | OpenAI, Groq, Deepgram, Google, Mistral          | Provider transcription (Whisper/Deepgram/Gemini/Voxtral). |
-| Video      | Google (Gemini API)                              | Provider video understanding.                             |
+| Image      | OpenAI / Anthropic / Google / others via `pi-ai` | registry 上で image 対応の model なら利用できる           |
+| Audio      | OpenAI, Groq, Deepgram, Google, Mistral          | provider 側 transcription（Whisper / Deepgram / Gemini / Voxtral） |
+| Video      | Google (Gemini API)                              | provider ベースの video understanding                     |
 
-## Model selection guidance
+## model 選定ガイド
 
-- Prefer the strongest latest-generation model available for each media capability when quality and safety matter.
-- For tool-enabled agents handling untrusted inputs, avoid older/weaker media models.
-- Keep at least one fallback per capability for availability (quality model + faster/cheaper model).
-- CLI fallbacks (`whisper-cli`, `whisper`, `gemini`) are useful when provider APIs are unavailable.
-- `parakeet-mlx` note: with `--output-dir`, OpenClaw reads `<output-dir>/<media-basename>.txt` when output format is `txt` (or unspecified); non-`txt` formats fall back to stdout.
+- 品質や安全性を重視する場合は、各 media capability で利用可能な最新世代の強い model を優先してください
+- 信頼できない入力を扱う tool-enabled agent では、古い / 弱い media model は避けるのが無難です
+- 可用性確保のため、capability ごとに最低 1 つは fallback を持たせてください（高品質 model + 高速 / 低コスト model）
+- CLI fallback（`whisper-cli`、`whisper`、`gemini`）は provider API が使えない場合に有効です
+- `parakeet-mlx` 注記: `--output-dir` を指定すると、出力形式が `txt`（または未指定）の場合に OpenClaw は `<output-dir>/<media-basename>.txt` を読みます。`txt` 以外の形式では stdout parsing にフォールバックします
 
-## Attachment policy
+## attachment policy
 
-Per‑capability `attachments` controls which attachments are processed:
+capability ごとの `attachments` は、どの添付を処理するかを制御します。
 
-- `mode`: `first` (default) or `all`
-- `maxAttachments`: cap the number processed (default **1**)
-- `prefer`: `first`, `last`, `path`, `url`
+- `mode`: `first`（デフォルト）または `all`
+- `maxAttachments`: 処理数の上限（デフォルト **1**）
+- `prefer`: `first`、`last`、`path`、`url`
 
-When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
+`mode: "all"` の場合、出力には `[Image 1/2]`、`[Audio 2/2]` のようなラベルが付きます。
 
-## Config examples
+## 設定例
 
-### 1) Shared models list + overrides
+### 1) shared models list + overrides
 
 ```json5
 {
@@ -256,7 +249,7 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-### 2) Audio + Video only (image off)
+### 2) audio + video のみ（image off）
 
 ```json5
 {
@@ -296,7 +289,7 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-### 3) Optional image understanding
+### 3) optional image understanding
 
 ```json5
 {
@@ -327,7 +320,7 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-### 4) Multi‑modal single entry (explicit capabilities)
+### 4) 単一の multi-modal entry（明示的 capabilities）
 
 ```json5
 {
@@ -365,23 +358,23 @@ When `mode: "all"`, outputs are labeled `[Image 1/2]`, `[Audio 2/2]`, etc.
 }
 ```
 
-## Status output
+## status 出力
 
-When media understanding runs, `/status` includes a short summary line:
+media understanding が実行されると、`/status` に短い summary line が表示されます。
 
 ```
 📎 Media: image ok (openai/gpt-5.2) · audio skipped (maxBytes)
 ```
 
-This shows per‑capability outcomes and the chosen provider/model when applicable.
+ここには capability ごとの結果と、該当する場合は使用した provider / model が表示されます。
 
-## Notes
+## 注意点
 
-- Understanding is **best‑effort**. Errors do not block replies.
-- Attachments are still passed to models even when understanding is disabled.
-- Use `scope` to limit where understanding runs (e.g. only DMs).
+- understanding は **best-effort** です。error が出ても返信自体は止まりません
+- understanding が無効でも、添付は引き続き model へ渡されます
+- `scope` を使って、understanding を実行する場所を絞れます（例: DM のみ）
 
-## Related docs
+## 関連ドキュメント
 
 - [Configuration](/gateway/configuration)
 - [Image & Media Support](/nodes/images)

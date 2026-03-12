@@ -1,20 +1,20 @@
 ---
-summary: "CLI reference for `openclaw agent` (send one agent turn via the Gateway)"
+summary: "`openclaw agent`のCLIリファレンス（Gateway経由で1つのエージェントターンを送信）"
 read_when:
-  - You want to run one agent turn from scripts (optionally deliver reply)
+  - スクリプトから1つのエージェントターンを実行したい場合（オプションで返信を配信）
 title: "agent"
 ---
 
 # `openclaw agent`
 
-Run an agent turn via the Gateway (use `--local` for embedded).
-Use `--agent <id>` to target a configured agent directly.
+Gateway経由でエージェントターンを実行します（埋め込みには`--local`を使用）。
+設定されたエージェントを直接ターゲットにするには、`--agent <id>`を使用します。
 
-Related:
+関連:
 
-- Agent send tool: [Agent send](/tools/agent-send)
+- エージェント送信ツール: [Agent send](/tools/agent-send)
 
-## Examples
+## 例
 
 ```bash
 openclaw agent --to +15555550123 --message "status update" --deliver
@@ -23,6 +23,6 @@ openclaw agent --session-id 1234 --message "Summarize inbox" --thinking medium
 openclaw agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"
 ```
 
-## Notes
+## 注意事項
 
-- When this command triggers `models.json` regeneration, SecretRef-managed provider credentials are persisted as non-secret markers (for example env var names or `secretref-managed`), not resolved secret plaintext.
+- このコマンドが`models.json`の再生成をトリガーする場合、SecretRefで管理されたプロバイダー認証情報は、解決されたシークレットプレーンテキストではなく、非シークレットマーカー（例: 環境変数名または`secretref-managed`）として永続化されます。

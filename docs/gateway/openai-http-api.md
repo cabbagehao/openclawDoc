@@ -1,64 +1,64 @@
 ---
-summary: "Expose an OpenAI-compatible /v1/chat/completions HTTP endpoint from the Gateway"
+summary: "ゲートウェイから OpenAI 互換の /v1/chat/completions HTTP エンドポイントを公開する"
 read_when:
-  - Integrating tools that expect OpenAI Chat Completions
-title: "OpenAI Chat Completions"
+  - OpenAI Chat Completions API を期待する外部ツールと統合する場合
+title: "OpenAI 互換 HTTP API"
+x-i18n:
+  source_hash: "e12f1b5dacbd5a6fe6fe5304dc6a84f56312c57d4b88db5037b1863a8e0edd65"
 ---
 
-# OpenAI Chat Completions (HTTP)
+# OpenAI 互換 HTTP API
 
-OpenClaw’s Gateway can serve a small OpenAI-compatible Chat Completions endpoint.
+OpenClaw ゲートウェイは、OpenAI 互換の最小限の Chat Completions エンドポイントを提供できます。
 
-This endpoint is **disabled by default**. Enable it in config first.
+このエンドポイントは **デフォルトで無効** になっています。利用するには、まず構成ファイルで有効にする必要があります。
 
-- `POST /v1/chat/completions`
-- Same port as the Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/v1/chat/completions`
+- エンドポイント: `POST /v1/chat/completions`
+- ポート: ゲートウェイと同じポート（WebSocket と HTTP のマルチプレックス）: `http://<gateway-host>:<port>/v1/chat/completions`
 
-Under the hood, requests are executed as a normal Gateway agent run (same codepath as `openclaw agent`), so routing/permissions/config match your Gateway.
+内部的には、リクエストは通常のゲートウェイエージェントの実行（`openclaw agent` と同じパス）として処理されます。そのため、ルーティング、権限、および構成設定はゲートウェイ本体の設定に従います。
 
-## Authentication
+## 認証 (Auth)
 
-Uses the Gateway auth configuration. Send a bearer token:
+ゲートウェイの認証設定を使用します。リクエスト時に Bearer トークンを送信してください:
 
-- `Authorization: Bearer <token>`
+- `Authorization: Bearer <トークン>`
 
-Notes:
+補足事項:
+- `gateway.auth.mode="token"` の場合、`gateway.auth.token` (または環境変数 `OPENCLAW_GATEWAY_TOKEN`) を使用します。
+- `gateway.auth.mode="password"` の場合、`gateway.auth.password` (または環境変数 `OPENCLAW_GATEWAY_PASSWORD`) を使用します。
+- `gateway.auth.rateLimit` が構成されている場合、認証失敗が繰り返されるとエンドポイントは `429` (Retry-After 付き) を返します。
 
-- When `gateway.auth.mode="token"`, use `gateway.auth.token` (or `OPENCLAW_GATEWAY_TOKEN`).
-- When `gateway.auth.mode="password"`, use `gateway.auth.password` (or `OPENCLAW_GATEWAY_PASSWORD`).
-- If `gateway.auth.rateLimit` is configured and too many auth failures occur, the endpoint returns `429` with `Retry-After`.
+## セキュリティ境界 (重要)
 
-## Security boundary (important)
+このエンドポイントは、ゲートウェイインスタンスに対する **フルアクセス（オペレーター権限）** を持つインターフェースとして扱ってください。
 
-Treat this endpoint as a **full operator-access** surface for the gateway instance.
+- ここでの HTTP Bearer 認証は、一般ユーザー向けの制限されたスコープを持つものではありません。
+- このエンドポイントで使用する有効なトークンやパスワードは、オーナー/オペレーターの認証情報と同等に扱う必要があります。
+- リクエストは、信頼されたオペレーターのアクションと同じコントロールプレーンのエージェントパスを通じて実行されます。
+- このエンドポイントには、非所有者や一般ユーザー向けの個別のツール制限レイヤーはありません。ゲートウェイ認証を通過した呼び出し元は、OpenClaw によってこのゲートウェイの信頼されたオペレーターとして扱われます。
+- ターゲットとなるエージェントのポリシーで機密ツールが許可されている場合、このエンドポイント経由でもそれらのツールが実行可能です。
+- セキュリティのため、このエンドポイントはループバック、Tailnet、またはプライベートなネットワーク内でのみ公開し、インターネット上に直接公開することは避けてください。
 
-- HTTP bearer auth here is not a narrow per-user scope model.
-- A valid Gateway token/password for this endpoint should be treated like an owner/operator credential.
-- Requests run through the same control-plane agent path as trusted operator actions.
-- There is no separate non-owner/per-user tool boundary on this endpoint; once a caller passes Gateway auth here, OpenClaw treats that caller as a trusted operator for this gateway.
-- If the target agent policy allows sensitive tools, this endpoint can use them.
-- Keep this endpoint on loopback/tailnet/private ingress only; do not expose it directly to the public internet.
+詳細は [セキュリティ](/gateway/security) および [リモートアクセス](/gateway/remote) を参照してください。
 
-See [Security](/gateway/security) and [Remote access](/gateway/remote).
+## エージェントの選択
 
-## Choosing an agent
+カスタムヘッダーは不要です。OpenAI の `model` フィールドにエージェント ID を埋め込んでください:
 
-No custom headers required: encode the agent id in the OpenAI `model` field:
+- `model: "openclaw:<agentId>"` (例: `"openclaw:main"`, `"openclaw:beta"`)
+- `model: "agent:<agentId>"` (エイリアス)
 
-- `model: "openclaw:<agentId>"` (example: `"openclaw:main"`, `"openclaw:beta"`)
-- `model: "agent:<agentId>"` (alias)
+または、特定の OpenClaw エージェントをヘッダーで指定することも可能です:
 
-Or target a specific OpenClaw agent by header:
+- `x-openclaw-agent-id: <agentId>` (デフォルトは `main`)
 
-- `x-openclaw-agent-id: <agentId>` (default: `main`)
+高度な設定:
+- `x-openclaw-session-key: <sessionKey>` を指定することで、セッションルーティングを完全に制御できます。
 
-Advanced:
+## 有効化の手順
 
-- `x-openclaw-session-key: <sessionKey>` to fully control session routing.
-
-## Enabling the endpoint
-
-Set `gateway.http.endpoints.chatCompletions.enabled` to `true`:
+`gateway.http.endpoints.chatCompletions.enabled` を `true` に設定してください:
 
 ```json5
 {
@@ -72,9 +72,9 @@ Set `gateway.http.endpoints.chatCompletions.enabled` to `true`:
 }
 ```
 
-## Disabling the endpoint
+## 無効化の手順
 
-Set `gateway.http.endpoints.chatCompletions.enabled` to `false`:
+`gateway.http.endpoints.chatCompletions.enabled` を `false` に設定してください:
 
 ```json5
 {
@@ -88,23 +88,23 @@ Set `gateway.http.endpoints.chatCompletions.enabled` to `false`:
 }
 ```
 
-## Session behavior
+## セッションの挙動
 
-By default the endpoint is **stateless per request** (a new session key is generated each call).
+デフォルトでは、エンドポイントは **リクエストごとにステートレス** です（呼び出しのたびに新しいセッションキーが生成されます）。
 
-If the request includes an OpenAI `user` string, the Gateway derives a stable session key from it, so repeated calls can share an agent session.
+リクエストに OpenAI の `user` 文字列が含まれている場合、ゲートウェイはそこから固定のセッションキーを導出します。これにより、同じユーザー文字列を使用する繰り返しの呼び出しで、エージェントセッションを共有することが可能になります。
 
-## Streaming (SSE)
+## ストリーミング (SSE)
 
-Set `stream: true` to receive Server-Sent Events (SSE):
+`stream: true` を設定することで、Server-Sent Events (SSE) を受信できます:
 
 - `Content-Type: text/event-stream`
-- Each event line is `data: <json>`
-- Stream ends with `data: [DONE]`
+- 各イベント行の形式: `data: <JSON>`
+- ストリームの終了: `data: [DONE]`
 
-## Examples
+## 実行例
 
-Non-streaming:
+通常（非ストリーミング）の実行:
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/chat/completions \
@@ -113,11 +113,11 @@ curl -sS http://127.0.0.1:18789/v1/chat/completions \
   -H 'x-openclaw-agent-id: main' \
   -d '{
     "model": "openclaw",
-    "messages": [{"role":"user","content":"hi"}]
+    "messages": [{"role":"user","content":"こんにちは"}]
   }'
 ```
 
-Streaming:
+ストリーミング実行:
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/chat/completions \
@@ -127,6 +127,6 @@ curl -N http://127.0.0.1:18789/v1/chat/completions \
   -d '{
     "model": "openclaw",
     "stream": true,
-    "messages": [{"role":"user","content":"hi"}]
+    "messages": [{"role":"user","content":"こんにちは"}]
   }'
 ```

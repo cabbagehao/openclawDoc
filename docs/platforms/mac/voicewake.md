@@ -1,67 +1,69 @@
 ---
-summary: "Voice wake and push-to-talk modes plus routing details in the mac app"
+summary: "音声ウェイク モードとプッシュトゥトーク モードに加え、Mac アプリでのルーティングの詳細"
 read_when:
-  - Working on voice wake or PTT pathways
-title: "Voice Wake"
+  - 音声ウェイクや PTT の経路を扱うとき
+title: "ボイスウェイク"
+x-i18n:
+  source_hash: "f6440bb89f349ba5c1c9aacffe95e568681beb9899ca736dedfe2f4a366cb5e4"
 ---
 
-# Voice Wake & Push-to-Talk
+# 音声ウェイクとプッシュトゥトーク
 
-## Modes
+## モード
 
-- **Wake-word mode** (default): always-on Speech recognizer waits for trigger tokens (`swabbleTriggerWords`). On match it starts capture, shows the overlay with partial text, and auto-sends after silence.
-- **Push-to-talk (Right Option hold)**: hold the right Option key to capture immediately—no trigger needed. The overlay appears while held; releasing finalizes and forwards after a short delay so you can tweak text.
+- **ウェイクワード モード** (既定): 常時オンの Speech recognizer がトリガー語 (`swabbleTriggerWords`) を待機します。一致するとキャプチャを開始し、部分テキスト付きのオーバーレイを表示し、無音後に自動送信します。
+- **プッシュトゥトーク (右 Option 長押し)**: 右 Option キーを押している間、即座にキャプチャを開始します。トリガー語は不要です。オーバーレイは押下中に表示され、キーを離すと、短い待機の後に確定して転送されるため、その間に文面を調整できます。
 
-## Runtime behavior (wake-word)
+## 実行時の挙動 (ウェイクワード)
 
-- Speech recognizer lives in `VoiceWakeRuntime`.
-- Trigger only fires when there’s a **meaningful pause** between the wake word and the next word (~0.55s gap). The overlay/chime can start on the pause even before the command begins.
-- Silence windows: 2.0s when speech is flowing, 5.0s if only the trigger was heard.
-- Hard stop: 120s to prevent runaway sessions.
-- Debounce between sessions: 350ms.
-- Overlay is driven via `VoiceWakeOverlayController` with committed/volatile coloring.
-- After send, recognizer restarts cleanly to listen for the next trigger.
+- Speech recognizer は `VoiceWakeRuntime` にあります。
+- トリガーは、ウェイクワードと次の単語の間に **意味のある間** がある場合にのみ発火します (およそ 0.55 秒のギャップ)。オーバーレイや chime は、コマンド開始前でもその間で起動することがあります。
+- 無音判定のウィンドウは、発話が続いている場合は 2.0 秒、トリガー語だけが聞こえた場合は 5.0 秒です。
+- 暴走防止のため、120 秒で強制停止します。
+- セッション間の debounce は 350 ms です。
+- オーバーレイは `VoiceWakeOverlayController` が制御し、確定済み / 未確定の色分けを行います。
+- 送信後、recognizer は次のトリガーを待つために正常に再起動します。
 
-## Lifecycle invariants
+## ライフサイクル上の不変条件
 
-- If Voice Wake is enabled and permissions are granted, the wake-word recognizer should be listening (except during an explicit push-to-talk capture).
-- Overlay visibility (including manual dismiss via the X button) must never prevent the recognizer from resuming.
+- Voice Wake が有効で、必要なアクセス許可が付与されている場合、ウェイクワード recognizer は常に待機している必要があります。例外は、明示的なプッシュトゥトークのキャプチャ中だけです。
+- オーバーレイの可視状態は、X ボタンによる手動 dismiss を含めて、recognizer の再開を妨げてはいけません。
 
-## Sticky overlay failure mode (previous)
+## Sticky overlay の障害モード (以前)
 
-Previously, if the overlay got stuck visible and you manually closed it, Voice Wake could appear “dead” because the runtime’s restart attempt could be blocked by overlay visibility and no subsequent restart was scheduled.
+以前は、オーバーレイが表示されたまま張り付いた状態で手動クローズすると、runtime の再起動がオーバーレイ可視状態に阻まれ、その後の再起動も予約されないため、Voice Wake が停止したように見えることがありました。
 
-Hardening:
+現在の対策:
 
-- Wake runtime restart is no longer blocked by overlay visibility.
-- Overlay dismiss completion triggers a `VoiceWakeRuntime.refresh(...)` via `VoiceSessionCoordinator`, so manual X-dismiss always resumes listening.
+- wake runtime の再起動は、オーバーレイの可視状態に依存しません。
+- オーバーレイの dismiss 完了時に、`VoiceSessionCoordinator` 経由で `VoiceWakeRuntime.refresh(...)` を呼ぶため、手動で X を押しても必ず待機状態へ戻ります。
 
-## Push-to-talk specifics
+## プッシュトゥトーク固有の仕様
 
-- Hotkey detection uses a global `.flagsChanged` monitor for **right Option** (`keyCode 61` + `.option`). We only observe events (no swallowing).
-- Capture pipeline lives in `VoicePushToTalk`: starts Speech immediately, streams partials to the overlay, and calls `VoiceWakeForwarder` on release.
-- When push-to-talk starts we pause the wake-word runtime to avoid dueling audio taps; it restarts automatically after release.
-- Permissions: requires Microphone + Speech; seeing events needs Accessibility/Input Monitoring approval.
-- External keyboards: some may not expose right Option as expected—offer a fallback shortcut if users report misses.
+- ホットキー検出では、**右 Option** (`keyCode 61` + `.option`) に対するグローバル `.flagsChanged` monitor を使います。イベントは監視するだけで、横取りはしません。
+- キャプチャ パイプラインは `VoicePushToTalk` にあり、Speech を即座に開始し、partial をオーバーレイへ流し、キーを離したら `VoiceWakeForwarder` を呼びます。
+- プッシュトゥトーク開始時には、音声入力の競合を避けるため wake-word runtime を一時停止し、キーを離すと自動で再開します。
+- 必要な権限は Microphone と Speech です。イベント監視には Accessibility / Input Monitoring の承認も必要です。
+- 外付けキーボードの一部では右 Option が期待どおり取得できない場合があります。報告がある場合は代替ショートカットを用意してください。
 
-## User-facing settings
+## ユーザー向け設定
 
-- **Voice Wake** toggle: enables wake-word runtime.
-- **Hold Cmd+Fn to talk**: enables the push-to-talk monitor. Disabled on macOS < 26.
-- Language & mic pickers, live level meter, trigger-word table, tester (local-only; does not forward).
-- Mic picker preserves the last selection if a device disconnects, shows a disconnected hint, and temporarily falls back to the system default until it returns.
-- **Sounds**: chimes on trigger detect and on send; defaults to the macOS “Glass” system sound. You can pick any `NSSound`-loadable file (e.g. MP3/WAV/AIFF) for each event or choose **No Sound**.
+- **Voice Wake** トグル: wake-word runtime を有効化します。
+- **Hold Cmd+Fn to talk**: プッシュトゥトーク monitor を有効化します。macOS 26 未満では無効です。
+- 言語 picker、マイク picker、ライブ レベル メーター、トリガー語テーブル、tester を提供します。tester はローカル専用で、転送は行いません。
+- マイク picker は、デバイス切断時も最後の選択を保持し、切断中であることを表示したうえで、一時的にシステム既定マイクへフォールバックします。デバイスが戻れば元の選択へ復帰します。
+- **Sounds**: トリガー検出時と送信時に chime を鳴らせます。既定値は macOS の "Glass" システム サウンドです。各イベントごとに `NSSound` で読み込めるファイル (MP3 / WAV / AIFF など) を指定するか、**No Sound** を選べます。
 
-## Forwarding behavior
+## 転送の挙動
 
-- When Voice Wake is enabled, transcripts are forwarded to the active gateway/agent (the same local vs remote mode used by the rest of the mac app).
-- Replies are delivered to the **last-used main provider** (WhatsApp/Telegram/Discord/WebChat). If delivery fails, the error is logged and the run is still visible via WebChat/session logs.
+- Voice Wake が有効な場合、transcript は現在アクティブなゲートウェイ / エージェントへ転送されます。転送先は macOS アプリ全体で使っている local / remote モード設定に従います。
+- 応答は、**最後に使った main provider** (WhatsApp / Telegram / Discord / WebChat) に配信されます。配信に失敗した場合でも、エラーはログに残り、実行状況は WebChat や session log から確認できます。
 
-## Forwarding payload
+## 転送ペイロード
 
-- `VoiceWakeForwarder.prefixedTranscript(_:)` prepends the machine hint before sending. Shared between wake-word and push-to-talk paths.
+- `VoiceWakeForwarder.prefixedTranscript(_:)` は、送信前に machine hint を前置します。この処理はウェイクワード経路とプッシュトゥトーク経路で共有されます。
 
-## Quick verification
+## 簡易確認
 
-- Toggle push-to-talk on, hold Cmd+Fn, speak, release: overlay should show partials then send.
-- While holding, menu-bar ears should stay enlarged (uses `triggerVoiceEars(ttl:nil)`); they drop after release.
+- プッシュトゥトークを有効にし、Cmd+Fn を押しながら話し、離してください。オーバーレイに partial が出て、その後送信されるはずです。
+- 押下中はメニュー バーの耳が拡大状態を維持します (`triggerVoiceEars(ttl:nil)` を使用)。キーを離すと元に戻ります。

@@ -1,69 +1,37 @@
 ---
-summary: "Zalo bot support status, capabilities, and configuration"
+summary: "Zalo ボットのサポートステータス、機能、および構成"
 read_when:
-  - Working on Zalo features or webhooks
+  - Zalo 連携や webhook の設定を行う場合
 title: "Zalo"
+x-i18n:
+  source_hash: "5c787e2a8c1c335df02a6676482a1fedfb79728af4cc54e4c8097221a6abca6e"
 ---
 
-# Zalo (Bot API)
+# Zalo (ボット API)
 
-Status: experimental. DMs are supported; group handling is available with explicit group policy controls.
+ステータス: 実験的。DM がサポートされており、グループ処理は明示的なポリシー制御によって利用可能です。
 
-## Plugin required
+## プラグインが必要
 
-Zalo ships as a plugin and is not bundled with the core install.
+Zalo はプラグインとして提供されており、コアインストールには同梱されていません。
 
-- Install via CLI: `openclaw plugins install @openclaw/zalo`
-- Or select **Zalo** during onboarding and confirm the install prompt
-- Details: [Plugins](/tools/plugin)
+- CLI 経由でインストール: `openclaw plugins install @openclaw/zalo`
+- または、オンボーディング中に **Zalo** を選択し、インストールプロンプトに従ってください。
+- 詳細: [プラグイン](/tools/plugin)
 
-## Quick setup (beginner)
+## クイックセットアップ (初心者向け)
 
-1. Install the Zalo plugin:
-   - From a source checkout: `openclaw plugins install ./extensions/zalo`
-   - From npm (if published): `openclaw plugins install @openclaw/zalo`
-   - Or pick **Zalo** in onboarding and confirm the install prompt
-2. Set the token:
-   - Env: `ZALO_BOT_TOKEN=...`
-   - Or config: `channels.zalo.botToken: "..."`.
-3. Restart the gateway (or finish onboarding).
-4. DM access is pairing by default; approve the pairing code on first contact.
+1. Zalo プラグインをインストールします:
+   - ソースチェックアウトから: `openclaw plugins install ./extensions/zalo`
+   - npm から (公開されている場合): `openclaw plugins install @openclaw/zalo`
+   - または、オンボーディングで **Zalo** を選択。
+2. トークンを設定します:
+   - 環境変数: `ZALO_BOT_TOKEN=...`
+   - 構成ファイル: `channels.zalo.botToken: "..."`。
+3. ゲートウェイを再起動します (またはオンボーディングを完了させます)。
+4. DM アクセスはデフォルトでペアリングモードです。最初の連絡時にペアリングコードを承認してください。
 
-Minimal config:
-
-```json5
-{
-  channels: {
-    zalo: {
-      enabled: true,
-      botToken: "12345689:abc-xyz",
-      dmPolicy: "pairing",
-    },
-  },
-}
-```
-
-## What it is
-
-Zalo is a Vietnam-focused messaging app; its Bot API lets the Gateway run a bot for 1:1 conversations.
-It is a good fit for support or notifications where you want deterministic routing back to Zalo.
-
-- A Zalo Bot API channel owned by the Gateway.
-- Deterministic routing: replies go back to Zalo; the model never chooses channels.
-- DMs share the agent's main session.
-- Groups are supported with policy controls (`groupPolicy` + `groupAllowFrom`) and default to fail-closed allowlist behavior.
-
-## Setup (fast path)
-
-### 1) Create a bot token (Zalo Bot Platform)
-
-1. Go to [https://bot.zaloplatforms.com](https://bot.zaloplatforms.com) and sign in.
-2. Create a new bot and configure its settings.
-3. Copy the bot token (format: `12345689:abc-xyz`).
-
-### 2) Configure the token (env or config)
-
-Example:
+最小限の構成:
 
 ```json5
 {
@@ -77,130 +45,158 @@ Example:
 }
 ```
 
-Env option: `ZALO_BOT_TOKEN=...` (works for the default account only).
+## Zalo チャネルの概要
 
-Multi-account support: use `channels.zalo.accounts` with per-account tokens and optional `name`.
+Zalo はベトナムで広く使われているメッセージングアプリです。そのボット API を使用することで、ゲートウェイは 1 対 1 の会話用ボットを運用できます。
+確定的なルーティングが必要なカスタマーサポートや通知の用途に適しています。
 
-3. Restart the gateway. Zalo starts when a token is resolved (env or config).
-4. DM access defaults to pairing. Approve the code when the bot is first contacted.
+- ゲートウェイが所有する Zalo ボット API チャネルです。
+- 確定的なルーティング: 返信は常に Zalo に戻ります。モデルがチャネルを選択することはありません。
+- DM はエージェントのメインセッションを共有します。
+- グループはポリシー制御 (`groupPolicy` + `groupAllowFrom`) でサポートされ、デフォルトは安全のため許可リスト方式（フェールクローズ）になっています。
 
-## How it works (behavior)
+## セットアップ手順
 
-- Inbound messages are normalized into the shared channel envelope with media placeholders.
-- Replies always route back to the same Zalo chat.
-- Long-polling by default; webhook mode available with `channels.zalo.webhookUrl`.
+### 1) ボットトークンの作成 (Zalo Bot Platform)
 
-## Limits
+1. [https://bot.zaloplatforms.com](https://bot.zaloplatforms.com) にアクセスしてサインインします。
+2. 新しいボットを作成し、設定を行います。
+3. ボットトークン (形式: `12345689:abc-xyz`) をコピーします。
 
-- Outbound text is chunked to 2000 characters (Zalo API limit).
-- Media downloads/uploads are capped by `channels.zalo.mediaMaxMb` (default 5).
-- Streaming is blocked by default due to the 2000 char limit making streaming less useful.
+### 2) トークンの構成 (環境変数または構成ファイル)
 
-## Access control (DMs)
+構成例:
 
-### DM access
+```json5
+{
+  channels: {
+    zalo: {
+      enabled: true,
+      botToken: "12345689:abc-xyz",
+      dmPolicy: "pairing",
+    },
+  },
+}
+```
 
-- Default: `channels.zalo.dmPolicy = "pairing"`. Unknown senders receive a pairing code; messages are ignored until approved (codes expire after 1 hour).
-- Approve via:
+環境変数の場合: `ZALO_BOT_TOKEN=...` (デフォルトアカウントにのみ適用されます)。
+
+マルチアカウントのサポート: `channels.zalo.accounts` を使用して、アカウントごとにトークンとオプションの `name` を指定できます。
+
+3. ゲートウェイを再起動します。トークンが解決されると Zalo チャネルが開始されます。
+4. ボットへ最初にメッセージを送信した際に表示されるペアリングコードを承認してください。
+
+## 仕組みと動作
+
+- 受信メッセージは、メディアプレースホルダーと共に共通のチャネル形式に正規化されます。
+- 返信は常に同じ Zalo チャットに送信されます。
+- デフォルトはロングポーリング方式です。`channels.zalo.webhookUrl` を設定することで webhook モードも利用可能です。
+
+## 制限事項
+
+- 送信テキストは Zalo API の制限により 2000 文字ごとに分割されます。
+- メディアの送受信サイズは `channels.zalo.mediaMaxMb` (デフォルト 5MB) で制限されます。
+- ストリーミングは、2000 文字制限のため有用性が低く、デフォルトでブロックされています。
+
+## アクセス制御 (DM)
+
+### DM アクセス
+
+- デフォルト: `channels.zalo.dmPolicy = "pairing"`。未知の送信者にはペアリングコードが送信され、承認されるまでメッセージは無視されます (コードは 1 時間で期限切れになります)。
+- 承認方法:
   - `openclaw pairing list zalo`
   - `openclaw pairing approve zalo <CODE>`
-- Pairing is the default token exchange. Details: [Pairing](/channels/pairing)
-- `channels.zalo.allowFrom` accepts numeric user IDs (no username lookup available).
+- 詳細については [ペアリング](/channels/pairing) を参照してください。
+- `channels.zalo.allowFrom` は数値のユーザー ID を受け入れます（ユーザー名の検索は利用できません）。
 
-## Access control (Groups)
+## アクセス制御 (グループ)
 
-- `channels.zalo.groupPolicy` controls group inbound handling: `open | allowlist | disabled`.
-- Default behavior is fail-closed: `allowlist`.
-- `channels.zalo.groupAllowFrom` restricts which sender IDs can trigger the bot in groups.
-- If `groupAllowFrom` is unset, Zalo falls back to `allowFrom` for sender checks.
-- `groupPolicy: "disabled"` blocks all group messages.
-- `groupPolicy: "open"` allows any group member (mention-gated).
-- Runtime note: if `channels.zalo` is missing entirely, runtime still falls back to `groupPolicy="allowlist"` for safety.
+- `channels.zalo.groupPolicy` でグループのインバウンド処理を制御します: `open | allowlist | disabled`。
+- デフォルトは安全のため `allowlist` (許可リスト) です。
+- `channels.zalo.groupAllowFrom` で、グループ内でボットをトリガーできる送信者 ID を制限します。
+- `groupAllowFrom` が未設定の場合、送信者チェックには `allowFrom` が使用されます。
+- `groupPolicy: "disabled"` はすべてのグループメッセージをブロックします。
+- `groupPolicy: "open"` は（メンション制約を満たせば）すべてのグループメンバーを許可します。
+- 注意: `channels.zalo` 構成が完全に欠落している場合でも、安全のため `groupPolicy="allowlist"` が適用されます。
 
-## Long-polling vs webhook
+## ロングポーリング vs webhook
 
-- Default: long-polling (no public URL required).
-- Webhook mode: set `channels.zalo.webhookUrl` and `channels.zalo.webhookSecret`.
-  - The webhook secret must be 8-256 characters.
-  - Webhook URL must use HTTPS.
-  - Zalo sends events with `X-Bot-Api-Secret-Token` header for verification.
-  - Gateway HTTP handles webhook requests at `channels.zalo.webhookPath` (defaults to the webhook URL path).
-  - Requests must use `Content-Type: application/json` (or `+json` media types).
-  - Duplicate events (`event_name + message_id`) are ignored for a short replay window.
-  - Burst traffic is rate-limited per path/source and may return HTTP 429.
+- デフォルト: ロングポーリング (公開 URL は不要)。
+- webhook モード: `channels.zalo.webhookUrl` と `channels.zalo.webhookSecret` を設定します。
+  - シークレットは 8〜256 文字である必要があります。
+  - webhook URL は HTTPS である必要があります。
+  - Zalo は検証用に `X-Bot-Api-Secret-Token` ヘッダーを付けてイベントを送信します。
+  - ゲートウェイは `channels.zalo.webhookPath` (デフォルトは URL のパス部分) でリクエストを処理します。
+  - リクエストの `Content-Type` は `application/json` である必要があります。
+  - 重複したイベント (`event_name + message_id`) は、短期間の再送ウィンドウ内では無視されます。
+  - 急激なトラフィック増加にはパス/送信元ごとにレート制限が適用され、HTTP 429 を返す場合があります。
 
-**Note:** getUpdates (polling) and webhook are mutually exclusive per Zalo API docs.
+**注意:** Zalo API の仕様上、ロングポーリング（getUpdates）と webhook は排他的です。
 
-## Supported message types
+## サポートされているメッセージ形式
 
-- **Text messages**: Full support with 2000 character chunking.
-- **Image messages**: Download and process inbound images; send images via `sendPhoto`.
-- **Stickers**: Logged but not fully processed (no agent response).
-- **Unsupported types**: Logged (e.g., messages from protected users).
+- **テキスト**: 2000 文字の分割送信を含め完全サポート。
+- **画像**: 受信画像のダウンロードおよび処理、`sendPhoto` による送信をサポート。
+- **ステッカー**: ログには記録されますが、エージェントによる応答は行われません。
+- **未サポートの形式**: ログには記録されます（例: 保護されたユーザーからのメッセージなど）。
 
-## Capabilities
+## 機能一覧
 
-| Feature         | Status                                                   |
-| --------------- | -------------------------------------------------------- |
-| Direct messages | ✅ Supported                                             |
-| Groups          | ⚠️ Supported with policy controls (allowlist by default) |
-| Media (images)  | ✅ Supported                                             |
-| Reactions       | ❌ Not supported                                         |
-| Threads         | ❌ Not supported                                         |
-| Polls           | ❌ Not supported                                         |
-| Native commands | ❌ Not supported                                         |
-| Streaming       | ⚠️ Blocked (2000 char limit)                             |
+| 機能 | ステータス |
+| :--- | :--- |
+| ダイレクトメッセージ | ✅ サポート済み |
+| グループ | ⚠️ ポリシー制御によりサポート (デフォルトは許可リスト) |
+| メディア (画像) | ✅ サポート済み |
+| リアクション | ❌ 未サポート |
+| スレッド | ❌ 未サポート |
+| 投票 | ❌ 未サポート |
+| ネイティブコマンド | ❌ 未サポート |
+| ストリーミング | ⚠️ ブロック (2000 文字制限のため) |
 
-## Delivery targets (CLI/cron)
+## 配信ターゲット (CLI/Cron)
 
-- Use a chat id as the target.
-- Example: `openclaw message send --channel zalo --target 123456789 --message "hi"`.
+- ターゲットとしてチャット ID を使用します。
+- 例: `openclaw message send --channel zalo --target 123456789 --message "こんにちは"`。
 
-## Troubleshooting
+## トラブルシューティング
 
-**Bot doesn't respond:**
+**ボットが応答しない:**
+- トークンが有効か確認してください: `openclaw channels status --probe`
+- 送信者が承認されているか（ペアリングまたは allowFrom）確認してください。
+- ゲートウェイのログを確認してください: `openclaw logs --follow`
 
-- Check that the token is valid: `openclaw channels status --probe`
-- Verify the sender is approved (pairing or allowFrom)
-- Check gateway logs: `openclaw logs --follow`
+**webhook がイベントを受信しない:**
+- webhook URL が HTTPS を使用しているか確認してください。
+- シークレットトークンが 8〜256 文字か確認してください。
+- ゲートウェイの HTTP エンドポイントが設定されたパスで到達可能か確認してください。
+- ロングポーリングが動作していないか確認してください（排他的な関係です）。
 
-**Webhook not receiving events:**
+## 構成リファレンス (Zalo)
 
-- Ensure webhook URL uses HTTPS
-- Verify secret token is 8-256 characters
-- Confirm the gateway HTTP endpoint is reachable on the configured path
-- Check that getUpdates polling is not running (they're mutually exclusive)
+完全な構成: [構成](/gateway/configuration)
 
-## Configuration reference (Zalo)
+プロバイダーオプション:
+- `channels.zalo.enabled`: チャネルの起動を有効/無効にします。
+- `channels.zalo.botToken`: Zalo Bot Platform から取得したボットトークン。
+- `channels.zalo.tokenFile`: ファイルからトークンを読み取ります。
+- `channels.zalo.dmPolicy`: `pairing | allowlist | open | disabled` (デフォルト: pairing)。
+- `channels.zalo.allowFrom`: DM 許可リスト (数値ユーザー ID)。`open` には `"*"` が必要です。
+- `channels.zalo.groupPolicy`: `open | allowlist | disabled` (デフォルト: allowlist)。
+- `channels.zalo.groupAllowFrom`: グループ送信者の許可リスト (ユーザー ID)。未設定時は `allowFrom` にフォールバックします。
+- `channels.zalo.mediaMaxMb`: 送受信メディアのサイズ上限 (MB, デフォルト 5)。
+- `channels.zalo.webhookUrl`: webhook モードを有効化 (HTTPS 必須)。
+- `channels.zalo.webhookSecret`: webhook シークレット (8〜256 文字)。
+- `channels.zalo.webhookPath`: ゲートウェイ上の webhook 受付パス。
+- `channels.zalo.proxy`: API リクエストに使用するプロキシ URL。
 
-Full configuration: [Configuration](/gateway/configuration)
-
-Provider options:
-
-- `channels.zalo.enabled`: enable/disable channel startup.
-- `channels.zalo.botToken`: bot token from Zalo Bot Platform.
-- `channels.zalo.tokenFile`: read token from file path.
-- `channels.zalo.dmPolicy`: `pairing | allowlist | open | disabled` (default: pairing).
-- `channels.zalo.allowFrom`: DM allowlist (user IDs). `open` requires `"*"`. The wizard will ask for numeric IDs.
-- `channels.zalo.groupPolicy`: `open | allowlist | disabled` (default: allowlist).
-- `channels.zalo.groupAllowFrom`: group sender allowlist (user IDs). Falls back to `allowFrom` when unset.
-- `channels.zalo.mediaMaxMb`: inbound/outbound media cap (MB, default 5).
-- `channels.zalo.webhookUrl`: enable webhook mode (HTTPS required).
-- `channels.zalo.webhookSecret`: webhook secret (8-256 chars).
-- `channels.zalo.webhookPath`: webhook path on the gateway HTTP server.
-- `channels.zalo.proxy`: proxy URL for API requests.
-
-Multi-account options:
-
-- `channels.zalo.accounts.<id>.botToken`: per-account token.
-- `channels.zalo.accounts.<id>.tokenFile`: per-account token file.
-- `channels.zalo.accounts.<id>.name`: display name.
-- `channels.zalo.accounts.<id>.enabled`: enable/disable account.
-- `channels.zalo.accounts.<id>.dmPolicy`: per-account DM policy.
-- `channels.zalo.accounts.<id>.allowFrom`: per-account allowlist.
-- `channels.zalo.accounts.<id>.groupPolicy`: per-account group policy.
-- `channels.zalo.accounts.<id>.groupAllowFrom`: per-account group sender allowlist.
-- `channels.zalo.accounts.<id>.webhookUrl`: per-account webhook URL.
-- `channels.zalo.accounts.<id>.webhookSecret`: per-account webhook secret.
-- `channels.zalo.accounts.<id>.webhookPath`: per-account webhook path.
-- `channels.zalo.accounts.<id>.proxy`: per-account proxy URL.
+マルチアカウントオプション:
+- `channels.zalo.accounts.<id>.botToken`: アカウントごとのトークン。
+- `channels.zalo.accounts.<id>.name`: 表示名。
+- `channels.zalo.accounts.<id>.enabled`: アカウントの有効/無効。
+- `channels.zalo.accounts.<id>.dmPolicy`: アカウントごとの DM ポリシー。
+- `channels.zalo.accounts.<id>.allowFrom`: アカウントごとの許可リスト。
+- `channels.zalo.accounts.<id>.groupPolicy`: アカウントごとのグループポリシー。
+- `channels.zalo.accounts.<id>.webhookUrl`: アカウントごとの webhook URL。
+- `channels.zalo.accounts.<id>.webhookSecret`: アカウントごとの webhook シークレット。
+- `channels.zalo.accounts.<id>.webhookPath`: アカウントごとの webhook 受付パス。
+- `channels.zalo.accounts.<id>.proxy`: アカウントごとのプロキシ URL。

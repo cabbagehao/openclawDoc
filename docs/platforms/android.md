@@ -1,92 +1,94 @@
 ---
-summary: "Android app (node): connection runbook + Connect/Chat/Voice/Canvas command surface"
+summary: "Android アプリ（node）: 接続 runbook と Connect / Chat / Voice / Canvas の command surface"
 read_when:
-  - Pairing or reconnecting the Android node
-  - Debugging Android gateway discovery or auth
-  - Verifying chat history parity across clients
+  - Android node をペアリングまたは再接続するとき
+  - Android 側の gateway discovery や認証を切り分けるとき
+  - クライアント間で chat history の整合性を確認するとき
 title: "Android App"
+x-i18n:
+  source_hash: "39e9206a770d78adc09aa35c30cecfb07093605a7f432d942b68014332b3c56b"
 ---
 
 # Android App (Node)
 
-## Support snapshot
+## サポート概要
 
-- Role: companion node app (Android does not host the Gateway).
-- Gateway required: yes (run it on macOS, Linux, or Windows via WSL2).
-- Install: [Getting Started](/start/getting-started) + [Pairing](/channels/pairing).
-- Gateway: [Runbook](/gateway) + [Configuration](/gateway/configuration).
-  - Protocols: [Gateway protocol](/gateway/protocol) (nodes + control plane).
+- 役割: companion node app（Android 自体は Gateway をホストしません）
+- Gateway 必須: はい（macOS、Linux、または Windows + WSL2 上で実行）
+- install: [Getting Started](/start/getting-started) + [Pairing](/channels/pairing)
+- gateway: [Runbook](/gateway) + [Configuration](/gateway/configuration)
+  - protocol: [Gateway protocol](/gateway/protocol)（nodes + control plane）
 
-## System control
+## system 制御
 
-System control (launchd/systemd) lives on the Gateway host. See [Gateway](/gateway).
+system 制御（launchd / systemd）は Gateway host 側にあります。詳しくは [Gateway](/gateway) を参照してください。
 
-## Connection Runbook
+## 接続 runbook
 
-Android node app ⇄ (mDNS/NSD + WebSocket) ⇄ **Gateway**
+Android node app ⇄（mDNS / NSD + WebSocket）⇄ **Gateway**
 
-Android connects directly to the Gateway WebSocket (default `ws://<host>:18789`) and uses device pairing (`role: node`).
+Android は Gateway WebSocket（デフォルト `ws://<host>:18789`）へ直接接続し、device pairing（`role: node`）を使います。
 
-### Prerequisites
+### 前提条件
 
-- You can run the Gateway on the “master” machine.
-- Android device/emulator can reach the gateway WebSocket:
-  - Same LAN with mDNS/NSD, **or**
-  - Same Tailscale tailnet using Wide-Area Bonjour / unicast DNS-SD (see below), **or**
-  - Manual gateway host/port (fallback)
-- You can run the CLI (`openclaw`) on the gateway machine (or via SSH).
+- “master” マシン上で Gateway を実行できる
+- Android device / emulator から Gateway WebSocket へ到達できる
+  - 同一 LAN 上で mDNS / NSD を使う、**または**
+  - 同一 Tailscale tailnet 上で Wide-Area Bonjour / unicast DNS-SD を使う（後述）、**または**
+  - 手動で gateway host / port を指定する（fallback）
+- Gateway マシン上で `openclaw` CLI を使える（または SSH 越しに実行できる）
 
-### 1) Start the Gateway
+### 1) Gateway を起動する
 
 ```bash
 openclaw gateway --port 18789 --verbose
 ```
 
-Confirm in logs you see something like:
+ログに次のような表示が出ることを確認してください。
 
 - `listening on ws://0.0.0.0:18789`
 
-For tailnet-only setups (recommended for Vienna ⇄ London), bind the gateway to the tailnet IP:
+tailnet 専用構成（Vienna ⇄ London のような構成に推奨）では、gateway を tailnet IP に bind します。
 
-- Set `gateway.bind: "tailnet"` in `~/.openclaw/openclaw.json` on the gateway host.
-- Restart the Gateway / macOS menubar app.
+- Gateway host 上の `~/.openclaw/openclaw.json` に `gateway.bind: "tailnet"` を設定する
+- Gateway / macOS menubar app を再起動する
 
-### 2) Verify discovery (optional)
+### 2) discovery を確認する（任意）
 
-From the gateway machine:
+gateway machine 上で:
 
 ```bash
 dns-sd -B _openclaw-gw._tcp local.
 ```
 
-More debugging notes: [Bonjour](/gateway/bonjour).
+追加のデバッグメモは [Bonjour](/gateway/bonjour) を参照してください。
 
-#### Tailnet (Vienna ⇄ London) discovery via unicast DNS-SD
+#### tailnet（Vienna ⇄ London）での unicast DNS-SD discovery
 
-Android NSD/mDNS discovery won’t cross networks. If your Android node and the gateway are on different networks but connected via Tailscale, use Wide-Area Bonjour / unicast DNS-SD instead:
+Android の NSD / mDNS discovery はネットワーク境界を越えません。Android node と gateway が別ネットワーク上にあり、Tailscale で接続している場合は、代わりに Wide-Area Bonjour / unicast DNS-SD を使います。
 
-1. Set up a DNS-SD zone (example `openclaw.internal.`) on the gateway host and publish `_openclaw-gw._tcp` records.
-2. Configure Tailscale split DNS for your chosen domain pointing at that DNS server.
+1. gateway host 上に DNS-SD zone（例: `openclaw.internal.`）を設定し、`_openclaw-gw._tcp` record を公開する
+2. その DNS server を向くように、選んだ domain の Tailscale split DNS を設定する
 
-Details and example CoreDNS config: [Bonjour](/gateway/bonjour).
+詳細と CoreDNS 設定例は [Bonjour](/gateway/bonjour) を参照してください。
 
-### 3) Connect from Android
+### 3) Android から接続する
 
-In the Android app:
+Android app 側では:
 
-- The app keeps its gateway connection alive via a **foreground service** (persistent notification).
-- Open the **Connect** tab.
-- Use **Setup Code** or **Manual** mode.
-- If discovery is blocked, use manual host/port (and TLS/token/password when required) in **Advanced controls**.
+- app は **foreground service**（永続 notification）により gateway connection を維持します
+- **Connect** タブを開く
+- **Setup Code** または **Manual** mode を使う
+- discovery が通らない場合は **Advanced controls** で手動 host / port を設定し、必要に応じて TLS / token / password も指定する
 
-After the first successful pairing, Android auto-reconnects on launch:
+最初の pairing が成功した後は、Android は起動時に自動再接続します。
 
-- Manual endpoint (if enabled), otherwise
-- The last discovered gateway (best-effort).
+- manual endpoint が有効ならそれを使う
+- そうでなければ、最後に検出した gateway へ best-effort で再接続する
 
-### 4) Approve pairing (CLI)
+### 4) pairing を承認する（CLI）
 
-On the gateway machine:
+gateway machine 上で:
 
 ```bash
 openclaw devices list
@@ -94,71 +96,71 @@ openclaw devices approve <requestId>
 openclaw devices reject <requestId>
 ```
 
-Pairing details: [Pairing](/channels/pairing).
+pairing の詳細は [Pairing](/channels/pairing) を参照してください。
 
-### 5) Verify the node is connected
+### 5) node が接続済みか確認する
 
-- Via nodes status:
+- nodes status 経由:
 
   ```bash
   openclaw nodes status
   ```
 
-- Via Gateway:
+- Gateway 経由:
 
   ```bash
   openclaw gateway call node.list --params "{}"
   ```
 
-### 6) Chat + history
+### 6) Chat と履歴
 
-The Android Chat tab supports session selection (default `main`, plus other existing sessions):
+Android の Chat タブでは session selection をサポートしています（デフォルトの `main` と、その他の既存 session を選択可能）。
 
-- History: `chat.history`
-- Send: `chat.send`
-- Push updates (best-effort): `chat.subscribe` → `event:"chat"`
+- 履歴: `chat.history`
+- 送信: `chat.send`
+- push update（best-effort）: `chat.subscribe` → `event:"chat"`
 
-### 7) Canvas + camera
+### 7) Canvas と camera
 
-#### Gateway Canvas Host (recommended for web content)
+#### Gateway Canvas Host（Web コンテンツ向け推奨）
 
-If you want the node to show real HTML/CSS/JS that the agent can edit on disk, point the node at the Gateway canvas host.
+agent が disk 上で編集できる本物の HTML / CSS / JS を node に表示したい場合は、node を Gateway canvas host へ向けます。
 
-Note: nodes load canvas from the Gateway HTTP server (same port as `gateway.port`, default `18789`).
+注: node は Gateway HTTP server（`gateway.port` と同じポート。デフォルト `18789`）から canvas を読み込みます。
 
-1. Create `~/.openclaw/workspace/canvas/index.html` on the gateway host.
+1. gateway host 上に `~/.openclaw/workspace/canvas/index.html` を作成する
 
-2. Navigate the node to it (LAN):
+2. node をその URL へ移動する（LAN）
 
 ```bash
 openclaw nodes invoke --node "<Android Node>" --command canvas.navigate --params '{"url":"http://<gateway-hostname>.local:18789/__openclaw__/canvas/"}'
 ```
 
-Tailnet (optional): if both devices are on Tailscale, use a MagicDNS name or tailnet IP instead of `.local`, e.g. `http://<gateway-magicdns>:18789/__openclaw__/canvas/`.
+tailnet（任意）: 両端末が Tailscale 上にある場合は、`.local` の代わりに MagicDNS 名または tailnet IP を使います。例: `http://<gateway-magicdns>:18789/__openclaw__/canvas/`
 
-This server injects a live-reload client into HTML and reloads on file changes.
-The A2UI host lives at `http://<gateway-host>:18789/__openclaw__/a2ui/`.
+この server は HTML へ live-reload client を注入し、ファイル変更時に自動 reload します。A2UI host は `http://<gateway-host>:18789/__openclaw__/a2ui/` にあります。
 
-Canvas commands (foreground only):
+Canvas command（foreground 限定）:
 
-- `canvas.eval`, `canvas.snapshot`, `canvas.navigate` (use `{"url":""}` or `{"url":"/"}` to return to the default scaffold). `canvas.snapshot` returns `{ format, base64 }` (default `format="jpeg"`).
-- A2UI: `canvas.a2ui.push`, `canvas.a2ui.reset` (`canvas.a2ui.pushJSONL` legacy alias)
+- `canvas.eval`、`canvas.snapshot`、`canvas.navigate`
+  デフォルト scaffold へ戻すには `{"url":""}` または `{"url":"/"}` を使います。`canvas.snapshot` は `{ format, base64 }` を返し、デフォルトの `format` は `"jpeg"` です
+- A2UI: `canvas.a2ui.push`、`canvas.a2ui.reset`（legacy alias: `canvas.a2ui.pushJSONL`）
 
-Camera commands (foreground only; permission-gated):
+camera command（foreground 限定、権限ゲートあり）:
 
-- `camera.snap` (jpg)
-- `camera.clip` (mp4)
+- `camera.snap`（jpg）
+- `camera.clip`（mp4）
 
-See [Camera node](/nodes/camera) for parameters and CLI helpers.
+パラメータや CLI helper は [Camera node](/nodes/camera) を参照してください。
 
-### 8) Voice + expanded Android command surface
+### 8) Voice と拡張 Android command surface
 
-- Voice: Android uses a single mic on/off flow in the Voice tab with transcript capture and TTS playback (ElevenLabs when configured, system TTS fallback). Voice stops when the app leaves the foreground.
-- Voice wake/talk-mode toggles are currently removed from Android UX/runtime.
-- Additional Android command families (availability depends on device + permissions):
-  - `device.status`, `device.info`, `device.permissions`, `device.health`
-  - `notifications.list`, `notifications.actions`
+- Voice: Android は Voice タブで単一の mic on / off フローを使い、transcript capture と TTS playback を行います（ElevenLabs が設定されていればそれを使用し、なければ system TTS へ fallback します）。app が foreground を離れると Voice は停止します
+- voice wake / talk-mode toggle は、現時点では Android の UX / runtime から削除されています
+- 追加の Android command family（利用可否は device と permission に依存）:
+  - `device.status`、`device.info`、`device.permissions`、`device.health`
+  - `notifications.list`、`notifications.actions`
   - `photos.latest`
-  - `contacts.search`, `contacts.add`
-  - `calendar.events`, `calendar.add`
-  - `motion.activity`, `motion.pedometer`
+  - `contacts.search`、`contacts.add`
+  - `calendar.events`、`calendar.add`
+  - `motion.activity`、`motion.pedometer`

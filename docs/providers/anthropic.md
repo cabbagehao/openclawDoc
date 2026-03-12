@@ -1,22 +1,23 @@
 ---
-summary: "Use Anthropic Claude via API keys or setup-token in OpenClaw"
+summary: "OpenClaw で Anthropic Claude を API キーまたは setup-token で利用する"
 read_when:
-  - You want to use Anthropic models in OpenClaw
-  - You want setup-token instead of API keys
+  - OpenClaw で Anthropic モデルを使いたいとき
+  - API キーの代わりに setup-token を使いたいとき
 title: "Anthropic"
+x-i18n:
+  source_hash: "2a94be0bbc40cf9b89991a3f7054f5297c8b0f832b8aceb0d561dc7521332885"
 ---
 
-# Anthropic (Claude)
+# Anthropic（Claude）
 
-Anthropic builds the **Claude** model family and provides access via an API.
-In OpenClaw you can authenticate with an API key or a **setup-token**.
+Anthropic は **Claude** モデル ファミリを提供しており、OpenClaw では API キーまたは **setup-token** を使って認証できます。
 
-## Option A: Anthropic API key
+## Option A: Anthropic API キー
 
-**Best for:** standard API access and usage-based billing.
-Create your API key in the Anthropic Console.
+**向いている用途:** 標準的な API 利用と従量課金。
+API キーは Anthropic Console で作成します。
 
-### CLI setup
+### CLI セットアップ
 
 ```bash
 openclaw onboard
@@ -26,7 +27,7 @@ openclaw onboard
 openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 ```
 
-### Config snippet
+### 設定例
 
 ```json5
 {
@@ -35,28 +36,27 @@ openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 }
 ```
 
-## Thinking defaults (Claude 4.6)
+## Thinking の既定値（Claude 4.6）
 
-- Anthropic Claude 4.6 models default to `adaptive` thinking in OpenClaw when no explicit thinking level is set.
-- You can override per-message (`/think:<level>`) or in model params:
-  `agents.defaults.models["anthropic/<model>"].params.thinking`.
-- Related Anthropic docs:
+- Anthropic Claude 4.6 系モデルでは、thinking level を明示しない場合、OpenClaw は既定で `adaptive` thinking を使います。
+- 上書きするには、メッセージ単位の `/think:<level>`、またはモデル パラメータ `agents.defaults.models["anthropic/<model>"].params.thinking` を使用します。
+- 関連ドキュメント:
   - [Adaptive thinking](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking)
   - [Extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
 
-## Prompt caching (Anthropic API)
+## Prompt caching（Anthropic API）
 
-OpenClaw supports Anthropic's prompt caching feature. This is **API-only**; subscription auth does not honor cache settings.
+OpenClaw は Anthropic の prompt caching をサポートしています。これは **API 利用時のみ** 有効で、subscription 認証では cache 設定は反映されません。
 
-### Configuration
+### 設定
 
-Use the `cacheRetention` parameter in your model config:
+モデル設定では `cacheRetention` パラメータを使います。
 
-| Value   | Cache Duration | Description                         |
-| ------- | -------------- | ----------------------------------- |
-| `none`  | No caching     | Disable prompt caching              |
-| `short` | 5 minutes      | Default for API Key auth            |
-| `long`  | 1 hour         | Extended cache (requires beta flag) |
+| 値      | キャッシュ時間 | 説明                                 |
+| ------- | -------------- | ------------------------------------ |
+| `none`  | キャッシュなし | prompt caching を無効化              |
+| `short` | 5 分           | API キー認証時の既定値               |
+| `long`  | 1 時間         | 長めのキャッシュ（beta flag が必要） |
 
 ```json5
 {
@@ -72,13 +72,13 @@ Use the `cacheRetention` parameter in your model config:
 }
 ```
 
-### Defaults
+### 既定値
 
-When using Anthropic API Key authentication, OpenClaw automatically applies `cacheRetention: "short"` (5-minute cache) for all Anthropic models. You can override this by explicitly setting `cacheRetention` in your config.
+Anthropic API キー認証を使う場合、OpenClaw はすべての Anthropic モデルに `cacheRetention: "short"`（5 分キャッシュ）を自動適用します。必要であれば、設定で明示的に `cacheRetention` を指定して上書きできます。
 
-### Per-agent cacheRetention overrides
+### エージェントごとの `cacheRetention` 上書き
 
-Use model-level params as your baseline, then override specific agents via `agents.list[].params`.
+モデル単位の params を基準にしつつ、`agents.list[].params` で特定エージェントだけ上書きできます。
 
 ```json5
 {
@@ -99,35 +99,33 @@ Use model-level params as your baseline, then override specific agents via `agen
 }
 ```
 
-Config merge order for cache-related params:
+cache 関連パラメータのマージ順序:
 
 1. `agents.defaults.models["provider/model"].params`
-2. `agents.list[].params` (matching `id`, overrides by key)
+2. `agents.list[].params`（`id` が一致するもの。キー単位で上書き）
 
-This lets one agent keep a long-lived cache while another agent on the same model disables caching to avoid write costs on bursty/low-reuse traffic.
+これにより、同じモデルを使いながら、一方のエージェントでは長めの cache を維持し、別のエージェントでは bursty で再利用性の低いトラフィック向けに caching を無効化できます。
 
-### Bedrock Claude notes
+### Bedrock 上の Claude に関する注意
 
-- Anthropic Claude models on Bedrock (`amazon-bedrock/*anthropic.claude*`) accept `cacheRetention` pass-through when configured.
-- Non-Anthropic Bedrock models are forced to `cacheRetention: "none"` at runtime.
-- Anthropic API-key smart defaults also seed `cacheRetention: "short"` for Claude-on-Bedrock model refs when no explicit value is set.
+- Bedrock 上の Anthropic Claude モデル（`amazon-bedrock/*anthropic.claude*`）でも、設定されていれば `cacheRetention` がそのまま渡されます。
+- Anthropic 以外の Bedrock モデルでは、実行時に `cacheRetention: "none"` が強制されます。
+- 明示的な値がない場合、Anthropic API キーの smart default は Claude-on-Bedrock モデル参照にも `cacheRetention: "short"` を適用します。
 
-### Legacy parameter
+### 旧パラメータ
 
-The older `cacheControlTtl` parameter is still supported for backwards compatibility:
+古い `cacheControlTtl` パラメータも、後方互換のため引き続きサポートされています。
 
-- `"5m"` maps to `short`
-- `"1h"` maps to `long`
+- `"5m"` は `short` に対応
+- `"1h"` は `long` に対応
 
-We recommend migrating to the new `cacheRetention` parameter.
+新しい `cacheRetention` への移行を推奨します。
 
-OpenClaw includes the `extended-cache-ttl-2025-04-11` beta flag for Anthropic API
-requests; keep it if you override provider headers (see [/gateway/configuration](/gateway/configuration)).
+OpenClaw では Anthropic API request に `extended-cache-ttl-2025-04-11` beta flag を含めています。provider header を上書きする場合でも、この flag は維持してください。詳細は [/gateway/configuration](/gateway/configuration) を参照してください。
 
-## 1M context window (Anthropic beta)
+## 1M context window（Anthropic beta）
 
-Anthropic's 1M context window is beta-gated. In OpenClaw, enable it per model
-with `params.context1m: true` for supported Opus/Sonnet models.
+Anthropic の 1M context window は beta 制です。OpenClaw では、対応する Opus / Sonnet モデルごとに `params.context1m: true` を設定して有効化します。
 
 ```json5
 {
@@ -143,53 +141,47 @@ with `params.context1m: true` for supported Opus/Sonnet models.
 }
 ```
 
-OpenClaw maps this to `anthropic-beta: context-1m-2025-08-07` on Anthropic
-requests.
+OpenClaw はこれを Anthropic request の `anthropic-beta: context-1m-2025-08-07` にマッピングします。
 
-This only activates when `params.context1m` is explicitly set to `true` for
-that model.
+この機能は、そのモデルで `params.context1m` を明示的に `true` にした場合にのみ有効になります。
 
-Requirement: Anthropic must allow long-context usage on that credential
-(typically API key billing, or a subscription account with Extra Usage
-enabled). Otherwise Anthropic returns:
-`HTTP 429: rate_limit_error: Extra usage is required for long context requests`.
+要件: 使用している認証情報で Anthropic 側が long-context 利用を許可している必要があります。通常は API キー課金、または Extra Usage が有効な subscription アカウントが必要です。そうでない場合、Anthropic は次を返します。
+`HTTP 429: rate_limit_error: Extra usage is required for long context requests`
 
-Note: Anthropic currently rejects `context-1m-*` beta requests when using
-OAuth/subscription tokens (`sk-ant-oat-*`). OpenClaw automatically skips the
-context1m beta header for OAuth auth and keeps the required OAuth betas.
+注: Anthropic は現在、OAuth / subscription token（`sk-ant-oat-*`）を使う場合、`context-1m-*` beta request を拒否します。OpenClaw は OAuth 認証時には自動的に context1m beta header を外し、必要な OAuth beta だけを残します。
 
 ## Option B: Claude setup-token
 
-**Best for:** using your Claude subscription.
+**向いている用途:** Claude subscription を使いたい場合。
 
-### Where to get a setup-token
+### setup-token の取得方法
 
-Setup-tokens are created by the **Claude Code CLI**, not the Anthropic Console. You can run this on **any machine**:
+setup-token は Anthropic Console ではなく、**Claude Code CLI** で作成します。これは **どのマシンでも** 実行できます。
 
 ```bash
 claude setup-token
 ```
 
-Paste the token into OpenClaw (wizard: **Anthropic token (paste setup-token)**), or run it on the gateway host:
+生成したトークンは OpenClaw のウィザード（**Anthropic token (paste setup-token)**）へ貼り付けるか、ゲートウェイ ホスト上で次を実行します。
 
 ```bash
 openclaw models auth setup-token --provider anthropic
 ```
 
-If you generated the token on a different machine, paste it:
+別のマシンで生成した場合は、ゲートウェイ ホストで貼り付けます。
 
 ```bash
 openclaw models auth paste-token --provider anthropic
 ```
 
-### CLI setup (setup-token)
+### CLI セットアップ（setup-token）
 
 ```bash
 # Paste a setup-token during onboarding
 openclaw onboard --auth-choice setup-token
 ```
 
-### Config snippet (setup-token)
+### 設定例（setup-token）
 
 ```json5
 {
@@ -197,35 +189,32 @@ openclaw onboard --auth-choice setup-token
 }
 ```
 
-## Notes
+## 注意事項
 
-- Generate the setup-token with `claude setup-token` and paste it, or run `openclaw models auth setup-token` on the gateway host.
-- If you see “OAuth token refresh failed …” on a Claude subscription, re-auth with a setup-token. See [/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription](/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription).
-- Auth details + reuse rules are in [/concepts/oauth](/concepts/oauth).
+- `claude setup-token` で setup-token を生成して貼り付けるか、ゲートウェイ ホストで `openclaw models auth setup-token` を実行してください。
+- Claude subscription で `OAuth token refresh failed ...` と表示される場合は、setup-token で再認証してください。詳細は [/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription](/gateway/troubleshooting#oauth-token-refresh-failed-anthropic-claude-subscription) を参照してください。
+- 認証の詳細と再利用ルールは [/concepts/oauth](/concepts/oauth) にあります。
 
-## Troubleshooting
+## トラブルシューティング
 
 **401 errors / token suddenly invalid**
 
-- Claude subscription auth can expire or be revoked. Re-run `claude setup-token`
-  and paste it into the **gateway host**.
-- If the Claude CLI login lives on a different machine, use
-  `openclaw models auth paste-token --provider anthropic` on the gateway host.
+- Claude subscription 認証は期限切れや revoke が起こりえます。`claude setup-token` を再実行し、**ゲートウェイ ホスト** に貼り付けてください。
+- Claude CLI のログインが別マシン上にある場合は、ゲートウェイ ホストで `openclaw models auth paste-token --provider anthropic` を使ってください。
 
 **No API key found for provider "anthropic"**
 
-- Auth is **per agent**. New agents don’t inherit the main agent’s keys.
-- Re-run onboarding for that agent, or paste a setup-token / API key on the
-  gateway host, then verify with `openclaw models status`.
+- 認証は **エージェント単位** です。新しいエージェントは main エージェントのキーを自動継承しません。
+- 該当エージェントの onboarding をやり直すか、ゲートウェイ ホストで setup-token / API キーを追加し、`openclaw models status` で確認してください。
 
 **No credentials found for profile `anthropic:default`**
 
-- Run `openclaw models status` to see which auth profile is active.
-- Re-run onboarding, or paste a setup-token / API key for that profile.
+- `openclaw models status` を実行して、どの auth profile が有効か確認してください。
+- onboarding をやり直すか、その profile 用の setup-token / API キーを登録してください。
 
 **No available auth profile (all in cooldown/unavailable)**
 
-- Check `openclaw models status --json` for `auth.unusableProfiles`.
-- Add another Anthropic profile or wait for cooldown.
+- `openclaw models status --json` で `auth.unusableProfiles` を確認してください。
+- 別の Anthropic profile を追加するか、cooldown が終わるまで待ってください。
 
-More: [/gateway/troubleshooting](/gateway/troubleshooting) and [/help/faq](/help/faq).
+詳しくは [/gateway/troubleshooting](/gateway/troubleshooting) と [/help/faq](/help/faq) を参照してください。

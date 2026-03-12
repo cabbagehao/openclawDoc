@@ -1,64 +1,71 @@
 ---
-summary: "Curated links to the most used OpenClaw docs."
+summary: "よく使われる OpenClaw ドキュメントへの厳選リンク集。"
 read_when:
-  - You want quick access to key docs pages
-title: "Docs directory"
+  - 主要なドキュメントページにすばやくアクセスしたいとき
+title: "ドキュメントディレクトリ"
+x-i18n:
+  source_path: "start/docs-directory.md"
+  source_hash: "44d94b7a654801e9caf5131a5b2bca1fbc66bcd80f06337e5edded4146f21f9d"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:49:35.038Z"
 ---
 
 <Note>
-This page is a curated index. If you are new, start with [Getting Started](/start/getting-started).
-For a complete map of the docs, see [Docs hubs](/start/hubs).
+このページは厳選されたインデックスです。初めての方は、[はじめに](/start/getting-started)からスタートしてください。
+ドキュメントの全体マップについては、[ドキュメントハブ](/start/hubs)を参照してください。
 </Note>
 
-## Start here
+## ここから始める
 
-- [Docs hubs (all pages linked)](/start/hubs)
-- [Help](/help)
-- [Configuration](/gateway/configuration)
-- [Configuration examples](/gateway/configuration-examples)
-- [Slash commands](/tools/slash-commands)
-- [Multi-agent routing](/concepts/multi-agent)
-- [Updating and rollback](/install/updating)
-- [Pairing (DM and nodes)](/channels/pairing)
-- [Nix mode](/install/nix)
-- [OpenClaw assistant setup](/start/openclaw)
+- [ドキュメントハブ（全ページリンク）](/start/hubs)
+- [ヘルプ](/help)
+- [設定](/gateway/configuration)
+- [設定例](/gateway/configuration-examples)
+- [スラッシュコマンド](/tools/slash-commands)
+- [マルチエージェントルーティング](/concepts/multi-agent)
+- [アップデートとロールバック](/install/updating)
+- [ペアリング（DM とノード）](/channels/pairing)
+- [Nix モード](/install/nix)
+- [OpenClaw アシスタントのセットアップ](/start/openclaw)
 - [Skills](/tools/skills)
-- [Skills config](/tools/skills-config)
-- [Workspace templates](/reference/templates/AGENTS)
-- [RPC adapters](/reference/rpc)
-- [Gateway runbook](/gateway)
-- [Nodes (iOS and Android)](/nodes)
-- [Web surfaces (Control UI)](/web)
-- [Discovery and transports](/gateway/discovery)
-- [Remote access](/gateway/remote)
+- [Skills 設定](/tools/skills-config)
+- [ワークスペーステンプレート](/reference/templates/AGENTS)
+- [RPC アダプター](/reference/rpc)
+- [Gateway ランブック](/gateway)
+- [ノード（iOS および Android）](/nodes)
+- [Web サーフェス（Control UI）](/web)
+- [ディスカバリーとトランスポート](/gateway/discovery)
+- [リモートアクセス](/gateway/remote)
 
-## Providers and UX
+## プロバイダーと UX
 
 - [WebChat](/web/webchat)
-- [Control UI (browser)](/web/control-ui)
+- [Control UI（ブラウザ）](/web/control-ui)
 - [Telegram](/channels/telegram)
 - [Discord](/channels/discord)
-- [Mattermost (plugin)](/channels/mattermost)
-- [BlueBubbles (iMessage)](/channels/bluebubbles)
-- [iMessage (legacy)](/channels/imessage)
-- [Groups](/channels/groups)
-- [WhatsApp group messages](/channels/group-messages)
-- [Media images](/nodes/images)
-- [Media audio](/nodes/audio)
+- [Mattermost（プラグイン）](/channels/mattermost)
+- [BlueBubbles（iMessage）](/channels/bluebubbles)
+- [iMessage（レガシー）](/channels/imessage)
+- [グループ](/channels/groups)
+- [WhatsApp グループメッセージ](/channels/group-messages)
+- [メディア画像](/nodes/images)
+- [メディアオーディオ](/nodes/audio)
 
-## Companion apps
+## コンパニオンアプリ
 
-- [macOS app](/platforms/macos)
-- [iOS app](/platforms/ios)
-- [Android app](/platforms/android)
-- [Windows (WSL2)](/platforms/windows)
-- [Linux app](/platforms/linux)
+- [macOS アプリ](/platforms/macos)
+- [iOS アプリ](/platforms/ios)
+- [Android アプリ](/platforms/android)
+- [Windows（WSL2）](/platforms/windows)
+- [Linux アプリ](/platforms/linux)
 
-## Operations and safety
+## 運用とセキュリティ
 
-- [Sessions](/concepts/session)
-- [Cron jobs](/automation/cron-jobs)
-- [Webhooks](/automation/webhook)
-- [Gmail hooks (Pub/Sub)](/automation/gmail-pubsub)
-- [Security](/gateway/security)
-- [Troubleshooting](/gateway/troubleshooting)
+- [セッション](/concepts/session)
+- [Cron ジョブ](/automation/cron-jobs)
+- [Webhook](/automation/webhook)
+- [Gmail フック（Pub/Sub）](/automation/gmail-pubsub)
+- [セキュリティ](/gateway/security)
+- [トラブルシューティング](/gateway/troubleshooting)

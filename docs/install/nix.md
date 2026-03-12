@@ -1,19 +1,19 @@
 ---
-summary: "Install OpenClaw declaratively with Nix"
+summary: "Nix を使用して OpenClaw を宣言的にインストールする"
 read_when:
-  - You want reproducible, rollback-able installs
-  - You're already using Nix/NixOS/Home Manager
-  - You want everything pinned and managed declaratively
+  - 再現性があり、ロールバック可能なインストールを求めている場合
+  - すでに Nix/NixOS/Home Manager を使用している場合
+  - すべてを固定して宣言的に管理したい場合
 title: "Nix"
 ---
 
-# Nix Installation
+# Nix インストール
 
-The recommended way to run OpenClaw with Nix is via **[nix-openclaw](https://github.com/openclaw/nix-openclaw)** — a batteries-included Home Manager module.
+Nix で OpenClaw を使う場合の推奨手段は、**[nix-openclaw](https://github.com/openclaw/nix-openclaw)** を利用する方法です。必要なものが一通り揃った Home Manager モジュールとして提供されています。
 
-## Quick Start
+## クイックスタート
 
-Paste this to your AI agent (Claude, Cursor, etc.):
+次の内容を AI エージェント (Claude、Cursor など) に貼り付けてください。
 
 ```text
 I want to set up nix-openclaw on my Mac.
@@ -30,69 +30,65 @@ What I need you to do:
 Reference the nix-openclaw README for module options.
 ```
 
-> **📦 Full guide: [github.com/openclaw/nix-openclaw](https://github.com/openclaw/nix-openclaw)**
+> **📦 完全なガイド: [github.com/openclaw/nix-openclaw](https://github.com/openclaw/nix-openclaw)**
 >
-> The nix-openclaw repo is the source of truth for Nix installation. This page is just a quick overview.
+> nix-openclaw リポジトリは、Nix インストールの信頼できる情報源です。このページは単なる概要です。
 
-## What you get
+## 得られるもの
 
-- Gateway + macOS app + tools (whisper, spotify, cameras) — all pinned
-- Launchd service that survives reboots
-- Plugin system with declarative config
-- Instant rollback: `home-manager switch --rollback`
+- Gateway + macOS アプリ + ツール (whisper, spotify, cameras) — すべて固定
+- 再起動後も残る Launchd サービス
+- 宣言的設定を備えたプラグインシステム
+- インスタントロールバック: `home-manager switch --rollback`
 
 ---
 
-## Nix Mode Runtime Behavior
+## Nix モードのランタイムの動作
 
-When `OPENCLAW_NIX_MODE=1` is set (automatic with nix-openclaw):
+`OPENCLAW_NIX_MODE=1` が設定されている場合 (nix-openclaw では自動):
 
-OpenClaw supports a **Nix mode** that makes configuration deterministic and disables auto-install flows.
-Enable it by exporting:
+OpenClaw には、設定を決定論的に保ち、自動インストール系のフローを無効にする **Nix モード** があります。次を export して有効にします。
 
 ```bash
 OPENCLAW_NIX_MODE=1
 ```
 
-On macOS, the GUI app does not automatically inherit shell env vars. You can
-also enable Nix mode via defaults:
+macOS では、GUI アプリは自動的にシェルの環境変数を継承しません。
+defaults 経由で Nix モードを有効にすることもできます:
 
 ```bash
 defaults write ai.openclaw.mac openclaw.nixMode -bool true
 ```
 
-### Config + state paths
+### Config + 状態のパス
 
-OpenClaw reads JSON5 config from `OPENCLAW_CONFIG_PATH` and stores mutable data in `OPENCLAW_STATE_DIR`.
-When needed, you can also set `OPENCLAW_HOME` to control the base home directory used for internal path resolution.
+OpenClaw は `OPENCLAW_CONFIG_PATH` から JSON5 設定を読み取り、`OPENCLAW_STATE_DIR` にミュータブルなデータを保存します。
+必要に応じて、`OPENCLAW_HOME` を設定して、内部パス解決に使用されるベースのホームディレクトリを制御することもできます。
 
-- `OPENCLAW_HOME` (default precedence: `HOME` / `USERPROFILE` / `os.homedir()`)
-- `OPENCLAW_STATE_DIR` (default: `~/.openclaw`)
-- `OPENCLAW_CONFIG_PATH` (default: `$OPENCLAW_STATE_DIR/openclaw.json`)
+- `OPENCLAW_HOME` (優先順位のデフォルト: `HOME` / `USERPROFILE` / `os.homedir()`)
+- `OPENCLAW_STATE_DIR` (デフォルト: `~/.openclaw`)
+- `OPENCLAW_CONFIG_PATH` (デフォルト: `$OPENCLAW_STATE_DIR/openclaw.json`)
 
-When running under Nix, set these explicitly to Nix-managed locations so runtime state and config
-stay out of the immutable store.
+Nix 環境で実行する場合は、ランタイム状態や設定が不変ストアの外に出るよう、これらのパスを Nix 管理下の適切な場所へ明示的に向けてください。
 
-### Runtime behavior in Nix mode
+### Nix モードでのランタイムの動作
 
-- Auto-install and self-mutation flows are disabled
-- Missing dependencies surface Nix-specific remediation messages
-- UI surfaces a read-only Nix mode banner when present
+- 自動インストールや自己変更系フローは無効になります
+- 依存関係が不足している場合、Nix 固有の修復メッセージが表示されます
+- 対応 UI では、読み取り専用の Nix モードバナーが表示されます
 
-## Packaging note (macOS)
+## パッケージングに関する注意 (macOS)
 
-The macOS packaging flow expects a stable Info.plist template at:
+macOS のパッケージングフローは、以下にある安定した Info.plist テンプレートを想定しています:
 
 ```
 apps/macos/Sources/OpenClaw/Resources/Info.plist
 ```
 
-[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) copies this template into the app bundle and patches dynamic fields
-(bundle ID, version/build, Git SHA, Sparkle keys). This keeps the plist deterministic for SwiftPM
-packaging and Nix builds (which do not rely on a full Xcode toolchain).
+[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) は、このテンプレートをアプリバンドルにコピーし、動的フィールド (バンドル ID、バージョン/ビルド、Git SHA、Sparkle キー) にパッチを当てます。これにより、SwiftPM パッケージングと Nix ビルド (完全な Xcode ツールチェーンに依存しない) で plist が決定論的に保たれます。
 
-## Related
+## 関連
 
-- [nix-openclaw](https://github.com/openclaw/nix-openclaw) — full setup guide
-- [Wizard](/start/wizard) — non-Nix CLI setup
-- [Docker](/install/docker) — containerized setup
+- [nix-openclaw](https://github.com/openclaw/nix-openclaw) — 完全なセットアップガイド
+- [ウィザード](/start/wizard) — Nix 以外の CLI セットアップ
+- [Docker](/install/docker) — コンテナ化されたセットアップ

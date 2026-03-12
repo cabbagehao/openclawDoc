@@ -1,27 +1,27 @@
 ---
-title: "Pi Integration Architecture"
-summary: "Architecture of OpenClaw's embedded Pi agent integration and session lifecycle"
+title: "Pi 統合アーキテクチャ"
+summary: "OpenClaw における組み込み Pi エージェント統合とセッションライフサイクルのアーキテクチャ"
 read_when:
-  - Understanding Pi SDK integration design in OpenClaw
-  - Modifying agent session lifecycle, tooling, or provider wiring for Pi
+  - OpenClaw における Pi SDK 統合設計を理解したいとき
+  - Pi 向けのエージェントのセッションライフサイクル、ツール、またはプロバイダー接続を変更するとき
 ---
 
-# Pi Integration Architecture
+# Pi 統合アーキテクチャ
 
-This document describes how OpenClaw integrates with [pi-coding-agent](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent) and its sibling packages (`pi-ai`, `pi-agent-core`, `pi-tui`) to power its AI agent capabilities.
+このドキュメントでは、OpenClaw が [pi-coding-agent](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent) と、その関連パッケージである `pi-ai`、`pi-agent-core`、`pi-tui` をどのように統合し、AI エージェント機能を実装しているかを説明します。
 
-## Overview
+## 概要
 
-OpenClaw uses the pi SDK to embed an AI coding agent into its messaging gateway architecture. Instead of spawning pi as a subprocess or using RPC mode, OpenClaw directly imports and instantiates pi's `AgentSession` via `createAgentSession()`. This embedded approach provides:
+OpenClaw は pi SDK を使って、AI コーディングエージェントをメッセージング Gateway アーキテクチャへ組み込みます。pi をサブプロセスとして起動したり、RPC モードを使ったりするのではなく、`createAgentSession()` を通じて pi の `AgentSession` を直接 import し、インスタンス化します。この組み込み方式には、次の利点があります。
 
-- Full control over session lifecycle and event handling
-- Custom tool injection (messaging, sandbox, channel-specific actions)
-- System prompt customization per channel/context
-- Session persistence with branching/compaction support
-- Multi-account auth profile rotation with failover
-- Provider-agnostic model switching
+- セッションのライフサイクルとイベント処理を完全に制御できる
+- カスタムツールを注入できる（メッセージング、サンドボックス、チャンネル固有のアクションなど）
+- チャンネルやコンテキストごとにシステムプロンプトをカスタマイズできる
+- 分岐や compaction を含むセッション永続化をサポートできる
+- フェイルオーバー付きのマルチアカウント認証プロファイルローテーションを使える
+- プロバイダーに依存しないモデル切り替えができる
 
-## Package Dependencies
+## パッケージ依存関係
 
 ```json
 {
@@ -32,90 +32,90 @@ OpenClaw uses the pi SDK to embed an AI coding agent into its messaging gateway 
 }
 ```
 
-| Package           | Purpose                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `pi-ai`           | Core LLM abstractions: `Model`, `streamSimple`, message types, provider APIs                           |
-| `pi-agent-core`   | Agent loop, tool execution, `AgentMessage` types                                                       |
-| `pi-coding-agent` | High-level SDK: `createAgentSession`, `SessionManager`, `AuthStorage`, `ModelRegistry`, built-in tools |
-| `pi-tui`          | Terminal UI components (used in OpenClaw's local TUI mode)                                             |
+| Package           | Purpose                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| `pi-ai`           | コア LLM 抽象化: `Model`、`streamSimple`、メッセージ型、プロバイダー API                           |
+| `pi-agent-core`   | エージェントループ、ツール実行、`AgentMessage` 型                                                  |
+| `pi-coding-agent` | 高レベル SDK: `createAgentSession`、`SessionManager`、`AuthStorage`、`ModelRegistry`、組み込みツール |
+| `pi-tui`          | ターミナル UI コンポーネント（OpenClaw のローカル TUI モードで使用）                               |
 
-## File Structure
+## ファイル構成
 
 ```
 src/agents/
-├── pi-embedded-runner.ts          # Re-exports from pi-embedded-runner/
+├── pi-embedded-runner.ts          # pi-embedded-runner/ から再エクスポート
 ├── pi-embedded-runner/
-│   ├── run.ts                     # Main entry: runEmbeddedPiAgent()
+│   ├── run.ts                     # メインエントリ: runEmbeddedPiAgent()
 │   ├── run/
-│   │   ├── attempt.ts             # Single attempt logic with session setup
-│   │   ├── params.ts              # RunEmbeddedPiAgentParams type
-│   │   ├── payloads.ts            # Build response payloads from run results
-│   │   ├── images.ts              # Vision model image injection
+│   │   ├── attempt.ts             # セッションセットアップを含む単一試行のロジック
+│   │   ├── params.ts              # RunEmbeddedPiAgentParams 型
+│   │   ├── payloads.ts            # 実行結果から応答ペイロードを構築
+│   │   ├── images.ts              # Vision モデル向け画像注入
 │   │   └── types.ts               # EmbeddedRunAttemptResult
-│   ├── abort.ts                   # Abort error detection
-│   ├── cache-ttl.ts               # Cache TTL tracking for context pruning
-│   ├── compact.ts                 # Manual/auto compaction logic
-│   ├── extensions.ts              # Load pi extensions for embedded runs
-│   ├── extra-params.ts            # Provider-specific stream params
-│   ├── google.ts                  # Google/Gemini turn ordering fixes
-│   ├── history.ts                 # History limiting (DM vs group)
-│   ├── lanes.ts                   # Session/global command lanes
-│   ├── logger.ts                  # Subsystem logger
-│   ├── model.ts                   # Model resolution via ModelRegistry
-│   ├── runs.ts                    # Active run tracking, abort, queue
-│   ├── sandbox-info.ts            # Sandbox info for system prompt
-│   ├── session-manager-cache.ts   # SessionManager instance caching
-│   ├── session-manager-init.ts    # Session file initialization
-│   ├── system-prompt.ts           # System prompt builder
-│   ├── tool-split.ts              # Split tools into builtIn vs custom
-│   ├── types.ts                   # EmbeddedPiAgentMeta, EmbeddedPiRunResult
-│   └── utils.ts                   # ThinkLevel mapping, error description
-├── pi-embedded-subscribe.ts       # Session event subscription/dispatch
+│   ├── abort.ts                   # 中断エラーの検出
+│   ├── cache-ttl.ts               # コンテキスト刈り込み用の Cache TTL 追跡
+│   ├── compact.ts                 # 手動/自動 compaction ロジック
+│   ├── extensions.ts              # 組み込み実行向けの pi 拡張を読み込む
+│   ├── extra-params.ts            # プロバイダー固有の stream パラメーター
+│   ├── google.ts                  # Google/Gemini のターン順序修正
+│   ├── history.ts                 # 履歴制限（DM 対グループ）
+│   ├── lanes.ts                   # セッション/グローバルのコマンドレーン
+│   ├── logger.ts                  # サブシステムロガー
+│   ├── model.ts                   # ModelRegistry 経由のモデル解決
+│   ├── runs.ts                    # アクティブ実行の追跡、中断、キュー
+│   ├── sandbox-info.ts            # システムプロンプト向けのサンドボックス情報
+│   ├── session-manager-cache.ts   # SessionManager インスタンスのキャッシュ
+│   ├── session-manager-init.ts    # セッションファイルの初期化
+│   ├── system-prompt.ts           # システムプロンプトビルダー
+│   ├── tool-split.ts              # ツールを builtIn と custom に分割
+│   ├── types.ts                   # EmbeddedPiAgentMeta、EmbeddedPiRunResult
+│   └── utils.ts                   # ThinkLevel マッピング、エラー説明
+├── pi-embedded-subscribe.ts       # セッションイベントの購読/ディスパッチ
 ├── pi-embedded-subscribe.types.ts # SubscribeEmbeddedPiSessionParams
-├── pi-embedded-subscribe.handlers.ts # Event handler factory
+├── pi-embedded-subscribe.handlers.ts # イベントハンドラーファクトリー
 ├── pi-embedded-subscribe.handlers.lifecycle.ts
 ├── pi-embedded-subscribe.handlers.types.ts
-├── pi-embedded-block-chunker.ts   # Streaming block reply chunking
-├── pi-embedded-messaging.ts       # Messaging tool sent tracking
-├── pi-embedded-helpers.ts         # Error classification, turn validation
-├── pi-embedded-helpers/           # Helper modules
-├── pi-embedded-utils.ts           # Formatting utilities
+├── pi-embedded-block-chunker.ts   # ストリーミングブロック返信のチャンク化
+├── pi-embedded-messaging.ts       # メッセージングツールの送信追跡
+├── pi-embedded-helpers.ts         # エラー分類、ターン検証
+├── pi-embedded-helpers/           # ヘルパーモジュール
+├── pi-embedded-utils.ts           # フォーマットユーティリティ
 ├── pi-tools.ts                    # createOpenClawCodingTools()
-├── pi-tools.abort.ts              # AbortSignal wrapping for tools
-├── pi-tools.policy.ts             # Tool allowlist/denylist policy
-├── pi-tools.read.ts               # Read tool customizations
-├── pi-tools.schema.ts             # Tool schema normalization
-├── pi-tools.types.ts              # AnyAgentTool type alias
-├── pi-tool-definition-adapter.ts  # AgentTool -> ToolDefinition adapter
-├── pi-settings.ts                 # Settings overrides
-├── pi-extensions/                 # Custom pi extensions
-│   ├── compaction-safeguard.ts    # Safeguard extension
+├── pi-tools.abort.ts              # ツール向け AbortSignal ラップ
+├── pi-tools.policy.ts             # ツール allowlist/denylist ポリシー
+├── pi-tools.read.ts               # read ツールのカスタマイズ
+├── pi-tools.schema.ts             # ツールスキーマの正規化
+├── pi-tools.types.ts              # AnyAgentTool 型エイリアス
+├── pi-tool-definition-adapter.ts  # AgentTool -> ToolDefinition アダプター
+├── pi-settings.ts                 # 設定のオーバーライド
+├── pi-extensions/                 # カスタム pi 拡張
+│   ├── compaction-safeguard.ts    # 保護拡張
 │   ├── compaction-safeguard-runtime.ts
-│   ├── context-pruning.ts         # Cache-TTL context pruning extension
+│   ├── context-pruning.ts         # Cache-TTL ベースのコンテキスト刈り込み拡張
 │   └── context-pruning/
-├── model-auth.ts                  # Auth profile resolution
-├── auth-profiles.ts               # Profile store, cooldown, failover
-├── model-selection.ts             # Default model resolution
-├── models-config.ts               # models.json generation
-├── model-catalog.ts               # Model catalog cache
-├── context-window-guard.ts        # Context window validation
-├── failover-error.ts              # FailoverError class
-├── defaults.ts                    # DEFAULT_PROVIDER, DEFAULT_MODEL
+├── model-auth.ts                  # 認証プロファイル解決
+├── auth-profiles.ts               # プロファイルストア、クールダウン、フェイルオーバー
+├── model-selection.ts             # デフォルトモデル解決
+├── models-config.ts               # models.json の生成
+├── model-catalog.ts               # モデルカタログキャッシュ
+├── context-window-guard.ts        # コンテキストウィンドウ検証
+├── failover-error.ts              # FailoverError クラス
+├── defaults.ts                    # DEFAULT_PROVIDER、DEFAULT_MODEL
 ├── system-prompt.ts               # buildAgentSystemPrompt()
-├── system-prompt-params.ts        # System prompt parameter resolution
-├── system-prompt-report.ts        # Debug report generation
-├── tool-summaries.ts              # Tool description summaries
-├── tool-policy.ts                 # Tool policy resolution
-├── transcript-policy.ts           # Transcript validation policy
-├── skills.ts                      # Skill snapshot/prompt building
-├── skills/                        # Skill subsystem
-├── sandbox.ts                     # Sandbox context resolution
-├── sandbox/                       # Sandbox subsystem
-├── channel-tools.ts               # Channel-specific tool injection
-├── openclaw-tools.ts              # OpenClaw-specific tools
-├── bash-tools.ts                  # exec/process tools
-├── apply-patch.ts                 # apply_patch tool (OpenAI)
-├── tools/                         # Individual tool implementations
+├── system-prompt-params.ts        # システムプロンプトパラメーターの解決
+├── system-prompt-report.ts        # デバッグレポートの生成
+├── tool-summaries.ts              # ツール説明の要約
+├── tool-policy.ts                 # ツールポリシー解決
+├── transcript-policy.ts           # Transcript 検証ポリシー
+├── skills.ts                      # Skills のスナップショット/プロンプト構築
+├── skills/                        # Skills サブシステム
+├── sandbox.ts                     # サンドボックスコンテキスト解決
+├── sandbox/                       # サンドボックスサブシステム
+├── channel-tools.ts               # チャンネル固有ツールの注入
+├── openclaw-tools.ts              # OpenClaw 固有ツール
+├── bash-tools.ts                  # exec/process ツール
+├── apply-patch.ts                 # apply_patch ツール（OpenAI）
+├── tools/                         # 個別ツール実装
 │   ├── browser-tool.ts
 │   ├── canvas-tool.ts
 │   ├── cron-tool.ts
@@ -132,11 +132,11 @@ src/agents/
 └── ...
 ```
 
-## Core Integration Flow
+## コア統合フロー
 
-### 1. Running an Embedded Agent
+### 1. 組み込みエージェントの実行
 
-The main entry point is `runEmbeddedPiAgent()` in `pi-embedded-runner/run.ts`:
+メインエントリポイントは `pi-embedded-runner/run.ts` の `runEmbeddedPiAgent()` です。
 
 ```typescript
 import { runEmbeddedPiAgent } from "./agents/pi-embedded-runner.js";
@@ -158,9 +158,9 @@ const result = await runEmbeddedPiAgent({
 });
 ```
 
-### 2. Session Creation
+### 2. セッション作成
 
-Inside `runEmbeddedAttempt()` (called by `runEmbeddedPiAgent()`), the pi SDK is used:
+`runEmbeddedAttempt()`（`runEmbeddedPiAgent()` から呼び出される）の内部では、pi SDK を使用します。
 
 ```typescript
 import {
@@ -195,9 +195,9 @@ const { session } = await createAgentSession({
 applySystemPromptOverrideToSession(session, systemPromptOverride);
 ```
 
-### 3. Event Subscription
+### 3. イベント購読
 
-`subscribeEmbeddedPiSession()` subscribes to pi's `AgentSession` events:
+`subscribeEmbeddedPiSession()` は pi の `AgentSession` イベントを購読します。
 
 ```typescript
 const subscription = subscribeEmbeddedPiSession({
@@ -214,43 +214,41 @@ const subscription = subscribeEmbeddedPiSession({
 });
 ```
 
-Events handled include:
+主に次のイベントを処理します。
 
-- `message_start` / `message_end` / `message_update` (streaming text/thinking)
+- `message_start` / `message_end` / `message_update`（ストリーミング中のテキスト/思考）
 - `tool_execution_start` / `tool_execution_update` / `tool_execution_end`
 - `turn_start` / `turn_end`
 - `agent_start` / `agent_end`
 - `auto_compaction_start` / `auto_compaction_end`
 
-### 4. Prompting
+### 4. プロンプト送信
 
-After setup, the session is prompted:
+セットアップ後、セッションに対してプロンプトを送ります。
 
 ```typescript
 await session.prompt(effectivePrompt, { images: imageResult.images });
 ```
 
-The SDK handles the full agent loop: sending to LLM, executing tool calls, streaming responses.
+SDK 側で、LLM への送信、tool call の実行、応答のストリーミングを含むエージェントループ全体を処理します。
 
-Image injection is prompt-local: OpenClaw loads image refs from the current prompt and
-passes them via `images` for that turn only. It does not re-scan older history turns
-to re-inject image payloads.
+画像注入はプロンプトローカルです。OpenClaw は現在のプロンプトから画像参照を読み取り、そのターンに限って `images` 経由で渡します。過去の履歴ターンを再走査して、画像ペイロードを再注入することはありません。
 
-## Tool Architecture
+## ツールアーキテクチャ
 
-### Tool Pipeline
+### ツールパイプライン
 
-1. **Base Tools**: pi's `codingTools` (read, bash, edit, write)
-2. **Custom Replacements**: OpenClaw replaces bash with `exec`/`process`, customizes read/edit/write for sandbox
-3. **OpenClaw Tools**: messaging, browser, canvas, sessions, cron, gateway, etc.
-4. **Channel Tools**: Discord/Telegram/Slack/WhatsApp-specific action tools
-5. **Policy Filtering**: Tools filtered by profile, provider, agent, group, sandbox policies
-6. **Schema Normalization**: Schemas cleaned for Gemini/OpenAI quirks
-7. **AbortSignal Wrapping**: Tools wrapped to respect abort signals
+1. **ベースツール**: pi の `codingTools`（read、bash、edit、write）
+2. **カスタム置き換え**: OpenClaw は bash を `exec` / `process` に置き換え、sandbox 向けに read / edit / write をカスタマイズ
+3. **OpenClaw ツール**: messaging、browser、canvas、sessions、cron、gateway など
+4. **チャンネルツール**: Discord / Telegram / Slack / WhatsApp 固有のアクションツール
+5. **ポリシーフィルタリング**: profile、provider、agent、group、sandbox のポリシーでツールを絞り込む
+6. **スキーマ正規化**: Gemini / OpenAI の実装上の癖に合わせてスキーマを調整
+7. **AbortSignal ラップ**: 中断シグナルを尊重するようにツールをラップ
 
-### Tool Definition Adapter
+### ツール定義アダプター
 
-pi-agent-core's `AgentTool` has a different `execute` signature than pi-coding-agent's `ToolDefinition`. The adapter in `pi-tool-definition-adapter.ts` bridges this:
+pi-agent-core の `AgentTool` は、pi-coding-agent の `ToolDefinition` とは異なる `execute` シグネチャを持ちます。`pi-tool-definition-adapter.ts` の adapter が、その差分を吸収します。
 
 ```typescript
 export function toToolDefinitions(tools: AnyAgentTool[]): ToolDefinition[] {
@@ -267,9 +265,9 @@ export function toToolDefinitions(tools: AnyAgentTool[]): ToolDefinition[] {
 }
 ```
 
-### Tool Split Strategy
+### ツール分割戦略
 
-`splitSdkTools()` passes all tools via `customTools`:
+`splitSdkTools()` はすべてのツールを `customTools` 経由で渡します。
 
 ```typescript
 export function splitSdkTools(options: { tools: AnyAgentTool[]; sandboxEnabled: boolean }) {
@@ -280,34 +278,34 @@ export function splitSdkTools(options: { tools: AnyAgentTool[]; sandboxEnabled: 
 }
 ```
 
-This ensures OpenClaw's policy filtering, sandbox integration, and extended toolset remain consistent across providers.
+これにより、OpenClaw の policy filtering、サンドボックス統合、拡張 toolset を provider ごとにぶらさず適用できます。
 
-## System Prompt Construction
+## システムプロンプトの構築
 
-The system prompt is built in `buildAgentSystemPrompt()` (`system-prompt.ts`). It assembles a full prompt with sections including Tooling, Tool Call Style, Safety guardrails, OpenClaw CLI reference, Skills, Docs, Workspace, Sandbox, Messaging, Reply Tags, Voice, Silent Replies, Heartbeats, Runtime metadata, plus Memory and Reactions when enabled, and optional context files and extra system prompt content. Sections are trimmed for minimal prompt mode used by subagents.
+システムプロンプトは `buildAgentSystemPrompt()`（`system-prompt.ts`）で構築されます。Tooling、Tool Call Style、安全ガードレール、OpenClaw CLI リファレンス、Skills、Docs、Workspace、Sandbox、Messaging、Reply Tags、Voice、Silent Replies、Heartbeats、ランタイムメタデータに加え、有効時には Memory と Reactions、さらに任意の context file や追加 system prompt も含めて、完全なプロンプトを組み立てます。subagent 用の minimal prompt mode では、各セクションを短縮します。
 
-The prompt is applied after session creation via `applySystemPromptOverrideToSession()`:
+プロンプトは、セッション作成後に `applySystemPromptOverrideToSession()` を通じて適用されます。
 
 ```typescript
 const systemPromptOverride = createSystemPromptOverride(appendPrompt);
 applySystemPromptOverrideToSession(session, systemPromptOverride);
 ```
 
-## Session Management
+## セッション管理
 
-### Session Files
+### セッションファイル
 
-Sessions are JSONL files with tree structure (id/parentId linking). Pi's `SessionManager` handles persistence:
+セッションは、ツリー構造（`id` / `parentId` のリンク）を持つ JSONL ファイルです。pi の `SessionManager` が永続化を処理します。
 
 ```typescript
 const sessionManager = SessionManager.open(params.sessionFile);
 ```
 
-OpenClaw wraps this with `guardSessionManager()` for tool result safety.
+OpenClaw はこれを `guardSessionManager()` でラップし、tool result の取り扱いを安全側に寄せています。
 
-### Session Caching
+### セッションキャッシュ
 
-`session-manager-cache.ts` caches SessionManager instances to avoid repeated file parsing:
+`session-manager-cache.ts` は `SessionManager` instance をキャッシュし、同じファイルの再解析を避けます。
 
 ```typescript
 await prewarmSessionFile(params.sessionFile);
@@ -315,13 +313,13 @@ sessionManager = SessionManager.open(params.sessionFile);
 trackSessionManagerAccess(params.sessionFile);
 ```
 
-### History Limiting
+### 履歴制限
 
-`limitHistoryTurns()` trims conversation history based on channel type (DM vs group).
+`limitHistoryTurns()` は、チャンネル種別（DM 対グループ）に応じて会話履歴を切り詰めます。
 
 ### Compaction
 
-Auto-compaction triggers on context overflow. `compactEmbeddedPiSessionDirect()` handles manual compaction:
+自動 compaction はコンテキストオーバーフロー時に発動します。`compactEmbeddedPiSessionDirect()` が手動 compaction を処理します。
 
 ```typescript
 const compactResult = await compactEmbeddedPiSessionDirect({
@@ -329,25 +327,25 @@ const compactResult = await compactEmbeddedPiSessionDirect({
 });
 ```
 
-## Authentication & Model Resolution
+## 認証とモデル解決
 
-### Auth Profiles
+### 認証プロファイル
 
-OpenClaw maintains an auth profile store with multiple API keys per provider:
+OpenClaw は、provider ごとに複数の API key を持てる認証 profile store を維持します。
 
 ```typescript
 const authStore = ensureAuthProfileStore(agentDir, { allowKeychainPrompt: false });
 const profileOrder = resolveAuthProfileOrder({ cfg, store: authStore, provider, preferredProfile });
 ```
 
-Profiles rotate on failures with cooldown tracking:
+profile は、cooldown を追跡しながら失敗時にローテーションされます。
 
 ```typescript
 await markAuthProfileFailure({ store, profileId, reason, cfg, agentDir });
 const rotated = await advanceAuthProfile();
 ```
 
-### Model Resolution
+### モデル解決
 
 ```typescript
 import { resolveModel } from "./pi-embedded-runner/model.js";
@@ -363,9 +361,9 @@ const { model, error, authStorage, modelRegistry } = resolveModel(
 authStorage.setRuntimeApiKey(model.provider, apiKeyInfo.apiKey);
 ```
 
-### Failover
+### フェイルオーバー
 
-`FailoverError` triggers model fallback when configured:
+`FailoverError` は、設定されている場合に model fallback を発動します。
 
 ```typescript
 if (fallbackConfigured && isFailoverErrorMessage(errorText)) {
@@ -379,13 +377,13 @@ if (fallbackConfigured && isFailoverErrorMessage(errorText)) {
 }
 ```
 
-## Pi Extensions
+## Pi 拡張
 
-OpenClaw loads custom pi extensions for specialized behavior:
+OpenClaw は、特化した挙動を実現するためにカスタムの pi extension を読み込みます。
 
 ### Compaction Safeguard
 
-`src/agents/pi-extensions/compaction-safeguard.ts` adds guardrails to compaction, including adaptive token budgeting plus tool failure and file operation summaries:
+`src/agents/pi-extensions/compaction-safeguard.ts` は、適応的な token budget に加えて、tool failure と file operation の要約を含む compaction の guardrail を追加します。
 
 ```typescript
 if (resolveCompactionMode(params.cfg) === "safeguard") {
@@ -396,7 +394,7 @@ if (resolveCompactionMode(params.cfg) === "safeguard") {
 
 ### Context Pruning
 
-`src/agents/pi-extensions/context-pruning.ts` implements cache-TTL based context pruning:
+`src/agents/pi-extensions/context-pruning.ts` は、Cache-TTL ベースの context pruning を実装します。
 
 ```typescript
 if (cfg?.agents?.defaults?.contextPruning?.mode === "cache-ttl") {
@@ -410,19 +408,19 @@ if (cfg?.agents?.defaults?.contextPruning?.mode === "cache-ttl") {
 }
 ```
 
-## Streaming & Block Replies
+## ストリーミングとブロック返信
 
-### Block Chunking
+### ブロックチャンク化
 
-`EmbeddedBlockChunker` manages streaming text into discrete reply blocks:
+`EmbeddedBlockChunker` は、ストリーミングテキストを個別の返信ブロックへ分割して管理します。
 
 ```typescript
 const blockChunker = blockChunking ? new EmbeddedBlockChunker(blockChunking) : null;
 ```
 
-### Thinking/Final Tag Stripping
+### Thinking / Final タグの除去
 
-Streaming output is processed to strip `<think>`/`<thinking>` blocks and extract `<final>` content:
+ストリーミング出力は、`<think>` / `<thinking>` ブロックを除去し、`<final>` の内容を抽出するよう処理されます。
 
 ```typescript
 const stripBlockTags = (text: string, state: { thinking: boolean; final: boolean }) => {
@@ -431,19 +429,19 @@ const stripBlockTags = (text: string, state: { thinking: boolean; final: boolean
 };
 ```
 
-### Reply Directives
+### 返信ディレクティブ
 
-Reply directives like `[[media:url]]`, `[[voice]]`, `[[reply:id]]` are parsed and extracted:
+`[[media:url]]`、`[[voice]]`、`[[reply:id]]` のような返信ディレクティブは、解析されて抽出されます。
 
 ```typescript
 const { text: cleanedText, mediaUrls, audioAsVoice, replyToId } = consumeReplyDirectives(chunk);
 ```
 
-## Error Handling
+## エラー処理
 
-### Error Classification
+### エラー分類
 
-`pi-embedded-helpers.ts` classifies errors for appropriate handling:
+`pi-embedded-helpers.ts` は、後続処理を分岐させるために error を分類します。
 
 ```typescript
 isContextOverflowError(errorText)     // Context too large
@@ -454,9 +452,9 @@ isFailoverAssistantError(...)         // Should failover
 classifyFailoverReason(errorText)     // "auth" | "rate_limit" | "quota" | "timeout" | ...
 ```
 
-### Thinking Level Fallback
+### Thinking レベルのフォールバック
 
-If a thinking level is unsupported, it falls back:
+Thinking level がサポートされていない場合は、fallback します。
 
 ```typescript
 const fallbackThinking = pickFallbackThinkingLevel({
@@ -469,9 +467,9 @@ if (fallbackThinking) {
 }
 ```
 
-## Sandbox Integration
+## サンドボックス統合
 
-When sandbox mode is enabled, tools and paths are constrained:
+サンドボックスモードが有効な場合、tool と path には制約が適用されます。
 
 ```typescript
 const sandbox = await resolveSandboxContext({
@@ -487,61 +485,61 @@ if (sandboxRoot) {
 }
 ```
 
-## Provider-Specific Handling
+## プロバイダー別の処理
 
 ### Anthropic
 
-- Refusal magic string scrubbing
-- Turn validation for consecutive roles
-- Claude Code parameter compatibility
+- Refusal の magic string 除去
+- 連続する role に対するターン検証
+- Claude Code のパラメーター互換性
 
 ### Google/Gemini
 
-- Turn ordering fixes (`applyGoogleTurnOrderingFix`)
-- Tool schema sanitization (`sanitizeToolsForGoogle`)
-- Session history sanitization (`sanitizeSessionHistory`)
+- ターン順序の修正（`applyGoogleTurnOrderingFix`）
+- ツールスキーマのサニタイズ（`sanitizeToolsForGoogle`）
+- セッション履歴のサニタイズ（`sanitizeSessionHistory`）
 
 ### OpenAI
 
-- `apply_patch` tool for Codex models
-- Thinking level downgrade handling
+- Codex モデル向けの `apply_patch` ツール
+- Thinking レベルのダウングレード処理
 
-## TUI Integration
+## TUI 統合
 
-OpenClaw also has a local TUI mode that uses pi-tui components directly:
+OpenClaw には、`pi-tui` の component を直接使うローカル TUI mode もあります。
 
 ```typescript
 // src/tui/tui.ts
 import { ... } from "@mariozechner/pi-tui";
 ```
 
-This provides the interactive terminal experience similar to pi's native mode.
+これにより、pi の native mode に近い対話型 terminal 体験を提供します。
 
-## Key Differences from Pi CLI
+## Pi CLI との主な違い
 
-| Aspect          | Pi CLI                  | OpenClaw Embedded                                                                              |
-| --------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
-| Invocation      | `pi` command / RPC      | SDK via `createAgentSession()`                                                                 |
-| Tools           | Default coding tools    | Custom OpenClaw tool suite                                                                     |
-| System prompt   | AGENTS.md + prompts     | Dynamic per-channel/context                                                                    |
-| Session storage | `~/.pi/agent/sessions/` | `~/.openclaw/agents/<agentId>/sessions/` (or `$OPENCLAW_STATE_DIR/agents/<agentId>/sessions/`) |
-| Auth            | Single credential       | Multi-profile with rotation                                                                    |
-| Extensions      | Loaded from disk        | Programmatic + disk paths                                                                      |
-| Event handling  | TUI rendering           | Callback-based (onBlockReply, etc.)                                                            |
+| Aspect          | Pi CLI                  | OpenClaw Embedded                                                                                   |
+| --------------- | ----------------------- | --------------------------------------------------------------------------------------------------- |
+| Invocation      | `pi` command / RPC      | `createAgentSession()` 経由の SDK                                                                   |
+| Tools           | Default coding tools    | カスタム OpenClaw ツールスイート                                                                    |
+| System prompt   | AGENTS.md + prompts     | チャンネル/コンテキストごとに動的                                                                   |
+| Session storage | `~/.pi/agent/sessions/` | `~/.openclaw/agents/<agentId>/sessions/`（または `$OPENCLAW_STATE_DIR/agents/<agentId>/sessions/`） |
+| Auth            | Single credential       | ローテーション付きマルチプロファイル                                                                |
+| Extensions      | Loaded from disk        | プログラム経由 + ディスクパス                                                                       |
+| Event handling  | TUI rendering           | コールバックベース（onBlockReply など）                                                             |
 
-## Future Considerations
+## 今後の検討事項
 
-Areas for potential rework:
+今後の再設計候補として、次の領域があります。
 
-1. **Tool signature alignment**: Currently adapting between pi-agent-core and pi-coding-agent signatures
-2. **Session manager wrapping**: `guardSessionManager` adds safety but increases complexity
-3. **Extension loading**: Could use pi's `ResourceLoader` more directly
-4. **Streaming handler complexity**: `subscribeEmbeddedPiSession` has grown large
-5. **Provider quirks**: Many provider-specific codepaths that pi could potentially handle
+1. **ツールシグネチャの整合**: 現在は pi-agent-core と pi-coding-agent のシグネチャ差分を吸収している
+2. **セッションマネージャーのラップ**: `guardSessionManager` は安全性を高める一方で複雑さも増やす
+3. **拡張の読み込み**: pi の `ResourceLoader` をより直接的に使える可能性がある
+4. **ストリーミングハンドラーの複雑化**: `subscribeEmbeddedPiSession` が大きくなってきている
+5. **プロバイダー固有の癖**: pi 側で吸収できる可能性のあるプロバイダー別コードパスが多い
 
-## Tests
+## テスト
 
-Pi integration coverage spans these suites:
+Pi 統合のカバレッジは、次の test suite にまたがっています。
 
 - `src/agents/pi-*.test.ts`
 - `src/agents/pi-auth-json.test.ts`
@@ -555,8 +553,8 @@ Pi integration coverage spans these suites:
 - `src/agents/pi-settings.test.ts`
 - `src/agents/pi-extensions/**/*.test.ts`
 
-Live/opt-in:
+ライブ/オプトイン:
 
-- `src/agents/pi-embedded-runner-extraparams.live.test.ts` (enable `OPENCLAW_LIVE_TEST=1`)
+- `src/agents/pi-embedded-runner-extraparams.live.test.ts`（`OPENCLAW_LIVE_TEST=1` を有効化）
 
-For current run commands, see [Pi Development Workflow](/pi-dev).
+現在の実行コマンドについては、[Pi 開発ワークフロー](/pi-dev)を参照してください。

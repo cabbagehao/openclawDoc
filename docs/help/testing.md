@@ -1,188 +1,200 @@
 ---
-summary: "Testing kit: unit/e2e/live suites, Docker runners, and what each test covers"
+summary: "テストキット: unit/e2e/live スイート、Docker ランナー、各テストの対象範囲"
 read_when:
-  - Running tests locally or in CI
-  - Adding regressions for model/provider bugs
-  - Debugging gateway + agent behavior
-title: "Testing"
+  - ローカルまたは CI でテストを実行するとき
+  - モデルやプロバイダーの不具合に対する回帰を追加するとき
+  - ゲートウェイとエージェントの挙動をデバッグするとき
+title: "テスト"
+x-i18n:
+  source_hash: "0ae8b68d1649d80f9d9fe515415e66b706629532b5b8aadbfb31512e250835cd"
 ---
 
-# Testing
+# テスト
 
-OpenClaw has three Vitest suites (unit/integration, e2e, live) and a small set of Docker runners.
+OpenClaw には、Vitest ベースの 3 つのスイート (unit/integration、e2e、live) と、少数の Docker ランナーがあります。
 
-This doc is a “how we test” guide:
+このページは、「どのようにテストするか」を説明するガイドです。
 
-- What each suite covers (and what it deliberately does _not_ cover)
-- Which commands to run for common workflows (local, pre-push, debugging)
-- How live tests discover credentials and select models/providers
-- How to add regressions for real-world model/provider issues
+- 各スイートが何を対象にしており、何を意図的に対象外としているか
+- よくあるワークフローごとにどのコマンドを実行すべきか
+- live テストがどのように認証情報を見つけ、モデルやプロバイダーを選ぶか
+- 実運用で見つかったモデルやプロバイダーの問題に対して、どう回帰テストを追加するか
 
-## Quick start
+## クイックスタート
 
-Most days:
+普段は次だけで十分です。
 
-- Full gate (expected before push): `pnpm build && pnpm check && pnpm test`
+- フルゲート (push 前の標準): `pnpm build && pnpm check && pnpm test`
 
-When you touch tests or want extra confidence:
+テスト周りを触ったときや、もう一段確認したいときは次を追加します。
 
-- Coverage gate: `pnpm test:coverage`
-- E2E suite: `pnpm test:e2e`
+- カバレッジゲート: `pnpm test:coverage`
+- E2E スイート: `pnpm test:e2e`
 
-When debugging real providers/models (requires real creds):
+実際のプロバイダーやモデルを使って調査するときは、実際の認証情報が必要です。
 
-- Live suite (models + gateway tool/image probes): `pnpm test:live`
+- live スイート (モデル + ゲートウェイのツール/画像プローブ): `pnpm test:live`
 
-Tip: when you only need one failing case, prefer narrowing live tests via the allowlist env vars described below.
+ヒント: 失敗ケースを 1 件だけ追いたい場合は、後述の allowlist 系環境変数で live テストを絞り込む方が効率的です。
 
-## Test suites (what runs where)
+## テストスイート (どこで何が走るか)
 
-Think of the suites as “increasing realism” (and increasing flakiness/cost):
+各スイートは、「現実に近づくほどコストや不安定さも増える」と考えると整理しやすくなります。
 
-### Unit / integration (default)
+### Unit / integration (デフォルト)
 
-- Command: `pnpm test`
-- Config: `scripts/test-parallel.mjs` (runs `vitest.unit.config.ts`, `vitest.extensions.config.ts`, `vitest.gateway.config.ts`)
-- Files: `src/**/*.test.ts`, `extensions/**/*.test.ts`
-- Scope:
-  - Pure unit tests
-  - In-process integration tests (gateway auth, routing, tooling, parsing, config)
-  - Deterministic regressions for known bugs
-- Expectations:
-  - Runs in CI
-  - No real keys required
-  - Should be fast and stable
-- Pool note:
-  - OpenClaw uses Vitest `vmForks` on Node 22/23 for faster unit shards.
-  - On Node 24+, OpenClaw automatically falls back to regular `forks` to avoid Node VM linking errors (`ERR_VM_MODULE_LINK_FAILURE` / `module is already linked`).
-  - Override manually with `OPENCLAW_TEST_VM_FORKS=0` (force `forks`) or `OPENCLAW_TEST_VM_FORKS=1` (force `vmForks`).
+- コマンド: `pnpm test`
+- 設定: `scripts/test-parallel.mjs` (`vitest.unit.config.ts`、`vitest.extensions.config.ts`、`vitest.gateway.config.ts` を実行)
+- ファイル: `src/**/*.test.ts`、`extensions/**/*.test.ts`
+- 対象:
+  - 純粋なユニットテスト
+  - プロセス内の統合テスト (ゲートウェイ認証、ルーティング、ツール、パース、設定)
+  - 既知不具合に対する決定的な回帰テスト
+- 期待値:
+  - CI で実行されます
+  - 実際のキーは不要です
+  - 高速かつ安定していることが前提です
+- プールに関する補足:
+  - OpenClaw は、unit シャード高速化のため、Node 22/23 では Vitest の `vmForks` を使います。
+  - Node 24 以降では、Node VM のリンクエラー (`ERR_VM_MODULE_LINK_FAILURE` / `module is already linked`) を避けるため、自動的に通常の `forks` にフォールバックします。
+  - `OPENCLAW_TEST_VM_FORKS=0` で `forks` を強制し、`OPENCLAW_TEST_VM_FORKS=1` で `vmForks` を強制できます。
 
-### E2E (gateway smoke)
+### E2E (ゲートウェイスモーク)
 
-- Command: `pnpm test:e2e`
-- Config: `vitest.e2e.config.ts`
-- Files: `src/**/*.e2e.test.ts`
-- Runtime defaults:
-  - Uses Vitest `vmForks` for faster file startup.
-  - Uses adaptive workers (CI: 2-4, local: 4-8).
-  - Runs in silent mode by default to reduce console I/O overhead.
-- Useful overrides:
-  - `OPENCLAW_E2E_WORKERS=<n>` to force worker count (capped at 16).
-  - `OPENCLAW_E2E_VERBOSE=1` to re-enable verbose console output.
-- Scope:
-  - Multi-instance gateway end-to-end behavior
-  - WebSocket/HTTP surfaces, node pairing, and heavier networking
-- Expectations:
-  - Runs in CI (when enabled in the pipeline)
-  - No real keys required
-  - More moving parts than unit tests (can be slower)
+- コマンド: `pnpm test:e2e`
+- 設定: `vitest.e2e.config.ts`
+- ファイル: `src/**/*.e2e.test.ts`
+- 実行時のデフォルト:
+  - ファイル起動を速くするため、Vitest の `vmForks` を使います。
+  - ワーカー数は環境に応じて自動調整されます (CI: 2-4、ローカル: 4-8)。
+  - コンソール I/O の負荷を減らすため、既定では silent モードで実行されます。
+- 便利な上書き設定:
+  - `OPENCLAW_E2E_WORKERS=<n>` でワーカー数を固定できます (上限 16)。
+  - `OPENCLAW_E2E_VERBOSE=1` で詳細なコンソール出力を再度有効にできます。
+- 対象:
+  - 複数インスタンス構成のゲートウェイにおける end-to-end の挙動
+  - WebSocket/HTTP の表面、ノードのペアリング、やや重めのネットワーク処理
+- 期待値:
+  - パイプラインで有効な場合は CI でも実行されます
+  - 実際のキーは不要です
+  - unit テストより構成要素が多く、遅くなる場合があります
 
-### Live (real providers + real models)
+### Live (実プロバイダー + 実モデル)
 
-- Command: `pnpm test:live`
-- Config: `vitest.live.config.ts`
-- Files: `src/**/*.live.test.ts`
-- Default: **enabled** by `pnpm test:live` (sets `OPENCLAW_LIVE_TEST=1`)
-- Scope:
-  - “Does this provider/model actually work _today_ with real creds?”
-  - Catch provider format changes, tool-calling quirks, auth issues, and rate limit behavior
-- Expectations:
-  - Not CI-stable by design (real networks, real provider policies, quotas, outages)
-  - Costs money / uses rate limits
-  - Prefer running narrowed subsets instead of “everything”
-  - Live runs will source `~/.profile` to pick up missing API keys
-- API key rotation (provider-specific): set `*_API_KEYS` with comma/semicolon format or `*_API_KEY_1`, `*_API_KEY_2` (for example `OPENAI_API_KEYS`, `ANTHROPIC_API_KEYS`, `GEMINI_API_KEYS`) or per-live override via `OPENCLAW_LIVE_*_KEY`; tests retry on rate limit responses.
+- コマンド: `pnpm test:live`
+- 設定: `vitest.live.config.ts`
+- ファイル: `src/**/*.live.test.ts`
+- デフォルト: `pnpm test:live` で **有効** になります (`OPENCLAW_LIVE_TEST=1` を設定)
+- 対象:
+  - 「このプロバイダー/モデルは、今日の時点で、実際の認証情報を使って本当に動くか」
+  - プロバイダー側のフォーマット変更、ツール呼び出しの癖、認証の問題、レート制限の挙動
+- 期待値:
+  - 実ネットワーク、実プロバイダーのポリシー、クォータ、障害に依存するため、CI で安定する前提ではありません
+  - 課金やレート制限が発生します
+  - 全件実行より、対象を絞った実行を優先してください
+  - live 実行時には、欠けている API キーを拾うために `~/.profile` を読み込みます
+- API キーのローテーション (プロバイダー別):
+  - `*_API_KEYS` にカンマ区切りまたはセミコロン区切りで複数キーを設定できます
+  - `*_API_KEY_1`、`*_API_KEY_2` の形式も利用できます
+  - 例: `OPENAI_API_KEYS`、`ANTHROPIC_API_KEYS`、`GEMINI_API_KEYS`
+  - live テスト専用の上書きとして `OPENCLAW_LIVE_*_KEY` も使えます
+  - レート制限応答を受けた場合、テストは再試行します
 
-## Which suite should I run?
+## どのスイートを実行すべきか
 
-Use this decision table:
+次の基準で選んでください。
 
-- Editing logic/tests: run `pnpm test` (and `pnpm test:coverage` if you changed a lot)
-- Touching gateway networking / WS protocol / pairing: add `pnpm test:e2e`
-- Debugging “my bot is down” / provider-specific failures / tool calling: run a narrowed `pnpm test:live`
+- ロジックやテストを編集した: `pnpm test` を実行します。変更が大きい場合は `pnpm test:coverage` も追加します
+- ゲートウェイのネットワーク、WS プロトコル、ペアリングを触った: `pnpm test:e2e` も追加します
+- 「ボットが落ちている」、プロバイダー固有の失敗、ツール呼び出し不具合を調べる: 対象を絞った `pnpm test:live` を実行します
 
-## Live: Android node capability sweep
+## Live: Android ノード機能スイープ
 
-- Test: `src/gateway/android-node.capabilities.live.test.ts`
-- Script: `pnpm android:test:integration`
-- Goal: invoke **every command currently advertised** by a connected Android node and assert command contract behavior.
-- Scope:
-  - Preconditioned/manual setup (the suite does not install/run/pair the app).
-  - Command-by-command gateway `node.invoke` validation for the selected Android node.
-- Required pre-setup:
-  - Android app already connected + paired to the gateway.
-  - App kept in foreground.
-  - Permissions/capture consent granted for capabilities you expect to pass.
-- Optional target overrides:
-  - `OPENCLAW_ANDROID_NODE_ID` or `OPENCLAW_ANDROID_NODE_NAME`.
-  - `OPENCLAW_ANDROID_GATEWAY_URL` / `OPENCLAW_ANDROID_GATEWAY_TOKEN` / `OPENCLAW_ANDROID_GATEWAY_PASSWORD`.
-- Full Android setup details: [Android App](/platforms/android)
+- テスト: `src/gateway/android-node.capabilities.live.test.ts`
+- スクリプト: `pnpm android:test:integration`
+- 目的: 接続済み Android ノードが **現在 advertise しているすべてのコマンド** を呼び出し、コマンド契約の挙動を検証します
+- 対象:
+  - 事前条件付きの手動セットアップです。スイート自体はアプリのインストール、起動、ペアリングを行いません
+  - 選択した Android ノードに対する、コマンド単位の `node.invoke` 検証を行います
+- 必須の事前準備:
+  - Android アプリがすでにゲートウェイへ接続・ペアリング済みであること
+  - アプリをフォアグラウンドに維持すること
+  - 通過させたい機能に必要な権限やキャプチャ同意が付与されていること
+- 任意のターゲット上書き:
+  - `OPENCLAW_ANDROID_NODE_ID` または `OPENCLAW_ANDROID_NODE_NAME`
+  - `OPENCLAW_ANDROID_GATEWAY_URL` / `OPENCLAW_ANDROID_GATEWAY_TOKEN` / `OPENCLAW_ANDROID_GATEWAY_PASSWORD`
+- Android 側の詳細なセットアップ: [Android App](/platforms/android)
 
-## Live: model smoke (profile keys)
+## Live: モデルスモーク (プロファイルキー)
 
-Live tests are split into two layers so we can isolate failures:
+live テストは、障害を切り分けやすくするために 2 層に分かれています。
 
-- “Direct model” tells us the provider/model can answer at all with the given key.
-- “Gateway smoke” tells us the full gateway+agent pipeline works for that model (sessions, history, tools, sandbox policy, etc.).
+- 「Direct model」は、指定したキーでそのプロバイダー/モデルが最低限応答できるかを確認します
+- 「Gateway smoke」は、そのモデルで完全なゲートウェイ + エージェントのパイプライン (セッション、履歴、ツール、サンドボックス方針など) が動くかを確認します
 
-### Layer 1: Direct model completion (no gateway)
+### Layer 1: Direct model completion (ゲートウェイなし)
 
-- Test: `src/agents/models.profiles.live.test.ts`
-- Goal:
-  - Enumerate discovered models
-  - Use `getApiKeyForModel` to select models you have creds for
-  - Run a small completion per model (and targeted regressions where needed)
-- How to enable:
-  - `pnpm test:live` (or `OPENCLAW_LIVE_TEST=1` if invoking Vitest directly)
-- Set `OPENCLAW_LIVE_MODELS=modern` (or `all`, alias for modern) to actually run this suite; otherwise it skips to keep `pnpm test:live` focused on gateway smoke
-- How to select models:
-  - `OPENCLAW_LIVE_MODELS=modern` to run the modern allowlist (Opus/Sonnet/Haiku 4.5, GPT-5.x + Codex, Gemini 3, GLM 4.7, MiniMax M2.5, Grok 4)
-  - `OPENCLAW_LIVE_MODELS=all` is an alias for the modern allowlist
-  - or `OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,..."` (comma allowlist)
-- How to select providers:
-  - `OPENCLAW_LIVE_PROVIDERS="google,google-antigravity,google-gemini-cli"` (comma allowlist)
-- Where keys come from:
-  - By default: profile store and env fallbacks
-  - Set `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` to enforce **profile store** only
-- Why this exists:
-  - Separates “provider API is broken / key is invalid” from “gateway agent pipeline is broken”
-  - Contains small, isolated regressions (example: OpenAI Responses/Codex Responses reasoning replay + tool-call flows)
+- テスト: `src/agents/models.profiles.live.test.ts`
+- 目的:
+  - 検出されたモデルを列挙します
+  - `getApiKeyForModel` を使って、認証情報があるモデルを選びます
+  - 各モデルに対して小さな completion を実行し、必要なら個別回帰も走らせます
+- 有効化:
+  - `pnpm test:live` (`Vitest` を直接起動する場合は `OPENCLAW_LIVE_TEST=1`)
+- このスイートを実際に走らせるには `OPENCLAW_LIVE_MODELS=modern` を設定します
+  - `all` も利用できますが、意味としては `modern` の別名です
+  - 未設定の場合、`pnpm test:live` をゲートウェイスモーク中心に保つため、このスイートは skip されます
+- モデルの選び方:
+  - `OPENCLAW_LIVE_MODELS=modern` で modern allowlist を実行します
+  - 対象は Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.5、Grok 4 です
+  - `OPENCLAW_LIVE_MODELS=all` は modern allowlist の別名です
+  - あるいは `OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,..."` のようなカンマ区切り allowlist も使えます
+- プロバイダーの絞り込み:
+  - `OPENCLAW_LIVE_PROVIDERS="google,google-antigravity,google-gemini-cli"` のようにカンマ区切りで指定できます
+- キーの取得元:
+  - 既定ではプロファイルストアと環境変数フォールバックを使います
+  - **プロファイルストアのみ** に限定したい場合は `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` を設定します
+- この層を分けている理由:
+  - 「プロバイダー API が壊れている / キーが無効」と、「ゲートウェイのエージェントパイプラインが壊れている」を分離できます
+  - OpenAI Responses/Codex Responses の推論 replay + ツール呼び出しフローのような、小さく独立した回帰もここに置けます
 
-### Layer 2: Gateway + dev agent smoke (what “@openclaw” actually does)
+### Layer 2: Gateway + dev agent smoke (実際の `@openclaw` の挙動)
 
-- Test: `src/gateway/gateway-models.profiles.live.test.ts`
-- Goal:
-  - Spin up an in-process gateway
-  - Create/patch a `agent:dev:*` session (model override per run)
-  - Iterate models-with-keys and assert:
-    - “meaningful” response (no tools)
-    - a real tool invocation works (read probe)
-    - optional extra tool probes (exec+read probe)
-    - OpenAI regression paths (tool-call-only → follow-up) keep working
-- Probe details (so you can explain failures quickly):
-  - `read` probe: the test writes a nonce file in the workspace and asks the agent to `read` it and echo the nonce back.
-  - `exec+read` probe: the test asks the agent to `exec`-write a nonce into a temp file, then `read` it back.
-  - image probe: the test attaches a generated PNG (cat + randomized code) and expects the model to return `cat <CODE>`.
-  - Implementation reference: `src/gateway/gateway-models.profiles.live.test.ts` and `src/gateway/live-image-probe.ts`.
-- How to enable:
-  - `pnpm test:live` (or `OPENCLAW_LIVE_TEST=1` if invoking Vitest directly)
-- How to select models:
-  - Default: modern allowlist (Opus/Sonnet/Haiku 4.5, GPT-5.x + Codex, Gemini 3, GLM 4.7, MiniMax M2.5, Grok 4)
-  - `OPENCLAW_LIVE_GATEWAY_MODELS=all` is an alias for the modern allowlist
-  - Or set `OPENCLAW_LIVE_GATEWAY_MODELS="provider/model"` (or comma list) to narrow
-- How to select providers (avoid “OpenRouter everything”):
-  - `OPENCLAW_LIVE_GATEWAY_PROVIDERS="google,google-antigravity,google-gemini-cli,openai,anthropic,zai,minimax"` (comma allowlist)
-- Tool + image probes are always on in this live test:
-  - `read` probe + `exec+read` probe (tool stress)
-  - image probe runs when the model advertises image input support
-  - Flow (high level):
-    - Test generates a tiny PNG with “CAT” + random code (`src/gateway/live-image-probe.ts`)
-    - Sends it via `agent` `attachments: [{ mimeType: "image/png", content: "<base64>" }]`
-    - Gateway parses attachments into `images[]` (`src/gateway/server-methods/agent.ts` + `src/gateway/chat-attachments.ts`)
-    - Embedded agent forwards a multimodal user message to the model
-    - Assertion: reply contains `cat` + the code (OCR tolerance: minor mistakes allowed)
+- テスト: `src/gateway/gateway-models.profiles.live.test.ts`
+- 目的:
+  - プロセス内ゲートウェイを立ち上げます
+  - `agent:dev:*` セッションを作成または patch し、実行ごとにモデル上書きを適用します
+  - 認証情報があるモデルを順に回し、次を検証します
+  - ツールなしでも意味のある応答が返ること
+  - 実際のツール呼び出しが通ること (`read` プローブ)
+  - 任意の追加ツールプローブが通ること (`exec+read` プローブ)
+  - OpenAI 系の回帰経路 (tool-call-only → follow-up) が壊れていないこと
+- プローブの内容:
+  - `read` プローブ: テストがワークスペースに nonce ファイルを書き込み、エージェントにそのファイルを `read` して nonce を返させます
+  - `exec+read` プローブ: エージェントに `exec` で一時ファイルへ nonce を書かせ、その後 `read` で読み戻させます
+  - image プローブ: 生成した PNG (cat + ランダムコード) を添付し、モデルが `cat <CODE>` を返すことを期待します
+  - 実装参照: `src/gateway/gateway-models.profiles.live.test.ts` と `src/gateway/live-image-probe.ts`
+- 有効化:
+  - `pnpm test:live` (`Vitest` を直接起動する場合は `OPENCLAW_LIVE_TEST=1`)
+- モデルの選び方:
+  - 既定では modern allowlist を使います
+  - 対象は Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.5、Grok 4 です
+  - `OPENCLAW_LIVE_GATEWAY_MODELS=all` は modern allowlist の別名です
+  - あるいは `OPENCLAW_LIVE_GATEWAY_MODELS="provider/model"` またはカンマ区切りリストで絞り込めます
+- プロバイダーの絞り込み:
+  - `OPENCLAW_LIVE_GATEWAY_PROVIDERS="google,google-antigravity,google-gemini-cli,openai,anthropic,zai,minimax"` のように指定します
+  - 「OpenRouter の全部乗せ」は避けてください
+- この live テストでは、ツールと画像のプローブは常時有効です
+  - `read` プローブ + `exec+read` プローブでツール周りを強めに確認します
+  - 画像入力対応を advertise するモデルでは image プローブも実行されます
+  - 流れの概要:
+    - テストが `src/gateway/live-image-probe.ts` で "CAT" とランダムコードを含む小さな PNG を生成します
+    - `agent` の `attachments: [{ mimeType: "image/png", content: "<base64>" }]` として送信します
+    - ゲートウェイが添付ファイルを `images[]` に変換します (`src/gateway/server-methods/agent.ts` と `src/gateway/chat-attachments.ts`)
+    - 埋め込みエージェントがマルチモーダルなユーザーメッセージをモデルへ転送します
+    - 検証では、返答に `cat` とコードが含まれていることを見ます (OCR の軽微な誤りは許容します)
 
-Tip: to see what you can test on your machine (and the exact `provider/model` ids), run:
+ローカル環境で何がテスト対象になるか、正確な `provider/model` ID を確認したい場合は、次を実行してください。
 
 ```bash
 openclaw models list
@@ -191,48 +203,49 @@ openclaw models list --json
 
 ## Live: Anthropic setup-token smoke
 
-- Test: `src/agents/anthropic.setup-token.live.test.ts`
-- Goal: verify Claude Code CLI setup-token (or a pasted setup-token profile) can complete an Anthropic prompt.
-- Enable:
-  - `pnpm test:live` (or `OPENCLAW_LIVE_TEST=1` if invoking Vitest directly)
+- テスト: `src/agents/anthropic.setup-token.live.test.ts`
+- 目的: Claude Code CLI の setup-token、または貼り付けた setup-token プロファイルで、Anthropic へのプロンプトが完了できることを確認します
+- 有効化:
+  - `pnpm test:live` (`Vitest` を直接起動する場合は `OPENCLAW_LIVE_TEST=1`)
   - `OPENCLAW_LIVE_SETUP_TOKEN=1`
-- Token sources (pick one):
-  - Profile: `OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test`
-  - Raw token: `OPENCLAW_LIVE_SETUP_TOKEN_VALUE=sk-ant-oat01-...`
-- Model override (optional):
+- トークンの取得元 (いずれか 1 つ):
+  - プロファイル: `OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test`
+  - 生トークン: `OPENCLAW_LIVE_SETUP_TOKEN_VALUE=sk-ant-oat01-...`
+- モデル上書き (任意):
   - `OPENCLAW_LIVE_SETUP_TOKEN_MODEL=anthropic/claude-opus-4-6`
 
-Setup example:
+設定例:
 
 ```bash
 openclaw models auth paste-token --provider anthropic --profile-id anthropic:setup-token-test
 OPENCLAW_LIVE_SETUP_TOKEN=1 OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test pnpm test:live src/agents/anthropic.setup-token.live.test.ts
 ```
 
-## Live: CLI backend smoke (Claude Code CLI or other local CLIs)
+## Live: CLI backend smoke (Claude Code CLI またはその他のローカル CLI)
 
-- Test: `src/gateway/gateway-cli-backend.live.test.ts`
-- Goal: validate the Gateway + agent pipeline using a local CLI backend, without touching your default config.
-- Enable:
-  - `pnpm test:live` (or `OPENCLAW_LIVE_TEST=1` if invoking Vitest directly)
+- テスト: `src/gateway/gateway-cli-backend.live.test.ts`
+- 目的: 既定設定を汚さずに、ローカル CLI バックエンドを使ったゲートウェイ + エージェントパイプラインを検証します
+- 有効化:
+  - `pnpm test:live` (`Vitest` を直接起動する場合は `OPENCLAW_LIVE_TEST=1`)
   - `OPENCLAW_LIVE_CLI_BACKEND=1`
-- Defaults:
-  - Model: `claude-cli/claude-sonnet-4-6`
-  - Command: `claude`
-  - Args: `["-p","--output-format","json","--permission-mode","bypassPermissions"]`
-- Overrides (optional):
+- デフォルト:
+  - モデル: `claude-cli/claude-sonnet-4-6`
+  - コマンド: `claude`
+  - 引数: `["-p","--output-format","json","--permission-mode","bypassPermissions"]`
+- 上書き設定 (任意):
   - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-opus-4-6"`
   - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.4"`
   - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/claude"`
   - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["-p","--output-format","json","--permission-mode","bypassPermissions"]'`
   - `OPENCLAW_LIVE_CLI_BACKEND_CLEAR_ENV='["ANTHROPIC_API_KEY","ANTHROPIC_API_KEY_OLD"]'`
-  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_PROBE=1` to send a real image attachment (paths are injected into the prompt).
-  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_ARG="--image"` to pass image file paths as CLI args instead of prompt injection.
-  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_MODE="repeat"` (or `"list"`) to control how image args are passed when `IMAGE_ARG` is set.
-  - `OPENCLAW_LIVE_CLI_BACKEND_RESUME_PROBE=1` to send a second turn and validate resume flow.
-- `OPENCLAW_LIVE_CLI_BACKEND_DISABLE_MCP_CONFIG=0` to keep Claude Code CLI MCP config enabled (default disables MCP config with a temporary empty file).
+  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_PROBE=1` で実ファイルの画像添付を送信します (パスはプロンプトへ埋め込まれます)
+  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_ARG="--image"` で、画像ファイルパスをプロンプト挿入ではなく CLI 引数として渡します
+  - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_MODE="repeat"` または `"list"` で、`IMAGE_ARG` 設定時の画像引数の渡し方を制御できます
+  - `OPENCLAW_LIVE_CLI_BACKEND_RESUME_PROBE=1` で 2 ターン目を送り、resume フローを検証します
+- `OPENCLAW_LIVE_CLI_BACKEND_DISABLE_MCP_CONFIG=0` を指定すると、Claude Code CLI の MCP 設定を有効なままにできます
+  - 既定では、一時的な空ファイルを使って MCP 設定を無効化します
 
-Example:
+例:
 
 ```bash
 OPENCLAW_LIVE_CLI_BACKEND=1 \
@@ -240,172 +253,183 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
   pnpm test:live src/gateway/gateway-cli-backend.live.test.ts
 ```
 
-### Recommended live recipes
+### 推奨 live レシピ
 
-Narrow, explicit allowlists are fastest and least flaky:
+限定的で明示的な allowlist の方が、速く、かつ不安定さも小さくなります。
 
-- Single model, direct (no gateway):
+- 単一モデル、direct (ゲートウェイなし):
   - `OPENCLAW_LIVE_MODELS="openai/gpt-5.2" pnpm test:live src/agents/models.profiles.live.test.ts`
-
-- Single model, gateway smoke:
+- 単一モデル、ゲートウェイスモーク:
   - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
-
-- Tool calling across several providers:
+- 複数プロバイダーでツール呼び出しを確認:
   - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/minimax-m2.5" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
-
-- Google focus (Gemini API key + Antigravity):
+- Google を重点的に確認:
   - Gemini (API key): `OPENCLAW_LIVE_GATEWAY_MODELS="google/gemini-3-flash-preview" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
   - Antigravity (OAuth): `OPENCLAW_LIVE_GATEWAY_MODELS="google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-pro-high" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
-Notes:
+補足:
 
-- `google/...` uses the Gemini API (API key).
-- `google-antigravity/...` uses the Antigravity OAuth bridge (Cloud Code Assist-style agent endpoint).
-- `google-gemini-cli/...` uses the local Gemini CLI on your machine (separate auth + tooling quirks).
-- Gemini API vs Gemini CLI:
-  - API: OpenClaw calls Google’s hosted Gemini API over HTTP (API key / profile auth); this is what most users mean by “Gemini”.
-  - CLI: OpenClaw shells out to a local `gemini` binary; it has its own auth and can behave differently (streaming/tool support/version skew).
+- `google/...` は Gemini API (API key) を使います
+- `google-antigravity/...` は Antigravity OAuth bridge (Cloud Code Assist 風の agent endpoint) を使います
+- `google-gemini-cli/...` はローカルマシン上の Gemini CLI を使います。認証やツール挙動の癖は別系統です
+- Gemini API と Gemini CLI の違い:
+  - API: OpenClaw が Google 提供の Gemini API を HTTP で直接呼びます。多くの利用者が「Gemini」と言うときはこちらを指します
+  - CLI: OpenClaw がローカルの `gemini` バイナリを実行します。独自の認証があり、ストリーミング、ツール対応、バージョン差分などで挙動が変わることがあります
 
-## Live: model matrix (what we cover)
+## Live: モデルマトリクス (何をカバーするか)
 
-There is no fixed “CI model list” (live is opt-in), but these are the **recommended** models to cover regularly on a dev machine with keys.
+固定の「CI モデル一覧」はありません。live は opt-in です。ただし、認証情報がある開発マシンで定期的に確認したい **推奨** モデル群はあります。
 
-### Modern smoke set (tool calling + image)
+### Modern smoke set (ツール呼び出し + 画像)
 
-This is the “common models” run we expect to keep working:
+継続的に動作していてほしい「共通モデル」セットです。
 
-- OpenAI (non-Codex): `openai/gpt-5.2` (optional: `openai/gpt-5.1`)
+- OpenAI (non-Codex): `openai/gpt-5.2` (任意で `openai/gpt-5.1`)
 - OpenAI Codex: `openai-codex/gpt-5.4`
-- Anthropic: `anthropic/claude-opus-4-6` (or `anthropic/claude-sonnet-4-5`)
-- Google (Gemini API): `google/gemini-3.1-pro-preview` and `google/gemini-3-flash-preview` (avoid older Gemini 2.x models)
-- Google (Antigravity): `google-antigravity/claude-opus-4-6-thinking` and `google-antigravity/gemini-3-flash`
+- Anthropic: `anthropic/claude-opus-4-6` (または `anthropic/claude-sonnet-4-5`)
+- Google (Gemini API): `google/gemini-3.1-pro-preview` と `google/gemini-3-flash-preview` (古い Gemini 2.x は避けてください)
+- Google (Antigravity): `google-antigravity/claude-opus-4-6-thinking` と `google-antigravity/gemini-3-flash`
 - Z.AI (GLM): `zai/glm-4.7`
 - MiniMax: `minimax/minimax-m2.5`
 
-Run gateway smoke with tools + image:
+ツール + 画像込みのゲートウェイスモーク実行例:
+
 `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3.1-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/minimax-m2.5" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 ### Baseline: tool calling (Read + optional Exec)
 
-Pick at least one per provider family:
+少なくとも各プロバイダーファミリーから 1 つは選んでください。
 
-- OpenAI: `openai/gpt-5.2` (or `openai/gpt-5-mini`)
-- Anthropic: `anthropic/claude-opus-4-6` (or `anthropic/claude-sonnet-4-5`)
-- Google: `google/gemini-3-flash-preview` (or `google/gemini-3.1-pro-preview`)
+- OpenAI: `openai/gpt-5.2` (または `openai/gpt-5-mini`)
+- Anthropic: `anthropic/claude-opus-4-6` (または `anthropic/claude-sonnet-4-5`)
+- Google: `google/gemini-3-flash-preview` (または `google/gemini-3.1-pro-preview`)
 - Z.AI (GLM): `zai/glm-4.7`
 - MiniMax: `minimax/minimax-m2.5`
 
-Optional additional coverage (nice to have):
+追加であるとよい候補:
 
-- xAI: `xai/grok-4` (or latest available)
-- Mistral: `mistral/`… (pick one “tools” capable model you have enabled)
-- Cerebras: `cerebras/`… (if you have access)
-- LM Studio: `lmstudio/`… (local; tool calling depends on API mode)
+- xAI: `xai/grok-4` (または利用可能な最新版)
+- Mistral: `mistral/...` のうち、ツール対応モデルを 1 つ
+- Cerebras: `cerebras/...` (利用できる場合)
+- LM Studio: `lmstudio/...` (ローカル実行。ツール呼び出し可否は API モードに依存します)
 
-### Vision: image send (attachment → multimodal message)
+### Vision: 画像送信 (添付ファイル → マルチモーダルメッセージ)
 
-Include at least one image-capable model in `OPENCLAW_LIVE_GATEWAY_MODELS` (Claude/Gemini/OpenAI vision-capable variants, etc.) to exercise the image probe.
+image プローブを通すには、`OPENCLAW_LIVE_GATEWAY_MODELS` に少なくとも 1 つ、画像入力対応モデル (Claude、Gemini、OpenAI の vision 対応モデルなど) を含めてください。
 
 ### Aggregators / alternate gateways
 
-If you have keys enabled, we also support testing via:
+認証情報があれば、次の経路もテストできます。
 
-- OpenRouter: `openrouter/...` (hundreds of models; use `openclaw models scan` to find tool+image capable candidates)
-- OpenCode Zen: `opencode/...` (auth via `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY`)
+- OpenRouter: `openrouter/...`
+  - 対象モデルは非常に多いため、`openclaw models scan` で tool+image 対応候補を探してください
+- OpenCode Zen: `opencode/...`
+  - 認証は `OPENCODE_API_KEY` / `OPENCODE_ZEN_API_KEY` を使います
 
-More providers you can include in the live matrix (if you have creds/config):
+live マトリクスに追加できるプロバイダー群 (認証情報や設定がある場合):
 
-- Built-in: `openai`, `openai-codex`, `anthropic`, `google`, `google-vertex`, `google-antigravity`, `google-gemini-cli`, `zai`, `openrouter`, `opencode`, `xai`, `groq`, `cerebras`, `mistral`, `github-copilot`
-- Via `models.providers` (custom endpoints): `minimax` (cloud/API), plus any OpenAI/Anthropic-compatible proxy (LM Studio, vLLM, LiteLLM, etc.)
+- 組み込み: `openai`、`openai-codex`、`anthropic`、`google`、`google-vertex`、`google-antigravity`、`google-gemini-cli`、`zai`、`openrouter`、`opencode`、`xai`、`groq`、`cerebras`、`mistral`、`github-copilot`
+- `models.providers` 経由のカスタムエンドポイント: `minimax` (cloud/API)、および OpenAI/Anthropic 互換プロキシ (LM Studio、vLLM、LiteLLM など)
 
-Tip: don’t try to hardcode “all models” in docs. The authoritative list is whatever `discoverModels(...)` returns on your machine + whatever keys are available.
+ヒント: ドキュメントに「全モデル一覧」を固定で書こうとしないでください。権威ある一覧は、各環境で `discoverModels(...)` が返す結果と、利用可能なキーの組み合わせです。
 
-## Credentials (never commit)
+## 認証情報 (コミットしない)
 
-Live tests discover credentials the same way the CLI does. Practical implications:
+live テストは CLI と同じ方法で認証情報を見つけます。実務上の意味は次のとおりです。
 
-- If the CLI works, live tests should find the same keys.
-- If a live test says “no creds”, debug the same way you’d debug `openclaw models list` / model selection.
+- CLI が動くなら、live テストも同じキーを見つけられるはずです
+- live テストで「認証情報がない」と出た場合は、`openclaw models list` やモデル選択を調べるときと同じ手順で切り分けてください
 
-- Profile store: `~/.openclaw/credentials/` (preferred; what “profile keys” means in the tests)
-- Config: `~/.openclaw/openclaw.json` (or `OPENCLAW_CONFIG_PATH`)
+- プロファイルストア: `~/.openclaw/credentials/`
+  - これが推奨です。テスト内でいう「profile keys」はこれを指します
+- 設定ファイル: `~/.openclaw/openclaw.json`
+  - あるいは `OPENCLAW_CONFIG_PATH`
 
-If you want to rely on env keys (e.g. exported in your `~/.profile`), run local tests after `source ~/.profile`, or use the Docker runners below (they can mount `~/.profile` into the container).
+`~/.profile` などで export した環境変数キーに頼る場合は、`source ~/.profile` の後にローカルテストを実行するか、後述の Docker ランナーを使ってください。Docker ランナーでは `~/.profile` をコンテナへマウントできます。
 
-## Deepgram live (audio transcription)
+## Deepgram live (音声文字起こし)
 
-- Test: `src/media-understanding/providers/deepgram/audio.live.test.ts`
-- Enable: `DEEPGRAM_API_KEY=... DEEPGRAM_LIVE_TEST=1 pnpm test:live src/media-understanding/providers/deepgram/audio.live.test.ts`
+- テスト: `src/media-understanding/providers/deepgram/audio.live.test.ts`
+- 有効化: `DEEPGRAM_API_KEY=... DEEPGRAM_LIVE_TEST=1 pnpm test:live src/media-understanding/providers/deepgram/audio.live.test.ts`
 
 ## BytePlus coding plan live
 
-- Test: `src/agents/byteplus.live.test.ts`
-- Enable: `BYTEPLUS_API_KEY=... BYTEPLUS_LIVE_TEST=1 pnpm test:live src/agents/byteplus.live.test.ts`
-- Optional model override: `BYTEPLUS_CODING_MODEL=ark-code-latest`
+- テスト: `src/agents/byteplus.live.test.ts`
+- 有効化: `BYTEPLUS_API_KEY=... BYTEPLUS_LIVE_TEST=1 pnpm test:live src/agents/byteplus.live.test.ts`
+- 任意のモデル上書き: `BYTEPLUS_CODING_MODEL=ark-code-latest`
 
-## Docker runners (optional “works in Linux” checks)
+## Docker ランナー (任意の Linux 動作確認)
 
-These run `pnpm test:live` inside the repo Docker image, mounting your local config dir and workspace (and sourcing `~/.profile` if mounted):
+これらは、リポジトリの Docker イメージ内で `pnpm test:live` を実行します。ローカルの設定ディレクトリとワークスペースをマウントし、`~/.profile` がマウントされていればそれも読み込みます。
 
 - Direct models: `pnpm test:docker:live-models` (script: `scripts/test-live-models-docker.sh`)
 - Gateway + dev agent: `pnpm test:docker:live-gateway` (script: `scripts/test-live-gateway-models-docker.sh`)
-- Onboarding wizard (TTY, full scaffolding): `pnpm test:docker:onboard` (script: `scripts/e2e/onboard-docker.sh`)
-- Gateway networking (two containers, WS auth + health): `pnpm test:docker:gateway-network` (script: `scripts/e2e/gateway-network-docker.sh`)
-- Plugins (custom extension load + registry smoke): `pnpm test:docker:plugins` (script: `scripts/e2e/plugins-docker.sh`)
+- Onboarding wizard (TTY、完全な scaffolding): `pnpm test:docker:onboard` (script: `scripts/e2e/onboard-docker.sh`)
+- Gateway networking (2 コンテナ、WS 認証 + health): `pnpm test:docker:gateway-network` (script: `scripts/e2e/gateway-network-docker.sh`)
+- Plugins (カスタム拡張ロード + レジストリスモーク): `pnpm test:docker:plugins` (script: `scripts/e2e/plugins-docker.sh`)
 
-The live-model Docker runners also bind-mount the current checkout read-only and
-stage it into a temporary workdir inside the container. This keeps the runtime
-image slim while still running Vitest against your exact local source/config.
+live-model 用の Docker ランナーは、現在の checkout も read-only で bind mount し、コンテナ内の一時 workdir へ stage します。これにより、ランタイムイメージを肥大化させずに、手元の正確なソースと設定に対して Vitest を実行できます。
 
-Manual ACP plain-language thread smoke (not CI):
+手動 ACP plain-language thread smoke (CI ではありません):
 
 - `bun scripts/dev/discord-acp-plain-language-smoke.ts --channel <discord-channel-id> ...`
-- Keep this script for regression/debug workflows. It may be needed again for ACP thread routing validation, so do not delete it.
+- これは回帰確認やデバッグ用のスクリプトです。ACP スレッドルーティングの検証で再利用する可能性があるため、削除しないでください
 
-Useful env vars:
+便利な環境変数:
 
-- `OPENCLAW_CONFIG_DIR=...` (default: `~/.openclaw`) mounted to `/home/node/.openclaw`
-- `OPENCLAW_WORKSPACE_DIR=...` (default: `~/.openclaw/workspace`) mounted to `/home/node/.openclaw/workspace`
-- `OPENCLAW_PROFILE_FILE=...` (default: `~/.profile`) mounted to `/home/node/.profile` and sourced before running tests
-- `OPENCLAW_LIVE_GATEWAY_MODELS=...` / `OPENCLAW_LIVE_MODELS=...` to narrow the run
-- `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` to ensure creds come from the profile store (not env)
+- `OPENCLAW_CONFIG_DIR=...` (デフォルト: `~/.openclaw`)
+  - `/home/node/.openclaw` にマウントされます
+- `OPENCLAW_WORKSPACE_DIR=...` (デフォルト: `~/.openclaw/workspace`)
+  - `/home/node/.openclaw/workspace` にマウントされます
+- `OPENCLAW_PROFILE_FILE=...` (デフォルト: `~/.profile`)
+  - `/home/node/.profile` にマウントされ、テスト実行前に読み込まれます
+- `OPENCLAW_LIVE_GATEWAY_MODELS=...` / `OPENCLAW_LIVE_MODELS=...`
+  - 実行対象を絞り込めます
+- `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1`
+  - 認証情報の取得元をプロファイルストアのみに制限できます
 
 ## Docs sanity
 
-Run docs checks after doc edits: `pnpm docs:list`.
+ドキュメントを編集したら、`pnpm docs:list` で docs チェックを実行してください。
 
 ## Offline regression (CI-safe)
 
-These are “real pipeline” regressions without real providers:
+実プロバイダーを使わずに、実際のパイプラインに近い回帰を確認するテストです。
 
-- Gateway tool calling (mock OpenAI, real gateway + agent loop): `src/gateway/gateway.test.ts` (case: "runs a mock OpenAI tool call end-to-end via gateway agent loop")
-- Gateway wizard (WS `wizard.start`/`wizard.next`, writes config + auth enforced): `src/gateway/gateway.test.ts` (case: "runs wizard over ws and writes auth token config")
+- Gateway のツール呼び出し (モック OpenAI、実際のゲートウェイ + agent loop):
+  - `src/gateway/gateway.test.ts`
+  - ケース名: "runs a mock OpenAI tool call end-to-end via gateway agent loop"
+- Gateway wizard (WS `wizard.start` / `wizard.next`、設定ファイル書き込み、認証強制):
+  - `src/gateway/gateway.test.ts`
+  - ケース名: "runs wizard over ws and writes auth token config"
 
 ## Agent reliability evals (skills)
 
-We already have a few CI-safe tests that behave like “agent reliability evals”:
+すでにいくつかの CI-safe なテストがあり、「エージェント信頼性評価」に近い役割を果たしています。
 
-- Mock tool-calling through the real gateway + agent loop (`src/gateway/gateway.test.ts`).
-- End-to-end wizard flows that validate session wiring and config effects (`src/gateway/gateway.test.ts`).
+- 実際のゲートウェイ + agent loop を通した、モックのツール呼び出し (`src/gateway/gateway.test.ts`)
+- セッション配線と設定反映を検証する end-to-end の wizard フロー (`src/gateway/gateway.test.ts`)
 
-What’s still missing for skills (see [Skills](/tools/skills)):
+[Skills](/tools/skills) に関して、まだ不足している観点は次のとおりです。
 
-- **Decisioning:** when skills are listed in the prompt, does the agent pick the right skill (or avoid irrelevant ones)?
-- **Compliance:** does the agent read `SKILL.md` before use and follow required steps/args?
-- **Workflow contracts:** multi-turn scenarios that assert tool order, session history carryover, and sandbox boundaries.
+- **Decisioning:** プロンプトにスキル一覧があるとき、エージェントが正しいスキルを選び、不要なものを避けられるか
+- **Compliance:** 使用前に `SKILL.md` を読み、必要な手順や引数に従えるか
+- **Workflow contracts:** ツール実行順、セッション履歴の引き継ぎ、サンドボックス境界を複数ターンで検証できるか
 
-Future evals should stay deterministic first:
+今後の eval は、まず決定的であることを優先してください。
 
-- A scenario runner using mock providers to assert tool calls + order, skill file reads, and session wiring.
-- A small suite of skill-focused scenarios (use vs avoid, gating, prompt injection).
-- Optional live evals (opt-in, env-gated) only after the CI-safe suite is in place.
+- モックプロバイダーを使い、ツール呼び出しと順序、skill ファイルの読み取り、セッション配線を検証するシナリオランナー
+- スキルに特化した小規模シナリオ集 (使うべき場合と避けるべき場合、ゲーティング、プロンプトインジェクション)
+- live eval は、CI-safe なスイートが先に整ってから opt-in の env-gated で追加します
 
-## Adding regressions (guidance)
+## 回帰の追加 (ガイダンス)
 
-When you fix a provider/model issue discovered in live:
+live テストで見つかったプロバイダー/モデル不具合を修正したら、次の方針で回帰を追加してください。
 
-- Add a CI-safe regression if possible (mock/stub provider, or capture the exact request-shape transformation)
-- If it’s inherently live-only (rate limits, auth policies), keep the live test narrow and opt-in via env vars
-- Prefer targeting the smallest layer that catches the bug:
-  - provider request conversion/replay bug → direct models test
-  - gateway session/history/tool pipeline bug → gateway live smoke or CI-safe gateway mock test
+- 可能なら CI-safe な回帰を追加します
+  - モックまたはスタブプロバイダーを使う
+  - リクエスト変換の形そのものを固定する
+- 本質的に live 専用の問題 (レート制限、認証ポリシーなど) であれば、live テストを狭く保ち、環境変数で opt-in にします
+- 不具合を捉えられる最小レイヤーを狙ってください
+  - プロバイダー要求の変換や replay の不具合なら direct models テスト
+  - ゲートウェイのセッション、履歴、ツールパイプラインの不具合なら gateway live smoke、または CI-safe な gateway mock テスト

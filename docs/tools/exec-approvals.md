@@ -1,51 +1,52 @@
 ---
-summary: "Exec approvals, allowlists, and sandbox escape prompts"
+summary: "実行者の承認、許可リスト、サンドボックスエスケーププロンプト"
 read_when:
-  - Configuring exec approvals or allowlists
-  - Implementing exec approval UX in the macOS app
-  - Reviewing sandbox escape prompts and implications
-title: "Exec Approvals"
+  - 実行者の承認または許可リストの構成
+  - macOS アプリに幹部承認 UX を実装する
+  - サンドボックスエスケーププロンプトとその影響の確認
+title: "執行部の承認"
+x-i18n:
+  source_hash: "5bc85db491c1d39fa7c9f7019addce785f3858c07664c0272d07c3746119bc49"
 ---
 
-# Exec approvals
+# 幹部の承認
 
-Exec approvals are the **companion app / node host guardrail** for letting a sandboxed agent run
-commands on a real host (`gateway` or `node`). Think of it like a safety interlock:
-commands are allowed only when policy + allowlist + (optional) user approval all agree.
-Exec approvals are **in addition** to tool policy and elevated gating (unless elevated is set to `full`, which skips approvals).
-Effective policy is the **stricter** of `tools.exec.*` and approvals defaults; if an approvals field is omitted, the `tools.exec` value is used.
+Exec の承認は、サンドボックス エージェントを実行するための **コンパニオン アプリ/ノード ホストのガードレール**です
+実ホスト上のコマンド (`gateway` または `node`)。これを安全インターロックのように考えてください。
+コマンドは、ポリシー + ホワイトリスト + (オプション) ユーザーの承認がすべて一致する場合にのみ許可されます。
+実行者の承認は、ツール ポリシーと昇格されたゲートに**追加**されます (昇格が `full` に設定されている場合を除き、承認がスキップされます)。
+有効なポリシーは、`tools.exec.*` の **厳格** であり、承認はデフォルトです。承認フィールドが省略された場合は、`tools.exec` 値が使用されます。
 
-If the companion app UI is **not available**, any request that requires a prompt is
-resolved by the **ask fallback** (default: deny).
+コンパニオン アプリ UI が **利用できない**場合、プロンプトが必要なリクエストはすべて
+**ask フォールバック** (デフォルト: 拒否) によって解決されます。
 
-## Where it applies
+## 適用される場所
 
-Exec approvals are enforced locally on the execution host:
+実行の承認は、実行ホスト上でローカルに適用されます。
 
-- **gateway host** → `openclaw` process on the gateway machine
-- **node host** → node runner (macOS companion app or headless node host)
+- **ゲートウェイ ホスト** → ゲートウェイ マシン上の `openclaw` プロセス
+- **ノード ホスト** → ノード ランナー (macOS コンパニオン アプリまたはヘッドレス ノード ホスト)
 
-Trust model note:
+信頼モデルのメモ:- ゲートウェイで認証された呼び出し元は、そのゲートウェイの信頼できるオペレーターです。
 
-- Gateway-authenticated callers are trusted operators for that Gateway.
-- Paired nodes extend that trusted operator capability onto the node host.
-- Exec approvals reduce accidental execution risk, but are not a per-user auth boundary.
-- Approved node-host runs also bind canonical execution context: canonical cwd, pinned executable
-  path when applicable, and interpreter-style script operands. If a bound script changes after
-  approval but before execution, the run is denied instead of executing drifted content.
+- ペアになったノードは、信頼できるオペレーターの機能をノード ホストに拡張します。
+- 実行承認は偶発的な実行のリスクを軽減しますが、ユーザーごとの認証境界ではありません。
+- 承認されたノードホストの実行は、正規の実行コンテキストもバインドします: 正規の cwd、ピン留めされた実行可能ファイル
+  パス (該当する場合)、およびインタープリター スタイルのスクリプト オペランド。バインドされたスクリプトが後で変更された場合
+  承認されますが、実行前に、ドリフトされたコンテンツは実行されずに実行が拒否されます。
 
-macOS split:
+macOS の分割:
 
-- **node host service** forwards `system.run` to the **macOS app** over local IPC.
-- **macOS app** enforces approvals + executes the command in UI context.
+- **ノード ホスト サービス**は、ローカル IPC 経由で `system.run` を **macOS アプリ**に転送します。
+- **macOS アプリ** は承認を強制し、UI コンテキストでコマンドを実行します。
 
-## Settings and storage
+## 設定とストレージ
 
-Approvals live in a local JSON file on the execution host:
+承認は、実行ホスト上のローカル JSON ファイルに保存されます。
 
 `~/.openclaw/exec-approvals.json`
 
-Example schema:
+スキーマの例:
 
 ```json
 {
@@ -80,142 +81,132 @@ Example schema:
 }
 ```
 
-## Policy knobs
+## ポリシーノブ
 
-### Security (`exec.security`)
+### セキュリティ (`exec.security`)
 
-- **deny**: block all host exec requests.
-- **allowlist**: allow only allowlisted commands.
-- **full**: allow everything (equivalent to elevated).
+- **拒否**: すべてのホスト実行リクエストをブロックします。
+- **allowlist**: 許可リストに登録されたコマンドのみを許可します。
+- **full**: すべてを許可します (昇格と同等)。
 
-### Ask (`exec.ask`)
+### 質問してください (`exec.ask`)
 
-- **off**: never prompt.
-- **on-miss**: prompt only when allowlist does not match.
-- **always**: prompt on every command.
+- **オフ**: プロンプトを表示しません。
+- **on-miss**: ホワイトリストが一致しない場合にのみプロンプトを表示します。
+- **常に**: すべてのコマンドでプロンプトを表示します。
 
-### Ask fallback (`askFallback`)
+### フォールバックを要求する (`askFallback`)
 
-If a prompt is required but no UI is reachable, fallback decides:
+プロンプトが必要であるが、UI にアクセスできない場合、フォールバックは次のように決定します。
 
-- **deny**: block.
-- **allowlist**: allow only if allowlist matches.
-- **full**: allow.
+- **拒否**: ブロックします。
+- **許可リスト**: 許可リストが一致する場合にのみ許可します。
+- **フル**: 許可します。
 
-## Allowlist (per agent)
+## 許可リスト (エージェントごと)許可リストは**エージェントごと**です。複数のエージェントが存在する場合は、どのエージェントを切り替えるか
 
-Allowlists are **per agent**. If multiple agents exist, switch which agent you’re
-editing in the macOS app. Patterns are **case-insensitive glob matches**.
-Patterns should resolve to **binary paths** (basename-only entries are ignored).
-Legacy `agents.default` entries are migrated to `agents.main` on load.
+macOS アプリで編集します。パターンは **大文字と小文字を区別しないグロブ一致** です。
+パターンは **バイナリ パス**に解決される必要があります (ベース名のみのエントリは無視されます)。
+レガシー `agents.default` エントリは、ロード時に `agents.main` に移行されます。
 
-Examples:
+例:
 
 - `~/Projects/**/bin/peekaboo`
 - `~/.local/bin/*`
 - `/opt/homebrew/bin/rg`
 
-Each allowlist entry tracks:
+各ホワイトリスト エントリは以下を追跡します。
 
-- **id** stable UUID used for UI identity (optional)
-- **last used** timestamp
-- **last used command**
-- **last resolved path**
+- **id** UI ID に使用される安定した UUID (オプション)
+- **最後に使用された**タイムスタンプ
+- **最後に使用したコマンド**
+- **最後に解決されたパス**
 
-## Auto-allow skill CLIs
+## スキル CLI の自動許可
 
-When **Auto-allow skill CLIs** is enabled, executables referenced by known skills
-are treated as allowlisted on nodes (macOS node or headless node host). This uses
-`skills.bins` over the Gateway RPC to fetch the skill bin list. Disable this if you want strict manual allowlists.
+**スキル CLI の自動許可** が有効になっている場合、既知のスキルによって参照される実行可能ファイル
+ノード (macOS ノードまたはヘッドレス ノード ホスト) 上で許可リストに登録されているものとして扱われます。これは、
+`skills.bins` をゲートウェイ RPC 経由で呼び出して、スキル ビン リストを取得します。厳密な手動許可リストが必要な場合は、これを無効にします。
 
-Important trust notes:
+信頼に関する重要な注意事項:
 
-- This is an **implicit convenience allowlist**, separate from manual path allowlist entries.
-- It is intended for trusted operator environments where Gateway and node are in the same trust boundary.
-- If you require strict explicit trust, keep `autoAllowSkills: false` and use manual path allowlist entries only.
+- これは、手動のパス ホワイトリスト エントリとは別の **暗黙的な便利なホワイトリスト** です。
+- ゲートウェイとノードが同じ信頼境界内にある信頼できるオペレーター環境を対象としています。
+- 厳密な明示的信頼が必要な場合は、`autoAllowSkills: false` を保持し、手動パス許可リスト エントリのみを使用してください。
 
-## Safe bins (stdin-only)
+## 金庫 (標準入力のみ)`tools.exec.safeBins` は **stdin のみ** バイナリの小さなリストを定義します (例: `jq`)
 
-`tools.exec.safeBins` defines a small list of **stdin-only** binaries (for example `jq`)
-that can run in allowlist mode **without** explicit allowlist entries. Safe bins reject
-positional file args and path-like tokens, so they can only operate on the incoming stream.
-Treat this as a narrow fast-path for stream filters, not a general trust list.
-Do **not** add interpreter or runtime binaries (for example `python3`, `node`, `ruby`, `bash`, `sh`, `zsh`) to `safeBins`.
-If a command can evaluate code, execute subcommands, or read files by design, prefer explicit allowlist entries and keep approval prompts enabled.
-Custom safe bins must define an explicit profile in `tools.exec.safeBinProfiles.<bin>`.
-Validation is deterministic from argv shape only (no host filesystem existence checks), which
-prevents file-existence oracle behavior from allow/deny differences.
-File-oriented options are denied for default safe bins (for example `sort -o`, `sort --output`,
-`sort --files0-from`, `sort --compress-program`, `sort --random-source`,
-`sort --temporary-directory`/`-T`, `wc --files0-from`, `jq -f/--from-file`,
-`grep -f/--file`).
-Safe bins also enforce explicit per-binary flag policy for options that break stdin-only
-behavior (for example `sort -o/--output/--compress-program` and grep recursive flags).
-Long options are validated fail-closed in safe-bin mode: unknown flags and ambiguous
-abbreviations are rejected.
-Denied flags by safe-bin profile:
+**明示的なホワイトリスト エントリなし**でホワイトリスト モードで実行できます。金庫が拒否される
+位置ファイル引数とパスのようなトークンなので、受信ストリームでのみ操作できます。
+これを一般的な信頼リストではなく、ストリーム フィルターの狭い高速パスとして扱います。
+インタプリタまたはランタイム バイナリ (`python3`、`node`、`ruby`、`bash`、`sh`、`zsh` など) を追加しないでください\*\* `safeBins`。
+設計上、コマンドがコードの評価、サブコマンドの実行、またはファイルの読み取りを実行できる場合は、明示的なホワイトリスト エントリを優先し、承認プロンプトを有効のままにしてください。
+カスタム金庫は、`tools.exec.safeBinProfiles.<bin>` で明示的なプロファイルを定義する必要があります。
+検証は argv の形状のみから決定的です (ホスト ファイルシステムの存在チェックは行われません)。
+ファイルの存在に関する Oracle の動作が相違を許可/拒否しないようにします。
+ファイル指向のオプションは、デフォルトの安全なビン (`sort -o`、`sort --output`、
+`sort --files0-from`、`sort --compress-program`、`sort --random-source`、
+`sort --temporary-directory`/`-T`、`wc --files0-from`、`jq -f/--from-file`、
+`grep -f/--file`)。
+セーフ ビンでは、stdin のみを破るオプションに対して明示的なバイナリごとのフラグ ポリシーも適用されます。
+動作 (`sort -o/--output/--compress-program` や grep 再帰フラグなど)。長いオプションはセーフビン モードでフェイルクローズされて検証されます: 未知のフラグと曖昧な
+略語は拒否されます。
+セーフビン プロファイルによる拒否フラグ:
 
-<!-- SAFE_BIN_DENIED_FLAGS:START -->
+{/_SAFE_BIN_DENIED_FLAGS:START _/}
 
-- `grep`: `--dereference-recursive`, `--directories`, `--exclude-from`, `--file`, `--recursive`, `-R`, `-d`, `-f`, `-r`
-- `jq`: `--argfile`, `--from-file`, `--library-path`, `--rawfile`, `--slurpfile`, `-L`, `-f`
-- `sort`: `--compress-program`, `--files0-from`, `--output`, `--random-source`, `--temporary-directory`, `-T`, `-o`
+- `grep`: `--dereference-recursive`、`--directories`、`--exclude-from`、`--file`、`--recursive`、`-R`、 `-d`、`-f`、`-r`
+- `jq`: `--argfile`、`--from-file`、`--library-path`、`--rawfile`、`--slurpfile`、`-L`、 `-f`
+- `sort`: `--compress-program`、`--files0-from`、`--output`、`--random-source`、`--temporary-directory`、`-T`、 `-o`
 - `wc`: `--files0-from`
-<!-- SAFE_BIN_DENIED_FLAGS:END -->
+  {/_SAFE_BIN_DENIED_FLAGS:END _/}セーフ ビンは、実行時に argv トークンを **リテラル テキスト**として強制的に処理します (グロビングは行われません)。
+  `$VARS` 拡張なし) は標準入力専用セグメントの場合、`*` や `$HOME/...` のようなパターンは使用できません。
+  ファイルの読み取りを密かに行うために使用されます。
+  セーフ ビンは、信頼できるバイナリ ディレクトリ (システムのデフォルトとオプション) からも解決される必要があります。
+  `tools.exec.safeBinTrustedDirs`)。 `PATH` エントリは自動信頼されません。
+  デフォルトの信頼できるセーフ ビン ディレクトリは意図的に最小限になっています: `/bin`、`/usr/bin`。
+  セーフ ビンの実行可能ファイルがパッケージ マネージャー/ユーザー パスに存在する場合 (たとえば、
+  `/opt/homebrew/bin`、`/usr/local/bin`、`/opt/local/bin`、`/snap/bin`)、明示的に追加します。
+  `tools.exec.safeBinTrustedDirs` まで。
+  ホワイトリスト モードでは、シェル チェーンとリダイレクトは自動的に許可されません。すべての最上位セグメントが許可リストを満たす場合、シェル チェーン (`&&`、`||`、`;`) が許可されます。
+  (金庫やスキルの自動許可を含む)。ホワイトリスト モードでは、リダイレクトは引き続きサポートされません。
+  コマンド置換 (`$()` / バッククォート) は、内部を含むホワイトリストの解析中に拒否されます。
+  二重引用符。リテラルの `$()` テキストが必要な場合は一重引用符を使用してください。
+  macOS コンパニオン アプリの承認では、シェル コントロールまたは拡張構文を含む生のシェル テキスト
+  (`&&`、`||`、`;`、`|`、` ` ``, `$`, `<**OC_I18N_0096**>`, `(`, `)`) は、次の場合を除き、ホワイトリスト ミスとして扱われます。
+シェル バイナリ自体はホワイトリストに登録されています。
+シェル ラッパー (`bash|sh|zsh ... -c/-lc`) の場合、リクエスト スコープの環境オーバーライドは、
+小規模な明示的な許可リスト (`TERM`、`LANG`、`LC\_\*`、`COLORTERM`、`NO_COLOR`、`FORCE_COLOR`)。
+ホワイトリスト モードでの常に許可の決定については、既知のディスパッチ ラッパー
+(`env`、`nice`、`nohup`、`stdbuf`、`timeout`) ラッパーの代わりに内部実行可能パスを保持します
+パス。シェル マルチプレクサ (`busybox`、`toybox`) もシェル アプレット (`sh`、`ash`、など）そのため、マルチプレクサーバイナリの代わりに内部実行可能ファイルが永続化されます。ラッパーや
+  マルチプレクサを安全にラップ解除することはできず、許可リストのエントリは自動的に保持されません。
 
-Safe bins also force argv tokens to be treated as **literal text** at execution time (no globbing
-and no `$VARS` expansion) for stdin-only segments, so patterns like `*` or `$HOME/...` cannot be
-used to smuggle file reads.
-Safe bins must also resolve from trusted binary directories (system defaults plus optional
-`tools.exec.safeBinTrustedDirs`). `PATH` entries are never auto-trusted.
-Default trusted safe-bin directories are intentionally minimal: `/bin`, `/usr/bin`.
-If your safe-bin executable lives in package-manager/user paths (for example
-`/opt/homebrew/bin`, `/usr/local/bin`, `/opt/local/bin`, `/snap/bin`), add them explicitly
-to `tools.exec.safeBinTrustedDirs`.
-Shell chaining and redirections are not auto-allowed in allowlist mode.
+デフォルトの金庫: `jq`、`cut`、`uniq`、`head`、`tail`、`tr`、`wc`。
 
-Shell chaining (`&&`, `||`, `;`) is allowed when every top-level segment satisfies the allowlist
-(including safe bins or skill auto-allow). Redirections remain unsupported in allowlist mode.
-Command substitution (`$()` / backticks) is rejected during allowlist parsing, including inside
-double quotes; use single quotes if you need literal `$()` text.
-On macOS companion-app approvals, raw shell text containing shell control or expansion syntax
-(`&&`, `||`, `;`, `|`, `` ` ``, `$`, `<`, `>`, `(`, `)`) is treated as an allowlist miss unless
-the shell binary itself is allowlisted.
-For shell wrappers (`bash|sh|zsh ... -c/-lc`), request-scoped env overrides are reduced to a
-small explicit allowlist (`TERM`, `LANG`, `LC_*`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`).
-For allow-always decisions in allowlist mode, known dispatch wrappers
-(`env`, `nice`, `nohup`, `stdbuf`, `timeout`) persist inner executable paths instead of wrapper
-paths. Shell multiplexers (`busybox`, `toybox`) are also unwrapped for shell applets (`sh`, `ash`,
-etc.) so inner executables are persisted instead of multiplexer binaries. If a wrapper or
-multiplexer cannot be safely unwrapped, no allowlist entry is persisted automatically.
+`grep` および `sort` はデフォルトのリストにありません。オプトインする場合は、明示的な許可リストのエントリを保持します。
+非標準入力ワークフロー。
+セーフビン モードの `grep` の場合は、パターンに `-e`/`--regexp` を指定します。位置パターンの形式は
+ファイルオペランドがあいまいな位置指定として密輸できないように拒否される。
 
-Default safe bins: `jq`, `cut`, `uniq`, `head`, `tail`, `tr`, `wc`.
+### 安全なビンと許可リスト|トピック | `tools.exec.safeBins` |許可リスト (`exec-approvals.json`) |
 
-`grep` and `sort` are not in the default list. If you opt in, keep explicit allowlist entries for
-their non-stdin workflows.
-For `grep` in safe-bin mode, provide the pattern with `-e`/`--regexp`; positional pattern form is
-rejected so file operands cannot be smuggled as ambiguous positionals.
+| ---------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+|目標 |狭い標準入力フィルターを自動的に許可する |特定の実行可能ファイルを明示的に信頼する |
+|一致タイプ |実行可能ファイル名 + セーフビン argv ポリシー |解決された実行可能パスのグロブ パターン |
+|引数の範囲 |セーフビン プロファイルとリテラル トークン ルールによる制限 |パス一致のみ。それ以外の場合、引数はあなたの責任です。
+|代表的な例 | `jq`、`head`、`tail`、`wc` | `python3`、`node`、`ffmpeg`、カスタム CLI |
+|ベストユース |パイプラインでの低リスクのテキスト変換 |より広範な動作または副作用を伴うツール |
 
-### Safe bins versus allowlist
+設定場所:- `safeBins` は構成 (`tools.exec.safeBins` またはエージェントごとの `agents.list[].tools.exec.safeBins`) から取得されます。
 
-| Topic            | `tools.exec.safeBins`                                  | Allowlist (`exec-approvals.json`)                            |
-| ---------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| Goal             | Auto-allow narrow stdin filters                        | Explicitly trust specific executables                        |
-| Match type       | Executable name + safe-bin argv policy                 | Resolved executable path glob pattern                        |
-| Argument scope   | Restricted by safe-bin profile and literal-token rules | Path match only; arguments are otherwise your responsibility |
-| Typical examples | `jq`, `head`, `tail`, `wc`                             | `python3`, `node`, `ffmpeg`, custom CLIs                     |
-| Best use         | Low-risk text transforms in pipelines                  | Any tool with broader behavior or side effects               |
+- `safeBinTrustedDirs` は構成 (`tools.exec.safeBinTrustedDirs` またはエージェントごとの `agents.list[].tools.exec.safeBinTrustedDirs`) から取得されます。
+- `safeBinProfiles` は構成 (`tools.exec.safeBinProfiles` またはエージェントごとの `agents.list[].tools.exec.safeBinProfiles`) から取得されます。エージェントごとのプロファイル キーはグローバル キーをオーバーライドします。
+- ホワイトリスト エントリは、ホストローカルの `agents.<id>.allowlist` の下の `~/.openclaw/exec-approvals.json` (またはコントロール UI / `openclaw approvals allowlist ...` 経由) に存在します。
+- `openclaw security audit` は、明示的なプロファイルなしでインタープリター/ランタイム ビンが `safeBins` に表示される場合、`tools.exec.safe_bins_interpreter_unprofiled` で警告します。
+- `openclaw doctor --fix` は、欠落しているカスタム `safeBinProfiles.<bin>` エントリを `{}` としてスキャフォールディングできます (後で確認して修正します)。インタプリタ/ランタイム ビンは自動スキャフォールディングされません。
 
-Configuration location:
-
-- `safeBins` comes from config (`tools.exec.safeBins` or per-agent `agents.list[].tools.exec.safeBins`).
-- `safeBinTrustedDirs` comes from config (`tools.exec.safeBinTrustedDirs` or per-agent `agents.list[].tools.exec.safeBinTrustedDirs`).
-- `safeBinProfiles` comes from config (`tools.exec.safeBinProfiles` or per-agent `agents.list[].tools.exec.safeBinProfiles`). Per-agent profile keys override global keys.
-- allowlist entries live in host-local `~/.openclaw/exec-approvals.json` under `agents.<id>.allowlist` (or via Control UI / `openclaw approvals allowlist ...`).
-- `openclaw security audit` warns with `tools.exec.safe_bins_interpreter_unprofiled` when interpreter/runtime bins appear in `safeBins` without explicit profiles.
-- `openclaw doctor --fix` can scaffold missing custom `safeBinProfiles.<bin>` entries as `{}` (review and tighten afterward). Interpreter/runtime bins are not auto-scaffolded.
-
-Custom profile example:
+カスタムプロファイルの例:
 
 ```json5
 {
@@ -235,54 +226,52 @@ Custom profile example:
 }
 ```
 
-## Control UI editing
+## コントロール UI の編集
 
-Use the **Control UI → Nodes → Exec approvals** card to edit defaults, per‑agent
-overrides, and allowlists. Pick a scope (Defaults or an agent), tweak the policy,
-add/remove allowlist patterns, then **Save**. The UI shows **last used** metadata
-per pattern so you can keep the list tidy.
+**コントロール UI → ノード → 実行承認** カードを使用して、エージェントごとにデフォルトを編集します
+オーバーライドと許可リスト。スコープ (デフォルトまたはエージェント) を選択し、ポリシーを微調整します。
+ホワイトリスト パターンを追加/削除し、**保存**します。 UI には **最後に使用した** メタデータが表示されます
+パターンごとに作成できるため、リストを整理しておくことができます。
 
-The target selector chooses **Gateway** (local approvals) or a **Node**. Nodes
-must advertise `system.execApprovals.get/set` (macOS app or headless node host).
-If a node does not advertise exec approvals yet, edit its local
-`~/.openclaw/exec-approvals.json` directly.
+ターゲット セレクターは、**ゲートウェイ** (ローカル承認) または **ノード** を選択します。ノード
+`system.execApprovals.get/set` (macOS アプリまたはヘッドレス ノード ホスト) をアドバタイズする必要があります。
+ノードが実行承認をまだアドバタイズしていない場合は、そのローカルを編集します
+`~/.openclaw/exec-approvals.json` を直接。CLI: `openclaw approvals` は、ゲートウェイまたはノードの編集をサポートします ([承認 CLI](/cli/approvals) を参照)。
 
-CLI: `openclaw approvals` supports gateway or node editing (see [Approvals CLI](/cli/approvals)).
+## 承認フロー
 
-## Approval flow
+プロンプトが必要な場合、ゲートウェイはオペレーター クライアントに `exec.approval.requested` をブロードキャストします。
+コントロール UI と macOS アプリは `exec.approval.resolve` 経由で問題を解決し、ゲートウェイは
+ノードホストへの承認されたリクエスト。
 
-When a prompt is required, the gateway broadcasts `exec.approval.requested` to operator clients.
-The Control UI and macOS app resolve it via `exec.approval.resolve`, then the gateway forwards the
-approved request to the node host.
+`host=node` の場合、承認リクエストには正規の `systemRunPlan` ペイロードが含まれます。ゲートウェイが使用するのは、
+承認された `system.run` を転送するときに権限のあるコマンド/cwd/セッション コンテキストとして計画する
+リクエスト。
 
-For `host=node`, approval requests include a canonical `systemRunPlan` payload. The gateway uses
-that plan as the authoritative command/cwd/session context when forwarding approved `system.run`
-requests.
+承認が必要な場合、実行ツールは承認 ID を即座に返します。その ID を使用して、
+後のシステム イベント (`Exec finished` / `Exec denied`) を関連付けます。期限までに決定が下されない場合は、
+タイムアウトになると、リクエストは承認タイムアウトとして扱われ、拒否理由として表示されます。
 
-When approvals are required, the exec tool returns immediately with an approval id. Use that id to
-correlate later system events (`Exec finished` / `Exec denied`). If no decision arrives before the
-timeout, the request is treated as an approval timeout and surfaced as a denial reason.
+確認ダイアログには次の内容が含まれます。
 
-The confirmation dialog includes:
+- コマンド + 引数
+  -CWD
+- エージェントID
+- 解決された実行可能パス
+- ホスト + ポリシーのメタデータ
 
-- command + args
-- cwd
-- agent id
-- resolved executable path
-- host + policy metadata
+アクション:
 
-Actions:
+- **一度許可** → 今すぐ実行
+- **常に許可** → 許可リストに追加して実行
+- **拒否** → ブロック
 
-- **Allow once** → run now
-- **Always allow** → add to allowlist + run
-- **Deny** → block
+## チャットチャネルへの承認の転送
 
-## Approval forwarding to chat channels
+実行承認プロンプトを任意のチャット チャネル (プラグイン チャネルを含む) に転送して承認できます。
+`/approve` となります。これには、通常の送信配信パイプラインが使用されます。
 
-You can forward exec approval prompts to any chat channel (including plugin channels) and approve
-them with `/approve`. This uses the normal outbound delivery pipeline.
-
-Config:
+構成:
 
 ```json5
 {
@@ -301,7 +290,7 @@ Config:
 }
 ```
 
-Reply in chat:
+チャットで返信:
 
 ```
 /approve <id> allow-once
@@ -309,7 +298,7 @@ Reply in chat:
 /approve <id> deny
 ```
 
-### macOS IPC flow
+### macOS IPC フロー
 
 ```
 Gateway -> Node Service (WS)
@@ -318,35 +307,34 @@ Gateway -> Node Service (WS)
              Mac App (UI + approvals + system.run)
 ```
 
-Security notes:
+セキュリティに関する注意事項:- Unix ソケット モード `0600`、トークンは `exec-approvals.json` に保存されます。
 
-- Unix socket mode `0600`, token stored in `exec-approvals.json`.
-- Same-UID peer check.
-- Challenge/response (nonce + HMAC token + request hash) + short TTL.
+- 同じUIDピアチェック。
+- チャレンジ/レスポンス (ノンス + HMAC トークン + リクエスト ハッシュ) + 短い TTL。
 
-## System events
+## システムイベント
 
-Exec lifecycle is surfaced as system messages:
+Exec ライフサイクルはシステム メッセージとして表示されます。
 
-- `Exec running` (only if the command exceeds the running notice threshold)
+- `Exec running` (コマンドが実行通知しきい値を超えた場合のみ)
 - `Exec finished`
 - `Exec denied`
 
-These are posted to the agent’s session after the node reports the event.
-Gateway-host exec approvals emit the same lifecycle events when the command finishes (and optionally when running longer than the threshold).
-Approval-gated execs reuse the approval id as the `runId` in these messages for easy correlation.
+これらは、ノードがイベントを報告した後、エージェントのセッションにポストされます。
+ゲートウェイ ホストの実行承認は、コマンドの終了時 (およびオプションでしきい値を超えて実行されているとき) に同じライフサイクル イベントを発行します。
+承認ゲート型幹部は、関連付けを容易にするために、これらのメッセージ内で承認 ID を `runId` として再利用します。
 
-## Implications
+## 影響
 
-- **full** is powerful; prefer allowlists when possible.
-- **ask** keeps you in the loop while still allowing fast approvals.
-- Per-agent allowlists prevent one agent’s approvals from leaking into others.
-- Approvals only apply to host exec requests from **authorized senders**. Unauthorized senders cannot issue `/exec`.
-- `/exec security=full` is a session-level convenience for authorized operators and skips approvals by design.
-  To hard-block host exec, set approvals security to `deny` or deny the `exec` tool via tool policy.
+- **フル**は強力です。可能であればホワイトリストを優先します。
+- **ask** により、迅速な承認を可能にしながら、最新情報を常に把握できます。
+- エージェントごとの許可リストにより、あるエージェントの承認が他のエージェントに漏洩するのを防ぎます。
+- 承認は、**承認された送信者**からのホスト実行リクエストにのみ適用されます。不正な送信者は `/exec` を発行できません。
+- `/exec security=full` は、承認されたオペレーターにとってセッションレベルの利便性を提供し、設計により承認をスキップします。
+  ホスト実行をハードブロックするには、承認セキュリティを `deny` に設定するか、ツール ポリシーで `exec` ツールを拒否します。
 
-Related:
+関連:
 
-- [Exec tool](/tools/exec)
-- [Elevated mode](/tools/elevated)
-- [Skills](/tools/skills)
+- [実行ツール](/tools/exec)
+- [昇格モード](/tools/elevated)
+- [スキル](/tools/skills)

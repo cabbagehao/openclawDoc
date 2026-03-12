@@ -1,14 +1,16 @@
 ---
-summary: "CLI reference for `openclaw reset` (reset local state/config)"
+summary: "「openclaw リセット」の CLI リファレンス (ローカル状態/設定をリセット)"
 read_when:
-  - You want to wipe local state while keeping the CLI installed
-  - You want a dry-run of what would be removed
-title: "reset"
+  - CLI をインストールしたままローカル状態を消去したい
+  - 削除される内容の予行演習が必要な場合
+title: "リセット"
+x-i18n:
+  source_hash: "76e808ce44da49603504aacf92e67ea4af427f0ed9081684b24fb7d3f3922cd5"
 ---
 
 # `openclaw reset`
 
-Reset local config/state (keeps the CLI installed).
+ローカルの設定/状態をリセットします (CLI のインストールを維持します)。
 
 ```bash
 openclaw backup create
@@ -17,4 +19,4 @@ openclaw reset --dry-run
 openclaw reset --scope config+creds+sessions --yes --non-interactive
 ```
 
-Run `openclaw backup create` first if you want a restorable snapshot before removing local state.
+ローカル状態を削除する前に復元可能なスナップショットが必要な場合は、最初に `openclaw backup create` を実行します。

@@ -1,27 +1,30 @@
 ---
-summary: "Together AI setup (auth + model selection)"
+summary: "一緒に AI セットアップ (認証 + モデル選択)"
 read_when:
-  - You want to use Together AI with OpenClaw
-  - You need the API key env var or CLI auth choice
+  - Together AI と OpenClaw を使用したい
+  - API キーの環境変数または CLI 認証の選択が必要です
+title: "一緒にAI"
+x-i18n:
+  source_hash: "4f2ba5a12b03d0140feba4f54e0540bb57237cd131c8f1d826bc3629fde2d111"
 ---
 
-# Together AI
+# 一緒にAI
 
-The [Together AI](https://together.ai) provides access to leading open-source models including Llama, DeepSeek, Kimi, and more through a unified API.
+[Together AI](https://together.ai) は、統合 API を通じて、Llama、DeepSeek、Kimi などを含む主要なオープンソース モデルへのアクセスを提供します。
 
-- Provider: `together`
-- Auth: `TOGETHER_API_KEY`
-- API: OpenAI-compatible
+- プロバイダー: `together`
+- 認証: `TOGETHER_API_KEY`
+- API：OpenAI互換
 
-## Quick start
+## クイックスタート
 
-1. Set the API key (recommended: store it for the Gateway):
+1. API キーを設定します (推奨: ゲートウェイ用に保存します)。
 
 ```bash
 openclaw onboard --auth-choice together-api-key
 ```
 
-2. Set a default model:
+2. デフォルトのモデルを設定します。
 
 ```json5
 {
@@ -33,7 +36,7 @@ openclaw onboard --auth-choice together-api-key
 }
 ```
 
-## Non-interactive example
+## 非対話型の例
 
 ```bash
 openclaw onboard --non-interactive \
@@ -42,24 +45,24 @@ openclaw onboard --non-interactive \
   --together-api-key "$TOGETHER_API_KEY"
 ```
 
-This will set `together/moonshotai/Kimi-K2.5` as the default model.
+これにより、`together/moonshotai/Kimi-K2.5` がデフォルトのモデルとして設定されます。
 
-## Environment note
+## 環境に関する注意事項
 
-If the Gateway runs as a daemon (launchd/systemd), make sure `TOGETHER_API_KEY`
-is available to that process (for example, in `~/.openclaw/.env` or via
-`env.shellEnv`).
+ゲートウェイがデーモン (launchd/systemd) として実行されている場合は、`TOGETHER_API_KEY` であることを確認してください。
+そのプロセスで利用できます (たとえば、`~/.openclaw/.env` または経由)
+`env.shellEnv`)。
 
-## Available models
+## 利用可能なモデル
 
-Together AI provides access to many popular open-source models:
+Together AI は、多くの人気のあるオープンソース モデルへのアクセスを提供します。
 
-- **GLM 4.7 Fp8** - Default model with 200K context window
-- **Llama 3.3 70B Instruct Turbo** - Fast, efficient instruction following
-- **Llama 4 Scout** - Vision model with image understanding
-- **Llama 4 Maverick** - Advanced vision and reasoning
-- **DeepSeek V3.1** - Powerful coding and reasoning model
-- **DeepSeek R1** - Advanced reasoning model
-- **Kimi K2 Instruct** - High-performance model with 262K context window
+- **GLM 4.7 Fp8** - 200K コンテキスト ウィンドウを備えたデフォルト モデル
+- **Llama 3.3 70B Instruct Turbo** - 高速で効率的な指示に従ってください
+- **Llama 4 Scout** - 画像理解機能を備えた視覚モデル
+- **ラマ 4 マーベリック** - 高度なビジョンと推論
+- **DeepSeek V3.1** - 強力なコーディングおよび推論モデル
+- **DeepSeek R1** - 高度な推論モデル
+- **Kimi K2 Instruct** - 262K コンテキスト ウィンドウを備えた高性能モデル
 
-All models support standard chat completions and are OpenAI API compatible.
+すべてのモデルは標準のチャット補完をサポートし、OpenAI API と互換性があります。

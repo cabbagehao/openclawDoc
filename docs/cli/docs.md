@@ -1,13 +1,15 @@
 ---
-summary: "CLI reference for `openclaw docs` (search the live docs index)"
+summary: "「openclaw docs」の CLI リファレンス (ライブ ドキュメント インデックスを検索)"
 read_when:
-  - You want to search the live OpenClaw docs from the terminal
-title: "docs"
+  - ターミナルからライブ OpenClaw ドキュメントを検索したい
+title: "ドキュメント"
+x-i18n:
+  source_hash: "7a4000e91f7c6ed1140f684e2d1849577651e9389c5c90532a74db58c0b86d47"
 ---
 
 # `openclaw docs`
 
-Search the live docs index.
+ライブ ドキュメント インデックスを検索します。
 
 ```bash
 openclaw docs browser extension

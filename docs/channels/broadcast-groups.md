@@ -1,79 +1,79 @@
 ---
-summary: "Broadcast a WhatsApp message to multiple agents"
+summary: "WhatsApp メッセージを複数のエージェントへブロードキャストする"
 read_when:
-  - Configuring broadcast groups
-  - Debugging multi-agent replies in WhatsApp
+  - ブロードキャストグループを設定する場合
+  - WhatsApp でのマルチエージェント返信をデバッグする場合
 status: experimental
 title: "Broadcast Groups"
 ---
 
 # Broadcast Groups
 
-**Status:** Experimental  
-**Version:** Added in 2026.1.9
+**ステータス:** 実験的<br />
+**バージョン:** 2026.1.9 で追加
 
-## Overview
+## 概要
 
-Broadcast Groups enable multiple agents to process and respond to the same message simultaneously. This allows you to create specialized agent teams that work together in a single WhatsApp group or DM — all using one phone number.
+ブロードキャストグループを使うと、複数のエージェントが同じメッセージを同時に処理し、それぞれ応答できます。これにより、1 つの WhatsApp グループまたは DM の中で、役割ごとに分担したエージェントチームを 1 つの電話番号で運用できます。
 
-Current scope: **WhatsApp only** (web channel).
+現在対応しているのは **WhatsApp のみ** です (`web` チャンネル)。
 
-Broadcast groups are evaluated after channel allowlists and group activation rules. In WhatsApp groups, this means broadcasts happen when OpenClaw would normally reply (for example: on mention, depending on your group settings).
+ブロードキャストグループは、チャンネルの allowlist とグループの有効化ルールを評価したあとに適用されます。WhatsApp グループでは、OpenClaw が通常なら返信する場面でのみブロードキャストが実行されます。たとえば、グループ設定によってはメンション時にだけ反応します。
 
-## Use Cases
+## ユースケース
 
-### 1. Specialized Agent Teams
+### 1. 特化したエージェントチーム
 
-Deploy multiple agents with atomic, focused responsibilities:
-
-```
-Group: "Development Team"
-Agents:
-  - CodeReviewer (reviews code snippets)
-  - DocumentationBot (generates docs)
-  - SecurityAuditor (checks for vulnerabilities)
-  - TestGenerator (suggests test cases)
-```
-
-Each agent processes the same message and provides its specialized perspective.
-
-### 2. Multi-Language Support
+責務を小さく分けた複数のエージェントを配置できます。
 
 ```
-Group: "International Support"
-Agents:
-  - Agent_EN (responds in English)
-  - Agent_DE (responds in German)
-  - Agent_ES (responds in Spanish)
+グループ: "開発チーム"
+エージェント:
+  - CodeReviewer (コードスニペットをレビュー)
+  - DocumentationBot (ドキュメントを生成)
+  - SecurityAuditor (脆弱性をチェック)
+  - TestGenerator (テストケースを提案)
 ```
 
-### 3. Quality Assurance Workflows
+各エージェントは同じメッセージを処理し、それぞれの専門領域から応答します。
+
+### 2. 多言語サポート
 
 ```
-Group: "Customer Support"
-Agents:
-  - SupportAgent (provides answer)
-  - QAAgent (reviews quality, only responds if issues found)
+グループ: "国際サポート"
+エージェント:
+  - Agent_EN (英語で応答)
+  - Agent_DE (ドイツ語で応答)
+  - Agent_ES (スペイン語で応答)
 ```
 
-### 4. Task Automation
+### 3. 品質保証ワークフロー
 
 ```
-Group: "Project Management"
-Agents:
-  - TaskTracker (updates task database)
-  - TimeLogger (logs time spent)
-  - ReportGenerator (creates summaries)
+グループ: "カスタマーサポート"
+エージェント:
+  - SupportAgent (回答を提供)
+  - QAAgent (品質をレビュー、問題が見つかった場合のみ応答)
 ```
 
-## Configuration
+### 4. タスク自動化
 
-### Basic Setup
+```
+グループ: "プロジェクト管理"
+エージェント:
+  - TaskTracker (タスクデータベースを更新)
+  - TimeLogger (費やした時間を記録)
+  - ReportGenerator (要約を作成)
+```
 
-Add a top-level `broadcast` section (next to `bindings`). Keys are WhatsApp peer ids:
+## 設定
 
-- group chats: group JID (e.g. `120363403215116621@g.us`)
-- DMs: E.164 phone number (e.g. `+15551234567`)
+### 基本設定
+
+トップレベルに `broadcast` セクションを追加します (`bindings` と同じ階層です)。キーには WhatsApp の peer ID を使います。
+
+- グループチャット: グループ JID (例: `120363403215116621@g.us`)
+- DM: E.164 形式の電話番号 (例: `+15551234567`)
 
 ```json
 {
@@ -83,15 +83,15 @@ Add a top-level `broadcast` section (next to `bindings`). Keys are WhatsApp peer
 }
 ```
 
-**Result:** When OpenClaw would reply in this chat, it will run all three agents.
+**結果:** OpenClaw がこのチャットで返信対象になったとき、3 つのエージェントすべてが実行されます。
 
-### Processing Strategy
+### 処理戦略
 
-Control how agents process messages:
+メッセージ処理の進め方も指定できます。
 
-#### Parallel (Default)
+#### Parallel (並列、デフォルト)
 
-All agents process simultaneously:
+すべてのエージェントが同時に処理します。
 
 ```json
 {
@@ -102,9 +102,9 @@ All agents process simultaneously:
 }
 ```
 
-#### Sequential
+#### Sequential (順次)
 
-Agents process in order (one waits for previous to finish):
+エージェントを順番に処理します。後続のエージェントは、前のエージェントの完了を待ちます。
 
 ```json
 {
@@ -115,7 +115,7 @@ Agents process in order (one waits for previous to finish):
 }
 ```
 
-### Complete Example
+### 完全な例
 
 ```json
 {
@@ -150,66 +150,66 @@ Agents process in order (one waits for previous to finish):
 }
 ```
 
-## How It Works
+## 動作の仕組み
 
-### Message Flow
+### メッセージフロー
 
-1. **Incoming message** arrives in a WhatsApp group
-2. **Broadcast check**: System checks if peer ID is in `broadcast`
-3. **If in broadcast list**:
-   - All listed agents process the message
-   - Each agent has its own session key and isolated context
-   - Agents process in parallel (default) or sequentially
-4. **If not in broadcast list**:
-   - Normal routing applies (first matching binding)
+1. **受信メッセージ** が WhatsApp グループに届きます。
+2. **ブロードキャスト判定**: システムが peer ID が `broadcast` に含まれているか確認します。
+3. **ブロードキャストリストにある場合**:
+   - 指定されたすべてのエージェントがメッセージを処理します。
+   - 各エージェントは固有のセッションキーと独立したコンテキストを持ちます。
+   - 処理方式は並列 (デフォルト) または順次です。
+4. **ブロードキャストリストにない場合**:
+   - 通常のルーティングが適用されます (最初に一致した binding が使われます)。
 
-Note: broadcast groups do not bypass channel allowlists or group activation rules (mentions/commands/etc). They only change _which agents run_ when a message is eligible for processing.
+注意: ブロードキャストグループは、チャンネル allowlist やグループの有効化ルール (メンション、コマンドなど) を迂回しません。変更されるのは、メッセージが処理対象になったときに **どのエージェントを実行するか** だけです。
 
-### Session Isolation
+### セッションの分離
 
-Each agent in a broadcast group maintains completely separate:
+ブロードキャストグループ内の各エージェントは、次の要素をそれぞれ独立して持ちます。
 
-- **Session keys** (`agent:alfred:whatsapp:group:120363...` vs `agent:baerbel:whatsapp:group:120363...`)
-- **Conversation history** (agent doesn't see other agents' messages)
-- **Workspace** (separate sandboxes if configured)
-- **Tool access** (different allow/deny lists)
-- **Memory/context** (separate IDENTITY.md, SOUL.md, etc.)
-- **Group context buffer** (recent group messages used for context) is shared per peer, so all broadcast agents see the same context when triggered
+- **セッションキー** (`agent:alfred:whatsapp:group:120363...` vs `agent:baerbel:whatsapp:group:120363...`)
+- **会話履歴** (ほかのエージェントの発言は見えません)
+- **ワークスペース** (設定されている場合は別々のサンドボックス)
+- **ツールアクセス** (異なる許可 / 拒否リスト)
+- **メモリ/コンテキスト** (別々の IDENTITY.md、SOUL.md など)
+- **グループコンテキストバッファ** (直近のグループメッセージに基づくコンテキスト) は peer ごとに共有されるため、トリガー時にはすべてのブロードキャストエージェントが同じ入力コンテキストを参照します。
 
-This allows each agent to have:
+この構成により、各エージェントごとに次の要素を変えられます。
 
-- Different personalities
-- Different tool access (e.g., read-only vs. read-write)
-- Different models (e.g., opus vs. sonnet)
-- Different skills installed
+- 異なる性格や役割
+- 異なるツールアクセス (例: 読み取り専用と読み書き可能)
+- 異なるモデル (例: `opus` と `sonnet`)
+- 異なるインストール済みスキル
 
-### Example: Isolated Sessions
+### 例: セッション分離
 
-In group `120363403215116621@g.us` with agents `["alfred", "baerbel"]`:
+グループ `120363403215116621@g.us` に `["alfred", "baerbel"]` を割り当てた場合の例です。
 
-**Alfred's context:**
+**Alfred のコンテキスト**
 
 ```
 Session: agent:alfred:whatsapp:group:120363403215116621@g.us
-History: [user message, alfred's previous responses]
+History: [ユーザーメッセージ, alfred の過去の応答]
 Workspace: /Users/pascal/openclaw-alfred/
 Tools: read, write, exec
 ```
 
-**Bärbel's context:**
+**Bärbel のコンテキスト**
 
 ```
 Session: agent:baerbel:whatsapp:group:120363403215116621@g.us
-History: [user message, baerbel's previous responses]
+History: [ユーザーメッセージ, baerbel の過去の応答]
 Workspace: /Users/pascal/openclaw-baerbel/
 Tools: read only
 ```
 
-## Best Practices
+## ベストプラクティス
 
-### 1. Keep Agents Focused
+### 1. エージェントの焦点を絞る
 
-Design each agent with a single, clear responsibility:
+各エージェントは 1 つの明確な責務に絞って設計してください。
 
 ```json
 {
@@ -219,12 +219,12 @@ Design each agent with a single, clear responsibility:
 }
 ```
 
-✅ **Good:** Each agent has one job  
-❌ **Bad:** One generic "dev-helper" agent
+✅ **良い例:** 各エージェントが 1 つの仕事を持つ
+❌ **悪い例:** 1 つの汎用的な「dev-helper」エージェント
 
-### 2. Use Descriptive Names
+### 2. 役割が分かる名前を付ける
 
-Make it clear what each agent does:
+エージェント名から役割が分かるようにします。
 
 ```json
 {
@@ -236,54 +236,54 @@ Make it clear what each agent does:
 }
 ```
 
-### 3. Configure Different Tool Access
+### 3. 必要なツールだけ許可する
 
-Give agents only the tools they need:
+各エージェントには必要最小限のツールだけを与えます。
 
 ```json
 {
   "agents": {
     "reviewer": {
-      "tools": { "allow": ["read", "exec"] } // Read-only
+      "tools": { "allow": ["read", "exec"] } // 読み取り専用
     },
     "fixer": {
-      "tools": { "allow": ["read", "write", "edit", "exec"] } // Read-write
+      "tools": { "allow": ["read", "write", "edit", "exec"] } // 読み書き可能
     }
   }
 }
 ```
 
-### 4. Monitor Performance
+### 4. パフォーマンスを意識する
 
-With many agents, consider:
+エージェント数が多い場合は、次の点を検討してください。
 
-- Using `"strategy": "parallel"` (default) for speed
-- Limiting broadcast groups to 5-10 agents
-- Using faster models for simpler agents
+- 速度重視なら `"strategy": "parallel"` (デフォルト) を使う
+- ブロードキャストグループの規模を 5〜10 エージェント程度に抑える
+- 単純な役割のエージェントには高速なモデルを使う
 
-### 5. Handle Failures Gracefully
+### 5. 障害は個別に扱う
 
-Agents fail independently. One agent's error doesn't block others:
+各エージェントは独立して失敗します。1 つのエージェントのエラーが、ほかのエージェントを止めることはありません。
 
 ```
-Message → [Agent A ✓, Agent B ✗ error, Agent C ✓]
-Result: Agent A and C respond, Agent B logs error
+メッセージ → [Agent A ✓, Agent B ✗ エラー, Agent C ✓]
+結果: Agent A と C は応答し、Agent B はエラーをログに記録する
 ```
 
-## Compatibility
+## 互換性
 
-### Providers
+### プロバイダー
 
-Broadcast groups currently work with:
+現時点でブロードキャストグループが動作するのは次のプロバイダーです。
 
-- ✅ WhatsApp (implemented)
-- 🚧 Telegram (planned)
-- 🚧 Discord (planned)
-- 🚧 Slack (planned)
+- ✅ WhatsApp (実装済み)
+- 🚧 Telegram (予定)
+- 🚧 Discord (予定)
+- 🚧 Slack (予定)
 
-### Routing
+### ルーティング
 
-Broadcast groups work alongside existing routing:
+ブロードキャストグループは既存のルーティング設定と併用できます。
 
 ```json
 {
@@ -299,44 +299,44 @@ Broadcast groups work alongside existing routing:
 }
 ```
 
-- `GROUP_A`: Only alfred responds (normal routing)
-- `GROUP_B`: agent1 AND agent2 respond (broadcast)
+- `GROUP_A`: `alfred` のみが応答します (通常ルーティング)
+- `GROUP_B`: `agent1` と `agent2` が応答します (ブロードキャスト)
 
-**Precedence:** `broadcast` takes priority over `bindings`.
+**優先順位:** `broadcast` は `bindings` より優先されます。
 
-## Troubleshooting
+## トラブルシューティング
 
-### Agents Not Responding
+### エージェントが応答しない場合
 
-**Check:**
+**確認事項:**
 
-1. Agent IDs exist in `agents.list`
-2. Peer ID format is correct (e.g., `120363403215116621@g.us`)
-3. Agents are not in deny lists
+1. エージェント ID が `agents.list` に存在する
+2. peer ID の形式が正しい (例: `120363403215116621@g.us`)
+3. エージェントが denylist に入っていない
 
-**Debug:**
+**デバッグ:**
 
 ```bash
 tail -f ~/.openclaw/logs/gateway.log | grep broadcast
 ```
 
-### Only One Agent Responding
+### 1 つのエージェントしか応答しない場合
 
-**Cause:** Peer ID might be in `bindings` but not `broadcast`.
+**原因:** peer ID が `bindings` には存在するものの、`broadcast` に入っていない可能性があります。
 
-**Fix:** Add to broadcast config or remove from bindings.
+**対処:** `broadcast` 設定へ追加するか、`bindings` から削除してください。
 
-### Performance Issues
+### パフォーマンスに問題がある場合
 
-**If slow with many agents:**
+**多数のエージェントで遅いとき**
 
-- Reduce number of agents per group
-- Use lighter models (sonnet instead of opus)
-- Check sandbox startup time
+- 1 グループあたりのエージェント数を減らす
+- より軽量なモデルを使う (`opus` の代わりに `sonnet`)
+- サンドボックスの起動時間を確認する
 
-## Examples
+## 例
 
-### Example 1: Code Review Team
+### 例 1: コードレビューチーム
 
 ```json
 {
@@ -372,15 +372,15 @@ tail -f ~/.openclaw/logs/gateway.log | grep broadcast
 }
 ```
 
-**User sends:** Code snippet  
-**Responses:**
+**ユーザー入力:** コードスニペット
+**応答:**
 
-- code-formatter: "Fixed indentation and added type hints"
-- security-scanner: "⚠️ SQL injection vulnerability in line 12"
-- test-coverage: "Coverage is 45%, missing tests for error cases"
-- docs-checker: "Missing docstring for function `process_data`"
+- code-formatter: "インデントを修正し、型ヒントを追加しました"
+- security-scanner: "12 行目に SQL インジェクションの脆弱性があります"
+- test-coverage: "カバレッジは 45% です。エラーケースのテストが不足しています"
+- docs-checker: "関数 `process_data` の docstring がありません"
 
-### Example 2: Multi-Language Support
+### 例 2: 多言語サポート
 
 ```json
 {
@@ -398,7 +398,7 @@ tail -f ~/.openclaw/logs/gateway.log | grep broadcast
 }
 ```
 
-## API Reference
+## API リファレンス
 
 ### Config Schema
 
@@ -411,32 +411,32 @@ interface OpenClawConfig {
 }
 ```
 
-### Fields
+### フィールド
 
-- `strategy` (optional): How to process agents
-  - `"parallel"` (default): All agents process simultaneously
-  - `"sequential"`: Agents process in array order
-- `[peerId]`: WhatsApp group JID, E.164 number, or other peer ID
-  - Value: Array of agent IDs that should process messages
+- `strategy` (オプション): エージェントの処理方法
+  - `"parallel"` (デフォルト): すべてのエージェントを同時に実行します
+  - `"sequential"`: 配列の順序でエージェントを実行します
+- `[peerId]`: WhatsApp グループ JID、E.164 番号、またはその他の peer ID
+  - 値: その peer のメッセージを処理するエージェント ID の配列
 
-## Limitations
+## 制限事項
 
-1. **Max agents:** No hard limit, but 10+ agents may be slow
-2. **Shared context:** Agents don't see each other's responses (by design)
-3. **Message ordering:** Parallel responses may arrive in any order
-4. **Rate limits:** All agents count toward WhatsApp rate limits
+1. **最大エージェント数:** 厳密な上限はありませんが、10 個を超えると遅くなる可能性があります。
+2. **共有コンテキスト:** エージェント同士は互いの応答を見ません。これは設計上の仕様です。
+3. **メッセージ順序:** 並列実行時は応答順が保証されません。
+4. **レート制限:** すべてのエージェント実行が WhatsApp のレート制限にカウントされます。
 
-## Future Enhancements
+## 今後の機能強化
 
-Planned features:
+予定されている機能:
 
-- [ ] Shared context mode (agents see each other's responses)
-- [ ] Agent coordination (agents can signal each other)
-- [ ] Dynamic agent selection (choose agents based on message content)
-- [ ] Agent priorities (some agents respond before others)
+- [ ] 共有コンテキストモード (エージェント同士が互いの応答を参照できる)
+- [ ] エージェント間の連携 (エージェント同士でシグナルを送れる)
+- [ ] 動的なエージェント選択 (メッセージ内容に応じて実行対象を決める)
+- [ ] エージェント優先順位 (一部のエージェントを先に応答させる)
 
-## See Also
+## 関連項目
 
-- [Multi-Agent Configuration](/tools/multi-agent-sandbox-tools)
-- [Routing Configuration](/channels/channel-routing)
-- [Session Management](/concepts/session)
+- [マルチエージェント設定](/tools/multi-agent-sandbox-tools)
+- [ルーティング設定](/channels/channel-routing)
+- [セッション管理](/concepts/session)

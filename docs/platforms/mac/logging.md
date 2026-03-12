@@ -1,34 +1,36 @@
 ---
-summary: "OpenClaw logging: rolling diagnostics file log + unified log privacy flags"
+summary: "OpenClaw のロギング: ローリング診断ファイル ログと unified logging のプライバシー設定"
 read_when:
-  - Capturing macOS logs or investigating private data logging
-  - Debugging voice wake/session lifecycle issues
-title: "macOS Logging"
+  - macOS ログの取得やプライベート データのログ出力調査
+  - 音声ウェイクやセッション ライフサイクルの問題のデバッグ
+title: "macOS のロギング"
+x-i18n:
+  source_hash: "c08d6bc012f8e8bb53353fe654713dede676b4e6127e49fd76e00c2510b9ab0b"
 ---
 
-# Logging (macOS)
+# ロギング（macOS）
 
-## Rolling diagnostics file log (Debug pane)
+## ローリング診断ファイル ログ（Debug pane）
 
-OpenClaw routes macOS app logs through swift-log (unified logging by default) and can write a local, rotating file log to disk when you need a durable capture.
+OpenClaw は macOS アプリのログを swift-log 経由で処理しており、既定では unified logging を使用します。永続的な記録が必要な場合は、ローカル ディスクへローテーション付きのファイル ログを書き出せます。
 
 - Verbosity: **Debug pane → Logs → App logging → Verbosity**
-- Enable: **Debug pane → Logs → App logging → “Write rolling diagnostics log (JSONL)”**
-- Location: `~/Library/Logs/OpenClaw/diagnostics.jsonl` (rotates automatically; old files are suffixed with `.1`, `.2`, …)
-- Clear: **Debug pane → Logs → App logging → “Clear”**
+- Enable: **Debug pane → Logs → App logging → "Write rolling diagnostics log (JSONL)"**
+- Location: `~/Library/Logs/OpenClaw/diagnostics.jsonl`（古いファイルは自動でローテーションされ、`.1`、`.2` のような接尾辞が付きます）
+- Clear: **Debug pane → Logs → App logging → "Clear"**
 
-Notes:
+注意:
 
-- This is **off by default**. Enable only while actively debugging.
-- Treat the file as sensitive; don’t share it without review.
+- これは **既定では無効** です。実際にデバッグが必要な期間だけ有効にしてください。
+- このファイルには機微な情報が含まれる可能性があります。内容を確認せず共有しないでください。
 
-## Unified logging private data on macOS
+## macOS の unified logging における private data
 
-Unified logging redacts most payloads unless a subsystem opts into `privacy -off`. Per Peter's write-up on macOS [logging privacy shenanigans](https://steipete.me/posts/2025/logging-privacy-shenanigans) (2025) this is controlled by a plist in `/Library/Preferences/Logging/Subsystems/` keyed by the subsystem name. Only new log entries pick up the flag, so enable it before reproducing an issue.
+unified logging では、サブシステム側で `privacy -off` を有効にしない限り、多くのペイロードがマスクされます。Peter の記事 [logging privacy shenanigans](https://steipete.me/posts/2025/logging-privacy-shenanigans)（2025）で説明されているとおり、この挙動は `/Library/Preferences/Logging/Subsystems/` 配下の plist で制御し、キーにはサブシステム名を使用します。このフラグは新しく出力されるログにのみ反映されるため、問題を再現する前に有効化してください。
 
-## Enable for OpenClaw (`ai.openclaw`)
+## OpenClaw（`ai.openclaw`）で有効化する
 
-- Write the plist to a temp file first, then install it atomically as root:
+- まず plist を一時ファイルへ書き出し、その後 root 権限でアトミックにインストールします。
 
 ```bash
 cat <<'EOF' >/tmp/ai.openclaw.plist
@@ -47,11 +49,11 @@ EOF
 sudo install -m 644 -o root -g wheel /tmp/ai.openclaw.plist /Library/Preferences/Logging/Subsystems/ai.openclaw.plist
 ```
 
-- No reboot is required; logd notices the file quickly, but only new log lines will include private payloads.
-- View the richer output with the existing helper, e.g. `./scripts/clawlog.sh --category WebChat --last 5m`.
+- 再起動は不要です。`logd` は比較的すぐにこのファイルを検知しますが、private data を含むのはそれ以降に出力された新しいログ行だけです。
+- より詳細な出力は既存のヘルパーで確認できます。たとえば `./scripts/clawlog.sh --category WebChat --last 5m` を使用します。
 
-## Disable after debugging
+## デバッグ後に無効化する
 
-- Remove the override: `sudo rm /Library/Preferences/Logging/Subsystems/ai.openclaw.plist`.
-- Optionally run `sudo log config --reload` to force logd to drop the override immediately.
-- Remember this surface can include phone numbers and message bodies; keep the plist in place only while you actively need the extra detail.
+- オーバーライドを削除します: `sudo rm /Library/Preferences/Logging/Subsystems/ai.openclaw.plist`
+- 必要に応じて `sudo log config --reload` を実行すると、`logd` に即座に設定を再読み込みさせることができます。
+- この経路には電話番号やメッセージ本文が含まれる可能性があります。追加情報が必要な間だけ plist を配置してください。

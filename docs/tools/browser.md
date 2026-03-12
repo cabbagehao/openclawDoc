@@ -1,37 +1,39 @@
 ---
-summary: "Integrated browser control service + action commands"
+summary: "統合されたブラウザ制御サービス + アクション コマンド"
 read_when:
-  - Adding agent-controlled browser automation
-  - Debugging why openclaw is interfering with your own Chrome
-  - Implementing browser settings + lifecycle in the macOS app
-title: "Browser (OpenClaw-managed)"
+  - エージェント制御のブラウザ自動化の追加
+  - openclaw が自分の Chrome に干渉する理由をデバッグする
+  - macOS アプリにブラウザ設定とライフサイクルを実装する
+title: "ブラウザ (OpenClaw 管理)"
+x-i18n:
+  source_hash: "687c93076263849a6117ed24c7e63f712c821c599435b95c9d78e02564050892"
 ---
 
-# Browser (openclaw-managed)
+# ブラウザ (openclaw 管理)
 
-OpenClaw can run a **dedicated Chrome/Brave/Edge/Chromium profile** that the agent controls.
-It is isolated from your personal browser and is managed through a small local
-control service inside the Gateway (loopback only).
+OpenClaw は、エージェントが制御する **専用の Chrome/Brave/Edge/Chromium プロファイル**を実行できます。
+個人のブラウザから分離されており、小さなローカル ブラウザを通じて管理されます。
+ゲートウェイ内のサービスを制御します (ループバックのみ)。
 
-Beginner view:
+初心者向けのビュー:
 
-- Think of it as a **separate, agent-only browser**.
-- The `openclaw` profile does **not** touch your personal browser profile.
-- The agent can **open tabs, read pages, click, and type** in a safe lane.
-- The default `chrome` profile uses the **system default Chromium browser** via the
-  extension relay; switch to `openclaw` for the isolated managed browser.
+- **独立したエージェント専用ブラウザ**と考えてください。
+- `openclaw` プロファイルは、個人ブラウザのプロファイルには**影響しません**。
+- エージェントは安全なレーンで **タブを開いたり、ページを読んだり、クリックしたり、入力したり**できます。
+- デフォルトの `chrome` プロファイルは、**システムのデフォルトの Chromium ブラウザ** を使用します。
+  延長リレー。分離された管理対象ブラウザの場合は、`openclaw` に切り替えます。
 
-## What you get
+## 得られるもの
 
-- A separate browser profile named **openclaw** (orange accent by default).
-- Deterministic tab control (list/open/focus/close).
-- Agent actions (click/type/drag/select), snapshots, screenshots, PDFs.
-- Optional multi-profile support (`openclaw`, `work`, `remote`, ...).
+- **openclaw** という名前の別のブラウザ プロファイル (デフォルトではオレンジ色のアクセント)。
+- 確定的なタブ コントロール (リスト/開く/フォーカス/閉じる)。
+- エージェントのアクション (クリック/入力/ドラッグ/選択)、スナップショット、スクリーンショット、PDF。
+- オプションのマルチプロファイルのサポート (`openclaw`、`work`、`remote` など)。
 
-This browser is **not** your daily driver. It is a safe, isolated surface for
-agent automation and verification.
+このブラウザは、日常のドライバーではありません\*\*。安全で隔離された表面です。
+エージェントの自動化と検証。
 
-## Quick start
+## クイックスタート
 
 ```bash
 openclaw browser --browser-profile openclaw status
@@ -40,20 +42,19 @@ openclaw browser --browser-profile openclaw open https://example.com
 openclaw browser --browser-profile openclaw snapshot
 ```
 
-If you get “Browser disabled”, enable it in config (see below) and restart the
-Gateway.
+「ブラウザが無効です」というメッセージが表示された場合は、設定で有効にし（以下を参照）、ブラウザを再起動します。
+ゲートウェイ。
 
-## Profiles: `openclaw` vs `chrome`
+## プロファイル: `openclaw` 対 `chrome`- `openclaw`: 管理された独立したブラウザ (拡張機能は必要ありません)
 
-- `openclaw`: managed, isolated browser (no extension required).
-- `chrome`: extension relay to your **system browser** (requires the OpenClaw
-  extension to be attached to a tab).
+- `chrome`: **システム ブラウザ**への拡張機能リレー (OpenClaw が必要)
+  タブに接続する拡張子）。
 
-Set `browser.defaultProfile: "openclaw"` if you want managed mode by default.
+デフォルトで管理モードが必要な場合は、`browser.defaultProfile: "openclaw"` を設定します。
 
-## Configuration
+## 構成
 
-Browser settings live in `~/.openclaw/openclaw.json`.
+ブラウザ設定は `~/.openclaw/openclaw.json` にあります。
 
 ```json5
 {
@@ -83,31 +84,29 @@ Browser settings live in `~/.openclaw/openclaw.json`.
 }
 ```
 
-Notes:
+注:- ブラウザ制御サービスは、`gateway.port` から派生したポート上のループバックにバインドされます。
+(デフォルト: `18791`、ゲートウェイ + 2)。リレーは次のポート (`18792`) を使用します。
 
-- The browser control service binds to loopback on a port derived from `gateway.port`
-  (default: `18791`, which is gateway + 2). The relay uses the next port (`18792`).
-- If you override the Gateway port (`gateway.port` or `OPENCLAW_GATEWAY_PORT`),
-  the derived browser ports shift to stay in the same “family”.
-- `cdpUrl` defaults to the relay port when unset.
-- `remoteCdpTimeoutMs` applies to remote (non-loopback) CDP reachability checks.
-- `remoteCdpHandshakeTimeoutMs` applies to remote CDP WebSocket reachability checks.
-- Browser navigation/open-tab is SSRF-guarded before navigation and best-effort re-checked on final `http(s)` URL after navigation.
-- `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork` defaults to `true` (trusted-network model). Set it to `false` for strict public-only browsing.
-- `browser.ssrfPolicy.allowPrivateNetwork` remains supported as a legacy alias for compatibility.
-- `attachOnly: true` means “never launch a local browser; only attach if it is already running.”
-- `color` + per-profile `color` tint the browser UI so you can see which profile is active.
-- Default profile is `openclaw` (OpenClaw-managed standalone browser). Use `defaultProfile: "chrome"` to opt into the Chrome extension relay.
-- Auto-detect order: system default browser if Chromium-based; otherwise Chrome → Brave → Edge → Chromium → Chrome Canary.
-- Local `openclaw` profiles auto-assign `cdpPort`/`cdpUrl` — set those only for remote CDP.
+- ゲートウェイ ポート (`gateway.port` または `OPENCLAW_GATEWAY_PORT`) をオーバーライドする場合、
+  派生ブラウザ ポートは同じ「ファミリー」に留まるように移行します。
+- `cdpUrl` が設定されていない場合、デフォルトはリレー ポートになります。
+- `remoteCdpTimeoutMs` は、リモート (非ループバック) CDP 到達可能性チェックに適用されます。
+- `remoteCdpHandshakeTimeoutMs` は、リモート CDP WebSocket 到達可能性チェックに適用されます。
+- ブラウザーのナビゲーション/開いているタブは、ナビゲーション前に SSRF で保護され、ナビゲーション後の最終 `http(s)` URL でベストエフォート型の再チェックが行われます。
+- `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork` のデフォルトは `true` (信頼されたネットワーク モデル) です。厳密な公開専用ブラウジングの場合は、`false` に設定します。
+- `browser.ssrfPolicy.allowPrivateNetwork` は、互換性を確保するためにレガシー エイリアスとして引き続きサポートされます。
+- `attachOnly: true` は、「ローカル ブラウザを決して起動しないでください。すでに実行されている場合にのみ接続してください。」を意味します。
+- `color` + プロファイルごとの `color` ブラウザ UI に色を付けて、どのプロファイルがアクティブであるかを確認します。
+- デフォルトのプロファイルは `openclaw` (OpenClaw 管理のスタンドアロン ブラウザ) です。 `defaultProfile: "chrome"` を使用して Chrome 拡張機能リレーをオプトインします。
+- 自動検出順序: Chromium ベースの場合はシステムのデフォルトのブラウザ。それ以外の場合は、Chrome → Brave → Edge → Chromium → Chrome Canary。- ローカル `openclaw` プロファイル自動割り当て `cdpPort`/`cdpUrl` — リモート CDP に対してのみ設定します。
 
-## Use Brave (or another Chromium-based browser)
+## Brave (または別の Chromium ベースのブラウザ) を使用します
 
-If your **system default** browser is Chromium-based (Chrome/Brave/Edge/etc),
-OpenClaw uses it automatically. Set `browser.executablePath` to override
-auto-detection:
+**システムのデフォルト** ブラウザが Chromium ベース (Chrome/Brave/Edge など) の場合、
+OpenClaw はそれを自動的に使用します。 `browser.executablePath` を上書きするように設定します
+自動検出:
 
-CLI example:
+CLI の例:
 
 ```bash
 openclaw config set browser.executablePath "/usr/bin/google-chrome"
@@ -136,43 +135,42 @@ openclaw config set browser.executablePath "/usr/bin/google-chrome"
 }
 ```
 
-## Local vs remote control
+## ローカル制御とリモート制御
 
-- **Local control (default):** the Gateway starts the loopback control service and can launch a local browser.
-- **Remote control (node host):** run a node host on the machine that has the browser; the Gateway proxies browser actions to it.
-- **Remote CDP:** set `browser.profiles.<name>.cdpUrl` (or `browser.cdpUrl`) to
-  attach to a remote Chromium-based browser. In this case, OpenClaw will not launch a local browser.
+- **ローカル制御 (デフォルト):** ゲートウェイはループバック制御サービスを開始し、ローカル ブラウザを起動できます。
+- **リモート コントロール (ノード ホスト):** ブラウザーを備えたマシン上でノード ホストを実行します。ゲートウェイはブラウザーのアクションをゲートウェイにプロキシします。
+- **リモート CDP:** `browser.profiles.<name>.cdpUrl` (または `browser.cdpUrl`) を次のように設定します。
+  リモートの Chromium ベースのブラウザに接続します。この場合、OpenClaw はローカル ブラウザを起動しません。
 
-Remote CDP URLs can include auth:
+リモート CDP URL には認証を含めることができます。
 
-- Query tokens (e.g., `https://provider.example?token=<token>`)
-- HTTP Basic auth (e.g., `https://user:pass@provider.example`)
+- クエリトークン (例: `https://provider.example?token=<token>`)
+- HTTP 基本認証 (例: `https://user:pass@provider.example`)
 
-OpenClaw preserves the auth when calling `/json/*` endpoints and when connecting
-to the CDP WebSocket. Prefer environment variables or secrets managers for
-tokens instead of committing them to config files.
+OpenClaw は、`/json/*` エンドポイントの呼び出し時および接続時に認証を保持します。
+CDP WebSocket に接続します。環境変数またはシークレットマネージャーを優先します。
+トークンを構成ファイルにコミットする代わりに。
 
-## Node browser proxy (zero-config default)
+## ノード ブラウザ プロキシ (ゼロ構成のデフォルト)
 
-If you run a **node host** on the machine that has your browser, OpenClaw can
-auto-route browser tool calls to that node without any extra browser config.
-This is the default path for remote gateways.
+ブラウザがインストールされているマシン上で **ノード ホスト**を実行すると、OpenClaw は次のことを行うことができます。
+自動ルートブラウザツールは、追加のブラウザ設定なしでそのノードを呼び出します。
+これはリモート ゲートウェイのデフォルト パスです。
 
-Notes:
+注:- ノード ホストは、**プロキシ コマンド** を介してローカル ブラウザ コントロール サーバーを公開します。
 
-- The node host exposes its local browser control server via a **proxy command**.
-- Profiles come from the node’s own `browser.profiles` config (same as local).
-- Disable if you don’t want it:
-  - On the node: `nodeHost.browserProxy.enabled=false`
-  - On the gateway: `gateway.nodes.browser.mode="off"`
+- プロファイルはノード独自の `browser.profiles` 構成 (ローカルと同じ) から取得されます。
+- 不要な場合は無効にします。
+  - ノード上: `nodeHost.browserProxy.enabled=false`
+  - ゲートウェイ上: `gateway.nodes.browser.mode="off"`
 
-## Browserless (hosted remote CDP)
+## ブラウザレス (ホスト型リモート CDP)
 
-[Browserless](https://browserless.io) is a hosted Chromium service that exposes
-CDP endpoints over HTTPS. You can point a OpenClaw browser profile at a
-Browserless region endpoint and authenticate with your API key.
+[ブラウザレス](https://browserless.io) は、ホストされた Chromium サービスであり、
+HTTPS 経由の CDP エンドポイント。 OpenClaw ブラウザ プロファイルを次の場所にポイントできます。
+ブラウザレス リージョン エンドポイントと API キーで認証します。
 
-Example:
+例:
 
 ```json5
 {
@@ -191,28 +189,27 @@ Example:
 }
 ```
 
-Notes:
+注:
 
-- Replace `<BROWSERLESS_API_KEY>` with your real Browserless token.
-- Choose the region endpoint that matches your Browserless account (see their docs).
+- `<BROWSERLESS_API_KEY>` を実際のブラウザレス トークンに置き換えます。
+- ブラウザレス アカウントに一致するリージョン エンドポイントを選択します (ドキュメントを参照)。
 
-## Direct WebSocket CDP providers
+## ダイレクト WebSocket CDP プロバイダー
 
-Some hosted browser services expose a **direct WebSocket** endpoint rather than
-the standard HTTP-based CDP discovery (`/json/version`). OpenClaw supports both:
+一部のホスト型ブラウザ サービスは、エンドポイントではなく **直接 WebSocket** エンドポイントを公開します。
+標準の HTTP ベースの CDP 検出 (`/json/version`)。 OpenClaw は次の両方をサポートします。
 
-- **HTTP(S) endpoints** (e.g. Browserless) — OpenClaw calls `/json/version` to
-  discover the WebSocket debugger URL, then connects.
-- **WebSocket endpoints** (`ws://` / `wss://`) — OpenClaw connects directly,
-  skipping `/json/version`. Use this for services like
-  [Browserbase](https://www.browserbase.com) or any provider that hands you a
-  WebSocket URL.
+- **HTTP(S) エンドポイント** (ブラウザレスなど) — OpenClaw は `/json/version` を呼び出して、
+  WebSocket デバッガ URL を検出して接続します。
+- **WebSocket エンドポイント** (`ws://` / `wss://`) — OpenClaw は直接接続します。
+  `/json/version` をスキップします。これを次のようなサービスに使用します
+  [ブラウザベース](https://www.browserbase.com) または、
+  WebソケットのURL。
 
-### Browserbase
+### ブラウザベース[Browserbase](https://www.browserbase.com) は、実行するためのクラウド プラットフォームです
 
-[Browserbase](https://www.browserbase.com) is a cloud platform for running
-headless browsers with built-in CAPTCHA solving, stealth mode, and residential
-proxies.
+CAPTCHA解決機能、ステルスモード、およびレジデンシャル機能が組み込まれたヘッドレスブラウザ
+プロキシ。
 
 ```json5
 {
@@ -231,90 +228,86 @@ proxies.
 }
 ```
 
-Notes:
+注:
 
-- [Sign up](https://www.browserbase.com/sign-up) and copy your **API Key**
-  from the [Overview dashboard](https://www.browserbase.com/overview).
-- Replace `<BROWSERBASE_API_KEY>` with your real Browserbase API key.
-- Browserbase auto-creates a browser session on WebSocket connect, so no
-  manual session creation step is needed.
-- The free tier allows one concurrent session and one browser hour per month.
-  See [pricing](https://www.browserbase.com/pricing) for paid plan limits.
-- See the [Browserbase docs](https://docs.browserbase.com) for full API
-  reference, SDK guides, and integration examples.
+- [サインアップ](https://www.browserbase.com/sign-up) し、**API キー**をコピーします
+  [概要ダッシュボード](https://www.browserbase.com/overview) から。
+- `<BROWSERBASE_API_KEY>` を実際のブラウザベース API キーに置き換えます。
+- Browserbase は WebSocket 接続でブラウザ セッションを自動作成するため、
+  手動によるセッション作成手順が必要です。
+- 無料枠では、1 か月あたり 1 つの同時セッションと 1 ブラウザ時間が許可されます。
+  有料プランの制限については、[価格設定](https://www.browserbase.com/pricing) を参照してください。
+- 完全な API については、[ブラウザベースのドキュメント](https://docs.browserbase.com) を参照してください。
+  リファレンス、SDK ガイド、統合例。
 
-## Security
+## セキュリティ
 
-Key ideas:
+重要なアイデア:
 
-- Browser control is loopback-only; access flows through the Gateway’s auth or node pairing.
-- If browser control is enabled and no auth is configured, OpenClaw auto-generates `gateway.auth.token` on startup and persists it to config.
-- Keep the Gateway and any node hosts on a private network (Tailscale); avoid public exposure.
-- Treat remote CDP URLs/tokens as secrets; prefer env vars or a secrets manager.
+- ブラウザ制御はループバックのみです。アクセスは、ゲートウェイの認証またはノード ペアリングを介して流れます。
+- ブラウザ制御が有効で認証が設定されていない場合、OpenClaw は起動時に `gateway.auth.token` を自動生成し、それを設定に保存します。
+- ゲートウェイとすべてのノード ホストをプライベート ネットワーク (Tailscale) 上に維持します。公共の場への露出を避けてください。
+- リモート CDP URL/トークンをシークレットとして扱います。環境変数またはシークレットマネージャーを使用することをお勧めします。
 
-Remote CDP tips:
+リモート CDP のヒント:
 
-- Prefer encrypted endpoints (HTTPS or WSS) and short-lived tokens where possible.
-- Avoid embedding long-lived tokens directly in config files.
+- 可能な場合は、暗号化されたエンドポイント (HTTPS または WSS) と有効期間の短いトークンを優先します。
+- 有効期間の長いトークンを構成ファイルに直接埋め込むことは避けてください。
 
-## Profiles (multi-browser)
+## プロファイル (マルチブラウザ)OpenClaw は、複数の名前付きプロファイル (ルーティング構成) をサポートしています。プロファイルは次のとおりです
 
-OpenClaw supports multiple named profiles (routing configs). Profiles can be:
+- **openclaw 管理**: 独自のユーザー データ ディレクトリと CDP ポートを備えた専用の Chromium ベースのブラウザ インスタンス
+- **リモート**: 明示的な CDP URL (他の場所で実行されている Chromium ベースのブラウザ)
+- **拡張機能リレー**: ローカル リレー + Chrome 拡張機能を介した既存の Chrome タブ
 
-- **openclaw-managed**: a dedicated Chromium-based browser instance with its own user data directory + CDP port
-- **remote**: an explicit CDP URL (Chromium-based browser running elsewhere)
-- **extension relay**: your existing Chrome tab(s) via the local relay + Chrome extension
+デフォルト:
 
-Defaults:
+- `openclaw` プロファイルが存在しない場合は自動作成されます。
+- `chrome` プロファイルは Chrome 拡張機能リレー用に組み込まれています (デフォルトでは `http://127.0.0.1:18792` を指します)。
+- ローカル CDP ポートは、デフォルトで **18800 ～ 18899** を割り当てます。
+- プロファイルを削除すると、ローカル データ ディレクトリがゴミ箱に移動します。
 
-- The `openclaw` profile is auto-created if missing.
-- The `chrome` profile is built-in for the Chrome extension relay (points at `http://127.0.0.1:18792` by default).
-- Local CDP ports allocate from **18800–18899** by default.
-- Deleting a profile moves its local data directory to Trash.
+すべてのコントロール エンドポイントは `?profile=<name>` を受け入れます。 CLI は `--browser-profile` を使用します。
 
-All control endpoints accept `?profile=<name>`; the CLI uses `--browser-profile`.
+## Chrome 拡張機能リレー (既存の Chrome を使用)
 
-## Chrome extension relay (use your existing Chrome)
+OpenClaw は、ローカル CDP リレー + Chrome 拡張機能を介して **既存の Chrome タブ** (別個の「openclaw」Chrome インスタンスはありません) を駆動することもできます。
 
-OpenClaw can also drive **your existing Chrome tabs** (no separate “openclaw” Chrome instance) via a local CDP relay + a Chrome extension.
+完全ガイド: [Chrome 拡張機能](/tools/chrome-extension)
 
-Full guide: [Chrome extension](/tools/chrome-extension)
+フロー:
 
-Flow:
+- ゲートウェイはローカル (同じマシン) で実行されるか、ノード ホストがブラウザ マシン上で実行されます。
+- ローカル **リレー サーバー** は、ループバック `cdpUrl` (デフォルト: `http://127.0.0.1:18792`) で待機します。
+- タブ上の **OpenClaw Browser Relay** 拡張機能アイコンをクリックして接続します (自動接続されません)。
+- エージェントは、適切なプロファイルを選択することで、通常の `browser` ツールを介してそのタブを制御します。ゲートウェイが別の場所で実行されている場合は、ブラウザ マシン上でノード ホストを実行して、ゲートウェイがブラウザ アクションをプロキシできるようにします。
 
-- The Gateway runs locally (same machine) or a node host runs on the browser machine.
-- A local **relay server** listens at a loopback `cdpUrl` (default: `http://127.0.0.1:18792`).
-- You click the **OpenClaw Browser Relay** extension icon on a tab to attach (it does not auto-attach).
-- The agent controls that tab via the normal `browser` tool, by selecting the right profile.
+### サンドボックスセッション
 
-If the Gateway runs elsewhere, run a node host on the browser machine so the Gateway can proxy browser actions.
+エージェント セッションがサンドボックス化されている場合、`browser` ツールはデフォルトで `target="sandbox"` (サンドボックス ブラウザー) に設定される場合があります。
+Chrome 拡張機能リレーの引き継ぎにはホスト ブラウザの制御が必要なので、次のいずれかが必要です。
 
-### Sandboxed sessions
+- セッションをサンドボックスなしで実行する、または
+- ツールを呼び出すときに `agents.defaults.sandbox.browser.allowHostControl: true` を設定し、 `target="host"` を使用します。
 
-If the agent session is sandboxed, the `browser` tool may default to `target="sandbox"` (sandbox browser).
-Chrome extension relay takeover requires host browser control, so either:
+### セットアップ
 
-- run the session unsandboxed, or
-- set `agents.defaults.sandbox.browser.allowHostControl: true` and use `target="host"` when calling the tool.
-
-### Setup
-
-1. Load the extension (dev/unpacked):
+1. 拡張機能 (dev/unpacked) をロードします。
 
 ```bash
 openclaw browser extension install
 ```
 
-- Chrome → `chrome://extensions` → enable “Developer mode”
-- “Load unpacked” → select the directory printed by `openclaw browser extension path`
-- Pin the extension, then click it on the tab you want to control (badge shows `ON`).
+- Chrome → `chrome://extensions` → 「開発者モード」を有効にする
+- 「解凍してロード」 → `openclaw browser extension path` で出力されたディレクトリを選択
+- 拡張機能を固定し、制御するタブをクリックします (バッジには `ON` が表示されます)。
 
-2. Use it:
+2. 使用します:
 
 - CLI: `openclaw browser --browser-profile chrome tabs`
-- Agent tool: `browser` with `profile="chrome"`
+- エージェント ツール: `browser` と `profile="chrome"`
 
-Optional: if you want a different name or relay port, create your own profile:
+オプション: 別の名前または中継ポートが必要な場合は、独自のプロファイルを作成します。
 
 ```bash
 openclaw browser create-profile \
@@ -324,116 +317,113 @@ openclaw browser create-profile \
   --color "#00AA00"
 ```
 
-Notes:
+注:
 
-- This mode relies on Playwright-on-CDP for most operations (screenshots/snapshots/actions).
-- Detach by clicking the extension icon again.
-- Leave the relay loopback-only by default. If the relay must be reachable from a different network namespace (for example Gateway in WSL2, Chrome on Windows), set `browser.relayBindHost` to an explicit bind address such as `0.0.0.0` while keeping the surrounding network private and authenticated.
+- このモードは、ほとんどの操作 (スクリーンショット/スナップショット/アクション) で Playwright-on-CDP に依存します。
+- 拡張機能アイコンを再度クリックすると接続が解除されます。
+- リレー ループバックのみをデフォルトのままにします。別のネットワーク名前空間 (WSL2 のゲートウェイ、Windows の Chrome など) からリレーに到達できる必要がある場合は、周囲のネットワークをプライベートで認証された状態に保ちながら、`browser.relayBindHost` を `0.0.0.0` などの明示的なバインド アドレスに設定します。
 
-WSL2 / cross-namespace example:
+WSL2 / クロスネームスペースの例:
 
 ```json5
 {
-  browser: {
-    enabled: true,
-    relayBindHost: "0.0.0.0",
-    defaultProfile: "chrome",
-  },
+browser: {
+enabled: true,
+relayBindHost: "0.0.0.0",
+defaultProfile: "chrome",
+},
 }
-```
 
-## Isolation guarantees
+````
 
-- **Dedicated user data dir**: never touches your personal browser profile.
-- **Dedicated ports**: avoids `9222` to prevent collisions with dev workflows.
-- **Deterministic tab control**: target tabs by `targetId`, not “last tab”.
+## 分離の保証
 
-## Browser selection
+- **専用のユーザー データ ディレクトリ**: 個人のブラウザ プロファイルには決して触れません。
+- **専用ポート**: `9222` を回避し、開発ワークフローとの衝突を防ぎます。
+- **確定的タブ コントロール**: 「最後のタブ」ではなく、`targetId` によるタブをターゲットにします。
 
-When launching locally, OpenClaw picks the first available:
+## ブラウザの選択
 
-1. Chrome
-2. Brave
-3. Edge
-4. Chromium
-5. Chrome Canary
+ローカルで起動する場合、OpenClaw は最初に利用可能なものを選択します。
 
-You can override with `browser.executablePath`.
+1.クロム
+2. 勇敢な
+3. エッジ
+4. クロム
+5. クロムカナリア
 
-Platforms:
+`browser.executablePath` でオーバーライドできます。
 
-- macOS: checks `/Applications` and `~/Applications`.
-- Linux: looks for `google-chrome`, `brave`, `microsoft-edge`, `chromium`, etc.
-- Windows: checks common install locations.
+プラットフォーム:
 
-## Control API (optional)
+- macOS: `/Applications` および `~/Applications` をチェックします。
+- Linux: `google-chrome`、`brave`、`microsoft-edge`、`chromium` などを探します。
+- Windows: 一般的なインストール場所を確認します。
 
-For local integrations only, the Gateway exposes a small loopback HTTP API:
+## 制御 API (オプション)
 
-- Status/start/stop: `GET /`, `POST /start`, `POST /stop`
-- Tabs: `GET /tabs`, `POST /tabs/open`, `POST /tabs/focus`, `DELETE /tabs/:targetId`
-- Snapshot/screenshot: `GET /snapshot`, `POST /screenshot`
-- Actions: `POST /navigate`, `POST /act`
-- Hooks: `POST /hooks/file-chooser`, `POST /hooks/dialog`
-- Downloads: `POST /download`, `POST /wait/download`
-- Debugging: `GET /console`, `POST /pdf`
-- Debugging: `GET /errors`, `GET /requests`, `POST /trace/start`, `POST /trace/stop`, `POST /highlight`
-- Network: `POST /response/body`
-- State: `GET /cookies`, `POST /cookies/set`, `POST /cookies/clear`
-- State: `GET /storage/:kind`, `POST /storage/:kind/set`, `POST /storage/:kind/clear`
-- Settings: `POST /set/offline`, `POST /set/headers`, `POST /set/credentials`, `POST /set/geolocation`, `POST /set/media`, `POST /set/timezone`, `POST /set/locale`, `POST /set/device`
+ローカル統合の場合のみ、ゲートウェイは小さなループバック HTTP API を公開します。- ステータス/開始/停止: `GET /`、`POST /start`、`POST /stop`
+- タブ: `GET /tabs`、`POST /tabs/open`、`POST /tabs/focus`、`DELETE /tabs/:targetId`
+- スナップショット/スクリーンショット: `GET /snapshot`、`POST /screenshot`
+- アクション: `POST /navigate`、`POST /act`
+- フック: `POST /hooks/file-chooser`、`POST /hooks/dialog`
+- ダウンロード: `POST /download`、`POST /wait/download`
+- デバッグ: `GET /console`、`POST /pdf`
+- デバッグ: `GET /errors`、`GET /requests`、`POST /trace/start`、`POST /trace/stop`、`POST /highlight`
+- ネットワーク: `POST /response/body`
+- 状態: `GET /cookies`、`POST /cookies/set`、`POST /cookies/clear`
+- 状態: `GET /storage/:kind`、`POST /storage/:kind/set`、`POST /storage/:kind/clear`
+- 設定: `POST /set/offline`、`POST /set/headers`、`POST /set/credentials`、`POST /set/geolocation`、`POST /set/media`、`POST /set/timezone`、`POST /set/locale`、 `POST /set/device`
 
-All endpoints accept `?profile=<name>`.
+すべてのエンドポイントは `?profile=<name>` を受け入れます。
 
-If gateway auth is configured, browser HTTP routes require auth too:
+ゲートウェイ認証が構成されている場合、ブラウザーの HTTP ルートにも認証が必要です。
 
 - `Authorization: Bearer <gateway token>`
-- `x-openclaw-password: <gateway password>` or HTTP Basic auth with that password
+- `x-openclaw-password: <gateway password>` またはそのパスワードを使用した HTTP Basic 認証
 
-### Playwright requirement
+### 劇作家の要件
 
-Some features (navigate/act/AI snapshot/role snapshot, element screenshots, PDF) require
-Playwright. If Playwright isn’t installed, those endpoints return a clear 501
-error. ARIA snapshots and basic screenshots still work for openclaw-managed Chrome.
-For the Chrome extension relay driver, ARIA snapshots and screenshots require Playwright.
+一部の機能 (ナビゲート/アクト/AI スナップショット/ロール スナップショット、要素のスクリーンショット、PDF) には、
+劇作家。 Playwright がインストールされていない場合、これらのエンドポイントはクリアな 501 を返します。
+エラー。 ARIA スナップショットと基本的なスクリーンショットは、openclaw で管理される Chrome でも引き続き機能します。
+Chrome 拡張機能リレー ドライバーの場合、ARIA スナップショットとスクリーンショットには Playwright が必要です。`Playwright is not available in this gateway build` が表示された場合は、完全なバージョンをインストールしてください。
+Playwright パッケージ (`playwright-core` ではありません) を実行し、ゲートウェイを再起動するか、再インストールします
+ブラウザをサポートする OpenClaw。
 
-If you see `Playwright is not available in this gateway build`, install the full
-Playwright package (not `playwright-core`) and restart the gateway, or reinstall
-OpenClaw with browser support.
+#### Docker Playwright のインストール
 
-#### Docker Playwright install
-
-If your Gateway runs in Docker, avoid `npx playwright` (npm override conflicts).
-Use the bundled CLI instead:
+ゲートウェイが Docker で実行されている場合は、`npx playwright` (npm オーバーライドの競合) を避けてください。
+代わりにバンドルされている CLI を使用してください。
 
 ```bash
 docker compose run --rm openclaw-cli \
   node /app/node_modules/playwright-core/cli.js install chromium
-```
+````
 
-To persist browser downloads, set `PLAYWRIGHT_BROWSERS_PATH` (for example,
-`/home/node/.cache/ms-playwright`) and make sure `/home/node` is persisted via
-`OPENCLAW_HOME_VOLUME` or a bind mount. See [Docker](/install/docker).
+ブラウザーのダウンロードを永続的にするには、`PLAYWRIGHT_BROWSERS_PATH` を設定します (たとえば、
+`/home/node/.cache/ms-playwright`) を使用して、`/home/node` が永続化されていることを確認します。
+`OPENCLAW_HOME_VOLUME` またはバインド マウント。 [Docker](/install/docker) を参照してください。
 
-## How it works (internal)
+## 仕組み (内部)
 
-High-level flow:
+大まかなフロー:
 
-- A small **control server** accepts HTTP requests.
-- It connects to Chromium-based browsers (Chrome/Brave/Edge/Chromium) via **CDP**.
-- For advanced actions (click/type/snapshot/PDF), it uses **Playwright** on top
-  of CDP.
-- When Playwright is missing, only non-Playwright operations are available.
+- 小規模な **コントロール サーバー** が HTTP リクエストを受け入れます。
+- **CDP** 経由で Chromium ベースのブラウザ (Chrome/Brave/Edge/Chromium) に接続します。
+- 高度なアクション (クリック/タイプ/スナップショット/PDF) の場合は、**Playwright** を上部に使用します
+  CDPの。
+- Playwright が見つからない場合、Playwright 以外の操作のみが可能です。
 
-This design keeps the agent on a stable, deterministic interface while letting
-you swap local/remote browsers and profiles.
+この設計により、エージェントは安定した決定論的なインターフェイスに維持され、同時に
+ローカル/リモートのブラウザとプロファイルを交換します。
 
-## CLI quick reference
+## CLI クイックリファレンス
 
-All commands accept `--browser-profile <name>` to target a specific profile.
-All commands also accept `--json` for machine-readable output (stable payloads).
+すべてのコマンドは、特定のプロファイルをターゲットとする `--browser-profile <name>` を受け入れます。
+すべてのコマンドは、機械可読出力 (安定したペイロード) として `--json` も受け入れます。
 
-Basics:
+基本:
 
 - `openclaw browser status`
 - `openclaw browser start`
@@ -445,9 +435,7 @@ Basics:
 - `openclaw browser tab close 2`
 - `openclaw browser open https://example.com`
 - `openclaw browser focus abcd1234`
-- `openclaw browser close abcd1234`
-
-Inspection:
+- `openclaw browser close abcd1234`検査:
 
 - `openclaw browser screenshot`
 - `openclaw browser screenshot --full-page`
@@ -466,7 +454,7 @@ Inspection:
 - `openclaw browser pdf`
 - `openclaw browser responsebody "**/api" --max-chars 5000`
 
-Actions:
+アクション:
 
 - `openclaw browser navigate https://example.com`
 - `openclaw browser resize 1280 720`
@@ -490,7 +478,7 @@ Actions:
 - `openclaw browser trace start`
 - `openclaw browser trace stop`
 
-State:
+状態:
 
 - `openclaw browser cookies`
 - `openclaw browser cookies set session abc123 --url "https://example.com"`
@@ -509,62 +497,59 @@ State:
 - `openclaw browser set locale en-US`
 - `openclaw browser set device "iPhone 14"`
 
-Notes:
+注:- `upload` および `dialog` は **監視** コールです。クリックまたは押す前に実行します
+選択/ダイアログをトリガーします。
 
-- `upload` and `dialog` are **arming** calls; run them before the click/press
-  that triggers the chooser/dialog.
-- Download and trace output paths are constrained to OpenClaw temp roots:
-  - traces: `/tmp/openclaw` (fallback: `${os.tmpdir()}/openclaw`)
-  - downloads: `/tmp/openclaw/downloads` (fallback: `${os.tmpdir()}/openclaw/downloads`)
-- Upload paths are constrained to an OpenClaw temp uploads root:
-  - uploads: `/tmp/openclaw/uploads` (fallback: `${os.tmpdir()}/openclaw/uploads`)
-- `upload` can also set file inputs directly via `--input-ref` or `--element`.
+- ダウンロードおよびトレースの出力パスは、OpenClaw の一時ルートに制限されます。
+  - トレース: `/tmp/openclaw` (フォールバック: `${os.tmpdir()}/openclaw`)
+  - ダウンロード: `/tmp/openclaw/downloads` (フォールバック: `${os.tmpdir()}/openclaw/downloads`)
+- アップロード パスは OpenClaw 一時アップロード ルートに制限されます。
+  - アップロード: `/tmp/openclaw/uploads` (フォールバック: `${os.tmpdir()}/openclaw/uploads`)
+- `upload` は、`--input-ref` または `--element` を介してファイル入力を直接設定することもできます。
 - `snapshot`:
-  - `--format ai` (default when Playwright is installed): returns an AI snapshot with numeric refs (`aria-ref="<n>"`).
-  - `--format aria`: returns the accessibility tree (no refs; inspection only).
-  - `--efficient` (or `--mode efficient`): compact role snapshot preset (interactive + compact + depth + lower maxChars).
-  - Config default (tool/CLI only): set `browser.snapshotDefaults.mode: "efficient"` to use efficient snapshots when the caller does not pass a mode (see [Gateway configuration](/gateway/configuration#browser-openclaw-managed-browser)).
-  - Role snapshot options (`--interactive`, `--compact`, `--depth`, `--selector`) force a role-based snapshot with refs like `ref=e12`.
-  - `--frame "<iframe selector>"` scopes role snapshots to an iframe (pairs with role refs like `e12`).
-  - `--interactive` outputs a flat, easy-to-pick list of interactive elements (best for driving actions).
-  - `--labels` adds a viewport-only screenshot with overlayed ref labels (prints `MEDIA:<path>`).
-- `click`/`type`/etc require a `ref` from `snapshot` (either numeric `12` or role ref `e12`).
-  CSS selectors are intentionally not supported for actions.
+  - `--format ai` (Playwright がインストールされている場合のデフォルト): 数値参照 (`aria-ref="<n>"`) を含む AI スナップショットを返します。
+  - `--format aria`: アクセシビリティ ツリーを返します (参照なし、検査のみ)。
+  - `--efficient` (または `--mode efficient`): コンパクトな役割のスナップショット プリセット (インタラクティブ + コンパクト + 深さ + より低い maxChars)。
+  - デフォルト設定 (ツール/CLI のみ): 呼び出し元がモードを渡さない場合に効率的なスナップショットを使用するように `browser.snapshotDefaults.mode: "efficient"` を設定します ([ゲートウェイ設定](/gateway/configuration#browser-openclaw-managed-browser) を参照)。
+  - ロール スナップショット オプション (`--interactive`、`--compact`、`--depth`、`--selector`) は、`ref=e12` のような参照を持つロールベースのスナップショットを強制します。
+  - `--frame "<iframe selector>"` は、ロール スナップショットのスコープを iframe に設定します (`e12` のようなロール参照とペアになります)。- `--interactive` は、インタラクティブな要素のフラットで選択しやすいリストを出力します (アクションを推進するのに最適です)。
+  - `--labels` は、オーバーレイされた参照ラベルを含むビューポートのみのスクリーンショットを追加します (`MEDIA:<path>` を印刷します)。
+- `click`/`type`/etc には、`snapshot` からの `ref` (数値 `12` またはロール参照 `e12`) が必要です。
+  CSS セレクターはアクションに対して意図的にサポートされていません。
 
-## Snapshots and refs
+## スナップショットと参照
 
-OpenClaw supports two “snapshot” styles:
+OpenClaw は 2 つの「スナップショット」スタイルをサポートしています。
 
-- **AI snapshot (numeric refs)**: `openclaw browser snapshot` (default; `--format ai`)
-  - Output: a text snapshot that includes numeric refs.
-  - Actions: `openclaw browser click 12`, `openclaw browser type 23 "hello"`.
-  - Internally, the ref is resolved via Playwright’s `aria-ref`.
+- **AI スナップショット (数値参照)**: `openclaw browser snapshot` (デフォルト; `--format ai`)
+  - 出力: 数値参照を含むテキスト スナップショット。
+  - アクション: `openclaw browser click 12`、`openclaw browser type 23 "hello"`。
+  - 内部的には、参照は Playwright の `aria-ref` を介して解決されます。
 
-- **Role snapshot (role refs like `e12`)**: `openclaw browser snapshot --interactive` (or `--compact`, `--depth`, `--selector`, `--frame`)
-  - Output: a role-based list/tree with `[ref=e12]` (and optional `[nth=1]`).
-  - Actions: `openclaw browser click e12`, `openclaw browser highlight e12`.
-  - Internally, the ref is resolved via `getByRole(...)` (plus `nth()` for duplicates).
-  - Add `--labels` to include a viewport screenshot with overlayed `e12` labels.
+- **ロールのスナップショット (`e12` のようなロール参照)**: `openclaw browser snapshot --interactive` (または `--compact`、`--depth`、`--selector`、`--frame`)
+  - 出力: `[ref=e12]` (およびオプションの `[nth=1]`) を含むロールベースのリスト/ツリー。
+  - アクション: `openclaw browser click e12`、`openclaw browser highlight e12`。
+  - 内部的に、ref は `getByRole(...)` (さらに重複の場合は `nth()`) を介して解決されます。
+  - `--labels` を追加して、`e12` ラベルがオーバーレイされたビューポートのスクリーンショットを含めます。
 
-Ref behavior:
+参照動作:- Ref は **ナビゲーション間で安定していません**。何かが失敗した場合は、`snapshot` を再実行し、新しい参照を使用します。
 
-- Refs are **not stable across navigations**; if something fails, re-run `snapshot` and use a fresh ref.
-- If the role snapshot was taken with `--frame`, role refs are scoped to that iframe until the next role snapshot.
+- ロールのスナップショットが `--frame` で取得された場合、ロール参照は次のロールのスナップショットまでその iframe にスコープされます。
 
-## Wait power-ups
+## パワーアップを待ちます
 
-You can wait on more than just time/text:
+時間やテキスト以外のものも待つことができます。
 
-- Wait for URL (globs supported by Playwright):
+- URL を待ちます (Playwright によってサポートされているグロブ):
   - `openclaw browser wait --url "**/dash"`
-- Wait for load state:
+- ロード状態を待機します:
   - `openclaw browser wait --load networkidle`
-- Wait for a JS predicate:
+- JS 述語を待ちます。
   - `openclaw browser wait --fn "window.ready===true"`
-- Wait for a selector to become visible:
+- セレクターが表示されるまで待ちます。
   - `openclaw browser wait "#main"`
 
-These can be combined:
+これらは次のように組み合わせることができます。
 
 ```bash
 openclaw browser wait "#main" \
@@ -574,26 +559,26 @@ openclaw browser wait "#main" \
   --timeout-ms 15000
 ```
 
-## Debug workflows
+## ワークフローをデバッグする
 
-When an action fails (e.g. “not visible”, “strict mode violation”, “covered”):
+アクションが失敗した場合 (例: 「表示されない」、「厳密モード違反」、「カバーされている」):
 
 1. `openclaw browser snapshot --interactive`
-2. Use `click <ref>` / `type <ref>` (prefer role refs in interactive mode)
-3. If it still fails: `openclaw browser highlight <ref>` to see what Playwright is targeting
-4. If the page behaves oddly:
+2. `click <ref>` / `type <ref>` を使用します (対話モードでのロール参照を優先します)
+3. それでも失敗する場合: `openclaw browser highlight <ref>` で Playwright のターゲットを確認します
+4. ページの動作がおかしい場合:
    - `openclaw browser errors --clear`
    - `openclaw browser requests --filter api --clear`
-5. For deep debugging: record a trace:
+5. 詳細なデバッグの場合: トレースを記録します。
    - `openclaw browser trace start`
-   - reproduce the issue
-   - `openclaw browser trace stop` (prints `TRACE:<path>`)
+   - 問題を再現する
+   - `openclaw browser trace stop` (`TRACE:<path>` を印刷)
 
-## JSON output
+## JSON 出力
 
-`--json` is for scripting and structured tooling.
+`--json` は、スクリプトおよび構造化ツール用です。
 
-Examples:
+例:
 
 ```bash
 openclaw browser status --json
@@ -602,35 +587,33 @@ openclaw browser requests --filter api --json
 openclaw browser cookies --json
 ```
 
-Role snapshots in JSON include `refs` plus a small `stats` block (lines/chars/refs/interactive) so tools can reason about payload size and density.
+JSON のロール スナップショットには、`refs` と小さな `stats` ブロック (lines/chars/refs/interactive) が含まれているため、ツールはペイロードのサイズと密度を推論できます。
 
-## State and environment knobs
+## 状態と環境のノブこれらは、「サイトを X のように動作させる」ワークフローに役立ちます
 
-These are useful for “make the site behave like X” workflows:
-
-- Cookies: `cookies`, `cookies set`, `cookies clear`
-- Storage: `storage local|session get|set|clear`
-- Offline: `set offline on|off`
-- Headers: `set headers --headers-json '{"X-Debug":"1"}'` (legacy `set headers --json '{"X-Debug":"1"}'` remains supported)
-- HTTP basic auth: `set credentials user pass` (or `--clear`)
-- Geolocation: `set geo <lat> <lon> --origin "https://example.com"` (or `--clear`)
-- Media: `set media dark|light|no-preference|none`
-- Timezone / locale: `set timezone ...`, `set locale ...`
-- Device / viewport:
-  - `set device "iPhone 14"` (Playwright device presets)
+- Cookie: `cookies`、`cookies set`、`cookies clear`
+- ストレージ: `storage local|session get|set|clear`
+- オフライン: `set offline on|off`
+- ヘッダー: `set headers --headers-json '{"X-Debug":"1"}'` (従来の `set headers --json '{"X-Debug":"1"}'` は引き続きサポートされます)
+- HTTP 基本認証: `set credentials user pass` (または `--clear`)
+- 地理位置情報: `set geo <lat> <lon> --origin "https://example.com"` (または `--clear`)
+- メディア: `set media dark|light|no-preference|none`
+- タイムゾーン/ロケール: `set timezone ...`、`set locale ...`
+- デバイス/ビューポート:
+  - `set device "iPhone 14"` (Playwright デバイスのプリセット)
   - `set viewport 1280 720`
 
-## Security & privacy
+## セキュリティとプライバシー
 
-- The openclaw browser profile may contain logged-in sessions; treat it as sensitive.
-- `browser act kind=evaluate` / `openclaw browser evaluate` and `wait --fn`
-  execute arbitrary JavaScript in the page context. Prompt injection can steer
-  this. Disable it with `browser.evaluateEnabled=false` if you do not need it.
-- For logins and anti-bot notes (X/Twitter, etc.), see [Browser login + X/Twitter posting](/tools/browser-login).
-- Keep the Gateway/node host private (loopback or tailnet-only).
-- Remote CDP endpoints are powerful; tunnel and protect them.
+- openclaw ブラウザ プロファイルには、ログインしたセッションが含まれる場合があります。敏感なものとして扱います。
+- `browser act kind=evaluate` / `openclaw browser evaluate` および `wait --fn`
+  ページコンテキストで任意の JavaScript を実行します。迅速な噴射で操縦可能
+  これ。必要ない場合は、`browser.evaluateEnabled=false` を使用して無効にします。
+- ログインとボット対策の注意事項 (X/Twitter など) については、[ブラウザ ログイン + X/Twitter 投稿](/tools/browser-login) を参照してください。
+- ゲートウェイ/ノード ホストをプライベートに保ちます (ループバックまたはテールネットのみ)。
+- リモート CDP エンドポイントは強力です。トンネルを作って彼らを守ります。
 
-Strict-mode example (block private/internal destinations by default):
+厳密モードの例 (デフォルトでプライベート/内部宛先をブロック):
 
 ```json5
 {
@@ -644,30 +627,28 @@ Strict-mode example (block private/internal destinations by default):
 }
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-For Linux-specific issues (especially snap Chromium), see
-[Browser troubleshooting](/tools/browser-linux-troubleshooting).
+Linux 固有の問題 (特にスナップ Chromium) については、次を参照してください。
+[ブラウザのトラブルシューティング](/tools/browser-linux-troubleshooting)。WSL2 ゲートウェイ + Windows Chrome の分割ホスト設定については、次を参照してください。
+[WSL2 + Windows + リモート Chrome CDP のトラブルシューティング](/tools/browser-wsl2-windows-remote-cdp-troubleshooting)。
 
-For WSL2 Gateway + Windows Chrome split-host setups, see
-[WSL2 + Windows + remote Chrome CDP troubleshooting](/tools/browser-wsl2-windows-remote-cdp-troubleshooting).
+## エージェント ツール + 制御の仕組み
 
-## Agent tools + how control works
+エージェントはブラウザ自動化のための **1 つのツール**を取得します。
 
-The agent gets **one tool** for browser automation:
+- `browser` — ステータス/開始/停止/タブ/開く/フォーカス/閉じる/スナップショット/スクリーンショット/ナビゲート/動作
 
-- `browser` — status/start/stop/tabs/open/focus/close/snapshot/screenshot/navigate/act
+マッピング方法:
 
-How it maps:
+- `browser snapshot` は、安定した UI ツリー (AI または ARIA) を返します。
+- `browser act` は、スナップショット `ref` ID を使用してクリック/入力/ドラッグ/選択します。
+- `browser screenshot` はピクセル (ページ全体または要素全体) をキャプチャします。
+- `browser` は以下を受け入れます:
+  - `profile` は、名前付きブラウザー プロファイル (openclaw、chrome、またはリモート CDP) を選択します。
+  - `target` (`sandbox` | `host` | `node`) ブラウザーが存在する場所を選択します。
+  - サンドボックス セッションでは、`target: "host"` には `agents.defaults.sandbox.browser.allowHostControl=true` が必要です。
+  - `target` が省略された場合: サンドボックス セッションのデフォルトは `sandbox`、非サンドボックス セッションのデフォルトは `host` です。
+  - ブラウザ対応ノードが接続されている場合、`target="host"` または `target="node"` を固定しない限り、ツールはそのノードに自動ルーティングすることがあります。
 
-- `browser snapshot` returns a stable UI tree (AI or ARIA).
-- `browser act` uses the snapshot `ref` IDs to click/type/drag/select.
-- `browser screenshot` captures pixels (full page or element).
-- `browser` accepts:
-  - `profile` to choose a named browser profile (openclaw, chrome, or remote CDP).
-  - `target` (`sandbox` | `host` | `node`) to select where the browser lives.
-  - In sandboxed sessions, `target: "host"` requires `agents.defaults.sandbox.browser.allowHostControl=true`.
-  - If `target` is omitted: sandboxed sessions default to `sandbox`, non-sandbox sessions default to `host`.
-  - If a browser-capable node is connected, the tool may auto-route to it unless you pin `target="host"` or `target="node"`.
-
-This keeps the agent deterministic and avoids brittle selectors.
+これにより、エージェントの決定性が維持され、脆弱なセレクターが回避されます。

@@ -1,16 +1,18 @@
 ---
-summary: "Troubleshoot node pairing, foreground requirements, permissions, and tool failures"
+summary: "node のペアリング、foreground 要件、権限、tool failure の切り分け"
 read_when:
-  - Node is connected but camera/canvas/screen/exec tools fail
-  - You need the node pairing versus approvals mental model
+  - node は接続済みだが camera / canvas / screen / exec tool が失敗するとき
+  - node pairing と approvals の違いを整理したいとき
 title: "Node Troubleshooting"
+x-i18n:
+  source_hash: "d5c053beb8b9ce9b63085ac2bb00f83ce3f046b78f9ee85c225c650742991adc"
 ---
 
 # Node troubleshooting
 
-Use this page when a node is visible in status but node tools fail.
+status 上では node が見えているのに、node tool が失敗する場合はこのページを使ってください。
 
-## Command ladder
+## コマンドラダー
 
 ```bash
 openclaw status
@@ -20,7 +22,7 @@ openclaw doctor
 openclaw channels status --probe
 ```
 
-Then run node specific checks:
+続いて、node 固有の確認を行います。
 
 ```bash
 openclaw nodes status
@@ -28,17 +30,17 @@ openclaw nodes describe --node <idOrNameOrIp>
 openclaw approvals get --node <idOrNameOrIp>
 ```
 
-Healthy signals:
+正常時のシグナル:
 
-- Node is connected and paired for role `node`.
-- `nodes describe` includes the capability you are calling.
-- Exec approvals show expected mode/allowlist.
+- node が接続済みで、role `node` として paired になっている
+- `nodes describe` に、呼び出したい capability が含まれている
+- exec approvals が期待どおりの mode / allowlist になっている
 
-## Foreground requirements
+## foreground 要件
 
-`canvas.*`, `camera.*`, and `screen.*` are foreground only on iOS/Android nodes.
+`canvas.*`、`camera.*`、`screen.*` は iOS / Android node では foreground 専用です。
 
-Quick check and fix:
+簡易確認と対処:
 
 ```bash
 openclaw nodes describe --node <idOrNameOrIp>
@@ -46,25 +48,25 @@ openclaw nodes canvas snapshot --node <idOrNameOrIp>
 openclaw logs --follow
 ```
 
-If you see `NODE_BACKGROUND_UNAVAILABLE`, bring the node app to the foreground and retry.
+`NODE_BACKGROUND_UNAVAILABLE` が出た場合は、node app を foreground に戻してから再試行してください。
 
-## Permissions matrix
+## 権限マトリクス
 
 | Capability                   | iOS                                     | Android                                      | macOS node app                | Typical failure code           |
 | ---------------------------- | --------------------------------------- | -------------------------------------------- | ----------------------------- | ------------------------------ |
-| `camera.snap`, `camera.clip` | Camera (+ mic for clip audio)           | Camera (+ mic for clip audio)                | Camera (+ mic for clip audio) | `*_PERMISSION_REQUIRED`        |
-| `screen.record`              | Screen Recording (+ mic optional)       | Screen capture prompt (+ mic optional)       | Screen Recording              | `*_PERMISSION_REQUIRED`        |
-| `location.get`               | While Using or Always (depends on mode) | Foreground/Background location based on mode | Location permission           | `LOCATION_PERMISSION_REQUIRED` |
-| `system.run`                 | n/a (node host path)                    | n/a (node host path)                         | Exec approvals required       | `SYSTEM_RUN_DENIED`            |
+| `camera.snap`, `camera.clip` | Camera（clip 音声には mic も必要）      | Camera（clip 音声には mic も必要）           | Camera（clip 音声には mic も必要） | `*_PERMISSION_REQUIRED`        |
+| `screen.record`              | Screen Recording（+ mic は任意）        | Screen capture prompt（+ mic は任意）        | Screen Recording              | `*_PERMISSION_REQUIRED`        |
+| `location.get`               | While Using または Always（mode に依存） | mode に応じた foreground / background location | Location permission           | `LOCATION_PERMISSION_REQUIRED` |
+| `system.run`                 | n/a（node host 経路）                   | n/a（node host 経路）                        | Exec approvals が必要         | `SYSTEM_RUN_DENIED`            |
 
-## Pairing versus approvals
+## pairing と approvals の違い
 
-These are different gates:
+この 2 つは別の gate です。
 
-1. **Device pairing**: can this node connect to the gateway?
-2. **Exec approvals**: can this node run a specific shell command?
+1. **Device pairing**: この node が gateway へ接続できるか
+2. **Exec approvals**: この node が特定の shell command を実行できるか
 
-Quick checks:
+簡易確認:
 
 ```bash
 openclaw devices list
@@ -73,23 +75,21 @@ openclaw approvals get --node <idOrNameOrIp>
 openclaw approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
 ```
 
-If pairing is missing, approve the node device first.
-If pairing is fine but `system.run` fails, fix exec approvals/allowlist.
+pairing が欠けている場合は、まず node device を承認してください。pairing が正常なのに `system.run` だけ失敗する場合は、exec approvals / allowlist を見直してください。
 
-## Common node error codes
+## よくある node error code
 
-- `NODE_BACKGROUND_UNAVAILABLE` → app is backgrounded; bring it foreground.
-- `CAMERA_DISABLED` → camera toggle disabled in node settings.
-- `*_PERMISSION_REQUIRED` → OS permission missing/denied.
-- `LOCATION_DISABLED` → location mode is off.
-- `LOCATION_PERMISSION_REQUIRED` → requested location mode not granted.
-- `LOCATION_BACKGROUND_UNAVAILABLE` → app is backgrounded but only While Using permission exists.
-- `SYSTEM_RUN_DENIED: approval required` → exec request needs explicit approval.
-- `SYSTEM_RUN_DENIED: allowlist miss` → command blocked by allowlist mode.
-  On Windows node hosts, shell-wrapper forms like `cmd.exe /c ...` are treated as allowlist misses in
-  allowlist mode unless approved via ask flow.
+- `NODE_BACKGROUND_UNAVAILABLE` → app が background。foreground に戻す
+- `CAMERA_DISABLED` → node settings で camera toggle が無効
+- `*_PERMISSION_REQUIRED` → OS 権限が未付与または拒否されている
+- `LOCATION_DISABLED` → location mode が off
+- `LOCATION_PERMISSION_REQUIRED` → 要求した location mode が許可されていない
+- `LOCATION_BACKGROUND_UNAVAILABLE` → app は background だが While Using 権限しかない
+- `SYSTEM_RUN_DENIED: approval required` → exec request に明示承認が必要
+- `SYSTEM_RUN_DENIED: allowlist miss` → command が allowlist mode によって拒否された
+  Windows node host では、`cmd.exe /c ...` のような shell-wrapper 形式は、ask flow で承認しない限り allowlist mode では allowlist miss として扱われます。
 
-## Fast recovery loop
+## すばやい復旧ループ
 
 ```bash
 openclaw nodes status
@@ -98,14 +98,14 @@ openclaw approvals get --node <idOrNameOrIp>
 openclaw logs --follow
 ```
 
-If still stuck:
+それでも解消しない場合:
 
-- Re-approve device pairing.
-- Re-open node app (foreground).
-- Re-grant OS permissions.
-- Recreate/adjust exec approval policy.
+- device pairing を再承認する
+- node app を開き直す（foreground にする）
+- OS 権限を再付与する
+- exec approval policy を作り直す / 調整する
 
-Related:
+関連:
 
 - [/nodes/index](/nodes/index)
 - [/nodes/camera](/nodes/camera)

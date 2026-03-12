@@ -1,66 +1,65 @@
 ---
-summary: "Expose an OpenResponses-compatible /v1/responses HTTP endpoint from the Gateway"
+summary: "ゲートウェイから OpenResponses 互換の /v1/responses HTTP エンドポイントを公開する"
 read_when:
-  - Integrating clients that speak the OpenResponses API
-  - You want item-based inputs, client tool calls, or SSE events
+  - OpenResponses API を使用するクライアントと統合する場合
+  - アイテムベースの入力、クライアント側のツール呼び出し、または SSE イベントを利用したい場合
 title: "OpenResponses API"
+x-i18n:
+  source_hash: "59aceb2143d65b2d13f39736170ef7c2d01f61b2b223941635148ba819c702d6"
 ---
 
 # OpenResponses API (HTTP)
 
-OpenClaw’s Gateway can serve an OpenResponses-compatible `POST /v1/responses` endpoint.
+OpenClaw ゲートウェイは、OpenResponses 互換の `POST /v1/responses` エンドポイントを提供できます。
 
-This endpoint is **disabled by default**. Enable it in config first.
+このエンドポイントは **デフォルトで無効** になっています。利用するには、まず構成ファイルで有効にする必要があります。
 
-- `POST /v1/responses`
-- Same port as the Gateway (WS + HTTP multiplex): `http://<gateway-host>:<port>/v1/responses`
+- エンドポイント: `POST /v1/responses`
+- ポート: ゲートウェイと同じポート（WebSocket と HTTP のマルチプレックス）: `http://<gateway-host>:<port>/v1/responses`
 
-Under the hood, requests are executed as a normal Gateway agent run (same codepath as
-`openclaw agent`), so routing/permissions/config match your Gateway.
+内部的には、リクエストは通常のゲートウェイエージェントの実行（`openclaw agent` と同じパス）として処理されます。そのため、ルーティング、権限、および構成設定はゲートウェイ本体の設定に従います。
 
-## Authentication
+## 認証 (Auth)
 
-Uses the Gateway auth configuration. Send a bearer token:
+ゲートウェイの認証設定を使用します。リクエスト時に Bearer トークンを送信してください:
 
-- `Authorization: Bearer <token>`
+- `Authorization: Bearer <トークン>`
 
-Notes:
+補足事項:
+- `gateway.auth.mode="token"` の場合、`gateway.auth.token` (または環境変数 `OPENCLAW_GATEWAY_TOKEN`) を使用します。
+- `gateway.auth.mode="password"` の場合、`gateway.auth.password` (または環境変数 `OPENCLAW_GATEWAY_PASSWORD`) を使用します。
+- `gateway.auth.rateLimit` が構成されている場合、認証失敗が繰り返されるとエンドポイントは `429` (Retry-After 付き) を返します。
 
-- When `gateway.auth.mode="token"`, use `gateway.auth.token` (or `OPENCLAW_GATEWAY_TOKEN`).
-- When `gateway.auth.mode="password"`, use `gateway.auth.password` (or `OPENCLAW_GATEWAY_PASSWORD`).
-- If `gateway.auth.rateLimit` is configured and too many auth failures occur, the endpoint returns `429` with `Retry-After`.
+## セキュリティ境界 (重要)
 
-## Security boundary (important)
+このエンドポイントは、ゲートウェイインスタンスに対する **フルアクセス（オペレーター権限）** を持つインターフェースとして扱ってください。
 
-Treat this endpoint as a **full operator-access** surface for the gateway instance.
+- ここでの HTTP Bearer 認証は、一般ユーザー向けの制限されたスコープを持つものではありません。
+- このエンドポイントで使用する有効なトークンやパスワードは、オーナー/オペレーターの認証情報と同等に扱う必要があります。
+- リクエストは、信頼されたオペレーターのアクションと同じコントロールプレーンのエージェントパスを通じて実行されます。
+- このエンドポイントには、非所有者や一般ユーザー向けの個別のツール制限レイヤーはありません。ゲートウェイ認証を通過した呼び出し元は、OpenClaw によってこのゲートウェイの信頼されたオペレーターとして扱われます。
+- ターゲットとなるエージェントのポリシーで機密ツールが許可されている場合、このエンドポイント経由でもそれらのツールが実行可能です。
+- セキュリティのため、このエンドポイントはループバック、Tailnet、またはプライベートなネットワーク内でのみ公開し、インターネット上に直接公開することは避けてください。
 
-- HTTP bearer auth here is not a narrow per-user scope model.
-- A valid Gateway token/password for this endpoint should be treated like an owner/operator credential.
-- Requests run through the same control-plane agent path as trusted operator actions.
-- There is no separate non-owner/per-user tool boundary on this endpoint; once a caller passes Gateway auth here, OpenClaw treats that caller as a trusted operator for this gateway.
-- If the target agent policy allows sensitive tools, this endpoint can use them.
-- Keep this endpoint on loopback/tailnet/private ingress only; do not expose it directly to the public internet.
+詳細は [セキュリティ](/gateway/security) および [リモートアクセス](/gateway/remote) を参照してください。
 
-See [Security](/gateway/security) and [Remote access](/gateway/remote).
+## エージェントの選択
 
-## Choosing an agent
+カスタムヘッダーは不要です。OpenResponses の `model` フィールドにエージェント ID を埋め込んでください:
 
-No custom headers required: encode the agent id in the OpenResponses `model` field:
+- `model: "openclaw:<agentId>"` (例: `"openclaw:main"`, `"openclaw:beta"`)
+- `model: "agent:<agentId>"` (エイリアス)
 
-- `model: "openclaw:<agentId>"` (example: `"openclaw:main"`, `"openclaw:beta"`)
-- `model: "agent:<agentId>"` (alias)
+または、特定の OpenClaw エージェントをヘッダーで指定することも可能です:
 
-Or target a specific OpenClaw agent by header:
+- `x-openclaw-agent-id: <agentId>` (デフォルトは `main`)
 
-- `x-openclaw-agent-id: <agentId>` (default: `main`)
+高度な設定:
+- `x-openclaw-session-key: <sessionKey>` を指定することで、セッションルーティングを完全に制御できます。
 
-Advanced:
+## 有効化の手順
 
-- `x-openclaw-session-key: <sessionKey>` to fully control session routing.
-
-## Enabling the endpoint
-
-Set `gateway.http.endpoints.responses.enabled` to `true`:
+`gateway.http.endpoints.responses.enabled` を `true` に設定してください:
 
 ```json5
 {
@@ -74,9 +73,9 @@ Set `gateway.http.endpoints.responses.enabled` to `true`:
 }
 ```
 
-## Disabling the endpoint
+## 無効化の手順
 
-Set `gateway.http.endpoints.responses.enabled` to `false`:
+`gateway.http.endpoints.responses.enabled` を `false` に設定してください:
 
 ```json5
 {
@@ -90,27 +89,25 @@ Set `gateway.http.endpoints.responses.enabled` to `false`:
 }
 ```
 
-## Session behavior
+## セッションの挙動
 
-By default the endpoint is **stateless per request** (a new session key is generated each call).
+デフォルトでは、エンドポイントは **リクエストごとにステートレス** です（呼び出しのたびに新しいセッションキーが生成されます）。
 
-If the request includes an OpenResponses `user` string, the Gateway derives a stable session key
-from it, so repeated calls can share an agent session.
+リクエストに OpenResponses の `user` 文字列が含まれている場合、ゲートウェイはそこから固定のセッションキーを導出します。これにより、同じユーザー文字列を使用する繰り返しの呼び出しで、エージェントセッションを共有することが可能になります。
 
-## Request shape (supported)
+## 対応しているリクエスト形式
 
-The request follows the OpenResponses API with item-based input. Current support:
+アイテムベースの入力を伴う OpenResponses API に従います。現在サポートされている項目は以下の通りです:
 
-- `input`: string or array of item objects.
-- `instructions`: merged into the system prompt.
-- `tools`: client tool definitions (function tools).
-- `tool_choice`: filter or require client tools.
-- `stream`: enables SSE streaming.
-- `max_output_tokens`: best-effort output limit (provider dependent).
-- `user`: stable session routing.
+- `input`: 文字列、またはアイテムオブジェクトの配列。
+- `instructions`: システムプロンプトにマージされます。
+- `tools`: クライアント側のツール定義（function tools）。
+- `tool_choice`: クライアントツールの使用を制限、あるいは強制します。
+- `stream`: SSE によるストリーミングを有効にします。
+- `max_output_tokens`: 出力トークン数の上限を指定します（プロバイダーに依存）。
+- `user`: 固定のセッションルーティング用文字列。
 
-Accepted but **currently ignored**:
-
+受け入れ可能ですが、**現在は無視される** 項目:
 - `max_tool_calls`
 - `reasoning`
 - `metadata`
@@ -118,19 +115,19 @@ Accepted but **currently ignored**:
 - `previous_response_id`
 - `truncation`
 
-## Items (input)
+## アイテム (入力)
 
 ### `message`
 
-Roles: `system`, `developer`, `user`, `assistant`.
+ロール: `system`, `developer`, `user`, `assistant`。
 
-- `system` and `developer` are appended to the system prompt.
-- The most recent `user` or `function_call_output` item becomes the “current message.”
-- Earlier user/assistant messages are included as history for context.
+- `system` および `developer` はシステムプロンプトの末尾に追加されます。
+- 最新の `user` または `function_call_output` アイテムが「現在のメッセージ」となります。
+- それより前のユーザー/アシスタントのメッセージは、文脈（履歴）として含まれます。
 
-### `function_call_output` (turn-based tools)
+### `function_call_output` (ターンベースのツール)
 
-Send tool results back to the model:
+ツールの実行結果をモデルに返します:
 
 ```json
 {
@@ -140,20 +137,19 @@ Send tool results back to the model:
 }
 ```
 
-### `reasoning` and `item_reference`
+### `reasoning` および `item_reference`
 
-Accepted for schema compatibility but ignored when building the prompt.
+スキーマの互換性のために受け入れられますが、プロンプト構築時には無視されます。
 
-## Tools (client-side function tools)
+## ツール (クライアント側の関数ツール)
 
-Provide tools with `tools: [{ type: "function", function: { name, description?, parameters? } }]`.
+`tools: [{ type: "function", function: { name, description?, parameters? } }]` の形式でツールを提供します。
 
-If the agent decides to call a tool, the response returns a `function_call` output item.
-You then send a follow-up request with `function_call_output` to continue the turn.
+エージェントがツールの呼び出しを決定した場合、レスポンスには `function_call` 出力アイテムが含まれます。その後、`function_call_output` を含む次のリクエストを送信することでターンを継続できます。
 
-## Images (`input_image`)
+## 画像 (`input_image`)
 
-Supports base64 or URL sources:
+base64 または URL ソースをサポートしています:
 
 ```json
 {
@@ -162,12 +158,12 @@ Supports base64 or URL sources:
 }
 ```
 
-Allowed MIME types (current): `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/heic`, `image/heif`.
-Max size (current): 10MB.
+許可される MIME タイプ: `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/heic`, `image/heif`。
+最大サイズ: 10MB。
 
-## Files (`input_file`)
+## ファイル (`input_file`)
 
-Supports base64 or URL sources:
+base64 または URL ソースをサポートしています:
 
 ```json
 {
@@ -181,34 +177,27 @@ Supports base64 or URL sources:
 }
 ```
 
-Allowed MIME types (current): `text/plain`, `text/markdown`, `text/html`, `text/csv`,
-`application/json`, `application/pdf`.
+許可される MIME タイプ: `text/plain`, `text/markdown`, `text/html`, `text/csv`, `application/json`, `application/pdf`。
+最大サイズ: 5MB。
 
-Max size (current): 5MB.
+現在の挙動:
+- ファイルの内容はデコードされ、ユーザーメッセージではなく **システムプロンプト** に追加されます。そのため、セッション履歴には保存されず一時的なものとなります。
+- PDF はテキスト抽出が行われます。テキストが少ない場合は、最初の数ページが画像化（ラスタライズ）され、画像としてモデルに渡されます。
 
-Current behavior:
+PDF のパースには Node.js 親和性の高い `pdfjs-dist` のレガシービルド（ワーカーなし）を使用しています。最新の PDF.js ビルドはブラウザのワーカーや DOM グローバル変数を必要とするため、ゲートウェイ内では使用されません。
 
-- File content is decoded and added to the **system prompt**, not the user message,
-  so it stays ephemeral (not persisted in session history).
-- PDFs are parsed for text. If little text is found, the first pages are rasterized
-  into images and passed to the model.
-
-PDF parsing uses the Node-friendly `pdfjs-dist` legacy build (no worker). The modern
-PDF.js build expects browser workers/DOM globals, so it is not used in the Gateway.
-
-URL fetch defaults:
-
+URL 取得のデフォルト設定:
 - `files.allowUrl`: `true`
 - `images.allowUrl`: `true`
-- `maxUrlParts`: `8` (total URL-based `input_file` + `input_image` parts per request)
-- Requests are guarded (DNS resolution, private IP blocking, redirect caps, timeouts).
-- Optional hostname allowlists are supported per input type (`files.urlAllowlist`, `images.urlAllowlist`).
-  - Exact host: `"cdn.example.com"`
-  - Wildcard subdomains: `"*.assets.example.com"` (does not match apex)
+- `maxUrlParts`: `8` (1回のリクエストに含まれる URL ベースの `input_file` + `input_image` の合計数)
+- リクエストは安全に保護されます（DNS 解決、プライベート IP のブロック、リダイレクト制限、タイムアウト）。
+- 入力タイプごとに追加のホスト名許可リストを指定可能です (`files.urlAllowlist`, `images.urlAllowlist`)。
+  - 完全一致: `"cdn.example.com"`
+  - ワイルドカード（サブドメインのみ）: `"*.assets.example.com"` (apex ドメイン自体には一致しません)
 
-## File + image limits (config)
+## ファイルおよび画像の上限設定 (構成)
 
-Defaults can be tuned under `gateway.http.endpoints.responses`:
+`gateway.http.endpoints.responses` 配下で調整可能です:
 
 ```json5
 {
@@ -262,39 +251,35 @@ Defaults can be tuned under `gateway.http.endpoints.responses`:
 }
 ```
 
-Defaults when omitted:
-
+省略時のデフォルト値:
 - `maxBodyBytes`: 20MB
 - `maxUrlParts`: 8
 - `files.maxBytes`: 5MB
-- `files.maxChars`: 200k
+- `files.maxChars`: 20万文字
 - `files.maxRedirects`: 3
-- `files.timeoutMs`: 10s
+- `files.timeoutMs`: 10秒
 - `files.pdf.maxPages`: 4
 - `files.pdf.maxPixels`: 4,000,000
 - `files.pdf.minTextChars`: 200
 - `images.maxBytes`: 10MB
 - `images.maxRedirects`: 3
-- `images.timeoutMs`: 10s
-- HEIC/HEIF `input_image` sources are accepted and normalized to JPEG before provider delivery.
+- `images.timeoutMs`: 10秒
+- HEIC/HEIF 形式の画像は受け入れられ、モデルプロバイダーに送られる前に自動的に JPEG に正規化されます。
 
-Security note:
+セキュリティ上の注意:
+- ホスト名許可リストは、最初のフェッチ時およびリダイレクトの各ホップで適用されます。
+- ホスト名を許可リストに入れても、プライベート/内部 IP へのブロッキングをバイパスすることはできません。
+- インターネットに公開されたゲートウェイを運用する場合は、アプリレベルの保護に加えて、OS/ネットワークレベルでの下り通信制限（Egress control）も適用してください（詳細は [セキュリティ](/gateway/security) を参照）。
 
-- URL allowlists are enforced before fetch and on redirect hops.
-- Allowlisting a hostname does not bypass private/internal IP blocking.
-- For internet-exposed gateways, apply network egress controls in addition to app-level guards.
-  See [Security](/gateway/security).
+## ストリーミング (SSE)
 
-## Streaming (SSE)
-
-Set `stream: true` to receive Server-Sent Events (SSE):
+`stream: true` を設定することで、Server-Sent Events (SSE) を受信できます:
 
 - `Content-Type: text/event-stream`
-- Each event line is `event: <type>` and `data: <json>`
-- Stream ends with `data: [DONE]`
+- 各イベント行の形式: `event: <タイプ>` および `data: <JSON>`
+- ストリームの終了: `data: [DONE]`
 
-Event types currently emitted:
-
+現在発行されるイベントタイプ:
 - `response.created`
 - `response.in_progress`
 - `response.output_item.added`
@@ -304,29 +289,28 @@ Event types currently emitted:
 - `response.content_part.done`
 - `response.output_item.done`
 - `response.completed`
-- `response.failed` (on error)
+- `response.failed` (エラー発生時)
 
-## Usage
+## 利用状況 (Usage)
 
-`usage` is populated when the underlying provider reports token counts.
+下位のプロバイダーからトークン数が報告された場合、レスポンスの `usage` フィールドに値がセットされます。
 
-## Errors
+## エラー形式
 
-Errors use a JSON object like:
+エラーは以下の形式の JSON オブジェクトとして返されます:
 
 ```json
 { "error": { "message": "...", "type": "invalid_request_error" } }
 ```
 
-Common cases:
+主なステータスコード:
+- `401`: 認証情報の欠落、または無効。
+- `400`: リクエストボディが不正。
+- `405`: 許可されていないメソッド。
 
-- `401` missing/invalid auth
-- `400` invalid request body
-- `405` wrong method
+## 実行例
 
-## Examples
-
-Non-streaming:
+通常（非ストリーミング）の実行:
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/responses \
@@ -335,11 +319,11 @@ curl -sS http://127.0.0.1:18789/v1/responses \
   -H 'x-openclaw-agent-id: main' \
   -d '{
     "model": "openclaw",
-    "input": "hi"
+    "input": "こんにちは"
   }'
 ```
 
-Streaming:
+ストリーミング実行:
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/responses \
@@ -349,6 +333,6 @@ curl -N http://127.0.0.1:18789/v1/responses \
   -d '{
     "model": "openclaw",
     "stream": true,
-    "input": "hi"
+    "input": "こんにちは"
   }'
 ```

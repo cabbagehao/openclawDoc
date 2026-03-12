@@ -1,97 +1,93 @@
 ---
-summary: "Run multiple OpenClaw Gateways on one host (isolation, ports, and profiles)"
+summary: "同一ホスト上での複数の OpenClaw ゲートウェイの実行 (分離、ポート設定、およびプロファイル)"
 read_when:
-  - Running more than one Gateway on the same machine
-  - You need isolated config/state/ports per Gateway
-title: "Multiple Gateways"
+  - 同じマシン上で複数のゲートウェイを動作させたい場合
+  - ゲートウェイごとに構成、状態、ポートを分離する必要がある場合
+title: "マルチゲートウェイ"
+x-i18n:
+  source_hash: "493bd45bc6939ae7328afcd0351ca7cb4c93c17b819e8ad0fdf0f0312bf9b639"
 ---
 
-# Multiple Gateways (same host)
+# マルチゲートウェイ (同一ホストでの複数起動)
 
-Most setups should use one Gateway because a single Gateway can handle multiple messaging connections and agents. If you need stronger isolation or redundancy (e.g., a rescue bot), run separate Gateways with isolated profiles/ports.
+OpenClaw は単一のゲートウェイで複数のメッセージング接続やエージェントを処理できるため、通常は 1 つのゲートウェイで十分です。より厳格な分離が必要な場合や、冗長性の確保（例: 救旧用のレスキューボットなど）を目的とする場合にのみ、プロファイルとポートを分けた個別のゲートウェイを起動してください。
 
-## Isolation checklist (required)
+## 分離のためのチェックリスト (必須)
 
-- `OPENCLAW_CONFIG_PATH` — per-instance config file
-- `OPENCLAW_STATE_DIR` — per-instance sessions, creds, caches
-- `agents.defaults.workspace` — per-instance workspace root
-- `gateway.port` (or `--port`) — unique per instance
-- Derived ports (browser/canvas) must not overlap
+インスタンスごとに以下を一意（ユニーク）にする必要があります:
 
-If these are shared, you will hit config races and port conflicts.
+- `OPENCLAW_CONFIG_PATH`: インスタンスごとの構成ファイル。
+- `OPENCLAW_STATE_DIR`: インスタンスごとのセッション、認証情報、キャッシュ。
+- `agents.defaults.workspace`: インスタンスごとのワークスペースルート。
+- `gateway.port` (または `--port`): ゲートウェイごとのポート番号。
+- **派生ポート**: ブラウザ制御や Canvas 用のポートが重複しないように注意してください。
 
-## Recommended: profiles (`--profile`)
+これらが共有されていると、構成の書き込み競合やポートの衝突が発生します。
 
-Profiles auto-scope `OPENCLAW_STATE_DIR` + `OPENCLAW_CONFIG_PATH` and suffix service names.
+## 推奨: プロファイル機能 (`--profile`)
+
+`--profile` フラグを使用すると、`OPENCLAW_STATE_DIR` と `OPENCLAW_CONFIG_PATH` のスコープが自動的に設定され、サービス名にもサフィックスが付与されます。
 
 ```bash
-# main
+# メイン (main)
 openclaw --profile main setup
 openclaw --profile main gateway --port 18789
 
-# rescue
+# レスキュー (rescue)
 openclaw --profile rescue setup
 openclaw --profile rescue gateway --port 19001
 ```
 
-Per-profile services:
+プロファイルごとのサービス管理:
 
 ```bash
 openclaw --profile main gateway install
 openclaw --profile rescue gateway install
 ```
 
-## Rescue-bot guide
+## レスキューボット（救旧用）の導入ガイド
 
-Run a second Gateway on the same host with its own:
+メインのボットが停止した際のデバッグや構成変更の適用を目的として、独立した構成・状態・ワークスペース・ポートを持つ 2 つ目のゲートウェイを同じホスト上で実行します。
 
-- profile/config
-- state dir
-- workspace
-- base port (plus derived ports)
+ポートの設定: 派生するブラウザ、Canvas、CDP 用のポートが衝突しないよう、ベースポートの間隔は少なくとも 20 以上空けるようにしてください。
 
-This keeps the rescue bot isolated from the main bot so it can debug or apply config changes if the primary bot is down.
-
-Port spacing: leave at least 20 ports between base ports so the derived browser/canvas/CDP ports never collide.
-
-### How to install (rescue bot)
+### インストール手順 (レスキューボット)
 
 ```bash
-# Main bot (existing or fresh, without --profile param)
-# Runs on port 18789 + Chrome CDC/Canvas/... Ports
+# メインボット (既存の設定、または --profile 指定なし)
+# ポート 18789 + 各種派生ポートで動作
 openclaw onboard
 openclaw gateway install
 
-# Rescue bot (isolated profile + ports)
+# レスキューボット (分離されたプロファイルとポート)
 openclaw --profile rescue onboard
-# Notes:
-# - workspace name will be postfixed with -rescue per default
-# - Port should be at least 18789 + 20 Ports,
-#   better choose completely different base port, like 19789,
-# - rest of the onboarding is the same as normal
+# 補足事項:
+# - ワークスペース名の末尾にはデフォルトで -rescue が付与されます。
+# - ポートは 18789 から 20 以上離してください（例: 19789 などの全く別の番号を推奨）。
+# - その他のオンボーディング手順は通常と同じです。
 
-# To install the service (if not happened automatically during onboarding)
+# サービスのインストール (オンボーディング中に自動で行われなかった場合)
 openclaw --profile rescue gateway install
 ```
 
-## Port mapping (derived)
+## 派生ポートのマッピングルール
 
-Base port = `gateway.port` (or `OPENCLAW_GATEWAY_PORT` / `--port`).
+ベースポートを `gateway.port` (または `OPENCLAW_GATEWAY_PORT`, `--port`) とすると:
 
-- browser control service port = base + 2 (loopback only)
-- canvas host is served on the Gateway HTTP server (same port as `gateway.port`)
-- Browser profile CDP ports auto-allocate from `browser.controlPort + 9 .. + 108`
+- ブラウザ制御サービスポート = ベースポート + 2 (ループバック限定)
+- Canvas ホスト = ゲートウェイの HTTP サーバー上で動作 (ベースポートと同じ)
+- ブラウザプロファイルの CDP ポート = `browser.controlPort + 9` から `+ 108` までの範囲で自動割り当て
 
-If you override any of these in config or env, you must keep them unique per instance.
+構成ファイルや環境変数でこれらを上書きする場合は、インスタンス間で重複しないように手動で管理する必要があります。
 
-## Browser/CDP notes (common footgun)
+## ブラウザ / CDP に関する注意点
 
-- Do **not** pin `browser.cdpUrl` to the same values on multiple instances.
-- Each instance needs its own browser control port and CDP range (derived from its gateway port).
-- If you need explicit CDP ports, set `browser.profiles.<name>.cdpPort` per instance.
-- Remote Chrome: use `browser.profiles.<name>.cdpUrl` (per profile, per instance).
+- `browser.cdpUrl` を複数のインスタンスで同じ値に固定しないでください。
+- 各インスタンスには、独自のブラウザ制御ポートと（ベースポートから派生した）CDP ポート範囲が必要です。
+- CDP ポートを明示的に指定したい場合は、インスタンスごとに `browser.profiles.<name>.cdpPort` を設定してください。
+- リモートの Chrome を使用する場合: インスタンスごとのプロファイルに対して `browser.profiles.<name>.cdpUrl` を設定してください。
 
-## Manual env example
+## 環境変数を手動で設定する例
 
 ```bash
 OPENCLAW_CONFIG_PATH=~/.openclaw/main.json \
@@ -103,7 +99,7 @@ OPENCLAW_STATE_DIR=~/.openclaw-rescue \
 openclaw gateway --port 19001
 ```
 
-## Quick checks
+## クイックチェック
 
 ```bash
 openclaw --profile main status

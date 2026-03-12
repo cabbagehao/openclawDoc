@@ -1,20 +1,22 @@
 ---
-summary: "Refactor clusters with highest LOC reduction potential"
+summary: "LOC 削減の可能性が最も高いクラスターをリファクタリングする"
 read_when:
-  - You want to reduce total LOC without changing behavior
-  - You are choosing the next dedupe or extraction pass
-title: "Refactor Cluster Backlog"
+  - 動作を変えずに合計 LOC を削減したい
+  - 次の重複排除または抽出パスを選択しています
+title: "クラスターバックログのリファクタリング"
+x-i18n:
+  source_hash: "0d35dd202f3febea20057624f97608332aa1753148ac8a4fcc5f2a89884d67e2"
 ---
 
-# Refactor Cluster Backlog
+# クラスターバックログのリファクタリング
 
-Ranked by likely LOC reduction, safety, and breadth.
+LOC の削減の可能性、安全性、幅の広さによってランク付けされます。
 
-## 1. Channel plugin config and security scaffolding
+## 1. チャネルプラグイン構成とセキュリティスキャフォールディング
 
-Highest-value cluster.
+最高値のクラスター。
 
-Repeated shapes across many channel plugins:
+多くのチャネル プラグインで繰り返される形状:
 
 - `config.listAccountIds`
 - `config.resolveAccount`
@@ -24,7 +26,7 @@ Repeated shapes across many channel plugins:
 - `config.describeAccount`
 - `security.resolveDmPolicy`
 
-Strong examples:
+有力な例:
 
 - `extensions/telegram/src/channel.ts`
 - `extensions/googlechat/src/channel.ts`
@@ -35,31 +37,31 @@ Strong examples:
 - `extensions/signal/src/channel.ts`
 - `extensions/mattermost/src/channel.ts`
 
-Likely extraction shape:
+考えられる抽出形状:
 
 - `buildChannelConfigAdapter(...)`
 - `buildMultiAccountConfigAdapter(...)`
 - `buildDmSecurityAdapter(...)`
 
-Expected savings:
+期待される節約量:
 
 - ~250-450 LOC
 
-Risk:
+リスク:
 
-- Medium. Each channel has slightly different `isConfigured`, warnings, and normalization.
+- 中程度。各チャネルにはわずかに異なる `isConfigured`、警告、および正規化があります。
 
-## 2. Extension runtime singleton boilerplate
+## 2. 拡張ランタイム シングルトン ボイラープレート
 
-Very safe.
+とても安全です。
 
-Nearly every extension has the same runtime holder:
+ほぼすべての拡張機能には同じランタイム ホルダーがあります。
 
 - `let runtime: PluginRuntime | null = null`
 - `setXRuntime`
 - `getXRuntime`
 
-Strong examples:
+有力な例:
 
 - `extensions/telegram/src/runtime.ts`
 - `extensions/matrix/src/runtime.ts`
@@ -69,38 +71,37 @@ Strong examples:
 - `extensions/imessage/src/runtime.ts`
 - `extensions/twitch/src/runtime.ts`
 
-Special-case variants:
+特殊なケースのバリエーション:
 
 - `extensions/bluebubbles/src/runtime.ts`
 - `extensions/line/src/runtime.ts`
 - `extensions/synology-chat/src/runtime.ts`
 
-Likely extraction shape:
+考えられる抽出形状:
 
 - `createPluginRuntimeStore<T>(errorMessage)`
 
-Expected savings:
+期待される節約量:
 
 - ~180-260 LOC
 
-Risk:
+リスク:
 
-- Low
+- 低い
 
-## 3. Onboarding prompt and config-patch steps
+## 3. オンボーディング プロンプトと構成パッチの手順
 
-Large surface area.
+広い表面積。
 
-Many onboarding files repeat:
+多くのオンボーディング ファイルでは次のことが繰り返されます。- アカウントIDを解決する
 
-- resolve account id
-- prompt allowlist entries
-- merge allowFrom
-- set DM policy
-- prompt secrets
-- patch top-level vs account-scoped config
+- プロンプト許可リストのエントリ
+  -allowFromをマージする
+- DMポリシーを設定する
+- プロンプトの秘密
+- パッチのトップレベル構成とアカウント スコープの構成
 
-Strong examples:
+有力な例:
 
 - `extensions/bluebubbles/src/onboarding.ts`
 - `extensions/googlechat/src/onboarding.ts`
@@ -111,39 +112,39 @@ Strong examples:
 - `extensions/matrix/src/onboarding.ts`
 - `extensions/irc/src/onboarding.ts`
 
-Existing helper seam:
+既存のヘルパー シーム:
 
 - `src/channels/plugins/onboarding/helpers.ts`
 
-Likely extraction shape:
+考えられる抽出形状:
 
 - `promptAllowFromList(...)`
 - `buildDmPolicyAdapter(...)`
 - `applyScopedAccountPatch(...)`
 - `promptSecretFields(...)`
 
-Expected savings:
+期待される節約量:
 
 - ~300-600 LOC
 
-Risk:
+リスク:
 
-- Medium. Easy to over-generalize; keep helpers narrow and composable.
+- 中程度。過度に一般化しやすい。ヘルパーを狭くして構成可能な状態に保ちます。
 
-## 4. Multi-account config-schema fragments
+## 4. マルチアカウント構成スキーマのフラグメント
 
-Repeated schema fragments across extensions.
+拡張機能間で繰り返されるスキーマ フラグメント。
 
-Common patterns:
+よくあるパターン:
 
 - `const allowFromEntry = z.union([z.string(), z.number()])`
-- account schema plus:
+- アカウント スキーマに加えて:
   - `accounts: z.object({}).catchall(accountSchema).optional()`
   - `defaultAccount: z.string().optional()`
-- repeated DM/group fields
-- repeated markdown/tool policy fields
+- DM/グループフィールドの繰り返し
+- マークダウン/ツールポリシーフィールドの繰り返し
 
-Strong examples:
+有力な例:
 
 - `extensions/bluebubbles/src/config-schema.ts`
 - `extensions/zalo/src/config-schema.ts`
@@ -151,149 +152,146 @@ Strong examples:
 - `extensions/matrix/src/config-schema.ts`
 - `extensions/nostr/src/config-schema.ts`
 
-Likely extraction shape:
+考えられる抽出形状:
 
 - `AllowFromEntrySchema`
 - `buildMultiAccountChannelSchema(accountSchema)`
 - `buildCommonDmGroupFields(...)`
 
-Expected savings:
+期待される節約量:
 
 - ~120-220 LOC
 
-Risk:
+リスク:
 
-- Low to medium. Some schemas are simple, some are special.
+- 低から中程度。スキーマには単純なものもあれば、特殊なものもあります。
 
-## 5. Webhook and monitor lifecycle startup
+## 5. Webhook とモニターのライフサイクルの起動
 
-Good medium-value cluster.
+良好な中値クラスター。
 
-Repeated `startAccount` / monitor setup patterns:
+繰り返される `startAccount` / モニターのセットアップ パターン:
 
-- resolve account
-- compute webhook path
-- log startup
-- start monitor
-- wait for abort
-- cleanup
-- status sink updates
+- アカウントを解決する
+- Webhook パスを計算する
+- 起動ログ
+- モニターを開始します
+- 中止を待ちます
+- クリーンアップ
+- ステータスシンクの更新
 
-Strong examples:
+有力な例:- `extensions/googlechat/src/channel.ts`
 
-- `extensions/googlechat/src/channel.ts`
 - `extensions/bluebubbles/src/channel.ts`
 - `extensions/zalo/src/channel.ts`
 - `extensions/telegram/src/channel.ts`
 - `extensions/nextcloud-talk/src/channel.ts`
 
-Existing helper seam:
+既存のヘルパー シーム:
 
 - `src/plugin-sdk/channel-lifecycle.ts`
 
-Likely extraction shape:
+考えられる抽出形状:
 
-- helper for account monitor lifecycle
-- helper for webhook-backed account startup
+- アカウント監視ライフサイクルのヘルパー
+- Webhook によるアカウント起動のヘルパー
 
-Expected savings:
+期待される節約量:
 
 - ~150-300 LOC
 
-Risk:
+リスク:
 
-- Medium to high. Transport details diverge quickly.
+- 中程度から高程度。輸送の詳細はすぐに異なります。
 
-## 6. Small exact-clone cleanup
+## 6. 小規模な完全クローンのクリーンアップ
 
-Low-risk cleanup bucket.
+低リスクのクリーンアップバケット。
 
-Examples:
+例:
 
-- duplicated gateway argv detection:
+- 重複したゲートウェイ argv の検出:
   - `src/infra/gateway-lock.ts`
   - `src/cli/daemon-cli/lifecycle.ts`
-- duplicated port diagnostics rendering:
+- 重複したポート診断レンダリング:
   - `src/cli/daemon-cli/restart-health.ts`
-- duplicated session-key construction:
+- 重複したセッションキー構造:
   - `src/web/auto-reply/monitor/broadcast.ts`
 
-Expected savings:
+期待される節約量:
 
-- ~30-60 LOC
+- ~30-60LOC
 
-Risk:
+リスク:
 
-- Low
+- 低い
 
-## Test clusters
+## テストクラスター
 
-### LINE webhook event fixtures
+### LINE Webhook イベントフィクスチャ
 
-Strong examples:
+有力な例:
 
 - `src/line/bot-handlers.test.ts`
 
-Likely extraction:
+おそらく抽出:
 
 - `makeLineEvent(...)`
 - `runLineEvent(...)`
 - `makeLineAccount(...)`
 
-Expected savings:
+期待される節約量:
 
 - ~120-180 LOC
 
-### Telegram native command auth matrix
+### Telegram ネイティブ コマンド認証マトリックス
 
-Strong examples:
+有力な例:
 
 - `src/telegram/bot-native-commands.group-auth.test.ts`
 - `src/telegram/bot-native-commands.plugin-auth.test.ts`
 
-Likely extraction:
+おそらく抽出:
 
-- forum context builder
-- denied-message assertion helper
-- table-driven auth cases
+- フォーラムコンテキストビルダー
+- 拒否されたメッセージ アサーション ヘルパー
+- テーブル駆動型認証のケース
 
-Expected savings:
+期待される節約量:
 
 - ~80-140 LOC
 
-### Zalo lifecycle setup
+### Zalo ライフサイクルのセットアップ
 
-Strong examples:
+有力な例:
 
 - `extensions/zalo/src/monitor.lifecycle.test.ts`
 
-Likely extraction:
+おそらく抽出:
 
-- shared monitor setup harness
+- 共有モニターセットアップハーネス
 
-Expected savings:
+期待される節約量:
 
 - ~50-90 LOC
 
-### Brave llm-context unsupported-option tests
+### Brave llm-context のサポートされていないオプションのテスト
 
-Strong examples:
+有力な例:
 
 - `src/agents/tools/web-tools.enabled-defaults.test.ts`
 
-Likely extraction:
+おそらく抽出:
 
-- `it.each(...)` matrix
+- `it.each(...)` マトリックス期待される節約量:
 
-Expected savings:
+- ~30-50LOC
 
-- ~30-50 LOC
+## 推奨される順序
 
-## Suggested order
-
-1. Runtime singleton boilerplate
-2. Small exact-clone cleanup
-3. Config and security builder extraction
-4. Test-helper extraction
-5. Onboarding step extraction
-6. Monitor lifecycle helper extraction
+1. ランタイムシングルトンボイラープレート
+2. 小規模な完全クローンのクリーンアップ
+3. 構成およびセキュリティビルダーの抽出
+4. テストヘルパーの抽出
+5. オンボーディングステップの抽出
+6. ライフサイクル ヘルパーの抽出を監視する

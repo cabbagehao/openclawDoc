@@ -1,192 +1,188 @@
 ---
-summary: "Move (migrate) a OpenClaw install from one machine to another"
+summary: "OpenClaw のインストール環境をあるマシンから別のマシンへ移動（移行）する"
 read_when:
-  - You are moving OpenClaw to a new laptop/server
-  - You want to preserve sessions, auth, and channel logins (WhatsApp, etc.)
-title: "Migration Guide"
+  - OpenClaw を新しいラップトップやサーバーに移動する場合
+  - セッション、認証、チャンネルのログイン（WhatsApp など）を維持したい場合
+title: "移行ガイド"
 ---
 
-# Migrating OpenClaw to a new machine
+# OpenClaw を新しいマシンに移行する
 
-This guide migrates a OpenClaw Gateway from one machine to another **without redoing onboarding**.
+このガイドでは、**オンボーディングをやり直すことなく**、OpenClaw Gateway をあるマシンから別のマシンへ移行する方法を説明します。
 
-The migration is simple conceptually:
+移行のコンセプトは非常にシンプルです：
 
-- Copy the **state directory** (`$OPENCLAW_STATE_DIR`, default: `~/.openclaw/`) — this includes config, auth, sessions, and channel state.
-- Copy your **workspace** (`~/.openclaw/workspace/` by default) — this includes your agent files (memory, prompts, etc.).
+- **状態ディレクトリ**（``$OPENCLAW_STATE_DIR``、デフォルト：`~/.openclaw/`）をコピーします — これには設定、認証、セッション、チャンネルの状態が含まれます。
+- **ワークスペース**（デフォルト：`~/.openclaw/workspace/`）をコピーします — これにはエージェントのファイル（記憶、プロンプトなど）が含まれます。
 
-But there are common footguns around **profiles**, **permissions**, and **partial copies**.
+しかし、**プロファイル**、**権限**、および**部分的なコピー**に関するよくある落とし穴があります。
 
-## Before you start (what you are migrating)
+## 始める前に（何を移行するか）
 
-### 1) Identify your state directory
+### 1) 状態ディレクトリを特定する
 
-Most installs use the default:
+ほとんどのインストールではデフォルトが使用されます：
 
-- **State dir:** `~/.openclaw/`
+- **状態ディレクトリ：** `~/.openclaw/`
 
-But it may be different if you use:
+ただし、以下を使用している場合は異なる場合があります：
 
-- `--profile <name>` (often becomes `~/.openclaw-<profile>/`)
+- `--profile <name>` (通常は `~/.openclaw-<profile>/` になります)
 - `OPENCLAW_STATE_DIR=/some/path`
 
-If you’re not sure, run on the **old** machine:
+不明な場合は、**古い**マシンで以下を実行してください：
 
 ```bash
 openclaw status
 ```
 
-Look for mentions of `OPENCLAW_STATE_DIR` / profile in the output. If you run multiple gateways, repeat for each profile.
+出力内の `OPENCLAW_STATE_DIR` やプロファイルに関する記述を確認してください。複数の Gateway を実行している場合は、プロファイルごとに繰り返してください。
 
-### 2) Identify your workspace
+### 2) ワークスペースを特定する
 
-Common defaults:
+一般的なデフォルト：
 
-- `~/.openclaw/workspace/` (recommended workspace)
-- a custom folder you created
+- `~/.openclaw/workspace/` (推奨ワークスペース)
+- 自分で作成したカスタムフォルダ
 
-Your workspace is where files like `MEMORY.md`, `USER.md`, and `memory/*.md` live.
+ワークスペースは、`MEMORY.md`、`USER.md`、`memory/*.md` などのファイルが置かれている場所です。
 
-### 3) Understand what you will preserve
+### 3) 何が保持されるかを理解する
 
-If you copy **both** the state dir and workspace, you keep:
+状態ディレクトリとワークスペースの**両方**をコピーすると、以下が保持されます：
 
-- Gateway configuration (`openclaw.json`)
-- Auth profiles / API keys / OAuth tokens
-- Session history + agent state
-- Channel state (e.g. WhatsApp login/session)
-- Your workspace files (memory, skills notes, etc.)
+- ゲートウェイの構成 (`openclaw.json`)
+- 認証プロファイル / API キー / OAuth トークン
+- セッション履歴 + エージェントの状態
+- チャネルの状態（例：WhatsApp のログイン/セッション）
+- ワークスペースのファイル（記憶、スキルのメモなど）
 
-If you copy **only** the workspace (e.g., via Git), you do **not** preserve:
+ワークスペース**のみ**をコピーした場合（例：Git 経由）、以下は保持されません：
 
-- sessions
-- credentials
-- channel logins
+- セッション
+- 認証情報
+- チャネルのログイン
 
-Those live under `$OPENCLAW_STATE_DIR`.
+これらは `$OPENCLAW_STATE_DIR` の下に保存されています。
 
-## Migration steps (recommended)
+## 移行の手順（推奨）
 
-### Step 0 — Make a backup (old machine)
+### 手順 0 — バックアップを作成する（古いマシン）
 
-On the **old** machine, stop the gateway first so files aren’t changing mid-copy:
+コピー中にファイルが変更されないよう、**古い**マシンで最初にゲートウェイを停止します：
 
 ```bash
 openclaw gateway stop
 ```
 
-(Optional but recommended) archive the state dir and workspace:
+（オプションですが推奨）状態ディレクトリとワークスペースをアーカイブします：
 
 ```bash
-# Adjust paths if you use a profile or custom locations
+# プロファイルやカスタムの場所を使用している場合はパスを調整してください
 cd ~
 tar -czf openclaw-state.tgz .openclaw
 
 tar -czf openclaw-workspace.tgz .openclaw/workspace
 ```
 
-If you have multiple profiles/state dirs (e.g. `~/.openclaw-main`, `~/.openclaw-work`), archive each.
+複数のプロファイル/状態ディレクトリ（例：`~/.openclaw-main`, `~/.openclaw-work`）がある場合は、それぞれをアーカイブしてください。
 
-### Step 1 — Install OpenClaw on the new machine
+### 手順 1 — 新しいマシンに OpenClaw をインストールする
 
-On the **new** machine, install the CLI (and Node if needed):
+**新しい**マシンに CLI（および必要に応じて Node）をインストールします：
 
-- See: [Install](/install)
+- 参照：[インストール](/install)
 
-At this stage, it’s OK if onboarding creates a fresh `~/.openclaw/` — you will overwrite it in the next step.
+この段階で、オンボーディングによって新しい `~/.openclaw/` が作成されても問題ありません。次の手順でそれを上書きします。
 
-### Step 2 — Copy the state dir + workspace to the new machine
+### 手順 2 — 状態ディレクトリ + ワークスペースを新しいマシンにコピーする
 
-Copy **both**:
+以下の**両方**をコピーします：
 
-- `$OPENCLAW_STATE_DIR` (default `~/.openclaw/`)
-- your workspace (default `~/.openclaw/workspace/`)
+- `$OPENCLAW_STATE_DIR` (デフォルト `~/.openclaw/`)
+- ワークスペース (デフォルト `~/.openclaw/workspace/`)
 
-Common approaches:
+一般的な方法：
 
-- `scp` the tarballs and extract
-- `rsync -a` over SSH
-- external drive
+- `scp` で tarball を転送して展開する
+- SSH 経由で `rsync -a` を使用する
+- 外付けドライブを使用する
 
-After copying, ensure:
+コピー後、以下を確認してください：
 
-- Hidden directories were included (e.g. `.openclaw/`)
-- File ownership is correct for the user running the gateway
+- 隠しディレクトリ（例：`.openclaw/`）が含まれていること
+- ファイルの所有権がゲートウェイを実行するユーザーに対して正しいこと
 
-### Step 3 — Run Doctor (migrations + service repair)
+### 手順 3 — Doctor を実行する（移行 + サービスの修復）
 
-On the **new** machine:
+**新しい**マシンで：
 
 ```bash
 openclaw doctor
 ```
 
-Doctor is the “safe boring” command. It repairs services, applies config migrations, and warns about mismatches.
+Doctor は「安全で確実な」コマンドです。サービスを修復し、構成の移行を適用し、不一致について警告します。
 
-Then:
+その後：
 
 ```bash
 openclaw gateway restart
 openclaw status
 ```
 
-## Common footguns (and how to avoid them)
+## よくある落とし穴（とその回避策）
 
-### Footgun: profile / state-dir mismatch
+### 落とし穴：プロファイル / 状態ディレクトリの不一致
 
-If you ran the old gateway with a profile (or `OPENCLAW_STATE_DIR`), and the new gateway uses a different one, you’ll see symptoms like:
+古いゲートウェイをプロファイル（または `OPENCLAW_STATE_DIR`）を指定して実行しており、新しいゲートウェイで別のものを使用している場合、以下のような症状が発生します：
 
-- config changes not taking effect
-- channels missing / logged out
-- empty session history
+- 構成の変更が反映されない
+- チャネルが見つからない / ログアウトしている
+- セッション履歴が空
 
-Fix: run the gateway/service using the **same** profile/state dir you migrated, then rerun:
+修正：移行したものと**同じ**プロファイル/状態ディレクトリを使用してゲートウェイ / サービスを実行し、その後 `openclaw doctor` を再実行してください。
 
-```bash
-openclaw doctor
-```
+### 落とし穴：`openclaw.json` のみをコピーする
 
-### Footgun: copying only `openclaw.json`
-
-`openclaw.json` is not enough. Many providers store state under:
+`openclaw.json` だけでは不十分です。多くのプロバイダーは状態を以下の場所に保存します：
 
 - `$OPENCLAW_STATE_DIR/credentials/`
 - `$OPENCLAW_STATE_DIR/agents/<agentId>/...`
 
-Always migrate the entire `$OPENCLAW_STATE_DIR` folder.
+必ず `$OPENCLAW_STATE_DIR` フォルダ全体を移行してください。
 
-### Footgun: permissions / ownership
+### 落とし穴：権限 / 所有権
 
-If you copied as root or changed users, the gateway may fail to read credentials/sessions.
+root としてコピーしたり、ユーザーを変更したりした場合、ゲートウェイが認証情報やセッションを読み取れなくなる可能性があります。
 
-Fix: ensure the state dir + workspace are owned by the user running the gateway.
+修正：状態ディレクトリとワークスペースの所有者が、ゲートウェイを実行するユーザーであることを確認してください。
 
-### Footgun: migrating between remote/local modes
+### 落とし穴：リモートモードとローカルモード間の移行
 
-- If your UI (WebUI/TUI) points at a **remote** gateway, the remote host owns the session store + workspace.
-- Migrating your laptop won’t move the remote gateway’s state.
+- UI (WebUI/TUI) が**リモート**ゲートウェイを指している場合、セッションストアとワークスペースはリモートホストが所有しています。
+- ラップトップを移行しても、リモートゲートウェイの状態は移動しません。
 
-If you’re in remote mode, migrate the **gateway host**.
+リモートモードの場合は、**ゲートウェイホスト**を移行してください。
 
-### Footgun: secrets in backups
+### 落とし穴：バックアップ内のシークレット
 
-`$OPENCLAW_STATE_DIR` contains secrets (API keys, OAuth tokens, WhatsApp creds). Treat backups like production secrets:
+`$OPENCLAW_STATE_DIR` には機密情報（API キー、OAuth トークン、WhatsApp 認証情報）が含まれています。バックアップは本番環境のシークレットと同様に扱ってください：
 
-- store encrypted
-- avoid sharing over insecure channels
-- rotate keys if you suspect exposure
+- 暗号化して保存する
+- 安全でないチャネルでの共有を避ける
+- 漏洩の疑いがある場合はキーをローテーションする
 
-## Verification checklist
+## 検証チェックリスト
 
-On the new machine, confirm:
+新しいマシンで以下を確認してください：
 
-- `openclaw status` shows the gateway running
-- Your channels are still connected (e.g. WhatsApp doesn’t require re-pair)
-- The dashboard opens and shows existing sessions
-- Your workspace files (memory, configs) are present
+- `openclaw status` で Gateway が実行されていることが示されている
+- チャンネルがまだ接続されている（例：WhatsApp の再ペアリングが不要）
+- ダッシュボードが開き、既存のセッションが表示される
+- ワークスペースのファイル（記憶、設定）が存在する
 
-## Related
+## 関連情報
 
 - [Doctor](/gateway/doctor)
-- [Gateway troubleshooting](/gateway/troubleshooting)
-- [Where does OpenClaw store its data?](/help/faq#where-does-openclaw-store-its-data)
+- [Gateway のトラブルシューティング](/gateway/troubleshooting)
+- [OpenClaw はデータをどこに保存しますか？](/help/faq#where-does-openclaw-store-its-data)

@@ -1,24 +1,26 @@
 ---
-summary: "Firecrawl fallback for web_fetch (anti-bot + cached extraction)"
+summary: "web_fetch の Firecrawl フォールバック (アンチボット + キャッシュされた抽出)"
 read_when:
-  - You want Firecrawl-backed web extraction
-  - You need a Firecrawl API key
-  - You want anti-bot extraction for web_fetch
-title: "Firecrawl"
+  - Firecrawl を利用した Web 抽出が必要な場合
+  - Firecrawl API キーが必要です
+  - web_fetch のアンチボット抽出が必要な場合
+title: "ファイアクロール"
+x-i18n:
+  source_hash: "08a7ad45b41af41204e44d2b0be0f980b7184d80d2fa3977339e42a47beb2851"
 ---
 
-# Firecrawl
+# ファイアクロール
 
-OpenClaw can use **Firecrawl** as a fallback extractor for `web_fetch`. It is a hosted
-content extraction service that supports bot circumvention and caching, which helps
-with JS-heavy sites or pages that block plain HTTP fetches.
+OpenClaw は、**Firecrawl** を `web_fetch` のフォールバック エクストラクターとして使用できます。ホスト型です
+ボットの回避とキャッシュをサポートするコンテンツ抽出サービス。
+プレーンな HTTP フェッチをブロックする JS を多用するサイトまたはページ。
 
-## Get an API key
+## API キーを取得する
 
-1. Create a Firecrawl account and generate an API key.
-2. Store it in config or set `FIRECRAWL_API_KEY` in the gateway environment.
+1. Firecrawl アカウントを作成し、API キーを生成します。
+2. config に保存するか、ゲートウェイ環境で `FIRECRAWL_API_KEY` を設定します。
 
-## Configure Firecrawl
+## Firecrawl を設定する
 
 ```json5
 {
@@ -38,24 +40,24 @@ with JS-heavy sites or pages that block plain HTTP fetches.
 }
 ```
 
-Notes:
+注:
 
-- `firecrawl.enabled` defaults to true when an API key is present.
-- `maxAgeMs` controls how old cached results can be (ms). Default is 2 days.
+- API キーが存在する場合、`firecrawl.enabled` はデフォルトで true になります。
+- `maxAgeMs` は、キャッシュされた結果の古さ (ミリ秒) を制御します。デフォルトは 2 日です。
 
-## Stealth / bot circumvention
+## ステルス/ボット回避
 
-Firecrawl exposes a **proxy mode** parameter for bot circumvention (`basic`, `stealth`, or `auto`).
-OpenClaw always uses `proxy: "auto"` plus `storeInCache: true` for Firecrawl requests.
-If proxy is omitted, Firecrawl defaults to `auto`. `auto` retries with stealth proxies if a basic attempt fails, which may use more credits
-than basic-only scraping.
+Firecrawl は、ボット回避のための **プロキシ モード** パラメーター (`basic`、`stealth`、または `auto`) を公開します。
+OpenClaw は、Firecrawl リクエストに常に `proxy: "auto"` と `storeInCache: true` を使用します。
+プロキシが省略された場合、Firecrawl はデフォルトで `auto` になります。 `auto` 基本的な試行が失敗した場合、ステルス プロキシを使用して再試行します。これにより、より多くのクレジットが使用される可能性があります。
+基本のみのスクレイピングよりも。
 
-## How `web_fetch` uses Firecrawl
+## `web_fetch` による Firecrawl の使用方法
 
-`web_fetch` extraction order:
+`web_fetch` 抽出順序:
 
-1. Readability (local)
-2. Firecrawl (if configured)
-3. Basic HTML cleanup (last fallback)
+1. 可読性 (ローカル)
+2. Firecrawl (構成されている場合)
+3. 基本的な HTML クリーンアップ (最後のフォールバック)
 
-See [Web tools](/tools/web) for the full web tool setup.
+Web ツールの完全な設定については、[Web ツール](/tools/web) を参照してください。

@@ -1,56 +1,63 @@
 ---
-summary: "Inbound channel location parsing (Telegram + WhatsApp) and context fields"
+summary: "インバウンドチャンネルの位置情報解析（Telegram + WhatsApp）とコンテキストフィールド"
 read_when:
-  - Adding or modifying channel location parsing
-  - Using location context fields in agent prompts or tools
-title: "Channel Location Parsing"
+  - チャンネルの位置情報解析を追加または変更する場合
+  - エージェントプロンプトやツールで位置情報コンテキストフィールドを使用する場合
+title: "チャンネル位置情報解析"
+x-i18n:
+  source_path: "channels/location.md"
+  source_hash: "5602ef105c3da7e47497bfed8fc343dd8d7f3c019ff7e423a08b25092c5a1837"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T06:39:47.852Z"
 ---
 
-# Channel location parsing
+# チャンネル位置情報解析
 
-OpenClaw normalizes shared locations from chat channels into:
+OpenClawは、チャットチャンネルから共有された位置情報を以下のように正規化します：
 
-- human-readable text appended to the inbound body, and
-- structured fields in the auto-reply context payload.
+- インバウンドボディに追加される人間が読みやすいテキスト
+- 自動返信コンテキストペイロード内の構造化フィールド
 
-Currently supported:
+現在サポートされているもの：
 
-- **Telegram** (location pins + venues + live locations)
-- **WhatsApp** (locationMessage + liveLocationMessage)
-- **Matrix** (`m.location` with `geo_uri`)
+- **Telegram**（位置情報ピン + 場所 + ライブ位置情報）
+- **WhatsApp**（locationMessage + liveLocationMessage）
+- **Matrix**（`geo_uri`を含む`m.location`）
 
-## Text formatting
+## テキストフォーマット
 
-Locations are rendered as friendly lines without brackets:
+位置情報は括弧なしのわかりやすい行として表示されます：
 
-- Pin:
+- ピン：
   - `📍 48.858844, 2.294351 ±12m`
-- Named place:
+- 名前付きの場所：
   - `📍 Eiffel Tower — Champ de Mars, Paris (48.858844, 2.294351 ±12m)`
-- Live share:
+- ライブ共有：
   - `🛰 Live location: 48.858844, 2.294351 ±12m`
 
-If the channel includes a caption/comment, it is appended on the next line:
+チャンネルにキャプション/コメントが含まれている場合、次の行に追加されます：
 
 ```
 📍 48.858844, 2.294351 ±12m
 Meet here
 ```
 
-## Context fields
+## コンテキストフィールド
 
-When a location is present, these fields are added to `ctx`:
+位置情報が存在する場合、以下のフィールドが`ctx`に追加されます：
 
-- `LocationLat` (number)
-- `LocationLon` (number)
-- `LocationAccuracy` (number, meters; optional)
-- `LocationName` (string; optional)
-- `LocationAddress` (string; optional)
-- `LocationSource` (`pin | place | live`)
-- `LocationIsLive` (boolean)
+- `LocationLat`（数値）
+- `LocationLon`（数値）
+- `LocationAccuracy`（数値、メートル単位；オプション）
+- `LocationName`（文字列；オプション）
+- `LocationAddress`（文字列；オプション）
+- `LocationSource`（`pin | place | live`）
+- `LocationIsLive`（真偽値）
 
-## Channel notes
+## チャンネルに関する注意事項
 
-- **Telegram**: venues map to `LocationName/LocationAddress`; live locations use `live_period`.
-- **WhatsApp**: `locationMessage.comment` and `liveLocationMessage.caption` are appended as the caption line.
-- **Matrix**: `geo_uri` is parsed as a pin location; altitude is ignored and `LocationIsLive` is always false.
+- **Telegram**：場所は`LocationName/LocationAddress`にマッピングされます；ライブ位置情報は`live_period`を使用します。
+- **WhatsApp**：`locationMessage.comment`と`liveLocationMessage.caption`はキャプション行として追加されます。
+- **Matrix**：`geo_uri`はピン位置情報として解析されます；高度は無視され、`LocationIsLive`は常にfalseです。

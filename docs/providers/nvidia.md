@@ -1,18 +1,20 @@
 ---
-summary: "Use NVIDIA's OpenAI-compatible API in OpenClaw"
+summary: "OpenClaw で NVIDIA の OpenAI 互換 API を使用する"
 read_when:
-  - You want to use NVIDIA models in OpenClaw
-  - You need NVIDIA_API_KEY setup
-title: "NVIDIA"
+  - OpenClaw で NVIDIA モデルを使用したい
+  - NVIDIA_API_KEY の設定が必要です
+title: "エヌビディア"
+x-i18n:
+  source_hash: "81e7a1b6cd6821b68db9c71b864d36023b1ccfad1641bf88e2bc2957782edf8b"
 ---
 
-# NVIDIA
+# エヌビディア
 
-NVIDIA provides an OpenAI-compatible API at `https://integrate.api.nvidia.com/v1` for Nemotron and NeMo models. Authenticate with an API key from [NVIDIA NGC](https://catalog.ngc.nvidia.com/).
+NVIDIA は、Nemotron および NeMo モデル用の OpenAI 互換 API を `https://integrate.api.nvidia.com/v1` で提供しています。 [NVIDIA NGC](https://catalog.ngc.nvidia.com/) の API キーを使用して認証します。
 
-## CLI setup
+## CLI セットアップ
 
-Export the key once, then run onboarding and set an NVIDIA model:
+キーを一度エクスポートしてから、オンボーディングを実行して、NVIDIA モデルを設定します。
 
 ```bash
 export NVIDIA_API_KEY="nvapi-..."
@@ -20,9 +22,9 @@ openclaw onboard --auth-choice skip
 openclaw models set nvidia/nvidia/llama-3.1-nemotron-70b-instruct
 ```
 
-If you still pass `--token`, remember it lands in shell history and `ps` output; prefer the env var when possible.
+それでも `--token` を渡す場合は、それがシェル履歴と `ps` 出力に記録されることを覚えておいてください。可能であれば、環境変数を使用してください。
 
-## Config snippet
+## 構成スニペット
 
 ```json5
 {
@@ -43,13 +45,13 @@ If you still pass `--token`, remember it lands in shell history and `ps` output;
 }
 ```
 
-## Model IDs
+## モデル ID
 
-- `nvidia/llama-3.1-nemotron-70b-instruct` (default)
+- `nvidia/llama-3.1-nemotron-70b-instruct` (デフォルト)
 - `meta/llama-3.3-70b-instruct`
 - `nvidia/mistral-nemo-minitron-8b-8k-instruct`
 
-## Notes
+## 注意事項
 
-- OpenAI-compatible `/v1` endpoint; use an API key from NVIDIA NGC.
-- Provider auto-enables when `NVIDIA_API_KEY` is set; uses static defaults (131,072-token context window, 4,096 max tokens).
+- OpenAI 互換の `/v1` エンドポイント。 NVIDIA NGC の API キーを使用します。
+- `NVIDIA_API_KEY` が設定されている場合、プロバイダーは自動的に有効になります。静的なデフォルト (131,072 トークンのコンテキスト ウィンドウ、最大トークン 4,096) を使用します。

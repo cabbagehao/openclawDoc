@@ -1,43 +1,45 @@
 ---
-summary: "RPC adapters for external CLIs (signal-cli, legacy imsg) and gateway patterns"
+summary: "外部 CLI (signal-cli、レガシー imsg) およびゲートウェイ パターン用の RPC アダプター"
 read_when:
-  - Adding or changing external CLI integrations
-  - Debugging RPC adapters (signal-cli, imsg)
-title: "RPC Adapters"
+  - 外部 CLI 統合の追加または変更
+  - RPC アダプターのデバッグ (signal-cli、imsg)
+title: "RPCアダプター"
+x-i18n:
+  source_hash: "06dc6b97184cc704ba4ec4a9af90502f4316bcf717c3f4925676806d8b184c57"
 ---
 
-# RPC adapters
+# RPC アダプター
 
-OpenClaw integrates external CLIs via JSON-RPC. Two patterns are used today.
+OpenClaw は、JSON-RPC 経由で外部 CLI を統合します。今日は 2 つのパターンが使用されます。
 
-## Pattern A: HTTP daemon (signal-cli)
+## パターン A: HTTP デーモン (signal-cli)
 
-- `signal-cli` runs as a daemon with JSON-RPC over HTTP.
-- Event stream is SSE (`/api/v1/events`).
-- Health probe: `/api/v1/check`.
-- OpenClaw owns lifecycle when `channels.signal.autoStart=true`.
+- `signal-cli` は、HTTP 経由で JSON-RPC を使用してデーモンとして実行されます。
+- イベント ストリームは SSE (`/api/v1/events`) です。
+- ヘルスプローブ: `/api/v1/check`。
+- OpenClaw は、`channels.signal.autoStart=true` のときにライフサイクルを所有します。
 
-See [Signal](/channels/signal) for setup and endpoints.
+セットアップとエンドポイントについては、[Signal](/channels/signal) を参照してください。
 
-## Pattern B: stdio child process (legacy: imsg)
+## パターン B: stdio 子プロセス (レガシー: imsg)
 
-> **Note:** For new iMessage setups, use [BlueBubbles](/channels/bluebubbles) instead.
+> **注:** 新しい iMessage セットアップの場合は、代わりに [BlueBubbles](/channels/bluebubbles) を使用してください。
 
-- OpenClaw spawns `imsg rpc` as a child process (legacy iMessage integration).
-- JSON-RPC is line-delimited over stdin/stdout (one JSON object per line).
-- No TCP port, no daemon required.
+- OpenClaw は、子プロセスとして `imsg rpc` を生成します (従来の iMessage 統合)。
+- JSON-RPC は、stdin/stdout 上で行区切りです (1 行に 1 つの JSON オブジェクト)。
+- TCP ポートもデーモンも必要ありません。
 
-Core methods used:
+使用されるコアメソッド:
 
-- `watch.subscribe` → notifications (`method: "message"`)
+- `watch.subscribe` → 通知 (`method: "message"`)
 - `watch.unsubscribe`
 - `send`
-- `chats.list` (probe/diagnostics)
+- `chats.list` (プローブ/診断)
 
-See [iMessage](/channels/imessage) for legacy setup and addressing (`chat_id` preferred).
+従来のセットアップとアドレス指定については、[iMessage](/channels/imessage) を参照してください (`chat_id` を推奨)。
 
-## Adapter guidelines
+## アダプターのガイドライン
 
-- Gateway owns the process (start/stop tied to provider lifecycle).
-- Keep RPC clients resilient: timeouts, restart on exit.
-- Prefer stable IDs (e.g., `chat_id`) over display strings.
+- ゲートウェイはプロセスを所有します (開始/停止はプロバイダーのライフサイクルに関連付けられます)。
+- RPC クライアントの回復力を維持します: タイムアウト、終了時に再起動します。
+- 表示文字列よりも安定した ID (例: `chat_id`) を優先します。

@@ -1,14 +1,16 @@
 ---
-summary: "CLI reference for `openclaw backup` (create local backup archives)"
+summary: "`openclaw backup` の CLI リファレンス (ローカルバックアップアーカイブの作成)"
 read_when:
-  - You want a first-class backup archive for local OpenClaw state
-  - You want to preview which paths would be included before reset or uninstall
+  - OpenClaw の状態をアーカイブしてバックアップしたい場合
+  - リセットやアンインストールの前に、どのパスが含まれるかを確認したい場合
 title: "backup"
+x-i18n:
+  source_hash: "6060606060606060606060606060606060606060606060606060606060606060"
 ---
 
 # `openclaw backup`
 
-Create a local backup archive for OpenClaw state, config, credentials, sessions, and optionally workspaces.
+OpenClaw の状態、構成、認証情報、セッション、およびオプションでワークスペースを含むローカルバックアップアーカイブを作成します。
 
 ```bash
 openclaw backup create
@@ -20,57 +22,57 @@ openclaw backup create --only-config
 openclaw backup verify ./2026-03-09T00-00-00.000Z-openclaw-backup.tar.gz
 ```
 
-## Notes
+## 補足事項
 
-- The archive includes a `manifest.json` file with the resolved source paths and archive layout.
-- Default output is a timestamped `.tar.gz` archive in the current working directory.
-- If the current working directory is inside a backed-up source tree, OpenClaw falls back to your home directory for the default archive location.
-- Existing archive files are never overwritten.
-- Output paths inside the source state/workspace trees are rejected to avoid self-inclusion.
-- `openclaw backup verify <archive>` validates that the archive contains exactly one root manifest, rejects traversal-style archive paths, and checks that every manifest-declared payload exists in the tarball.
-- `openclaw backup create --verify` runs that validation immediately after writing the archive.
-- `openclaw backup create --only-config` backs up just the active JSON config file.
+- アーカイブには、解決されたソースパスとアーカイブのレイアウト情報を記録した `manifest.json` ファイルが含まれます。
+- デフォルトでは、現在の作業ディレクトリにタイムスタンプ付きの `.tar.gz` アーカイブが出力されます。
+- 現在の作業ディレクトリがバックアップ対象のソースツリー内にある場合、OpenClaw はホームディレクトリをデフォルトの出力先としてフォールバックします。
+- 既存のアーカイブファイルを上書きすることはありません。
+- 自己包含（無限ループ）を避けるため、ソース状態やワークスペースツリー内のパスを出力先として指定することはできません。
+- `openclaw backup verify <archive>` は、アーカイブに正確に 1 つのルートマニフェストが含まれているか、ディレクトリトラバーサル攻撃のような不正なパスが含まれていないか、およびマニフェストに記載されたすべてのデータが実際にアーカイブ内に存在するかを検証します。
+- `openclaw backup create --verify` は、アーカイブの書き込み直後に上記の検証を自動的に実行します。
+- `openclaw backup create --only-config` は、有効な JSON 構成ファイルのみをバックアップします。
 
-## What gets backed up
+## バックアップの対象
 
-`openclaw backup create` plans backup sources from your local OpenClaw install:
+`openclaw backup create` は、ローカルの OpenClaw インストール環境から以下のソースをバックアップ対象として計画します:
 
-- The state directory returned by OpenClaw's local state resolver, usually `~/.openclaw`
-- The active config file path
-- The OAuth / credentials directory
-- Workspace directories discovered from the current config, unless you pass `--no-include-workspace`
+- OpenClaw のローカル状態リゾルバーによって返される状態ディレクトリ（通常は `~/.openclaw`）。
+- 有効な構成ファイルのパス。
+- OAuth および認証情報（credentials）ディレクトリ。
+- `--no-include-workspace` を指定しない限り、現在の構成から検出されたワークスペースディレクトリ。
 
-If you use `--only-config`, OpenClaw skips state, credentials, and workspace discovery and archives only the active config file path.
+`--only-config` を使用した場合、状態、認証情報、ワークスペースの検出はスキップされ、有効な構成ファイルのみがアーカイブされます。
 
-OpenClaw canonicalizes paths before building the archive. If config, credentials, or a workspace already live inside the state directory, they are not duplicated as separate top-level backup sources. Missing paths are skipped.
+OpenClaw はアーカイブ構築前にパスを正規化します。構成、認証情報、またはワークスペースがすでに状態ディレクトリ内に存在する場合、それらが個別のトップレベルソースとして重複してアーカイブされることはありません。存在しないパスはスキップされます。
 
-The archive payload stores file contents from those source trees, and the embedded `manifest.json` records the resolved absolute source paths plus the archive layout used for each asset.
+アーカイブにはこれらのソースツリー内のファイル内容が保存され、同梱の `manifest.json` には解決された絶対ソースパスと、各資産に使用されたアーカイブレイアウトが記録されます。
 
-## Invalid config behavior
+## 構成が無効な場合の動作
 
-`openclaw backup` intentionally bypasses the normal config preflight so it can still help during recovery. Because workspace discovery depends on a valid config, `openclaw backup create` now fails fast when the config file exists but is invalid and workspace backup is still enabled.
+`openclaw backup` は、リカバリ（復旧）時にも役立つよう、通常の構成チェックを意図的にバイパスします。ただし、ワークスペースの検出は有効な構成内容に依存するため、構成ファイルが存在するものの内容が無効で、かつワークスペースのバックアップが有効な場合、`openclaw backup create` はエラーで即座に終了します。
 
-If you still want a partial backup in that situation, rerun:
+そのような状況で部分的なバックアップを行いたい場合は、以下のコマンドを再実行してください:
 
 ```bash
 openclaw backup create --no-include-workspace
 ```
 
-That keeps state, config, and credentials in scope while skipping workspace discovery entirely.
+これにより、ワークスペースの検出をスキップしつつ、状態、構成、および認証情報をバックアップ対象に含めることができます。
 
-If you only need a copy of the config file itself, `--only-config` also works when the config is malformed because it does not rely on parsing the config for workspace discovery.
+構成ファイル自体のコピーのみが必要な場合は、構成の解析を必要としない `--only-config` フラグも有効です。
 
-## Size and performance
+## サイズとパフォーマンス
 
-OpenClaw does not enforce a built-in maximum backup size or per-file size limit.
+OpenClaw は、バックアップの最大サイズやファイルごとのサイズ制限を設けていません。
 
-Practical limits come from the local machine and destination filesystem:
+実質的な制限は、ローカルマシンの性能と出力先のファイルシステムに依存します:
 
-- Available space for the temporary archive write plus the final archive
-- Time to walk large workspace trees and compress them into a `.tar.gz`
-- Time to rescan the archive if you use `openclaw backup create --verify` or run `openclaw backup verify`
-- Filesystem behavior at the destination path. OpenClaw prefers a no-overwrite hard-link publish step and falls back to exclusive copy when hard links are unsupported
+- 一時的なアーカイブ書き込み用および最終的なアーカイブ用の空き容量。
+- 大規模なワークスペースツリーを走査し、`.tar.gz` に圧縮するために要する時間。
+- `--verify` を使用した場合のアーカイブの再スキャン時間。
+- 出力先ファイルシステムの動作。OpenClaw は上書きなしのハードリンクによる公開を優先しますが、ハードリンクがサポートされていない場合は排他的コピーにフォールバックします。
 
-Large workspaces are usually the main driver of archive size. If you want a smaller or faster backup, use `--no-include-workspace`.
+アーカイブサイズが大きくなる主な要因は、通常、大規模なワークスペースです。バックアップを小さく、あるいは高速に完了させたい場合は、`--no-include-workspace` を使用してください。
 
-For the smallest archive, use `--only-config`.
+最も小さなアーカイブを作成するには `--only-config` を使用します。

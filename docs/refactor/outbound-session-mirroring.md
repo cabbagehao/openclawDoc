@@ -1,89 +1,88 @@
 ---
-title: Outbound Session Mirroring Refactor (Issue #1520)
+title: "アウトバウンド セッション ミラーリングのリファクタリング (問題 #1520)"
 description: Track outbound session mirroring refactor notes, decisions, tests, and open items.
-summary: "Refactor notes for mirroring outbound sends into target channel sessions"
+summary: "アウトバウンド送信をターゲット チャネル セッションにミラーリングするためのメモをリファクタリングする"
 read_when:
-  - Working on outbound transcript/session mirroring behavior
-  - Debugging sessionKey derivation for send/message tool paths
+  - アウトバウンドのトランスクリプト/セッションのミラーリング動作に取り組んでいます
+  - 送信/メッセージ ツール パスの sessionKey 導出のデバッグ
+x-i18n:
+  source_hash: "45e457bcea47dfbffc5f30a852914f33051b7d8d9ed27119be8005262eb22f70"
 ---
 
-# Outbound Session Mirroring Refactor (Issue #1520)
+# アウトバウンドセッションミラーリングのリファクタリング (問題 #1520)
 
-## Status
+## ステータス
 
-- In progress.
-- Core + plugin channel routing updated for outbound mirroring.
-- Gateway send now derives target session when sessionKey is omitted.
+- 進行中です。
+- コア + プラグイン チャネル ルーティングがアウトバウンド ミラーリング用に更新されました。
+- ゲートウェイ送信は、sessionKey が省略された場合にターゲット セッションを導出するようになりました。
 
-## Context
+## コンテキスト
 
-Outbound sends were mirrored into the _current_ agent session (tool session key) rather than the target channel session. Inbound routing uses channel/peer session keys, so outbound responses landed in the wrong session and first-contact targets often lacked session entries.
+アウトバウンド送信は、ターゲット チャネル セッションではなく、現在のエージェント セッション (ツール セッション キー) にミラーリングされました。インバウンドルーティングではチャネル/ピアセッションキーが使用されるため、アウトバウンド応答は間違ったセッションに到達し、ファーストコンタクトターゲットにはセッションエントリが欠けていることがよくありました。
 
-## Goals
+## 目標
 
-- Mirror outbound messages into the target channel session key.
-- Create session entries on outbound when missing.
-- Keep thread/topic scoping aligned with inbound session keys.
-- Cover core channels plus bundled extensions.
+- 送信メッセージをターゲット チャネル セッション キーにミラーリングします。
+- セッション エントリが見つからない場合は、アウトバウンドでセッション エントリを作成します。
+- スレッド/トピックのスコープを受信セッション キーに合わせて維持します。
+- コア チャネルとバンドルされた拡張機能をカバーします。
 
-## Implementation Summary
+## 実装の概要
 
-- New outbound session routing helper:
+- 新しいアウトバウンド セッション ルーティング ヘルパー:
   - `src/infra/outbound/outbound-session.ts`
-  - `resolveOutboundSessionRoute` builds target sessionKey using `buildAgentSessionKey` (dmScope + identityLinks).
-  - `ensureOutboundSessionEntry` writes minimal `MsgContext` via `recordSessionMetaFromInbound`.
-- `runMessageAction` (send) derives target sessionKey and passes it to `executeSendAction` for mirroring.
-- `message-tool` no longer mirrors directly; it only resolves agentId from the current session key.
-- Plugin send path mirrors via `appendAssistantMessageToSessionTranscript` using the derived sessionKey.
-- Gateway send derives a target session key when none is provided (default agent), and ensures a session entry.
+  - `resolveOutboundSessionRoute` は、`buildAgentSessionKey` (dmScope +identityLinks) を使用してターゲット sessionKey を構築します。
+  - `ensureOutboundSessionEntry` は、`recordSessionMetaFromInbound` を介して最小限の `MsgContext` を書き込みます。
+- `runMessageAction` (送信) はターゲットの sessionKey を取得し、それをミラーリングのために `executeSendAction` に渡します。
+- `message-tool` は直接ミラーリングしなくなりました。現在のセッション キーから AgentId のみを解決します。
+- プラグインは、派生した sessionKey を使用して `appendAssistantMessageToSessionTranscript` 経由でパス ミラーを送信します。
+- ゲートウェイ送信は、ターゲット セッション キーが指定されていない場合 (デフォルト エージェント) に派生し、セッション エントリを保証します。## スレッド/トピックの処理
 
-## Thread/Topic Handling
+- Slack: ReplyTo/threadId -> `resolveThreadSessionKeys` (サフィックス)。
+- Discord: threadId/replyTo -> `resolveThreadSessionKeys` と `useSuffix=false` を受信に一致させます (スレッド チャネル ID はすでにセッションをスコープしています)。
+- テレグラム: トピック ID は `buildTelegramGroupPeerId` を介して `chatId:topic:<id>` にマップされます。
 
-- Slack: replyTo/threadId -> `resolveThreadSessionKeys` (suffix).
-- Discord: threadId/replyTo -> `resolveThreadSessionKeys` with `useSuffix=false` to match inbound (thread channel id already scopes session).
-- Telegram: topic IDs map to `chatId:topic:<id>` via `buildTelegramGroupPeerId`.
+## 対象となる拡張機能
 
-## Extensions Covered
+- Matrix、MS Teams、Mattermost、BlueBubbles、Nextcloud Talk、Zalo、Zalo Personal、Nostr、Tlon。
+- 注:
+  - Mattermost ターゲットは、DM セッション キー ルーティングのために `@` を削除するようになりました。
+  - Zalo Personal は、1:1 ターゲットに対して DM ピアの種類を使用します (`group:` が存在する場合のみグループ)。
+  - BlueBubbles グループ ターゲットは、受信セッション キーと一致するように `chat_*` プレフィックスを削除します。
+  - Slack の自動スレッド ミラーリングは、大文字と小文字を区別せずにチャネル ID と一致します。
+  - ゲートウェイは、ミラーリングの前に、提供された小文字のセッション キーを送信します。
 
-- Matrix, MS Teams, Mattermost, BlueBubbles, Nextcloud Talk, Zalo, Zalo Personal, Nostr, Tlon.
-- Notes:
-  - Mattermost targets now strip `@` for DM session key routing.
-  - Zalo Personal uses DM peer kind for 1:1 targets (group only when `group:` is present).
-  - BlueBubbles group targets strip `chat_*` prefixes to match inbound session keys.
-  - Slack auto-thread mirroring matches channel ids case-insensitively.
-  - Gateway send lowercases provided session keys before mirroring.
+## 決定
 
-## Decisions
+- **ゲートウェイ送信セッション導出**: `sessionKey` が提供されている場合は、それを使用します。省略した場合は、ターゲット + デフォルト エージェントから sessionKey を取得し、そこにミラーリングします。
+- **セッション エントリの作成**: 常に、受信形式に合わせた `Provider/From/To/ChatType/AccountId/Originating*` とともに `recordSessionMetaFromInbound` を使用します。
+- **ターゲットの正規化**: 送信ルーティングは、利用可能な場合は解決されたターゲット (`resolveChannelTarget` 以降) を使用します。
+- **セッション キーの大文字と小文字の区別**: 書き込み時および移行中に、セッション キーを小文字に正規化します。
 
-- **Gateway send session derivation**: if `sessionKey` is provided, use it. If omitted, derive a sessionKey from target + default agent and mirror there.
-- **Session entry creation**: always use `recordSessionMetaFromInbound` with `Provider/From/To/ChatType/AccountId/Originating*` aligned to inbound formats.
-- **Target normalization**: outbound routing uses resolved targets (post `resolveChannelTarget`) when available.
-- **Session key casing**: canonicalize session keys to lowercase on write and during migrations.
+## テストが追加/更新されました- `src/infra/outbound/outbound.test.ts`
 
-## Tests Added/Updated
-
-- `src/infra/outbound/outbound.test.ts`
-  - Slack thread session key.
-  - Telegram topic session key.
-  - dmScope identityLinks with Discord.
+- Slack スレッドのセッションキー。
+- テレグラムトピックセッションキー。
+- dmScope アイデンティティ Discord とリンクします。
 - `src/agents/tools/message-tool.test.ts`
-  - Derives agentId from session key (no sessionKey passed through).
+  - セッションキーからagentIdを導出します(sessionKeyは渡されません)。
 - `src/gateway/server-methods/send.test.ts`
-  - Derives session key when omitted and creates session entry.
+  - 省略時にセッションキーを導出し、セッションエントリを作成します。
 
-## Open Items / Follow-ups
+## 未解決の項目/フォローアップ
 
-- Voice-call plugin uses custom `voice:<phone>` session keys. Outbound mapping is not standardized here; if message-tool should support voice-call sends, add explicit mapping.
-- Confirm if any external plugin uses non-standard `From/To` formats beyond the bundled set.
+- 音声通話プラグインはカスタム `voice:<phone>` セッション キーを使用します。ここではアウトバウンドマッピングは標準化されていません。メッセージ ツールが音声通話の送信をサポートする必要がある場合は、明示的なマッピングを追加します。
+- バンドルされたセットを超える非標準の `From/To` 形式を使用する外部プラグインがないか確認します。
 
-## Files Touched
+## タッチされたファイル
 
 - `src/infra/outbound/outbound-session.ts`
 - `src/infra/outbound/outbound-send-service.ts`
 - `src/infra/outbound/message-action-runner.ts`
 - `src/agents/tools/message-tool.ts`
 - `src/gateway/server-methods/send.ts`
-- Tests in:
+- テスト対象:
   - `src/infra/outbound/outbound.test.ts`
   - `src/agents/tools/message-tool.test.ts`
   - `src/gateway/server-methods/send.test.ts`

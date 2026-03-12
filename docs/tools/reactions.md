@@ -1,23 +1,25 @@
 ---
-summary: "Reaction semantics shared across channels"
+summary: "各チャネルで共通して使われるリアクションの意味"
 read_when:
-  - Working on reactions in any channel
+  - いずれかのチャネルでリアクション機能を扱っている
 title: "Reactions"
+x-i18n:
+  source_hash: "db7aae38b5f7a53cd1ef58545c5fd66238f89240f09e6acc775bac24dbcbbca1"
 ---
 
-# Reaction tooling
+# リアクションツール
 
-Shared reaction semantics across channels:
+チャネルをまたいで共通するリアクションの意味は次のとおりです。
 
-- `emoji` is required when adding a reaction.
-- `emoji=""` removes the bot's reaction(s) when supported.
-- `remove: true` removes the specified emoji when supported (requires `emoji`).
+- リアクションを追加する場合、`emoji` は必須です
+- `emoji=""` は、サポートされている場合に bot のリアクションを削除します
+- `remove: true` は、サポートされている場合に指定した絵文字のリアクションを削除します（この場合も `emoji` は必要）
 
-Channel notes:
+チャネル別の補足:
 
-- **Discord/Slack**: empty `emoji` removes all of the bot's reactions on the message; `remove: true` removes just that emoji.
-- **Google Chat**: empty `emoji` removes the app's reactions on the message; `remove: true` removes just that emoji.
-- **Telegram**: empty `emoji` removes the bot's reactions; `remove: true` also removes reactions but still requires a non-empty `emoji` for tool validation.
-- **WhatsApp**: empty `emoji` removes the bot reaction; `remove: true` maps to empty emoji (still requires `emoji`).
-- **Zalo Personal (`zalouser`)**: requires non-empty `emoji`; `remove: true` removes that specific emoji reaction.
-- **Signal**: inbound reaction notifications emit system events when `channels.signal.reactionNotifications` is enabled.
+- **Discord/Slack**: 空の `emoji` は、そのメッセージに付いている bot のリアクションをすべて削除します。`remove: true` は指定した絵文字だけを削除します
+- **Google Chat**: 空の `emoji` は、そのメッセージに付いた app のリアクションを削除します。`remove: true` は指定した絵文字だけを削除します
+- **Telegram**: 空の `emoji` は bot のリアクションを削除します。`remove: true` でも削除できますが、tool validation 上は空でない `emoji` が必要です
+- **WhatsApp**: 空の `emoji` は bot のリアクションを削除します。`remove: true` は内部的に空の emoji と同じ扱いになります（それでも `emoji` は必要）
+- **Zalo Personal (`zalouser`)**: 空でない `emoji` が必須で、`remove: true` はその特定の絵文字リアクションを削除します
+- **Signal**: `channels.signal.reactionNotifications` が有効な場合、受信したリアクション通知は system event として発行されます

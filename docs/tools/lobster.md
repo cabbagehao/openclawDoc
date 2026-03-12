@@ -1,46 +1,47 @@
 ---
-title: Lobster
-summary: "Typed workflow runtime for OpenClaw with resumable approval gates."
+title: "ロブスター"
+summary: "再開可能な承認ゲートを備えた OpenClaw 用の型付きワークフロー ランタイム。"
 description: Typed workflow runtime for OpenClaw — composable pipelines with approval gates.
 read_when:
-  - You want deterministic multi-step workflows with explicit approvals
-  - You need to resume a workflow without re-running earlier steps
+  - 明示的な承認を伴う決定的な複数ステップのワークフローが必要な場合
+  - 以前のステップを再実行せずにワークフローを再開する必要がある
+x-i18n:
+  source_hash: "c6d7c06865f4646797044511822a24395deb92f50c41f72316bfc9b6273b7259"
 ---
 
-# Lobster
+# ロブスター
 
-Lobster is a workflow shell that lets OpenClaw run multi-step tool sequences as a single, deterministic operation with explicit approval checkpoints.
+Lobster は、OpenClaw が明示的な承認チェックポイントを備えた単一の決定論的な操作としてマルチステップ ツール シーケンスを実行できるようにするワークフロー シェルです。
 
-## Hook
+## フック
 
-Your assistant can build the tools that manage itself. Ask for a workflow, and 30 minutes later you have a CLI plus pipelines that run as one call. Lobster is the missing piece: deterministic pipelines, explicit approvals, and resumable state.
+アシスタントは、それ自体を管理するツールを構築できます。ワークフローを依頼すると、30 分後には CLI と 1 回の呼び出しとして実行されるパイプラインが作成されます。 Lobster には、決定論的なパイプライン、明示的な承認、再開可能な状態という欠けている部分があります。
 
-## Why
+## なぜ
 
-Today, complex workflows require many back-and-forth tool calls. Each call costs tokens, and the LLM has to orchestrate every step. Lobster moves that orchestration into a typed runtime:
+現在、複雑なワークフローではツール呼び出しを何度も往復する必要があります。各呼び出しにはトークンがかかり、LLM はすべてのステップを調整する必要があります。 Lobster は、そのオーケストレーションを型付きランタイムに移動します。
 
-- **One call instead of many**: OpenClaw runs one Lobster tool call and gets a structured result.
-- **Approvals built in**: Side effects (send email, post comment) halt the workflow until explicitly approved.
-- **Resumable**: Halted workflows return a token; approve and resume without re-running everything.
+- **多数ではなく 1 回の呼び出し**: OpenClaw は Lobster ツール呼び出しを 1 回実行し、構造化された結果を取得します。
+- **承認機能が組み込まれている**: 副作用 (電子メールの送信、コメントの投稿) が発生すると、明示的に承認されるまでワークフローが停止します。
+- **再開可能**: 停止したワークフローはトークンを返します。すべてを再実行せずに承認して再開します。
 
-## Why a DSL instead of plain programs?
+## なぜプレーンなプログラムではなく DSL を使うのでしょうか?
 
-Lobster is intentionally small. The goal is not "a new language," it's a predictable, AI-friendly pipeline spec with first-class approvals and resume tokens.
+ロブスターは意図的に小さいです。目標は「新しい言語」ではなく、第一級の承認と再開トークンを備えた、予測可能で AI に優しいパイプライン仕様です。- **承認/再開は組み込まれています**: 通常のプログラムは人間にプロンプ​​トを表示できますが、ランタイムを自分で開発しない限り、永続的なトークンを使用して「一時停止」および「再開」することはできません。
 
-- **Approve/resume is built in**: A normal program can prompt a human, but it can’t _pause and resume_ with a durable token without you inventing that runtime yourself.
-- **Determinism + auditability**: Pipelines are data, so they’re easy to log, diff, replay, and review.
-- **Constrained surface for AI**: A tiny grammar + JSON piping reduces “creative” code paths and makes validation realistic.
-- **Safety policy baked in**: Timeouts, output caps, sandbox checks, and allowlists are enforced by the runtime, not each script.
-- **Still programmable**: Each step can call any CLI or script. If you want JS/TS, generate `.lobster` files from code.
+- **決定性 + 監査可能性**: パイプラインはデータであるため、ログ、比較、再生、レビューが簡単です。
+- **AI 用の制約されたサーフェス**: 小さな文法と JSON パイピングにより、「創造的な」コード パスが削減され、検証が現実的になります。
+- **安全ポリシーが組み込まれている**: タイムアウト、出力上限、サンドボックス チェック、および許可リストは、各スクリプトではなくランタイムによって適用されます。
+- **まだプログラム可能**: 各ステップで任意の CLI またはスクリプトを呼び出すことができます。 JS/TS が必要な場合は、コードから `.lobster` ファイルを生成します。
 
-## How it works
+## 仕組み
 
-OpenClaw launches the local `lobster` CLI in **tool mode** and parses a JSON envelope from stdout.
-If the pipeline pauses for approval, the tool returns a `resumeToken` so you can continue later.
+OpenClaw は、**ツール モード**でローカルの `lobster` CLI を起動し、標準出力から JSON エンベロープを解析します。
+パイプラインが承認のために一時停止した場合、ツールは `resumeToken` を返すため、後で続行できます。
 
-## Pattern: small CLI + JSON pipes + approvals
+## パターン: 小規模な CLI + JSON パイプ + 承認
 
-Build tiny commands that speak JSON, then chain them into a single Lobster call. (Example command names below — swap in your own.)
+JSON を話す小さなコマンドを構築し、それらを単一の Lobster 呼び出しにチェーンします。 (以下のコマンド名の例 - 自分のコマンド名に置き換えてください。)
 
 ```bash
 inbox list --json
@@ -56,7 +57,7 @@ inbox apply --json
 }
 ```
 
-If the pipeline requests approval, resume with the token:
+パイプラインが承認をリクエストした場合は、トークンを使用して再開します。
 
 ```json
 {
@@ -66,22 +67,21 @@ If the pipeline requests approval, resume with the token:
 }
 ```
 
-AI triggers the workflow; Lobster executes the steps. Approval gates keep side effects explicit and auditable.
+AI がワークフローをトリガーします。 Lobster が手順を実行します。承認ゲートにより、副作用が明示的に監査可能に保たれます。
 
-Example: map input items into tool calls:
+例: 入力項目をツール呼び出しにマップします。
 
 ```bash
 gog.gmail.search --query 'newer_than:1d' \
   | openclaw.invoke --tool message --action send --each --item-key message --args-json '{"provider":"telegram","to":"..."}'
 ```
 
-## JSON-only LLM steps (llm-task)
+## JSON のみの LLM ステップ (llm-task)**構造化 LLM ステップ**が必要なワークフローの場合は、オプションの
 
-For workflows that need a **structured LLM step**, enable the optional
-`llm-task` plugin tool and call it from Lobster. This keeps the workflow
-deterministic while still letting you classify/summarize/draft with a model.
+`llm-task` プラグイン ツールを作成し、Lobster から呼び出します。これによりワークフローが維持されます
+決定論的でありながら、モデルを使用して分類/要約/草案を作成できます。
 
-Enable the tool:
+ツールを有効にします。
 
 ```json
 {
@@ -101,7 +101,7 @@ Enable the tool:
 }
 ```
 
-Use it in a pipeline:
+パイプラインで使用します。
 
 ```lobster
 openclaw.invoke --tool llm-task --action json --args-json '{
@@ -119,11 +119,11 @@ openclaw.invoke --tool llm-task --action json --args-json '{
 }'
 ```
 
-See [LLM Task](/tools/llm-task) for details and configuration options.
+詳細と構成オプションについては、[LLM タスク](/tools/llm-task) を参照してください。
 
-## Workflow files (.lobster)
+## ワークフロー ファイル (.lobster)
 
-Lobster can run YAML/JSON workflow files with `name`, `args`, `steps`, `env`, `condition`, and `approval` fields. In OpenClaw tool calls, set `pipeline` to the file path.
+Lobster は、`name`、`args`、`steps`、`env`、`condition`、および `approval` フィールドを含む YAML/JSON ワークフロー ファイルを実行できます。 OpenClaw ツール呼び出しで、`pipeline` をファイル パスに設定します。
 
 ```yaml
 name: inbox-triage
@@ -146,20 +146,20 @@ steps:
     condition: $approve.approved
 ```
 
-Notes:
+注:
 
-- `stdin: $step.stdout` and `stdin: $step.json` pass a prior step’s output.
-- `condition` (or `when`) can gate steps on `$step.approved`.
+- `stdin: $step.stdout` および `stdin: $step.json` は、前のステップの出力を渡します。
+- `condition` (または `when`) は、`$step.approved` のステップをゲートできます。
 
-## Install Lobster
+## ロブスターをインストールする
 
-Install the Lobster CLI on the **same host** that runs the OpenClaw Gateway (see the [Lobster repo](https://github.com/openclaw/lobster)), and ensure `lobster` is on `PATH`.
+OpenClaw Gateway を実行する **同じホスト** に Lobster CLI をインストールし ([Lobster リポジトリ](https://github.com/openclaw/lobster) を参照)、`lobster` が `PATH` 上にあることを確認します。
 
-## Enable the tool
+## ツールを有効にする
 
-Lobster is an **optional** plugin tool (not enabled by default).
+Lobster は **オプション** プラグイン ツールです (デフォルトでは有効になっていません)。
 
-Recommended (additive, safe):
+推奨（添加剤、安全）：
 
 ```json
 {
@@ -169,7 +169,7 @@ Recommended (additive, safe):
 }
 ```
 
-Or per-agent:
+またはエージェントごと:
 
 ```json
 {
@@ -186,15 +186,13 @@ Or per-agent:
 }
 ```
 
-Avoid using `tools.allow: ["lobster"]` unless you intend to run in restrictive allowlist mode.
+制限的な許可リスト モードで実行する予定がない限り、`tools.allow: ["lobster"]` の使用は避けてください。注: ホワイトリストはオプションのプラグインに対してオプトインされています。許可リストに名前のみがある場合
+プラグイン ツール (`lobster` など)、OpenClaw はコア ツールを有効に保ちます。コアを制限するには
+ツールの場合は、許可リストに必要なコア ツールまたはグループも含めます。
 
-Note: allowlists are opt-in for optional plugins. If your allowlist only names
-plugin tools (like `lobster`), OpenClaw keeps core tools enabled. To restrict core
-tools, include the core tools or groups you want in the allowlist too.
+## 例: 電子メールの優先順位付け
 
-## Example: Email triage
-
-Without Lobster:
+ロブスターなし:
 
 ```
 User: "Check my email and draft replies"
@@ -207,7 +205,7 @@ User: "Check my email and draft replies"
 (repeat daily, no memory of what was triaged)
 ```
 
-With Lobster:
+ロブスター付き:
 
 ```json
 {
@@ -217,7 +215,7 @@ With Lobster:
 }
 ```
 
-Returns a JSON envelope (truncated):
+JSON エンベロープ (切り詰められた) を返します。
 
 ```json
 {
@@ -233,7 +231,7 @@ Returns a JSON envelope (truncated):
 }
 ```
 
-User approves → resume:
+ユーザーが承認→再開:
 
 ```json
 {
@@ -243,13 +241,13 @@ User approves → resume:
 }
 ```
 
-One workflow. Deterministic. Safe.
+ワークフローは 1 つ。決定論的。安全。
 
-## Tool parameters
+## ツールパラメータ
 
 ### `run`
 
-Run a pipeline in tool mode.
+パイプラインをツール モードで実行します。
 
 ```json
 {
@@ -261,7 +259,7 @@ Run a pipeline in tool mode.
 }
 ```
 
-Run a workflow file with args:
+引数を指定してワークフロー ファイルを実行します。
 
 ```json
 {
@@ -273,7 +271,7 @@ Run a workflow file with args:
 
 ### `resume`
 
-Continue a halted workflow after approval.
+承認後に停止したワークフローを続行します。
 
 ```json
 {
@@ -283,58 +281,55 @@ Continue a halted workflow after approval.
 }
 ```
 
-### Optional inputs
+### オプションの入力
 
-- `cwd`: Relative working directory for the pipeline (must stay within the current process working directory).
-- `timeoutMs`: Kill the subprocess if it exceeds this duration (default: 20000).
-- `maxStdoutBytes`: Kill the subprocess if stdout exceeds this size (default: 512000).
-- `argsJson`: JSON string passed to `lobster run --args-json` (workflow files only).
+- `cwd`: パイプラインの相対作業ディレクトリ (現在のプロセスの作業ディレクトリ内に存在する必要があります)。
+- `timeoutMs`: この期間 (デフォルト: 20000) を超える場合、サブプロセスを強制終了します。
+- `maxStdoutBytes`: 標準出力がこのサイズ (デフォルト: 512000) を超える場合、サブプロセスを強制終了します。
+- `argsJson`: `lobster run --args-json` に渡される JSON 文字列 (ワークフロー ファイルのみ)。
 
-## Output envelope
+## 出力エンベロープ
 
-Lobster returns a JSON envelope with one of three statuses:
+Lobster は、次の 3 つのステータスのいずれかを含む JSON エンベロープを返します。
 
-- `ok` → finished successfully
-- `needs_approval` → paused; `requiresApproval.resumeToken` is required to resume
-- `cancelled` → explicitly denied or cancelled
+- `ok` → 正常に終了しました
+- `needs_approval` → 一時停止;再開するには `requiresApproval.resumeToken` が必要です
+- `cancelled` → 明示的に拒否またはキャンセルされましたこのツールは、`content` (きれいな JSON) と `details` (生のオブジェクト) の両方でエンベロープを表示します。
 
-The tool surfaces the envelope in both `content` (pretty JSON) and `details` (raw object).
+## 承認
 
-## Approvals
+`requiresApproval` が存在する場合は、プロンプトを調べて次のことを決定します。
 
-If `requiresApproval` is present, inspect the prompt and decide:
+- `approve: true` → 再開および続行の副作用
+- `approve: false` → ワークフローをキャンセルして終了します
 
-- `approve: true` → resume and continue side effects
-- `approve: false` → cancel and finalize the workflow
-
-Use `approve --preview-from-stdin --limit N` to attach a JSON preview to approval requests without custom jq/heredoc glue. Resume tokens are now compact: Lobster stores workflow resume state under its state dir and hands back a small token key.
+`approve --preview-from-stdin --limit N` を使用して、カスタム jq/heredoc グルーを使用せずに JSON プレビューを承認リクエストに添付します。再開トークンはコンパクトになりました。Lobster はワークフローの再開状態を状態ディレクトリに保存し、小さなトークン キーを返します。
 
 ## OpenProse
 
-OpenProse pairs well with Lobster: use `/prose` to orchestrate multi-agent prep, then run a Lobster pipeline for deterministic approvals. If a Prose program needs Lobster, allow the `lobster` tool for sub-agents via `tools.subagents.tools`. See [OpenProse](/prose).
+OpenProse は Lobster とよく連携します。`/prose` を使用してマルチエージェントの準備を調整し、確定的な承認のために Lobster パイプラインを実行します。 Prose プログラムに Lobster が必要な場合は、`tools.subagents.tools` 経由でサブエージェントに `lobster` ツールを許可します。 [OpenProse](/prose) を参照してください。
 
-## Safety
+## 安全性
 
-- **Local subprocess only** — no network calls from the plugin itself.
-- **No secrets** — Lobster doesn't manage OAuth; it calls OpenClaw tools that do.
-- **Sandbox-aware** — disabled when the tool context is sandboxed.
-- **Hardened** — fixed executable name (`lobster`) on `PATH`; timeouts and output caps enforced.
+- **ローカル サブプロセスのみ** — プラグイン自体からのネットワーク呼び出しはありません。
+- **秘密はありません** — Lobster は OAuth を管理しません。これを行う OpenClaw ツールを呼び出します。
+- **サンドボックス対応** — ツール コンテキストがサンドボックス化されている場合は無効になります。
+- **強化** — `PATH` の実行可能ファイル名 (`lobster`) を修正しました。タイムアウトと出力上限が適用されます。
 
-## Troubleshooting
+## トラブルシューティング- **`lobster subprocess timed out`** → `timeoutMs` を増やすか、長いパイプラインを分割します
 
-- **`lobster subprocess timed out`** → increase `timeoutMs`, or split a long pipeline.
-- **`lobster output exceeded maxStdoutBytes`** → raise `maxStdoutBytes` or reduce output size.
-- **`lobster returned invalid JSON`** → ensure the pipeline runs in tool mode and prints only JSON.
-- **`lobster failed (code …)`** → run the same pipeline in a terminal to inspect stderr.
+- **`lobster output exceeded maxStdoutBytes`** → `maxStdoutBytes` を上げるか、出力サイズを減らします。
+- **`lobster returned invalid JSON`** → パイプラインがツール モードで実行され、JSON のみが出力されることを確認します。
+- **`lobster failed (code …)`** → 端末で同じパイプラインを実行して標準エラー出力を検査します。
 
-## Learn more
+## 詳細はこちら
 
-- [Plugins](/tools/plugin)
-- [Plugin tool authoring](/plugins/agent-tools)
+- [プラグイン](/tools/plugin)
+- [プラグインツールのオーサリング](/plugins/agent-tools)
 
-## Case study: community workflows
+## ケーススタディ: コミュニティ ワークフロー
 
-One public example: a “second brain” CLI + Lobster pipelines that manage three Markdown vaults (personal, partner, shared). The CLI emits JSON for stats, inbox listings, and stale scans; Lobster chains those commands into workflows like `weekly-review`, `inbox-triage`, `memory-consolidation`, and `shared-task-sync`, each with approval gates. AI handles judgment (categorization) when available and falls back to deterministic rules when not.
+公開されている例の 1 つは、3 つの Markdown ボールト (個人、パートナー、共有) を管理する「第 2 の脳」の CLI + Lobster パイプラインです。 CLI は、統計、受信トレイのリスト、および古いスキャンの JSON を出力します。 Lobster は、これらのコマンドを `weekly-review`、`inbox-triage`、`memory-consolidation`、`shared-task-sync` などのワークフローにチェーンし、それぞれに承認ゲートを設けます。 AI は、利用可能な場合は判断 (分類) を処理し、利用できない場合は決定論的なルールに戻ります。
 
-- Thread: [https://x.com/plattenschieber/status/2014508656335770033](https://x.com/plattenschieber/status/2014508656335770033)
-- Repo: [https://github.com/bloomedai/brain-cli](https://github.com/bloomedai/brain-cli)
+- スレッド: [https://x.com/plattenschieber/status/2014508656335770033](https://x.com/plattenschieber/status/2014508656335770033)
+- リポジトリ: [https://github.com/bloomedai/brain-cli](https://github.com/bloomedai/brain-cli)

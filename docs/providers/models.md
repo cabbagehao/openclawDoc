@@ -1,20 +1,22 @@
 ---
-summary: "Model providers (LLMs) supported by OpenClaw"
+summary: "OpenClaw でサポートされるモデルプロバイダー (LLM) のクイックスタート"
 read_when:
-  - You want to choose a model provider
-  - You want quick setup examples for LLM auth + model selection
-title: "Model Provider Quickstart"
+  - モデルプロバイダーを選びたいとき
+  - LLM 認証とモデル選択の最短手順を確認したいとき
+title: "モデルプロバイダー クイックスタート"
+x-i18n:
+  source_path: "providers/models.md"
+  source_hash: "76b3fce65756fbb2598ea592ab97e257f72246f0476b7ed3e7d6018a9f75778b"
 ---
 
-# Model Providers
+# モデルプロバイダー
 
-OpenClaw can use many LLM providers. Pick one, authenticate, then set the default
-model as `provider/model`.
+OpenClaw は多くの LLM プロバイダーを利用できます。1 つ選んで認証し、既定モデルを `provider/model` 形式で設定してください。
 
-## Quick start (two steps)
+## クイックスタート (2 ステップ)
 
-1. Authenticate with the provider (usually via `openclaw onboard`).
-2. Set the default model:
+1. プロバイダーで認証します (通常は `openclaw onboard`)。
+2. 既定モデルを設定します:
 
 ```json5
 {
@@ -22,7 +24,7 @@ model as `provider/model`.
 }
 ```
 
-## Supported providers (starter set)
+## サポートされるプロバイダー (スターターセット)
 
 - [OpenAI (API + Codex)](/providers/openai)
 - [Anthropic (API + Claude Code CLI)](/providers/anthropic)
@@ -40,5 +42,4 @@ model as `provider/model`.
 - [Amazon Bedrock](/providers/bedrock)
 - [Qianfan](/providers/qianfan)
 
-For the full provider catalog (xAI, Groq, Mistral, etc.) and advanced configuration,
-see [Model providers](/concepts/model-providers).
+完全な provider catalog (xAI、Groq、Mistral など) や高度な設定については、[モデルプロバイダー](/concepts/model-providers) を参照してください。

@@ -1,21 +1,21 @@
 ---
-summary: "Scripted onboarding and agent setup for the OpenClaw CLI"
+summary: "スクリプトによるオンボーディングと OpenClaw CLI のエージェントセットアップ"
 read_when:
-  - You are automating onboarding in scripts or CI
-  - You need non-interactive examples for specific providers
-title: "CLI Automation"
-sidebarTitle: "CLI automation"
+  - スクリプトや CI でオンボーディングを自動化する場合
+  - 特定のプロバイダー向けの非対話型の例が必要な場合
+title: "CLI 自動化"
+sidebarTitle: "CLI 自動化"
 ---
 
-# CLI Automation
+# CLI 自動化 (CLI Automation)
 
-Use `--non-interactive` to automate `openclaw onboard`.
+`openclaw onboard` を自動化するには `--non-interactive` を使用します。
 
 <Note>
-`--json` does not imply non-interactive mode. Use `--non-interactive` (and `--workspace`) for scripts.
+`--json` は非対話モードを意味しません。スクリプトでは `--non-interactive` (および `--workspace`) を使用してください。
 </Note>
 
-## Baseline non-interactive example
+## 基本的な非対話型の例
 
 ```bash
 openclaw onboard --non-interactive \
@@ -30,15 +30,15 @@ openclaw onboard --non-interactive \
   --skip-skills
 ```
 
-Add `--json` for a machine-readable summary.
+機械可読な概要を取得するには `--json` を追加します。
 
-Use `--secret-input-mode ref` to store env-backed refs in auth profiles instead of plaintext values.
-Interactive selection between env refs and configured provider refs (`file` or `exec`) is available in the onboarding wizard flow.
+平文の値の代わりに環境変数ベースの参照（ref）を認証プロファイルに保存するには、`--secret-input-mode ref` を使用します。
+環境変数参照と設定済みプロバイダー参照 (`file` または `exec`) 間の対話的な選択は、オンボーディングウィザードのフローで利用可能です。
 
-In non-interactive `ref` mode, provider env vars must be set in the process environment.
-Passing inline key flags without the matching env var now fails fast.
+非対話型の `ref` モードでは、プロバイダーの環境変数がプロセス環境で設定されている必要があります。
+対応する環境変数が存在しない状態でインラインキーフラグを渡すと、即座にエラーになります。
 
-Example:
+例:
 
 ```bash
 openclaw onboard --non-interactive \
@@ -48,10 +48,10 @@ openclaw onboard --non-interactive \
   --accept-risk
 ```
 
-## Provider-specific examples
+## プロバイダー固有の例
 
 <AccordionGroup>
-  <Accordion title="Gemini example">
+  <Accordion title="Gemini の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -61,7 +61,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Z.AI example">
+  <Accordion title="Z.AI の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -71,7 +71,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Vercel AI Gateway example">
+  <Accordion title="Vercel AI Gateway の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -81,7 +81,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Cloudflare AI Gateway example">
+  <Accordion title="Cloudflare AI Gateway の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -93,7 +93,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Moonshot example">
+  <Accordion title="Moonshot の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -103,7 +103,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Mistral example">
+  <Accordion title="Mistral の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -113,7 +113,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Synthetic example">
+  <Accordion title="Synthetic の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -123,7 +123,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="OpenCode Zen example">
+  <Accordion title="OpenCode Zen の例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -133,7 +133,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="Custom provider example">
+  <Accordion title="カスタムプロバイダーの例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
@@ -147,9 +147,9 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
 
-    `--custom-api-key` is optional. If omitted, onboarding checks `CUSTOM_API_KEY`.
+    `--custom-api-key` はオプションです。省略した場合、オンボーディングは `CUSTOM_API_KEY` をチェックします。
 
-    Ref-mode variant:
+    Ref モードのバリアント:
 
     ```bash
     export CUSTOM_API_KEY="your-key"
@@ -165,15 +165,14 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
 
-    In this mode, onboarding stores `apiKey` as `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`.
+    このモードでは、オンボーディングは `apiKey` を `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }` として保存します。
 
   </Accordion>
 </AccordionGroup>
 
-## Add another agent
+## 別のエージェントを追加する
 
-Use `openclaw agents add <name>` to create a separate agent with its own workspace,
-sessions, and auth profiles. Running without `--workspace` launches the wizard.
+`openclaw agents add <name>` を使用して、独自のワークスペース、セッション、および認証プロファイルを持つ別のエージェントを作成します。`--workspace` を付けずに実行すると、ウィザードが起動します。
 
 ```bash
 openclaw agents add work \
@@ -184,20 +183,20 @@ openclaw agents add work \
   --json
 ```
 
-What it sets:
+設定される内容:
 
 - `agents.list[].name`
 - `agents.list[].workspace`
 - `agents.list[].agentDir`
 
-Notes:
+注意事項:
 
-- Default workspaces follow `~/.openclaw/workspace-<agentId>`.
-- Add `bindings` to route inbound messages (the wizard can do this).
-- Non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
+- デフォルトのワークスペースは `~/.openclaw/workspace-<agentId>` に従います。
+- 受信メッセージをルーティングするための `bindings` を追加します（ウィザードでこれを行うことができます）。
+- 非対話型フラグ: `--model`, `--agent-dir`, `--bind`, `--non-interactive`。
 
-## Related docs
+## 関連ドキュメント
 
-- Onboarding hub: [Onboarding Wizard (CLI)](/start/wizard)
-- Full reference: [CLI Onboarding Reference](/start/wizard-cli-reference)
-- Command reference: [`openclaw onboard`](/cli/onboard)
+- オンボーディングハブ: [オンボーディングウィザード (CLI)](/start/wizard)
+- 完全なリファレンス: [CLI オンボーディングリファレンス](/start/wizard-cli-reference)
+- コマンドリファレンス: [`openclaw onboard`](/cli/onboard)

@@ -1,169 +1,166 @@
 ---
-summary: "Terminal UI (TUI): connect to the Gateway from any machine"
+summary: "ターミナル UI (TUI): 任意のマシンからゲートウェイに接続します。"
 read_when:
-  - You want a beginner-friendly walkthrough of the TUI
-  - You need the complete list of TUI features, commands, and shortcuts
-title: "TUI"
+  - 初心者向けの TUI のウォークスルーが必要な場合
+  - TUI の機能、コマンド、ショートカットの完全なリストが必要です
+title: "トゥイ"
+x-i18n:
+  source_hash: "89d30c5b6ebd8cf35561aaff45202d13831d6530a09f69ed3e152cf2a51a6dc9"
 ---
 
-# TUI (Terminal UI)
+# TUI（ターミナルUI）
 
-## Quick start
+## クイックスタート
 
-1. Start the Gateway.
+1. ゲートウェイを起動します。
 
 ```bash
 openclaw gateway
 ```
 
-2. Open the TUI.
+2. TUI を開きます。
 
 ```bash
 openclaw tui
 ```
 
-3. Type a message and press Enter.
+3. メッセージを入力し、Enter キーを押します。
 
-Remote Gateway:
+リモートゲートウェイ:
 
 ```bash
 openclaw tui --url ws://<host>:<port> --token <gateway-token>
 ```
 
-Use `--password` if your Gateway uses password auth.
+ゲートウェイがパスワード認証を使用する場合は、`--password` を使用します。
 
-## What you see
+## あなたが見ているもの
 
-- Header: connection URL, current agent, current session.
-- Chat log: user messages, assistant replies, system notices, tool cards.
-- Status line: connection/run state (connecting, running, streaming, idle, error).
-- Footer: connection state + agent + session + model + think/verbose/reasoning + token counts + deliver.
-- Input: text editor with autocomplete.
+- ヘッダー: 接続 URL、現在のエージェント、現在のセッション。
+- チャット ログ: ユーザー メッセージ、アシスタントの応答、システム通知、ツール カード。
+- ステータス行: 接続/実行状態 (接続、実行、ストリーミング、アイドル、エラー)。
+- フッター: 接続状態 + エージェント + セッション + モデル + 思考/詳細/推論 + トークン数 + 配信。
+- 入力: オートコンプリート付きのテキスト エディター。
 
-## Mental model: agents + sessions
+## メンタル モデル: エージェント + セッション
 
-- Agents are unique slugs (e.g. `main`, `research`). The Gateway exposes the list.
-- Sessions belong to the current agent.
-- Session keys are stored as `agent:<agentId>:<sessionKey>`.
-  - If you type `/session main`, the TUI expands it to `agent:<currentAgent>:main`.
-  - If you type `/session agent:other:main`, you switch to that agent session explicitly.
-- Session scope:
-  - `per-sender` (default): each agent has many sessions.
-  - `global`: the TUI always uses the `global` session (the picker may be empty).
-- The current agent + session are always visible in the footer.
+- エージェントは固有のスラッグです (例: `main`、`research`)。ゲートウェイはリストを公開します。
+- セッションは現在のエージェントに属します。
+- セッションキーは `agent:<agentId>:<sessionKey>` として保存されます。
+  - `/session main` と入力すると、TUI はそれを `agent:<currentAgent>:main` に展開します。
+  - `/session agent:other:main` と入力すると、そのエージェント セッションに明示的に切り替わります。
+- セッションの範囲:
+  - `per-sender` (デフォルト): 各エージェントには多数のセッションがあります。
+  - `global`: TUI は常に `global` セッションを使用します (ピッカーが空の場合があります)。
+- 現在のエージェントとセッションは常にフッターに表示されます。
 
-## Sending + delivery
+## 発送+配達- メッセージはゲートウェイに送信されます。プロバイダーへの配信はデフォルトではオフになっています
 
-- Messages are sent to the Gateway; delivery to providers is off by default.
-- Turn delivery on:
+- 配信をオンにします:
   - `/deliver on`
-  - or the Settings panel
-  - or start with `openclaw tui --deliver`
+  - または設定パネル
+  - または `openclaw tui --deliver` で始める
 
-## Pickers + overlays
+## ピッカー + オーバーレイ
 
-- Model picker: list available models and set the session override.
-- Agent picker: choose a different agent.
-- Session picker: shows only sessions for the current agent.
-- Settings: toggle deliver, tool output expansion, and thinking visibility.
+- モデル ピッカー: 利用可能なモデルをリストし、セッション オーバーライドを設定します。
+- エージェント ピッカー: 別のエージェントを選択します。
+- セッション ピッカー: 現在のエージェントのセッションのみを表示します。
+- 設定: 配信、ツール出力拡張、および思考の可視性の切り替え。
 
-## Keyboard shortcuts
+## キーボード ショートカット
 
-- Enter: send message
-- Esc: abort active run
-- Ctrl+C: clear input (press twice to exit)
-- Ctrl+D: exit
-- Ctrl+L: model picker
-- Ctrl+G: agent picker
-- Ctrl+P: session picker
-- Ctrl+O: toggle tool output expansion
-- Ctrl+T: toggle thinking visibility (reloads history)
+- Enter: メッセージを送信
+- Esc: アクティブな実行を中止します
+- Ctrl+C: 入力をクリアします (終了するには 2 回押します)
+- Ctrl+D: 終了
+- Ctrl+L: モデルピッカー
+- Ctrl+G: エージェントピッカー
+- Ctrl+P: セッションピッカー
+- Ctrl+O: ツール出力拡張の切り替え
+- Ctrl+T: 思考の表示を切り替えます (履歴をリロードします)
 
-## Slash commands
+## スラッシュコマンド
 
-Core:
+コア:
 
 - `/help`
 - `/status`
-- `/agent <id>` (or `/agents`)
-- `/session <key>` (or `/sessions`)
-- `/model <provider/model>` (or `/models`)
+- `/agent <id>` (または `/agents`)
+- `/session <key>` (または `/sessions`)
+- `/model <provider/model>` (または `/models`)
 
-Session controls:
+セッションコントロール:
 
 - `/think <off|minimal|low|medium|high>`
 - `/verbose <on|full|off>`
 - `/reasoning <on|off|stream>`
 - `/usage <off|tokens|full>`
-- `/elevated <on|off|ask|full>` (alias: `/elev`)
+- `/elevated <on|off|ask|full>` (別名: `/elev`)
 - `/activation <mention|always>`
 - `/deliver <on|off>`
 
-Session lifecycle:
+セッションのライフサイクル:
 
-- `/new` or `/reset` (reset the session)
-- `/abort` (abort the active run)
+- `/new` または `/reset` (セッションをリセット)
+- `/abort` (アクティブな実行を中止します)
 - `/settings`
-- `/exit`
+- `/exit`他のゲートウェイ スラッシュ コマンド (`/context` など) はゲートウェイに転送され、システム出力として表示されます。 [スラッシュ コマンド](/tools/slash-commands) を参照してください。
 
-Other Gateway slash commands (for example, `/context`) are forwarded to the Gateway and shown as system output. See [Slash commands](/tools/slash-commands).
+## ローカルシェルコマンド
 
-## Local shell commands
+- TUI ホスト上でローカル シェル コマンドを実行するには、行の先頭に `!` を付けます。
+- TUI は、セッションごとに 1 回、ローカルでの実行を許可するようプロンプトを表示します。減少すると、`!` はセッションに対して無効のままになります。
+- コマンドは、TUI 作業ディレクトリ内の新しい非対話型シェルで実行されます (永続的な `cd`/env はありません)。
+- ローカル シェル コマンドは、環境内で `OPENCLAW_SHELL=tui-local` を受け取ります。
+- 単独の `!` が通常のメッセージとして送信されます。先頭のスペースはローカル実行をトリガーしません。
 
-- Prefix a line with `!` to run a local shell command on the TUI host.
-- The TUI prompts once per session to allow local execution; declining keeps `!` disabled for the session.
-- Commands run in a fresh, non-interactive shell in the TUI working directory (no persistent `cd`/env).
-- Local shell commands receive `OPENCLAW_SHELL=tui-local` in their environment.
-- A lone `!` is sent as a normal message; leading spaces do not trigger local exec.
+## ツールの出力
 
-## Tool output
+- ツール呼び出しは、引数と結果を含むカードとして表示されます。
+- Ctrl+O で、折りたたまれたビューと展開されたビューが切り替わります。
+- ツールの実行中、部分的な更新が同じカードにストリーミングされます。
 
-- Tool calls show as cards with args + results.
-- Ctrl+O toggles between collapsed/expanded views.
-- While tools run, partial updates stream into the same card.
+## 端子の色
 
-## Terminal colors
+- TUI はアシスタントの本文テキストを端末のデフォルトの前景に保持するため、暗い端末と明るい端末の両方が読みやすくなります。
+- 端末が明るい背景を使用しており、自動検出が正しくない場合は、`openclaw tui` を起動する前に `OPENCLAW_THEME=light` を設定してください。
+- 代わりに元の暗いパレットを強制するには、`OPENCLAW_THEME=dark` を設定します。
 
-- The TUI keeps assistant body text in your terminal's default foreground so dark and light terminals both stay readable.
-- If your terminal uses a light background and auto-detection is wrong, set `OPENCLAW_THEME=light` before launching `openclaw tui`.
-- To force the original dark palette instead, set `OPENCLAW_THEME=dark`.
+## 履歴 + ストリーミング- 接続時に、TUI は最新の履歴 (デフォルトでは 200 メッセージ) をロードします
 
-## History + streaming
+- ストリーミング応答は、確定するまでその場で更新されます。
+- TUI は、より豊富なツール カードのエージェント ツール イベントもリッスンします。
 
-- On connect, the TUI loads the latest history (default 200 messages).
-- Streaming responses update in place until finalized.
-- The TUI also listens to agent tool events for richer tool cards.
+## 接続の詳細
 
-## Connection details
+- TUI はゲートウェイに `mode: "tui"` として登録されます。
+- 再接続するとシステム メッセージが表示されます。イベントのギャップがログに現れます。
 
-- The TUI registers with the Gateway as `mode: "tui"`.
-- Reconnects show a system message; event gaps are surfaced in the log.
+## オプション
 
-## Options
+- `--url <url>`: ゲートウェイ WebSocket URL (デフォルトは config または `ws://127.0.0.1:<port>`)
+- `--token <token>`: ゲートウェイ トークン (必要な場合)
+- `--password <password>`: ゲートウェイのパスワード (必要な場合)
+- `--session <key>`: セッションキー (デフォルト: `main`、またはスコープがグローバルの場合は `global`)
+- `--deliver`: アシスタントの応答をプロバイダーに配信します (デフォルトはオフ)
+- `--thinking <level>`: 送信の思考レベルを上書きする
+- `--timeout-ms <ms>`: エージェントのタイムアウト (ミリ秒単位) (デフォルトは `agents.defaults.timeoutSeconds`)
 
-- `--url <url>`: Gateway WebSocket URL (defaults to config or `ws://127.0.0.1:<port>`)
-- `--token <token>`: Gateway token (if required)
-- `--password <password>`: Gateway password (if required)
-- `--session <key>`: Session key (default: `main`, or `global` when scope is global)
-- `--deliver`: Deliver assistant replies to the provider (default off)
-- `--thinking <level>`: Override thinking level for sends
-- `--timeout-ms <ms>`: Agent timeout in ms (defaults to `agents.defaults.timeoutSeconds`)
+注: `--url` を設定すると、TUI は構成または環境の資格情報にフォールバックしません。
+`--token` または `--password` を明示的に渡します。明示的な資格情報が欠落しているとエラーになります。
 
-Note: when you set `--url`, the TUI does not fall back to config or environment credentials.
-Pass `--token` or `--password` explicitly. Missing explicit credentials is an error.
+## トラブルシューティング
 
-## Troubleshooting
+メッセージを送信しても出力がありません:- TUI で `/status` を実行して、ゲートウェイが接続されており、アイドル状態/ビジー状態であることを確認します。
 
-No output after sending a message:
+- ゲートウェイ ログを確認します: `openclaw logs --follow`。
+- エージェントが実行できることを確認します: `openclaw status` および `openclaw models status`。
+- チャット チャネルでメッセージが期待される場合は、配信を有効にします (`/deliver on` または `--deliver`)。
+- `--history-limit <n>`: ロードする履歴エントリ (デフォルトは 200)
 
-- Run `/status` in the TUI to confirm the Gateway is connected and idle/busy.
-- Check the Gateway logs: `openclaw logs --follow`.
-- Confirm the agent can run: `openclaw status` and `openclaw models status`.
-- If you expect messages in a chat channel, enable delivery (`/deliver on` or `--deliver`).
-- `--history-limit <n>`: History entries to load (default 200)
+## 接続のトラブルシューティング
 
-## Connection troubleshooting
-
-- `disconnected`: ensure the Gateway is running and your `--url/--token/--password` are correct.
-- No agents in picker: check `openclaw agents list` and your routing config.
-- Empty session picker: you might be in global scope or have no sessions yet.
+- `disconnected`: ゲートウェイが実行中であり、`--url/--token/--password` が正しいことを確認してください。
+- ピッカーにエージェントがありません: `openclaw agents list` とルーティング設定を確認してください。
+- 空のセッション ピッカー: グローバル スコープ内にいるか、まだセッションが存在しない可能性があります。

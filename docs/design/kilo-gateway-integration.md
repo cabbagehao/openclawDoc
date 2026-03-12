@@ -1,70 +1,70 @@
-# Kilo Gateway Provider Integration Design
+---
+title: "Kilo Gateway プロバイダーの統合設計"
+---
 
-## Overview
+# Kilo Gateway プロバイダーの統合設計
 
-This document outlines the design for integrating "Kilo Gateway" as a first-class provider in OpenClaw, modeled after the existing OpenRouter implementation. Kilo Gateway uses an OpenAI-compatible completions API with a different base URL.
+## 概要
 
-## Design Decisions
+本ドキュメントでは、既存の OpenRouter 実装をモデルとして、「Kilo Gateway」を OpenClaw の標準（ファーストクラス）プロバイダーとして統合するための設計案をまとめます。Kilo Gateway は OpenAI 互換の Completions API を使用しますが、ベース URL が異なります。
 
-### 1. Provider Naming
+## 設計上の決定事項
 
-**Recommendation: `kilocode`**
+### 1. プロバイダーの名称
 
-Rationale:
+**推奨: `kilocode`**
 
-- Matches the user config example provided (`kilocode` provider key)
-- Consistent with existing provider naming patterns (e.g., `openrouter`, `opencode`, `moonshot`)
-- Short and memorable
-- Avoids confusion with generic "kilo" or "gateway" terms
+根拠:
+- 提示されたユーザー構成例（`kilocode` プロバイダーキー）と一致します。
+- 既存のプロバイダー命名パターン（`openrouter`, `opencode`, `moonshot` など）と一貫性があります。
+- 短く、覚えやすい名称です。
+- 一般的な「kilo」や「gateway」という単語との混同を避けることができます。
 
-Alternative considered: `kilo-gateway` - rejected because hyphenated names are less common in the codebase and `kilocode` is more concise.
+検討された代替案: `kilo-gateway`。コードベースではハイフン付きの名称はあまり一般的ではなく、`kilocode` の方が簡潔であるため不採用としました。
 
-### 2. Default Model Reference
+### 2. デフォルトモデルの参照
 
-**Recommendation: `kilocode/anthropic/claude-opus-4.6`**
+**推奨: `kilocode/anthropic/claude-opus-4.6`**
 
-Rationale:
+根拠:
+- ユーザーの構成例に基づいています。
+- Claude Opus 4.5 はメインモデルとして十分な能力を持っています。
+- 明示的なモデル選択を行うことで、自動ルーティングへの依存を回避します。
 
-- Based on user config example
-- Claude Opus 4.5 is a capable default model
-- Explicit model selection avoids reliance on auto-routing
+### 3. ベース URL の設定
 
-### 3. Base URL Configuration
+**推奨: ハードコードされたデフォルト値と、構成による上書きの併用**
 
-**Recommendation: Hardcoded default with config override**
+- **デフォルトのベース URL:** `https://api.kilo.ai/api/gateway/`
+- **上書き可能:** はい。`models.providers.kilocode.baseUrl` 経由で設定できます。
 
-- **Default Base URL:** `https://api.kilo.ai/api/gateway/`
-- **Configurable:** Yes, via `models.providers.kilocode.baseUrl`
+これは Moonshot, Venice, Synthetic などの他のプロバイダーで使用されているパターンと同様です。
 
-This matches the pattern used by other providers like Moonshot, Venice, and Synthetic.
+### 4. モデルスキャン
 
-### 4. Model Scanning
+**推奨: 初期段階では専用のモデルスキャンエンドポイントは設けない**
 
-**Recommendation: No dedicated model scanning endpoint initially**
+根拠:
+- Kilo Gateway は OpenRouter へのプロキシであり、モデルは動的に変化します。
+- ユーザーは構成ファイルでモデルを手動設定できます。
+- 将来的に Kilo Gateway が `/models` エンドポイントを公開した際に、スキャン機能を追加することを検討します。
 
-Rationale:
+### 5. 特殊なハンドリング
 
-- Kilo Gateway proxies to OpenRouter, so models are dynamic
-- Users can manually configure models in their config
-- If Kilo Gateway exposes a `/models` endpoint in the future, scanning can be added
+**推奨: Anthropic モデルにおいて OpenRouter と同様の挙動を継承する**
 
-### 5. Special Handling
+Kilo Gateway は OpenRouter へのプロキシであるため、同様の特殊処理を適用すべきです:
+- `anthropic/*` モデルに対するキャッシュ TTL 適格性の判定。
+- `anthropic/*` モデルに対する追加パラメータ (`cacheControlTtl`) の付与。
+- Conversation 記録（トランスクリプト）のポリシー。
 
-**Recommendation: Inherit OpenRouter behavior for Anthropic models**
+## 修正対象ファイル
 
-Since Kilo Gateway proxies to OpenRouter, the same special handling should apply:
-
-- Cache TTL eligibility for `anthropic/*` models
-- Extra params (cacheControlTtl) for `anthropic/*` models
-- Transcript policy follows OpenRouter patterns
-
-## Files to Modify
-
-### Core Credential Management
+### コア認証情報管理
 
 #### 1. `src/commands/onboard-auth.credentials.ts`
 
-Add:
+以下の追加を行います:
 
 ```typescript
 export const KILOCODE_DEFAULT_MODEL_REF = "kilocode/anthropic/claude-opus-4.6";
@@ -84,31 +84,31 @@ export async function setKilocodeApiKey(key: string, agentDir?: string) {
 
 #### 2. `src/agents/model-auth.ts`
 
-Add to `envMap` in `resolveEnvApiKey()`:
+`resolveEnvApiKey()` 内の `envMap` に追加します:
 
 ```typescript
 const envMap: Record<string, string> = {
-  // ... existing entries
+  // ... 既存のエントリ
   kilocode: "KILOCODE_API_KEY",
 };
 ```
 
 #### 3. `src/config/io.ts`
 
-Add to `SHELL_ENV_EXPECTED_KEYS`:
+`SHELL_ENV_EXPECTED_KEYS` に追加します:
 
 ```typescript
 const SHELL_ENV_EXPECTED_KEYS = [
-  // ... existing entries
+  // ... 既存のエントリ
   "KILOCODE_API_KEY",
 ];
 ```
 
-### Config Application
+### 構成設定の適用
 
 #### 4. `src/commands/onboard-auth.config-core.ts`
 
-Add new functions:
+新しい関数を追加します:
 
 ```typescript
 export const KILOCODE_BASE_URL = "https://api.kilo.ai/api/gateway/";
@@ -175,81 +175,78 @@ export function applyKilocodeConfig(cfg: OpenClawConfig): OpenClawConfig {
 }
 ```
 
-### Auth Choice System
+### 認証選択システム
 
 #### 5. `src/commands/onboard-types.ts`
 
-Add to `AuthChoice` type:
+`AuthChoice` 型に追加します:
 
 ```typescript
 export type AuthChoice =
-  // ... existing choices
+  // ... 既存の選択肢
   "kilocode-api-key";
-// ...
 ```
 
-Add to `OnboardOptions`:
+`OnboardOptions` に追加します:
 
 ```typescript
 export type OnboardOptions = {
-  // ... existing options
+  // ... 既存のオプション
   kilocodeApiKey?: string;
-  // ...
 };
 ```
 
 #### 6. `src/commands/auth-choice-options.ts`
 
-Add to `AuthChoiceGroupId`:
+`AuthChoiceGroupId` に追加します:
 
 ```typescript
 export type AuthChoiceGroupId =
-  // ... existing groups
+  // ... 既存のグループ
   "kilocode";
-// ...
 ```
 
-Add to `AUTH_CHOICE_GROUP_DEFS`:
+`AUTH_CHOICE_GROUP_DEFS` に追加します:
 
 ```typescript
 {
   value: "kilocode",
   label: "Kilo Gateway",
-  hint: "API key (OpenRouter-compatible)",
+  hint: "API キー (OpenRouter 互換)",
   choices: ["kilocode-api-key"],
 },
 ```
 
-Add to `buildAuthChoiceOptions()`:
+`buildAuthChoiceOptions()` 内に追加します:
 
 ```typescript
 options.push({
   value: "kilocode-api-key",
-  label: "Kilo Gateway API key",
-  hint: "OpenRouter-compatible gateway",
+  label: "Kilo Gateway API キー",
+  hint: "OpenRouter 互換ゲートウェイ",
 });
 ```
 
 #### 7. `src/commands/auth-choice.preferred-provider.ts`
 
-Add mapping:
+マッピングを追加します:
 
 ```typescript
 const PREFERRED_PROVIDER_BY_AUTH_CHOICE: Partial<Record<AuthChoice, string>> = {
-  // ... existing mappings
+  // ... 既存のマッピング
   "kilocode-api-key": "kilocode",
 };
 ```
 
-### Auth Choice Application
+### 認証選択の適用
 
 #### 8. `src/commands/auth-choice.apply.api-providers.ts`
 
-Add import:
+インポートを追加します:
 
 ```typescript
 import {
-  // ... existing imports
+  // ... 既存のインポート
   applyKilocodeConfig,
   applyKilocodeProviderConfig,
   KILOCODE_DEFAULT_MODEL_REF,
@@ -257,7 +254,7 @@ import {
 } from "./onboard-auth.js";
 ```
 
-Add handling for `kilocode-api-key`:
+`kilocode-api-key` の処理を追加します:
 
 ```typescript
 if (authChoice === "kilocode-api-key") {
@@ -291,7 +288,7 @@ if (authChoice === "kilocode-api-key") {
     const envKey = resolveEnvApiKey("kilocode");
     if (envKey) {
       const useExisting = await params.prompter.confirm({
-        message: `Use existing KILOCODE_API_KEY (${envKey.source}, ${formatApiKeyPreview(envKey.apiKey)})?`,
+        message: `既存の KILOCODE_API_KEY を使用しますか？ (${envKey.source}, ${formatApiKeyPreview(envKey.apiKey)})`,
         initialValue: true,
       });
       if (useExisting) {
@@ -303,7 +300,7 @@ if (authChoice === "kilocode-api-key") {
 
   if (!hasCredential) {
     const key = await params.prompter.text({
-      message: "Enter Kilo Gateway API key",
+      message: "Kilo Gateway API キーを入力してください",
       validate: validateApiKeyInput,
     });
     await setKilocodeApiKey(normalizeApiKeyInput(String(key)), params.agentDir);
@@ -335,7 +332,7 @@ if (authChoice === "kilocode-api-key") {
 }
 ```
 
-Also add tokenProvider mapping at the top of the function:
+また、関数の冒頭で `tokenProvider` のマッピングを追加します:
 
 ```typescript
 if (params.opts.tokenProvider === "kilocode") {
@@ -343,36 +340,36 @@ if (params.opts.tokenProvider === "kilocode") {
 }
 ```
 
-### CLI Registration
+### CLI 登録
 
 #### 9. `src/cli/program/register.onboard.ts`
 
-Add CLI option:
+CLI オプションを追加します:
 
 ```typescript
-.option("--kilocode-api-key <key>", "Kilo Gateway API key")
+.option("--kilocode-api-key <key>", "Kilo Gateway API キー")
 ```
 
-Add to action handler:
+アクションハンドラーに追加します:
 
 ```typescript
 kilocodeApiKey: opts.kilocodeApiKey as string | undefined,
 ```
 
-Update auth-choice help text:
+`auth-choice` のヘルプテキストを更新します:
 
 ```typescript
 .option(
   "--auth-choice <choice>",
-  "Auth: setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|kilocode-api-key|ai-gateway-api-key|...",
+  "認証方法: setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|kilocode-api-key|ai-gateway-api-key|...",
 )
 ```
 
-### Non-Interactive Onboarding
+### 非対話型オンボーディング
 
 #### 10. `src/commands/onboard-non-interactive/local/auth-choice.ts`
 
-Add handling for `kilocode-api-key`:
+`kilocode-api-key` の処理を追加します:
 
 ```typescript
 if (authChoice === "kilocode-api-key") {
@@ -389,36 +386,36 @@ if (authChoice === "kilocode-api-key") {
     provider: "kilocode",
     mode: "api_key",
   });
-  // ... apply default model
+  // ... デフォルトモデルの適用処理へ
 }
 ```
 
-### Export Updates
+### エクスポートの更新
 
 #### 11. `src/commands/onboard-auth.ts`
 
-Add exports:
+エクスポートを追加します:
 
 ```typescript
 export {
-  // ... existing exports
+  // ... 既存のエクスポート
   applyKilocodeConfig,
   applyKilocodeProviderConfig,
   KILOCODE_BASE_URL,
 } from "./onboard-auth.config-core.js";
 
 export {
-  // ... existing exports
+  // ... 既存のエクスポート
   KILOCODE_DEFAULT_MODEL_REF,
   setKilocodeApiKey,
 } from "./onboard-auth.credentials.js";
 ```
 
-### Special Handling (Optional)
+### 特殊なハンドリング (任意)
 
 #### 12. `src/agents/pi-embedded-runner/cache-ttl.ts`
 
-Add Kilo Gateway support for Anthropic models:
+Anthropic モデル用の Kilo Gateway サポートを追加します:
 
 ```typescript
 export function isCacheTtlEligibleProvider(provider: string, modelId: string): boolean {
@@ -434,19 +431,19 @@ export function isCacheTtlEligibleProvider(provider: string, modelId: string): b
 
 #### 13. `src/agents/transcript-policy.ts`
 
-Add Kilo Gateway handling (similar to OpenRouter):
+Kilo Gateway 用の処理を追加します（OpenRouter と同様）:
 
 ```typescript
 const isKilocodeGemini = provider === "kilocode" && modelId.toLowerCase().includes("gemini");
 
-// Include in needsNonImageSanitize check
+// needsNonImageSanitize のチェックに含める
 const needsNonImageSanitize =
   isGoogle || isAnthropic || isMistral || isOpenRouterGemini || isKilocodeGemini;
 ```
 
-## Configuration Structure
+## 構成の構造
 
-### User Config Example
+### ユーザー構成例 (`openclaw.json`)
 
 ```json
 {
@@ -470,7 +467,7 @@ const needsNonImageSanitize =
 }
 ```
 
-### Auth Profile Structure
+### 認証プロファイル構造 (`auth-profiles.json`)
 
 ```json
 {
@@ -484,51 +481,51 @@ const needsNonImageSanitize =
 }
 ```
 
-## Testing Considerations
+## テストの考慮事項
 
-1. **Unit Tests:**
-   - Test `setKilocodeApiKey()` writes correct profile
-   - Test `applyKilocodeConfig()` sets correct defaults
-   - Test `resolveEnvApiKey("kilocode")` returns correct env var
+1. **ユニットテスト:**
+   - `setKilocodeApiKey()` が正しいプロファイルを書き込むこと。
+   - `applyKilocodeConfig()` が正しいデフォルト値を設定すること。
+   - `resolveEnvApiKey("kilocode")` が正しい環境変数を返すこと。
 
-2. **Integration Tests:**
-   - Test onboarding flow with `--auth-choice kilocode-api-key`
-   - Test non-interactive onboarding with `--kilocode-api-key`
-   - Test model selection with `kilocode/` prefix
+2. **統合テスト:**
+   - `--auth-choice kilocode-api-key` を使用したオンボーディングフロー。
+   - `--kilocode-api-key` を使用した非対話型オンボーディング。
+   - `kilocode/` 接頭辞を使用したモデル選択。
 
-3. **E2E Tests:**
-   - Test actual API calls through Kilo Gateway (live tests)
+3. **E2E テスト:**
+   - Kilo Gateway 経由での実際の API 呼び出し（ライブテスト）。
 
-## Migration Notes
+## 移行に関する注意
 
-- No migration needed for existing users
-- New users can immediately use `kilocode-api-key` auth choice
-- Existing manual config with `kilocode` provider will continue to work
+- 既存ユーザーへの影響はありません。
+- 新規ユーザーはすぐに `kilocode-api-key` を認証方法として選択できます。
+- 既存の `kilocode` プロバイダーの手動構成も引き続き動作します。
 
-## Future Considerations
+## 将来的な展望
 
-1. **Model Catalog:** If Kilo Gateway exposes a `/models` endpoint, add scanning support similar to `scanOpenRouterModels()`
+1. **モデルカタログ:** Kilo Gateway が `/models` エンドポイントを公開した場合、`scanOpenRouterModels()` のようなスキャン機能を追加します。
 
-2. **OAuth Support:** If Kilo Gateway adds OAuth, extend the auth system accordingly
+2. **OAuth 対応:** Kilo Gateway が OAuth を導入した際、認証システムを拡張します。
 
-3. **Rate Limiting:** Consider adding rate limit handling specific to Kilo Gateway if needed
+3. **レート制限:** 必要に応じて、Kilo Gateway 固有のレート制限ハンドリングを追加します。
 
-4. **Documentation:** Add docs at `docs/providers/kilocode.md` explaining setup and usage
+4. **ドキュメント:** `docs/providers/kilocode.md` を作成し、セットアップと使用方法を説明します。
 
-## Summary of Changes
+## 変更サマリー
 
-| File                                                        | Change Type | Description                                                             |
-| ----------------------------------------------------------- | ----------- | ----------------------------------------------------------------------- |
-| `src/commands/onboard-auth.credentials.ts`                  | Add         | `KILOCODE_DEFAULT_MODEL_REF`, `setKilocodeApiKey()`                     |
-| `src/agents/model-auth.ts`                                  | Modify      | Add `kilocode` to `envMap`                                              |
-| `src/config/io.ts`                                          | Modify      | Add `KILOCODE_API_KEY` to shell env keys                                |
-| `src/commands/onboard-auth.config-core.ts`                  | Add         | `applyKilocodeProviderConfig()`, `applyKilocodeConfig()`                |
-| `src/commands/onboard-types.ts`                             | Modify      | Add `kilocode-api-key` to `AuthChoice`, add `kilocodeApiKey` to options |
-| `src/commands/auth-choice-options.ts`                       | Modify      | Add `kilocode` group and option                                         |
-| `src/commands/auth-choice.preferred-provider.ts`            | Modify      | Add `kilocode-api-key` mapping                                          |
-| `src/commands/auth-choice.apply.api-providers.ts`           | Modify      | Add `kilocode-api-key` handling                                         |
-| `src/cli/program/register.onboard.ts`                       | Modify      | Add `--kilocode-api-key` option                                         |
-| `src/commands/onboard-non-interactive/local/auth-choice.ts` | Modify      | Add non-interactive handling                                            |
-| `src/commands/onboard-auth.ts`                              | Modify      | Export new functions                                                    |
-| `src/agents/pi-embedded-runner/cache-ttl.ts`                | Modify      | Add kilocode support                                                    |
-| `src/agents/transcript-policy.ts`                           | Modify      | Add kilocode Gemini handling                                            |
+| ファイル | 変更内容 | 説明 |
+| --- | :---: | --- |
+| `src/commands/onboard-auth.credentials.ts` | 追加 | `KILOCODE_DEFAULT_MODEL_REF`, `setKilocodeApiKey()` |
+| `src/agents/model-auth.ts` | 修正 | `envMap` に `kilocode` を追加 |
+| `src/config/io.ts` | 修正 | シェル環境変数キーに `KILOCODE_API_KEY` を追加 |
+| `src/commands/onboard-auth.config-core.ts` | 追加 | `applyKilocodeProviderConfig()`, `applyKilocodeConfig()` |
+| `src/commands/onboard-types.ts` | 修正 | `AuthChoice` に `kilocode-api-key` を追加、オプションに `kilocodeApiKey` を追加 |
+| `src/commands/auth-choice-options.ts` | 修正 | `kilocode` グループとオプションを追加 |
+| `src/commands/auth-choice.preferred-provider.ts` | 修正 | `kilocode-api-key` のマッピングを追加 |
+| `src/commands/auth-choice.apply.api-providers.ts` | 修正 | `kilocode-api-key` の処理ロジックを追加 |
+| `src/cli/program/register.onboard.ts` | 修正 | CLI オプション `--kilocode-api-key` を追加 |
+| `src/commands/onboard-non-interactive/local/auth-choice.ts` | 修正 | 非対話モードでの処理を追加 |
+| `src/commands/onboard-auth.ts` | 修正 | 新しい関数のエクスポートを追加 |
+| `src/agents/pi-embedded-runner/cache-ttl.ts` | 修正 | kilocode プロバイダーのキャッシュ適格性を追加 |
+| `src/agents/transcript-policy.ts` | 修正 | kilocode 経由の Gemini モデル用サニタイズ処理を追加 |

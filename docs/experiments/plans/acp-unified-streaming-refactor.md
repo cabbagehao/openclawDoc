@@ -1,96 +1,92 @@
 ---
-summary: "Holy grail refactor plan for one unified runtime streaming pipeline across main, subagent, and ACP"
+summary: "メイン、サブエージェント、および ACP にわたる、統合されたランタイムストリーミングパイプラインのリファクタリング計画"
 owner: "onutc"
 status: "draft"
 last_updated: "2026-02-25"
-title: "Unified Runtime Streaming Refactor Plan"
+title: "統合ランタイムストリーミングのリファクタリング計画"
+x-i18n:
+  source_hash: "298025b10056c75136ba4c0935ea27d957df1ad5a41a78ce2942b72030662274"
 ---
 
-# Unified Runtime Streaming Refactor Plan
+# 統合ランタイムストリーミングのリファクタリング計画
 
-## Objective
+## 目的
 
-Deliver one shared streaming pipeline for `main`, `subagent`, and `acp` so all runtimes get identical coalescing, chunking, delivery ordering, and crash recovery behavior.
+`main`, `subagent`, および `acp` のすべてのランタイムにおいて、バッファリング（結合）、チャンク化、配信順序の制御、およびクラッシュリカバリの挙動を統一するため、単一の共有ストリーミングパイプラインを構築します。
 
-## Why this exists
+## 背景
 
-- Current behavior is split across multiple runtime-specific shaping paths.
-- Formatting/coalescing bugs can be fixed in one path but remain in others.
-- Delivery consistency, duplicate suppression, and recovery semantics are harder to reason about.
+- 現在の挙動は、ランタイムごとの複数の処理パスに分かれて実装されています。
+- フォーマットや結合に関するバグ修正が、特定のパスにのみ適用され、他に取り残されるケースが発生しています。
+- 配信の一貫性、重複の抑制、およびリカバリ（復旧）セマンティクスの管理が複雑になっています。
 
-## Target architecture
+## 目指すべきアーキテクチャ
 
-Single pipeline, runtime-specific adapters:
+単一のパイプラインに対し、ランタイム固有のアダプターを接続する構造にします:
 
-1. Runtime adapters emit canonical events only.
-2. Shared stream assembler coalesces and finalizes text/tool/status events.
-3. Shared channel projector applies channel-specific chunking/formatting once.
-4. Shared delivery ledger enforces idempotent send/replay semantics.
-5. Outbound channel adapter executes sends and records delivery checkpoints.
+1. **ランタイムアダプター**: 正規化されたイベントのみを発行する。
+2. **共有ストリームアセンブラ**: テキスト、ツール、ステータスの各イベントを結合し、確定させる。
+3. **共有チャネルプロジェクター**: チャネル固有のチャンク化とフォーマットを一度だけ適用する。
+4. **共有配信元帳 (Ledger)**: べき等な送信とリプレイのセマンティクスを強制する。
+5. **アウトバウンドチャネルアダプター**: 実際の送信を実行し、配信チェックポイントを記録する。
 
-Canonical event contract:
+**正規イベントの定義:**
+- `turn_started` (ターン開始)
+- `text_delta` (テキスト差分)
+- `block_final` (ブロック確定)
+- `tool_started` (ツール開始)
+- `tool_finished` (ツール終了)
+- `status` (ステータス)
+- `turn_completed` (ターン完了)
+- `turn_failed` (ターン失敗)
+- `turn_cancelled` (キャンセル)
 
-- `turn_started`
-- `text_delta`
-- `block_final`
-- `tool_started`
-- `tool_finished`
-- `status`
-- `turn_completed`
-- `turn_failed`
-- `turn_cancelled`
+## ワークストリーム
 
-## Workstreams
+### 1) 正規ストリーミングコントラクト (契約)
+- 厳格なイベントスキーマと検証ロジックをコア側に定義。
+- アダプターのコントラクトテストを追加し、各ランタイムが互換性のあるイベントを発行することを保証。
+- 不正な形式のランタイムイベントを早期に拒否し、構造化された診断情報を表示。
 
-### 1) Canonical streaming contract
+### 2) 共有ストリームプロセッサ
+- ランタイムごとにバラバラだった結合・投影ロジックを、単一のプロセッサに統合。
+- プロセッサがテキスト差分のバッファリング、アイドル時のフラッシュ、最大チャンクサイズでの分割、および完了時のフラッシュを管理。
+- ACP/main/subagent 間での設定の乖離を防ぐため、ストリーミング構成の解決を単一のヘルパーに移動。
 
-- Define strict event schema + validation in core.
-- Add adapter contract tests to guarantee each runtime emits compatible events.
-- Reject malformed runtime events early and surface structured diagnostics.
+### 3) 共有チャネル投影
+- チャネルアダプターを「受動的」なものに保つ: 確定したブロックを受け取って送信するだけの役割にする。
+- Discord 固有のチャンク化の癖などを、チャネルプロジェクター内に集約。
+- 投影ステップの前までは、パイプラインを特定のチャネルに依存しない（チャネルアグノスティックな）状態に保つ。
 
-### 2) Shared stream processor
+### 4) 配信元帳 + リプレイ
+- ターンごと、チャンクごとの配信 ID を導入。
+- 物理的な送信の前後でチェックポイントを記録。
+- 再起動時、未完了のチャンクをべき等にリプレイし、重複送信を避ける。
 
-- Replace runtime-specific coalescer/projector logic with one processor.
-- Processor owns text delta buffering, idle flush, max-chunk splitting, and completion flush.
-- Move ACP/main/subagent config resolution into one helper to prevent drift.
+### 5) 移行と切り替え
+- **フェーズ 1 (Shadow mode)**: 新しいパイプラインで出力を計算しつつ、送信自体は旧パスで行い、結果を比較検証する。
+- **フェーズ 2 (Cutover)**: リスクを考慮しながら、ランタイムごとに順次新パイプラインへ切り替える (`acp` -> `subagent` -> `main` またはその逆)。
+- **フェーズ 3**: ランタイム固有の古いストリーミングコードを削除。
 
-### 3) Shared channel projection
+## 非目標
 
-- Keep channel adapters dumb: accept finalized blocks and send.
-- Move Discord-specific chunking quirks to channel projector only.
-- Keep pipeline channel-agnostic before projection.
+- 本リファクタリングにおいて、ACP のポリシーや権限モデルの変更は行わない。
+- 投影の互換性修正を除き、チャネル固有の機能拡張は行わない。
+- 通信路（トランスポート）やバックエンドの再設計は行わない（イベントの互換性に必要な場合を除き、acpx プラグインコントラクトは現状を維持）。
 
-### 4) Delivery ledger + replay
+## リスクと緩和策
 
-- Add per-turn/per-chunk delivery IDs.
-- Record checkpoints before and after physical send.
-- On restart, replay pending chunks idempotently and avoid duplicates.
+- **リスク**: 既存の main/subagent パスでのデグレード（先祖返り）。
+  - **緩和策**: シャドウモードでの比較、アダプターのコントラクトテスト、チャネルの E2E テストの実施。
+- **リスク**: クラッシュリカバリ時の重複送信。
+  - **緩和策**: 永続的な配信 ID の導入と、配信アダプターでのべき等なリプレイの実装。
+- **リスク**: 各ランタイムアダプターが再び独自の進化を遂げてしまう。
+  - **緩和策**: すべてのアダプターに対し、共有コントラクトテストスイートへの合格を必須とする。
 
-### 5) Migration and cutover
+## 合格基準
 
-- Phase 1: shadow mode (new pipeline computes output but old path sends; compare).
-- Phase 2: runtime-by-runtime cutover (`acp`, then `subagent`, then `main` or reverse by risk).
-- Phase 3: delete legacy runtime-specific streaming code.
-
-## Non-goals
-
-- No changes to ACP policy/permissions model in this refactor.
-- No channel-specific feature expansion outside projection compatibility fixes.
-- No transport/backend redesign (acpx plugin contract remains as-is unless needed for event parity).
-
-## Risks and mitigations
-
-- Risk: behavioral regressions in existing main/subagent paths.
-  Mitigation: shadow mode diffing + adapter contract tests + channel e2e tests.
-- Risk: duplicate sends during crash recovery.
-  Mitigation: durable delivery IDs + idempotent replay in delivery adapter.
-- Risk: runtime adapters diverge again.
-  Mitigation: required shared contract test suite for all adapters.
-
-## Acceptance criteria
-
-- All runtimes pass shared streaming contract tests.
-- Discord ACP/main/subagent produce equivalent spacing/chunking behavior for tiny deltas.
-- Crash/restart replay sends no duplicate chunk for the same delivery ID.
-- Legacy ACP projector/coalescer path is removed.
-- Streaming config resolution is shared and runtime-independent.
+- すべてのランタイムが共有ストリーミングコントラクトテストに合格すること。
+- Discord において、ACP/main/subagent が微小な差分（delta）に対しても同等の改行・チャンク化挙動を示すこと。
+- クラッシュ/再起動後のリプレイにおいて、同一の配信 ID に対して重複したチャンクが送信されないこと。
+- レガシーな ACP プロジェクター/アセンブラパスが削除されていること。
+- ストリーミング設定の解決処理が共通化され、ランタイムに依存しないこと。

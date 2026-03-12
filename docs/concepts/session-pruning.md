@@ -1,81 +1,83 @@
 ---
-title: "Session Pruning"
-summary: "Session pruning: tool-result trimming to reduce context bloat"
+title: "セッションプルーニング (削減)"
+summary: "セッションプルーニング: コンテキストの肥大化を抑えるためのツール実行結果のトリミング"
 read_when:
-  - You want to reduce LLM context growth from tool outputs
-  - You are tuning agents.defaults.contextPruning
+  - ツール出力による LLM コンテキストの増大を抑制したい場合
+  - agents.defaults.contextPruning の設定を調整したい場合
+x-i18n:
+  source_hash: "aedb9f60dddc17a92834e74b264ccba63e1561cf41bb5d56f4e55d83cd544b83"
 ---
 
-# Session Pruning
+# セッションプルーニング (削減)
 
-Session pruning trims **old tool results** from the in-memory context right before each LLM call. It does **not** rewrite the on-disk session history (`*.jsonl`).
+セッションプルーニングは、LLM を呼び出す直前に、メモリ上のコンテキストから **古いツールの実行結果** をトリミング（削減）する機能です。ディスク上のセッション履歴 (`*.jsonl`) を書き換えることは **ありません**。
 
-## When it runs
+## 実行のタイミング
 
-- When `mode: "cache-ttl"` is enabled and the last Anthropic call for the session is older than `ttl`.
-- Only affects the messages sent to the model for that request.
-- Only active for Anthropic API calls (and OpenRouter Anthropic models).
-- For best results, match `ttl` to your model `cacheRetention` policy (`short` = 5m, `long` = 1h).
-- After a prune, the TTL window resets so subsequent requests keep cache until `ttl` expires again.
+- `mode: "cache-ttl"` が有効で、そのセッションの直前の Anthropic 呼び出しから `ttl` 以上の時間が経過している場合に実行されます。
+- その回のリクエストでモデルに送信されるメッセージ群にのみ影響します。
+- Anthropic API（および OpenRouter 経由の Anthropic モデル）への呼び出し時のみ有効です。
+- モデルの `cacheRetention` ポリシー（`short` = 5分, `long` = 1時間）に合わせて `ttl` を設定すると、最も効果的です。
+- プルーニングが実行されると TTL ウィンドウがリセットされ、再び `ttl` が経過するまでは以降のリクエストでもキャッシュが維持されます。
 
-## Smart defaults (Anthropic)
+## スマートデフォルト (Anthropic)
 
-- **OAuth or setup-token** profiles: enable `cache-ttl` pruning and set heartbeat to `1h`.
-- **API key** profiles: enable `cache-ttl` pruning, set heartbeat to `30m`, and default `cacheRetention: "short"` on Anthropic models.
-- If you set any of these values explicitly, OpenClaw does **not** override them.
+- **OAuth または setup-token** プロファイルを使用する場合: `cache-ttl` プルーニングが有効になり、ハートビート間隔が `1h` に設定されます。
+- **API キー** プロファイルを使用する場合: `cache-ttl` プルーニングが有効になり、ハートビート間隔が `30m`、Anthropic モデルの `cacheRetention` がデフォルトで `"short"` に設定されます。
+- これらの値を構成ファイルで明示的に設定している場合、OpenClaw はそれらの値を上書きしません。
 
-## What this improves (cost + cache behavior)
+## 導入のメリット (コストとキャッシュ挙動)
 
-- **Why prune:** Anthropic prompt caching only applies within the TTL. If a session goes idle past the TTL, the next request re-caches the full prompt unless you trim it first.
-- **What gets cheaper:** pruning reduces the **cacheWrite** size for that first request after the TTL expires.
-- **Why the TTL reset matters:** once pruning runs, the cache window resets, so follow‑up requests can reuse the freshly cached prompt instead of re-caching the full history again.
-- **What it does not do:** pruning doesn’t add tokens or “double” costs; it only changes what gets cached on that first post‑TTL request.
+- **なぜプルーニングが必要か**: Anthropic のプロンプトキャッシュは TTL（有効期間）内でのみ有効です。セッションが TTL を超えてアイドル状態になると、次にリクエストを送る際に、事前にトリミングを行わない限りプロンプト全体が再キャッシュ（課金対象）されてしまいます。
+- **コスト削減効果**: TTL 経過後の最初の回において、プルーニングにより **cacheWrite** のサイズを削減できます。
+- **TTL リセットの意味**: プルーニングが実行されるとキャッシュの有効期間がリセットされるため、その後の連続したリクエストでは、履歴全体を再キャッシュすることなく、新しくキャッシュされたプロンプトを再利用できます。
+- **注意点**: プルーニング自体がトークンを増やしたり、コストを「二重に」発生させたりすることはありません。あくまで TTL 経過後の最初のリクエストでキャッシュされる内容を調整するだけです。
 
-## What can be pruned
+## 削減の対象となるもの
 
-- Only `toolResult` messages.
-- User + assistant messages are **never** modified.
-- The last `keepLastAssistants` assistant messages are protected; tool results after that cutoff are not pruned.
-- If there aren’t enough assistant messages to establish the cutoff, pruning is skipped.
-- Tool results containing **image blocks** are skipped (never trimmed/cleared).
+- `toolResult` メッセージ（ツールの実行結果）のみが対象です。
+- ユーザーやアシスタントのメッセージが変更されることは **ありません**。
+- 直近の `keepLastAssistants` 件のアシスタントメッセージは保護され、それ以降のツール結果はプルーニングされません。
+- 基準を満たす十分な数のアシスタントメッセージがない場合、プルーニングはスキップされます。
+- **画像ブロック** を含むツールの結果は、スキップ（トリミングや消去の対象外）されます。
 
-## Context window estimation
+## コンテキストウィンドウの推定
 
-Pruning uses an estimated context window (chars ≈ tokens × 4). The base window is resolved in this order:
+プルーニングでは推定されたコンテキストウィンドウサイズ（文字数 ≈ トークン数 × 4）を使用します。基準となるウィンドウサイズは以下の優先順位で決定されます:
 
-1. `models.providers.*.models[].contextWindow` override.
-2. Model definition `contextWindow` (from the model registry).
-3. Default `200000` tokens.
+1. `models.providers.*.models[].contextWindow` の上書き設定。
+2. モデルカタログに定義された `contextWindow`。
+3. デフォルト値の `200000` トークン。
 
-If `agents.defaults.contextTokens` is set, it is treated as a cap (min) on the resolved window.
+`agents.defaults.contextTokens` が設定されている場合、解決されたウィンドウサイズの上限（最小値）として扱われます。
 
-## Mode
+## モード
 
 ### cache-ttl
 
-- Pruning only runs if the last Anthropic call is older than `ttl` (default `5m`).
-- When it runs: same soft-trim + hard-clear behavior as before.
+- 直前の Anthropic 呼び出しから `ttl` (デフォルト `5m`) 以上経過している場合にのみ実行されます。
+- 実行時の挙動: 後述の「ソフトトリム」と「ハードクリア」を行います。
 
-## Soft vs hard pruning
+## ソフトプルーニング vs ハードプルーニング
 
-- **Soft-trim**: only for oversized tool results.
-  - Keeps head + tail, inserts `...`, and appends a note with the original size.
-  - Skips results with image blocks.
-- **Hard-clear**: replaces the entire tool result with `hardClear.placeholder`.
+- **ソフトトリム (Soft-trim)**: サイズ超過したツール結果に対して行われます。
+  - 先頭と末尾を残して中間を `...` で置き換え、元のサイズを記した注釈を付記します。
+  - 画像ブロックを含む結果はスキップされます。
+- **ハードクリア (Hard-clear)**: ツール結果全体を `hardClear.placeholder` に置き換えます。
 
-## Tool selection
+## 対象ツールの選択
 
-- `tools.allow` / `tools.deny` support `*` wildcards.
-- Deny wins.
-- Matching is case-insensitive.
-- Empty allow list => all tools allowed.
+- `tools.allow` / `tools.deny` では `*` ワイルドカードを使用できます。
+- 拒否（deny）設定が優先されます。
+- 一致判定は大文字小文字を区別しません。
+- 許可リストが空の場合は、すべてのツールが対象となります。
 
-## Interaction with other limits
+## 他の制限機能との関係
 
-- Built-in tools already truncate their own output; session pruning is an extra layer that prevents long-running chats from accumulating too much tool output in the model context.
-- Compaction is separate: compaction summarizes and persists, pruning is transient per request. See [/concepts/compaction](/concepts/compaction).
+- 組み込みツールは既に自身の出力を切り捨てる機能を備えています。セッションプルーニングは、長時間のチャットによってモデルのコンテキストにツール出力が過剰に蓄積されるのを防ぐための追加のレイヤーです。
+- 圧縮（Compaction）とは別の機能です。圧縮は内容を要約して履歴ファイルを **書き換え** ますが、プルーニングはリクエストごとの一時的な処理です。詳細は [圧縮（コンパクション）](/concepts/compaction) を参照してください。
 
-## Defaults (when enabled)
+## デフォルト設定 (有効時)
 
 - `ttl`: `"5m"`
 - `keepLastAssistants`: `3`
@@ -83,11 +85,11 @@ If `agents.defaults.contextTokens` is set, it is treated as a cap (min) on the r
 - `hardClearRatio`: `0.5`
 - `minPrunableToolChars`: `50000`
 - `softTrim`: `{ maxChars: 4000, headChars: 1500, tailChars: 1500 }`
-- `hardClear`: `{ enabled: true, placeholder: "[Old tool result content cleared]" }`
+- `hardClear`: `{ enabled: true, placeholder: "[古いツールの実行結果が消去されました]" }`
 
-## Examples
+## 構成例
 
-Default (off):
+デフォルト（オフ）:
 
 ```json5
 {
@@ -95,7 +97,7 @@ Default (off):
 }
 ```
 
-Enable TTL-aware pruning:
+TTL を考慮したプルーニングを有効化:
 
 ```json5
 {
@@ -103,7 +105,7 @@ Enable TTL-aware pruning:
 }
 ```
 
-Restrict pruning to specific tools:
+特定のツールに限定してプルーニングを行う:
 
 ```json5
 {
@@ -118,4 +120,4 @@ Restrict pruning to specific tools:
 }
 ```
 
-See config reference: [Gateway Configuration](/gateway/configuration)
+構成リファレンス: [ゲートウェイ構成](/gateway/configuration)

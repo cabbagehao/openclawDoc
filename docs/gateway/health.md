@@ -1,35 +1,37 @@
 ---
-summary: "Health check steps for channel connectivity"
+summary: "チャネル接続のヘルスチェック（健全性確認）手順"
 read_when:
-  - Diagnosing WhatsApp channel health
-title: "Health Checks"
+  - 各チャネル（WhatsApp など）の健全性を診断する場合
+title: "ヘルスチェック"
+x-i18n:
+  source_hash: "74f242e98244c135e1322682ed6b67d70f3b404aca783b1bb5de96a27c2c1b01"
 ---
 
-# Health Checks (CLI)
+# ヘルスチェック (CLI)
 
-Short guide to verify channel connectivity without guessing.
+各チャネルの接続状態を推測に頼らず確実に確認するための、短いガイドです。
 
-## Quick checks
+## クイックチェック
 
-- `openclaw status` — local summary: gateway reachability/mode, update hint, linked channel auth age, sessions + recent activity.
-- `openclaw status --all` — full local diagnosis (read-only, color, safe to paste for debugging).
-- `openclaw status --deep` — also probes the running Gateway (per-channel probes when supported).
-- `openclaw health --json` — asks the running Gateway for a full health snapshot (WS-only; no direct Baileys socket).
-- Send `/status` as a standalone message in WhatsApp/WebChat to get a status reply without invoking the agent.
-- Logs: tail `/tmp/openclaw/openclaw-*.log` and filter for `web-heartbeat`, `web-reconnect`, `web-auto-reply`, `web-inbound`.
+- `openclaw status`: ローカル環境のサマリーを表示します。ゲートウェイへの到達可能性、動作モード、アップデートの有無、リンクされたチャネル認証の経過時間、セッション一覧と最近のアクティビティが含まれます。
+- `openclaw status --all`: 完全なローカル診断を実行します。読み取り専用で色分けされており、デバッグ用にコピー＆ペーストするのに適しています。
+- `openclaw status --deep`: 稼働中のゲートウェイに対しても問い合わせ（プローブ）を行い、対応しているチャネルのライブステータスを確認します。
+- `openclaw health --json`: 稼働中のゲートウェイから完全なヘルスのスナップショットを取得します（WebSocket 経由での確認。個別のチャネルソケットを直接操作することはありません）。
+- チャット内での `/status`: WhatsApp や WebChat などで独立したメッセージとして `/status` を送信すると、エージェントを実行することなく、その場のステータスを返信させることができます。
+- ログの確認: `/tmp/openclaw/openclaw-*.log` を tail し、`web-heartbeat`, `web-reconnect`, `web-auto-reply`, `web-inbound` といったキーワードでフィルタリングしてください。
 
-## Deep diagnostics
+## 詳細な診断
 
-- Creds on disk: `ls -l ~/.openclaw/credentials/whatsapp/<accountId>/creds.json` (mtime should be recent).
-- Session store: `ls -l ~/.openclaw/agents/<agentId>/sessions/sessions.json` (path can be overridden in config). Count and recent recipients are surfaced via `status`.
-- Relink flow: `openclaw channels logout && openclaw channels login --verbose` when status codes 409–515 or `loggedOut` appear in logs. (Note: the QR login flow auto-restarts once for status 515 after pairing.)
+- ディスク上の認証情報: `ls -l ~/.openclaw/credentials/whatsapp/<accountId>/creds.json` の更新日時（mtime）が最近のものであるか確認してください。
+- セッションストア: `ls -l ~/.openclaw/agents/<agentId>/sessions/sessions.json`（パスは構成で変更可能です）。セッション数や最近の通信相手は `status` コマンドで確認できます。
+- 再リンク（再ログイン）フロー: ログにステータスコード 409〜515 や `loggedOut` が表示される場合は、`openclaw channels logout` を実行した後に `openclaw channels login --verbose` でリンクし直してください。（注: QR ログインフローでは、ペアリング後のステータス 515 の際に一度だけ自動的に再起動します）。
 
-## When something fails
+## 失敗時の対応パターン
 
-- `logged out` or status 409–515 → relink with `openclaw channels logout` then `openclaw channels login`.
-- Gateway unreachable → start it: `openclaw gateway --port 18789` (use `--force` if the port is busy).
-- No inbound messages → confirm linked phone is online and the sender is allowed (`channels.whatsapp.allowFrom`); for group chats, ensure allowlist + mention rules match (`channels.whatsapp.groups`, `agents.list[].groupChat.mentionPatterns`).
+- **「Logged out」またはステータス 409〜515**: `openclaw channels logout` の後に `openclaw channels login` を行い、再度リンクしてください。
+- **ゲートウェイに接続できない**: `openclaw gateway --port 18789` を実行して起動してください（ポートが塞がっている場合は `--force` を検討してください）。
+- **メッセージが届かない**: リンクされたスマートフォンがオンラインであること、および送信者が `channels.whatsapp.allowFrom` で許可されていることを確認してください。グループチャットの場合は、許可リスト設定（`channels.whatsapp.groups`）やメンションパターン設定（`agents.list[].groupChat.mentionPatterns`）が一致しているか確認してください。
 
-## Dedicated "health" command
+## 専用の `health` コマンド
 
-`openclaw health --json` asks the running Gateway for its health snapshot (no direct channel sockets from the CLI). It reports linked creds/auth age when available, per-channel probe summaries, session-store summary, and a probe duration. It exits non-zero if the Gateway is unreachable or the probe fails/timeouts. Use `--timeout <ms>` to override the 10s default.
+`openclaw health --json` は、稼働中のゲートウェイに現在のヘルス状況を問い合わせます（CLI からチャネルのソケットを直接開くことはありません）。リンクされた認証情報の経過時間、チャネルごとのプローブ結果、セッションストアのサマリー、およびプローブに要した時間が報告されます。ゲートウェイに到達できない場合や、プローブが失敗・タイムアウトした場合は、0 以外の終了コードで終了します。デフォルトのタイムアウト（10 秒）を変更するには `--timeout <ms>` を使用してください。

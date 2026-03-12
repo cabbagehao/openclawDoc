@@ -1,43 +1,40 @@
 ---
-summary: "How the mac app embeds the gateway WebChat and how to debug it"
+summary: "Mac アプリにゲートウェイ WebChat を埋め込む方法とそれをデバッグする方法"
 read_when:
-  - Debugging mac WebChat view or loopback port
-title: "WebChat"
+  - Mac の WebChat ビューや loopback port をデバッグするとき
+title: "ウェブチャット"
+x-i18n:
+  source_hash: "6e72893255fa01cafa1252c4d5accf76e87f9b7720158c14442b99b60753363e"
 ---
 
-# WebChat (macOS app)
+# WebChat (macOS アプリ)
 
-The macOS menu bar app embeds the WebChat UI as a native SwiftUI view. It
-connects to the Gateway and defaults to the **main session** for the selected
-agent (with a session switcher for other sessions).
+macOS のメニュー バー アプリは、WebChat UI をネイティブの SwiftUI view として埋め込んでいます。ゲートウェイへ接続し、選択中エージェントの **main session** を既定対象とします。必要に応じて他 session へ切り替える UI も備えています。
 
-- **Local mode**: connects directly to the local Gateway WebSocket.
-- **Remote mode**: forwards the Gateway control port over SSH and uses that
-  tunnel as the data plane.
+- **Local mode**: ローカルのゲートウェイ WebSocket へ直接接続します。
+- **Remote mode**: ゲートウェイの control port を SSH で転送し、そのトンネルを data plane として使います。
 
-## Launch & debugging
+## 起動とデバッグ
 
-- Manual: Lobster menu → “Open Chat”.
-- Auto‑open for testing:
+- 手動起動: Lobster menu → "Open Chat"
+- テスト用に自動起動:
 
   ```bash
   dist/OpenClaw.app/Contents/MacOS/OpenClaw --webchat
   ```
 
-- Logs: `./scripts/clawlog.sh` (subsystem `ai.openclaw`, category `WebChatSwiftUI`).
+- ログ: `./scripts/clawlog.sh` (subsystem `ai.openclaw`、category `WebChatSwiftUI`)
 
-## How it’s wired
+## 配線構成
 
-- Data plane: Gateway WS methods `chat.history`, `chat.send`, `chat.abort`,
-  `chat.inject` and events `chat`, `agent`, `presence`, `tick`, `health`.
-- Session: defaults to the primary session (`main`, or `global` when scope is
-  global). The UI can switch between sessions.
-- Onboarding uses a dedicated session to keep first‑run setup separate.
+- Data plane: ゲートウェイ WS の `chat.history`、`chat.send`、`chat.abort`、`chat.inject` と、イベント `chat`、`agent`、`presence`、`tick`、`health`
+- Session: 既定では primary session (`main`、または scope が global の場合は `global`) を使います。UI から session を切り替えられます。
+- オンボーディングでは専用 session を使い、初回セットアップの対話を通常のチャット session から分離します。
 
-## Security surface
+## セキュリティ面
 
-- Remote mode forwards only the Gateway WebSocket control port over SSH.
+- Remote mode では、SSH 経由で転送するのはゲートウェイ WebSocket の control port だけです。
 
-## Known limitations
+## 既知の制限
 
-- The UI is optimized for chat sessions (not a full browser sandbox).
+- UI はチャット session 向けに最適化されており、完全なブラウザー サンドボックスではありません。

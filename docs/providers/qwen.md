@@ -1,53 +1,55 @@
 ---
-summary: "Use Qwen OAuth (free tier) in OpenClaw"
+summary: "OpenClaw で Qwen OAuth (無料枠) を使用する"
 read_when:
-  - You want to use Qwen with OpenClaw
-  - You want free-tier OAuth access to Qwen Coder
-title: "Qwen"
+  - OpenClaw で Qwen を使用したい
+  - Qwen Coder への無料層 OAuth アクセスが必要です
+title: "クウェン"
+x-i18n:
+  source_hash: "88b88e224e2fecbb1ca26e24fbccdbe25609be40b38335d0451343a5da53fdd4"
 ---
 
-# Qwen
+# クウェン
 
-Qwen provides a free-tier OAuth flow for Qwen Coder and Qwen Vision models
-(2,000 requests/day, subject to Qwen rate limits).
+Qwen は、Qwen Coder および Qwen Vision モデルに無料層 OAuth フローを提供します
+(1 日あたり 2,000 リクエスト、Qwen のレート制限の対象となります)。
 
-## Enable the plugin
+## プラグインを有効にする
 
 ```bash
 openclaw plugins enable qwen-portal-auth
 ```
 
-Restart the Gateway after enabling.
+有効にした後、ゲートウェイを再起動します。
 
-## Authenticate
+## 認証する
 
 ```bash
 openclaw models auth login --provider qwen-portal --set-default
 ```
 
-This runs the Qwen device-code OAuth flow and writes a provider entry to your
-`models.json` (plus a `qwen` alias for quick switching).
+これにより、Qwen デバイスコード OAuth フローが実行され、プロバイダー エントリが
+`models.json` (さらに、クイック切り替え用の `qwen` エイリアス)。
 
-## Model IDs
+## モデル ID
 
 - `qwen-portal/coder-model`
 - `qwen-portal/vision-model`
 
-Switch models with:
+次の方法でモデルを切り替えます。
 
 ```bash
 openclaw models set qwen-portal/coder-model
 ```
 
-## Reuse Qwen Code CLI login
+## Qwen コード CLI ログインを再利用する
 
-If you already logged in with the Qwen Code CLI, OpenClaw will sync credentials
-from `~/.qwen/oauth_creds.json` when it loads the auth store. You still need a
-`models.providers.qwen-portal` entry (use the login command above to create one).
+Qwen Code CLI を使用してすでにログインしている場合、OpenClaw は認証情報を同期します。
+認証ストアをロードするときに `~/.qwen/oauth_creds.json` から。まだ必要です
+`models.providers.qwen-portal` エントリ (作成するには上記のログイン コマンドを使用します)。
 
-## Notes
+## 注意事項
 
-- Tokens auto-refresh; re-run the login command if refresh fails or access is revoked.
-- Default base URL: `https://portal.qwen.ai/v1` (override with
-  `models.providers.qwen-portal.baseUrl` if Qwen provides a different endpoint).
-- See [Model providers](/concepts/model-providers) for provider-wide rules.
+- トークンは自動更新されます。更新が失敗した場合、またはアクセスが取り消された場合は、ログイン コマンドを再実行します。
+- デフォルトのベース URL: `https://portal.qwen.ai/v1` (でオーバーライドします)
+  `models.providers.qwen-portal.baseUrl` Qwen が別のエンドポイントを提供する場合)。
+- プロバイダー全体のルールについては、[モデル プロバイダー](/concepts/model-providers) を参照してください。

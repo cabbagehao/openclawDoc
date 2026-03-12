@@ -1,21 +1,20 @@
 ---
-summary: "Plugin manifest + JSON schema requirements (strict config validation)"
+summary: "プラグイン manifest と JSON Schema 要件（厳格な設定検証）"
 read_when:
-  - You are building a OpenClaw plugin
-  - You need to ship a plugin config schema or debug plugin validation errors
-title: "Plugin Manifest"
+  - OpenClaw プラグインを開発しているとき
+  - プラグイン設定 schema を配布したい、または validation error を調べたいとき
+title: "プラグイン マニフェスト"
+x-i18n:
+  source_hash: "a4c589022cea530e524951a11cf654d3bf80ee536893c2d4b7823d20d583c631"
 ---
 
-# Plugin manifest (openclaw.plugin.json)
+# Plugin manifest（openclaw.plugin.json）
 
-Every plugin **must** ship a `openclaw.plugin.json` file in the **plugin root**.
-OpenClaw uses this manifest to validate configuration **without executing plugin
-code**. Missing or invalid manifests are treated as plugin errors and block
-config validation.
+すべてのプラグインは、**plugin root** に `openclaw.plugin.json` を **必ず** 含める必要があります。OpenClaw はこの manifest を使って、**プラグイン コードを実行せずに** 設定を検証します。manifest が欠落している、または不正な場合は plugin error として扱われ、設定検証は失敗します。
 
-See the full plugin system guide: [Plugins](/tools/plugin).
+完全なプラグイン システムの説明は [Plugins](/tools/plugin) を参照してください。
 
-## Required fields
+## 必須フィールド
 
 ```json
 {
@@ -28,48 +27,41 @@ See the full plugin system guide: [Plugins](/tools/plugin).
 }
 ```
 
-Required keys:
+必須キー:
 
-- `id` (string): canonical plugin id.
-- `configSchema` (object): JSON Schema for plugin config (inline).
+- `id`（string）: 正式な plugin id
+- `configSchema`（object）: プラグイン設定用の JSON Schema（inline）
 
-Optional keys:
+任意キー:
 
-- `kind` (string): plugin kind (examples: `"memory"`, `"context-engine"`).
-- `channels` (array): channel ids registered by this plugin (example: `["matrix"]`).
-- `providers` (array): provider ids registered by this plugin.
-- `skills` (array): skill directories to load (relative to the plugin root).
-- `name` (string): display name for the plugin.
-- `description` (string): short plugin summary.
-- `uiHints` (object): config field labels/placeholders/sensitive flags for UI rendering.
-- `version` (string): plugin version (informational).
+- `kind`（string）: plugin kind（例: `"memory"`、`"context-engine"`）
+- `channels`（array）: このプラグインが登録する channel id（例: `["matrix"]`）
+- `providers`（array）: このプラグインが登録する provider id
+- `skills`（array）: 読み込む skill ディレクトリ（plugin root からの相対パス）
+- `name`（string）: 表示名
+- `description`（string）: 短い概要
+- `uiHints`（object）: UI 描画用の label / placeholder / sensitive flag
+- `version`（string）: プラグイン バージョン（参考情報）
 
-## JSON Schema requirements
+## JSON Schema の要件
 
-- **Every plugin must ship a JSON Schema**, even if it accepts no config.
-- An empty schema is acceptable (for example, `{ "type": "object", "additionalProperties": false }`).
-- Schemas are validated at config read/write time, not at runtime.
+- **すべてのプラグインは JSON Schema を同梱する必要があります。** 設定を一切受け取らない場合でも必須です。
+- 空の schema でも構いません。例: `{ "type": "object", "additionalProperties": false }`
+- schema の検証は runtime ではなく、設定の読み書き時に行われます。
 
-## Validation behavior
+## 検証時の挙動
 
-- Unknown `channels.*` keys are **errors**, unless the channel id is declared by
-  a plugin manifest.
-- `plugins.entries.<id>`, `plugins.allow`, `plugins.deny`, and `plugins.slots.*`
-  must reference **discoverable** plugin ids. Unknown ids are **errors**.
-- If a plugin is installed but has a broken or missing manifest or schema,
-  validation fails and Doctor reports the plugin error.
-- If plugin config exists but the plugin is **disabled**, the config is kept and
-  a **warning** is surfaced in Doctor + logs.
+- プラグイン manifest で宣言されていない channel id に対する `channels.*` キーは **エラー** です。
+- `plugins.entries.<id>`、`plugins.allow`、`plugins.deny`、`plugins.slots.*` は、**発見可能な** plugin id を参照していなければならず、不明な id は **エラー** になります。
+- plugin がインストールされていても、manifest または schema が壊れている、あるいは欠落している場合、validation は失敗し、Doctor が plugin error を報告します。
+- plugin 設定が存在していても、その plugin が **無効** であれば、設定自体は保持され、Doctor とログには **warning** が出ます。
 
-## Notes
+## 補足
 
-- The manifest is **required for all plugins**, including local filesystem loads.
-- Runtime still loads the plugin module separately; the manifest is only for
-  discovery + validation.
-- Exclusive plugin kinds are selected through `plugins.slots.*`.
-  - `kind: "memory"` is selected by `plugins.slots.memory`.
-  - `kind: "context-engine"` is selected by `plugins.slots.contextEngine`
-    (default: built-in `legacy`).
-- If your plugin depends on native modules, document the build steps and any
-  package-manager allowlist requirements (for example, pnpm `allow-build-scripts`
-  - `pnpm rebuild <package>`).
+- manifest は、ローカル filesystem から読み込む plugin を含め、**すべてのプラグインで必須** です。
+- runtime はプラグイン モジュールを別途読み込みます。manifest は discovery と validation のためだけに使われます。
+- 排他的な plugin kind は `plugins.slots.*` で選択します。
+  - `kind: "memory"` は `plugins.slots.memory` で選択します。
+  - `kind: "context-engine"` は `plugins.slots.contextEngine` で選択します。
+    既定値は組み込みの `legacy` です。
+- plugin が native module に依存する場合は、build 手順と、必要な package manager の allowlist 要件（例: pnpm の `allow-build-scripts`、`pnpm rebuild <package>`）を明記してください。

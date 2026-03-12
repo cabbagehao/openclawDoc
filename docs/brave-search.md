@@ -1,22 +1,29 @@
 ---
-summary: "Brave Search API setup for web_search"
+summary: "web_search 向けの Brave Search API 設定"
 read_when:
-  - You want to use Brave Search for web_search
-  - You need a BRAVE_API_KEY or plan details
+  - web_search で Brave Search を使いたい場合
+  - "`BRAVE_API_KEY` またはプランの詳細を確認したい場合"
 title: "Brave Search"
+x-i18n:
+  source_path: "brave-search.md"
+  source_hash: "85737676532c43280193cc12ca9207e518d64f8ac39100be5c4f8ac312311e58"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:52:01.989Z"
 ---
 
 # Brave Search API
 
-OpenClaw supports Brave Search API as a `web_search` provider.
+OpenClaw は、`web_search` のプロバイダーとして Brave Search API をサポートしています。
 
-## Get an API key
+## APIキーの取得
 
-1. Create a Brave Search API account at [https://brave.com/search/api/](https://brave.com/search/api/)
-2. In the dashboard, choose the **Search** plan and generate an API key.
-3. Store the key in config or set `BRAVE_API_KEY` in the Gateway environment.
+1. [https://brave.com/search/api/](https://brave.com/search/api/) で Brave Search API のアカウントを作成します
+2. ダッシュボードで **Search** プランを選択し、API キーを生成します
+3. キーを設定に保存するか、ゲートウェイ環境で `BRAVE_API_KEY` を設定します
 
-## Config example
+## 設定例
 
 ```json5
 {
@@ -33,36 +40,36 @@ OpenClaw supports Brave Search API as a `web_search` provider.
 }
 ```
 
-## Tool parameters
+## ツールパラメータ
 
-| Parameter     | Description                                                         |
-| ------------- | ------------------------------------------------------------------- |
-| `query`       | Search query (required)                                             |
-| `count`       | Number of results to return (1-10, default: 5)                      |
-| `country`     | 2-letter ISO country code (e.g., "US", "DE")                        |
-| `language`    | ISO 639-1 language code for search results (e.g., "en", "de", "fr") |
-| `ui_lang`     | ISO language code for UI elements                                   |
-| `freshness`   | Time filter: `day` (24h), `week`, `month`, or `year`                |
-| `date_after`  | Only results published after this date (YYYY-MM-DD)                 |
-| `date_before` | Only results published before this date (YYYY-MM-DD)                |
+| パラメータ    | 説明                                                           |
+| ------------- | -------------------------------------------------------------- |
+| `query`       | 検索クエリ（必須）                                               |
+| `count`       | 返される結果数（1〜10、デフォルトは 5）                         |
+| `country`     | 2 文字の ISO 国コード（例: `"US"`、`"DE"`）                     |
+| `language`    | 検索結果に使う ISO 639-1 言語コード（例: `"en"`、`"de"`、`"fr"`） |
+| `ui_lang`     | UI 要素に使う ISO 言語コード                                     |
+| `freshness`   | 期間フィルター: `day`（24 時間）、`week`、`month`、`year`        |
+| `date_after`  | この日付以降に公開された結果のみを返します（YYYY-MM-DD）         |
+| `date_before` | この日付以前に公開された結果のみを返します（YYYY-MM-DD）         |
 
-**Examples:**
+**例:**
 
 ```javascript
-// Country and language-specific search
+// 国と言語を指定した検索
 await web_search({
   query: "renewable energy",
   country: "DE",
   language: "de",
 });
 
-// Recent results (past week)
+// 最近の結果（過去1週間）
 await web_search({
   query: "AI news",
   freshness: "week",
 });
 
-// Date range search
+// 日付範囲検索
 await web_search({
   query: "AI developments",
   date_after: "2024-01-01",
@@ -70,11 +77,11 @@ await web_search({
 });
 ```
 
-## Notes
+## 注意事項
 
-- OpenClaw uses the Brave **Search** plan. If you have a legacy subscription (e.g. the original Free plan with 2,000 queries/month), it remains valid but does not include newer features like LLM Context or higher rate limits.
-- Each Brave plan includes **$5/month in free credit** (renewing). The Search plan costs $5 per 1,000 requests, so the credit covers 1,000 queries/month. Set your usage limit in the Brave dashboard to avoid unexpected charges. See the [Brave API portal](https://brave.com/search/api/) for current plans.
-- The Search plan includes the LLM Context endpoint and AI inference rights. Storing results to train or tune models requires a plan with explicit storage rights. See the Brave [Terms of Service](https://api-dashboard.search.brave.com/terms-of-service).
-- Results are cached for 15 minutes by default (configurable via `cacheTtlMinutes`).
+- OpenClaw では Brave の **Search** プランを使用します。レガシー契約（例: 月 2,000 クエリの旧 Free プラン）がある場合は引き続き利用できますが、LLM Context やより高いレート制限などの新機能は含まれません。
+- Brave の各プランには、毎月更新される **5 ドル分の無料クレジット** が含まれます。Search プランは 1,000 リクエストあたり 5 ドルのため、このクレジットで月 1,000 クエリをまかなえます。想定外の課金を避けるため、Brave のダッシュボードで利用上限を設定してください。現行プランについては [Brave API ポータル](https://brave.com/search/api/) を参照してください。
+- Search プランには LLM Context エンドポイントと AI 推論の利用権が含まれます。結果を保存してモデルの学習や調整に使う場合は、明示的に保存権が付与されたプランが必要です。詳しくは Brave の [利用規約](https://api-dashboard.search.brave.com/terms-of-service) を参照してください。
+- 結果はデフォルトで 15 分間キャッシュされます。`cacheTtlMinutes` で変更できます。
 
-See [Web tools](/tools/web) for the full web_search configuration.
+web_search の設定全体については [Web ツール](/tools/web) を参照してください。

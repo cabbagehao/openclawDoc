@@ -1,61 +1,61 @@
 ---
-summary: "End-to-end guide for running OpenClaw as a personal assistant with safety cautions"
+summary: "安全上の注意を含む、パーソナルアシスタントとしての OpenClaw の実行に関するエンドツーエンドのガイド"
 read_when:
-  - Onboarding a new assistant instance
-  - Reviewing safety/permission implications
-title: "Personal Assistant Setup"
+  - 新しいアシスタントインスタンスのオンボーディング時
+  - セキュリティ/権限の意味合いを確認する場合
+title: "パーソナルアシスタントのセットアップ"
 ---
 
-# Building a personal assistant with OpenClaw
+# OpenClaw でパーソナルアシスタントを構築する
 
-OpenClaw is a WhatsApp + Telegram + Discord + iMessage gateway for **Pi** agents. Plugins add Mattermost. This guide is the "personal assistant" setup: one dedicated WhatsApp number that behaves like your always-on agent.
+OpenClaw は、**Pi** エージェントのための WhatsApp + Telegram + Discord + iMessage ゲートウェイです。プラグインで Mattermost を追加できます。このガイドは「パーソナルアシスタント」のセットアップです。1つの専用の WhatsApp 番号が、常時稼働するアシスタントのように振る舞います。
 
-## ⚠️ Safety first
+## ⚠️ 安全第一
 
-You’re putting an agent in a position to:
+あなたはエージェントを以下のことができる位置に置いています：
 
-- run commands on your machine (depending on your Pi tool setup)
-- read/write files in your workspace
-- send messages back out via WhatsApp/Telegram/Discord/Mattermost (plugin)
+- マシン上でコマンドを実行する（Pi ツールのセットアップに依存）
+- ワークスペース内のファイルの読み取り/書き込み
+- WhatsApp/Telegram/Discord/Mattermost (プラグイン) を介したメッセージの送信
 
-Start conservative:
+保守的に始めてください：
 
-- Always set `channels.whatsapp.allowFrom` (never run open-to-the-world on your personal Mac).
-- Use a dedicated WhatsApp number for the assistant.
-- Heartbeats now default to every 30 minutes. Disable until you trust the setup by setting `agents.defaults.heartbeat.every: "0m"`.
+- 常に `channels.whatsapp.allowFrom` を設定してください（個人の Mac で世界中からアクセス可能な状態で実行しないでください）。
+- アシスタント用に専用の WhatsApp 番号を使用してください。
+- 現在、ハートビートはデフォルトで30分ごとに設定されています。セットアップを信頼できるようになるまでは、`agents.defaults.heartbeat.every: "0m"` を設定して無効にしてください。
 
-## Prerequisites
+## 前提条件
 
-- OpenClaw installed and onboarded — see [Getting Started](/start/getting-started) if you haven't done this yet
-- A second phone number (SIM/eSIM/prepaid) for the assistant
+- OpenClaw のインストールとオンボーディングの完了 — まだ行っていない場合は [はじめに](/start/getting-started) を参照してください
+- アシスタント用の2つ目の電話番号（SIM / eSIM / プリペイド）
 
-## The two-phone setup (recommended)
+## 2台のスマートフォンによるセットアップ (推奨)
 
-You want this:
+この構成をお勧めします：
 
 ```mermaid
 flowchart TB
-    A["<b>Your Phone (personal)<br></b><br>Your WhatsApp<br>+1-555-YOU"] -- message --> B["<b>Second Phone (assistant)<br></b><br>Assistant WA<br>+1-555-ASSIST"]
-    B -- linked via QR --> C["<b>Your Mac (openclaw)<br></b><br>Pi agent"]
+    A["<b>あなたのスマートフォン (個人用)<br></b><br>あなたのWhatsApp<br>+1-555-YOU"] -- メッセージ --> B["<b>2台目のスマートフォン (アシスタント用)<br></b><br>アシスタントWA<br>+1-555-ASSIST"]
+    B -- QR経由でリンク --> C["<b>あなたのMac (openclaw)<br></b><br>Pi エージェント"]
 ```
 
-If you link your personal WhatsApp to OpenClaw, every message to you becomes “agent input”. That’s rarely what you want.
+個人の WhatsApp を OpenClaw にリンクすると、あなた宛のすべてのメッセージが「エージェントの入力」になってしまいます。それはほとんどの場合、望んでいることではありません。
 
-## 5-minute quick start
+## 5分間クイックスタート
 
-1. Pair WhatsApp Web (shows QR; scan with the assistant phone):
+1. WhatsApp Web をペアリングします（QR が表示されるので、アシスタントのスマートフォンでスキャンします）：
 
 ```bash
 openclaw channels login
 ```
 
-2. Start the Gateway (leave it running):
+2. Gateway を起動します（実行したままにします）：
 
 ```bash
 openclaw gateway --port 18789
 ```
 
-3. Put a minimal config in `~/.openclaw/openclaw.json`:
+3. 最小限の設定を `~/.openclaw/openclaw.json` に記述します：
 
 ```json5
 {
@@ -63,26 +63,26 @@ openclaw gateway --port 18789
 }
 ```
 
-Now message the assistant number from your allowlisted phone.
+これで、許可リストに登録されたスマートフォンからアシスタントの番号にメッセージを送信できます。
 
-When onboarding finishes, we auto-open the dashboard and print a clean (non-tokenized) link. If it prompts for auth, paste the token from `gateway.auth.token` into Control UI settings. To reopen later: `openclaw dashboard`.
+オンボーディングが完了すると、自動的にダッシュボードが開き、クリーンな（トークン化されていない）リンクが表示されます。認証を求められた場合は、`gateway.auth.token` のトークンを Control UI の設定に貼り付けてください。後でもう一度開くには、`openclaw dashboard` を実行します。
 
-## Give the agent a workspace (AGENTS)
+## エージェントにワークスペースを与える (AGENTS)
 
-OpenClaw reads operating instructions and “memory” from its workspace directory.
+OpenClaw は、そのワークスペースディレクトリから運用指示と「記憶」を読み取ります。
 
-By default, OpenClaw uses `~/.openclaw/workspace` as the agent workspace, and will create it (plus starter `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`) automatically on setup/first agent run. `BOOTSTRAP.md` is only created when the workspace is brand new (it should not come back after you delete it). `MEMORY.md` is optional (not auto-created); when present, it is loaded for normal sessions. Subagent sessions only inject `AGENTS.md` and `TOOLS.md`.
+デフォルトでは、OpenClaw はエージェントのワークスペースとして `~/.openclaw/workspace` を使用し、セットアップ時やエージェントの初回実行時に自動的に作成します（スターターの `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md` も一緒に作成されます）。`BOOTSTRAP.md` はワークスペースが真新しい場合にのみ作成されます（削除した後に戻ってくることはありません）。`MEMORY.md` はオプションであり（自動作成されません）、存在する場合は通常のセッション用に読み込まれます。サブエージェントのセッションでは、`AGENTS.md` と `TOOLS.md` のみが注入されます。
 
-Tip: treat this folder like OpenClaw’s “memory” and make it a git repo (ideally private) so your `AGENTS.md` + memory files are backed up. If git is installed, brand-new workspaces are auto-initialized.
+ヒント：このフォルダを OpenClaw の「記憶」として扱い、git リポジトリ（理想的にはプライベート）にすることで、`AGENTS.md` とメモリファイルがバックアップされるようにしてください。git がインストールされている場合、真新しいワークスペースは自動的に初期化されます。
 
 ```bash
 openclaw setup
 ```
 
-Full workspace layout + backup guide: [Agent workspace](/concepts/agent-workspace)
-Memory workflow: [Memory](/concepts/memory)
+完全なワークスペースのレイアウトとバックアップガイド：[エージェントワークスペース](/concepts/agent-workspace)
+メモリのワークフロー：[メモリ](/concepts/memory)
 
-Optional: choose a different workspace with `agents.defaults.workspace` (supports `~`).
+オプション：`agents.defaults.workspace` で別のワークスペースを選択します（`~` をサポートしています）。
 
 ```json5
 {
@@ -92,7 +92,7 @@ Optional: choose a different workspace with `agents.defaults.workspace` (support
 }
 ```
 
-If you already ship your own workspace files from a repo, you can disable bootstrap file creation entirely:
+リポジトリから独自のワークスペースファイルをすでに提供している場合は、ブートストラップファイルの作成を完全に無効にすることができます：
 
 ```json5
 {
@@ -102,15 +102,15 @@ If you already ship your own workspace files from a repo, you can disable bootst
 }
 ```
 
-## The config that turns it into “an assistant”
+## それを「アシスタント」に変える設定
 
-OpenClaw defaults to a good assistant setup, but you’ll usually want to tune:
+OpenClaw のデフォルトは優れたアシスタントのセットアップになっていますが、通常は以下を調整することになります：
 
-- persona/instructions in `SOUL.md`
-- thinking defaults (if desired)
-- heartbeats (once you trust it)
+- `SOUL.md` におけるペルソナ / 指示
+- 思考のデフォルト（必要に応じて）
+- ハートビート（信頼できるようになってから）
 
-Example:
+例：
 
 ```json5
 {
@@ -120,7 +120,7 @@ Example:
     workspace: "~/.openclaw/workspace",
     thinkingDefault: "high",
     timeoutSeconds: 1800,
-    // Start with 0; enable later.
+    // 0から始め、後で有効にします。
     heartbeat: { every: "0m" },
   },
   channels: {
@@ -148,24 +148,24 @@ Example:
 }
 ```
 
-## Sessions and memory
+## セッションとメモリ
 
-- Session files: `~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
-- Session metadata (token usage, last route, etc): `~/.openclaw/agents/<agentId>/sessions/sessions.json` (legacy: `~/.openclaw/sessions/sessions.json`)
-- `/new` or `/reset` starts a fresh session for that chat (configurable via `resetTriggers`). If sent alone, the agent replies with a short hello to confirm the reset.
-- `/compact [instructions]` compacts the session context and reports the remaining context budget.
+- セッションファイル：`~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
+- セッションのメタデータ（トークン使用量、最後のルートなど）：`~/.openclaw/agents/<agentId>/sessions/sessions.json`（旧：`~/.openclaw/sessions/sessions.json`）
+- `/new` または `/reset` は、そのチャットの新しいセッションを開始します（`resetTriggers` 経由で設定可能）。単独で送信された場合、エージェントはリセットを確認するために短い挨拶で返信します。
+- `/compact [instructions]` はセッションコンテキストを圧縮し、残りのコンテキスト予算を報告します。
 
-## Heartbeats (proactive mode)
+## ハートビート（プロアクティブモード）
 
-By default, OpenClaw runs a heartbeat every 30 minutes with the prompt:
-`Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
-Set `agents.defaults.heartbeat.every: "0m"` to disable.
+デフォルトでは、OpenClaw は30分ごとに以下のプロンプトでハートビートを実行します：
+`存在する場合、HEARTBEAT.mdを読み取ります（ワークスペースコンテキスト）。それに厳密に従ってください。過去のチャットから古いタスクを推測したり繰り返したりしないでください。注意が必要なことが何もない場合は、HEARTBEAT_OK と返信してください。`
+無効にするには `agents.defaults.heartbeat.every: "0m"` を設定します。
 
-- If `HEARTBEAT.md` exists but is effectively empty (only blank lines and markdown headers like `# Heading`), OpenClaw skips the heartbeat run to save API calls.
-- If the file is missing, the heartbeat still runs and the model decides what to do.
-- If the agent replies with `HEARTBEAT_OK` (optionally with short padding; see `agents.defaults.heartbeat.ackMaxChars`), OpenClaw suppresses outbound delivery for that heartbeat.
-- By default, heartbeat delivery to DM-style `user:<id>` targets is allowed. Set `agents.defaults.heartbeat.directPolicy: "block"` to suppress direct-target delivery while keeping heartbeat runs active.
-- Heartbeats run full agent turns — shorter intervals burn more tokens.
+- `HEARTBEAT.md` は存在するが、実質的に空である（空白行と `# Heading` のようなマークダウンヘッダーのみ）場合、OpenClaw は API 呼び出しを節約するためにハートビートの実行をスキップします。
+- ファイルが欠落している場合でも、ハートビートは実行され、モデルが何をすべきかを決定します。
+- エージェントが `HEARTBEAT_OK` と返信した場合（オプションで短いパディングを使用できます。`agents.defaults.heartbeat.ackMaxChars` を参照）、OpenClaw はそのハートビートの外部への配信を抑制します。
+- デフォルトでは、DM スタイルの `user:<id>` ターゲットへのハートビートの配信は許可されています。ハートビートの実行はアクティブにしたまま、ダイレクトターゲットへの配信を抑制するには、`agents.defaults.heartbeat.directPolicy: "block"` を設定します。
+- ハートビートはエージェントのフルターンを実行します — 間隔を短くするとより多くのトークンを消費します。
 
 ```json5
 {
@@ -175,42 +175,42 @@ Set `agents.defaults.heartbeat.every: "0m"` to disable.
 }
 ```
 
-## Media in and out
+## メディアの入出力
 
-Inbound attachments (images/audio/docs) can be surfaced to your command via templates:
+受信した添付ファイル（画像/音声/ドキュメント）は、テンプレートを介してコマンドに表示できます：
 
-- `{{MediaPath}}` (local temp file path)
-- `{{MediaUrl}}` (pseudo-URL)
-- `{{Transcript}}` (if audio transcription is enabled)
+- `{{MediaPath}}`（ローカルの一時ファイルパス）
+- `{{MediaUrl}}`（疑似URL）
+- `{{Transcript}}`（音声書き起こしが有効な場合）
 
-Outbound attachments from the agent: include `MEDIA:<path-or-url>` on its own line (no spaces). Example:
+エージェントからの送信添付ファイル：その行に単独で `MEDIA:<path-or-url>` を含めます（スペースなし）。例：
 
 ```
-Here’s the screenshot.
+ここにスクリーンショットがあります。
 MEDIA:https://example.com/screenshot.png
 ```
 
-OpenClaw extracts these and sends them as media alongside the text.
+OpenClaw はこれらを抽出し、テキストと一緒にメディアとして送信します。
 
-## Operations checklist
+## 運用チェックリスト
 
 ```bash
-openclaw status          # local status (creds, sessions, queued events)
-openclaw status --all    # full diagnosis (read-only, pasteable)
-openclaw status --deep   # adds gateway health probes (Telegram + Discord)
-openclaw health --json   # gateway health snapshot (WS)
+openclaw status          # ローカルステータス（資格情報、セッション、キューに入っているイベント）
+openclaw status --all    # 完全な診断（読み取り専用、貼り付け可能）
+openclaw status --deep   # ゲートウェイのヘルスプローブを追加（Telegram + Discord）
+openclaw health --json   # ゲートウェイヘルスのスナップショット（WS）
 ```
 
-Logs live under `/tmp/openclaw/` (default: `openclaw-YYYY-MM-DD.log`).
+ログは `/tmp/openclaw/` の下に配置されます（デフォルト：`openclaw-YYYY-MM-DD.log`）。
 
-## Next steps
+## 次のステップ
 
 - WebChat: [WebChat](/web/webchat)
-- Gateway ops: [Gateway runbook](/gateway)
-- Cron + wakeups: [Cron jobs](/automation/cron-jobs)
-- macOS menu bar companion: [OpenClaw macOS app](/platforms/macos)
-- iOS node app: [iOS app](/platforms/ios)
-- Android node app: [Android app](/platforms/android)
-- Windows status: [Windows (WSL2)](/platforms/windows)
-- Linux status: [Linux app](/platforms/linux)
-- Security: [Security](/gateway/security)
+- ゲートウェイの運用: [Gateway ランブック](/gateway)
+- Cron + ウェイクアップ: [Cron ジョブ](/automation/cron-jobs)
+- macOS メニューバーコンパニオン: [OpenClaw macOS アプリ](/platforms/macos)
+- iOS ノードアプリ: [iOS アプリ](/platforms/ios)
+- Android ノードアプリ: [Android アプリ](/platforms/android)
+- Windows ステータス: [Windows (WSL2)](/platforms/windows)
+- Linux ステータス: [Linux アプリ](/platforms/linux)
+- セキュリティ: [セキュリティ](/gateway/security)

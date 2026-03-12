@@ -1,224 +1,117 @@
 ---
-summary: "Session management rules, keys, and persistence for chats"
+summary: "会話のセッション管理ルール、キーの体系、および永続化の仕組み"
 read_when:
-  - Modifying session handling or storage
-title: "Session Management"
+  - セッションのハンドリングや保存方法を変更・確認したい場合
+title: "セッション管理"
 ---
 
-# Session Management
+# セッション管理
 
-OpenClaw treats **one direct-chat session per agent** as primary. Direct chats collapse to `agent:<agentId>:<mainKey>` (default `main`), while group/channel chats get their own keys. `session.mainKey` is honored.
+OpenClaw は、**エージェントごとに 1 つのメイン（ダイレクトチャット）セッション** を主要なものとして扱います。通常のダイレクトメッセージ（DM）は `agent:<agentId>:<mainKey>` (デフォルトのメインキーは `main`) に集約されますが、グループチャットや各チャネルの固有チャットはそれぞれ独立したキーを持ちます。
 
-Use `session.dmScope` to control how **direct messages** are grouped:
+`session.dmScope` 設定を使用して、**ダイレクトメッセージ** のグループ化方法を制御できます:
 
-- `main` (default): all DMs share the main session for continuity.
-- `per-peer`: isolate by sender id across channels.
-- `per-channel-peer`: isolate by channel + sender (recommended for multi-user inboxes).
-- `per-account-channel-peer`: isolate by account + channel + sender (recommended for multi-account inboxes).
-  Use `session.identityLinks` to map provider-prefixed peer ids to a canonical identity so the same person shares a DM session across channels when using `per-peer`, `per-channel-peer`, or `per-account-channel-peer`.
+- `main` (デフォルト): すべての DM がメインセッションを共有し、デバイスを跨いでも会話が継続されます。
+- `per-peer`: 送信者 ID ごとに、チャネルを跨いでセッションを分離します。
+- `per-channel-peer`: チャネル + 送信者の組み合わせごとに分離します（複数人で 1 つのボットを共有する場合に推奨）。
+- `per-account-channel-peer`: アカウント + チャネル + 送信者の組み合わせごとに分離します。
 
-## Secure DM mode (recommended for multi-user setups)
+`session.identityLinks` を使用して、異なるチャネルのユーザー ID を 1 つの「正規のアイデンティティ」に紐付けることができます。これにより、同じユーザーであればチャネルが変わっても同じ DM セッションを継続できるようになります。
 
-> **Security Warning:** If your agent can receive DMs from **multiple people**, you should strongly consider enabling secure DM mode. Without it, all users share the same conversation context, which can leak private information between users.
+## セキュア DM モード (複数人での利用時に推奨)
 
-**Example of the problem with default settings:**
+> **セキュリティ警告:** エージェントが **複数のユーザー** から DM を受け取る可能性がある場合は、セキュア DM モードの有効化を強く検討してください。無効な場合、すべてのユーザーが同じ会話コンテキストを共有することになり、プライベートな情報が他のユーザーに漏洩するリスクがあります。
 
-- Alice (`<SENDER_A>`) messages your agent about a private topic (for example, a medical appointment)
-- Bob (`<SENDER_B>`) messages your agent asking "What were we talking about?"
-- Because both DMs share the same session, the model may answer Bob using Alice's prior context.
+**デフォルト設定で発生しうる問題の例:**
+1. アリスがエージェントにプライベートな相談（例: 通院の予約）を送信します。
+2. その後、ボブが同じエージェントに「さっきは何の話をしていた？」と尋ねます。
+3. すべての DM が同じセッションを共有しているため、エージェントはアリスとの会話内容を元にボブに回答してしまいます。
 
-**The fix:** Set `dmScope` to isolate sessions per user:
+**解決策:** `dmScope` を設定して、ユーザーごとにセッションを分離します。
 
 ```json5
 // ~/.openclaw/openclaw.json
 {
   session: {
-    // Secure DM mode: isolate DM context per channel + sender.
+    // セキュア DM モード: チャネル + 送信者ごとにコンテキストを分離。
     dmScope: "per-channel-peer",
   },
 }
 ```
 
-**When to enable this:**
+**有効にすべき状況:**
+- 複数の送信者に対してペアリングを承認している。
+- 複数のエントリを持つ DM 許可リストを使用している。
+- `dmPolicy: "open"` (誰でも許可) を設定している。
+- 複数の電話番号やアカウントがエージェントにメッセージを送信できる。
 
-- You have pairing approvals for more than one sender
-- You use a DM allowlist with multiple entries
-- You set `dmPolicy: "open"`
-- Multiple phone numbers or accounts can message your agent
+補足事項:
+- 1 人だけで利用する場合は、継続性を重視したデフォルトの `dmScope: "main"` のままで問題ありません。
+- ローカル CLI でのオンボーディング時、未設定であればデフォルトで `session.dmScope: "per-channel-peer"` が書き込まれます。
+- 同じチャネルで複数のアカウントを運用している場合は、`per-account-channel-peer` が最適です。
+- `openclaw security audit` コマンドで現在の DM 設定の安全性を確認できます。
 
-Notes:
+## ゲートウェイが「真実のソース」
 
-- Default is `dmScope: "main"` for continuity (all DMs share the main session). This is fine for single-user setups.
-- Local CLI onboarding writes `session.dmScope: "per-channel-peer"` by default when unset (existing explicit values are preserved).
-- For multi-account inboxes on the same channel, prefer `per-account-channel-peer`.
-- If the same person contacts you on multiple channels, use `session.identityLinks` to collapse their DM sessions into one canonical identity.
-- You can verify your DM settings with `openclaw security audit` (see [security](/cli/security)).
+すべてのセッション状態は **ゲートウェイが所有** します。UI クライアント（macOS アプリ、WebChat、TUI など）は、ローカルファイルを直接読み取るのではなく、ゲートウェイに問い合わせてセッション一覧やトークン数を取得します。
 
-## Gateway is the source of truth
+- **リモートモード** の場合、セッションデータはローカルの Mac ではなく、接続先のリモートホスト上に存在します。
+- UI に表示されるトークン数はゲートウェイのデータに基づきます。クライアント側で JSONL 履歴を解析して計算し直すことはありません。
 
-All session state is **owned by the gateway** (the “master” OpenClaw). UI clients (macOS app, WebChat, etc.) must query the gateway for session lists and token counts instead of reading local files.
+## データの保存場所
 
-- In **remote mode**, the session store you care about lives on the remote gateway host, not your Mac.
-- Token counts shown in UIs come from the gateway’s store fields (`inputTokens`, `outputTokens`, `totalTokens`, `contextTokens`). Clients do not parse JSONL transcripts to “fix up” totals.
+- **ゲートウェイホスト上**:
+  - 管理ファイル: `~/.openclaw/agents/<agentId>/sessions/sessions.json` (エージェントごと)。
+  - 会話履歴（JSONL）: `~/.openclaw/agents/<agentId>/sessions/<SessionId>.jsonl`。
+- 管理ファイルは `sessionKey -> { sessionId, updatedAt, ... }` のマップ構造です。このファイル内のエントリを削除しても安全です（必要に応じて再作成されます）。
+- 履歴ファイルには、UI での識別のために `displayName`, `channel`, `subject` などのメタデータが含まれる場合があります。
+- OpenClaw は、古い Pi や Tau のセッションフォルダを読み込むことはありません。
 
-## Where state lives
+## メンテナンス (クリーンアップ)
 
-- On the **gateway host**:
-  - Store file: `~/.openclaw/agents/<agentId>/sessions/sessions.json` (per agent).
-- Transcripts: `~/.openclaw/agents/<agentId>/sessions/<SessionId>.jsonl` (Telegram topic sessions use `.../<SessionId>-topic-<threadId>.jsonl`).
-- The store is a map `sessionKey -> { sessionId, updatedAt, ... }`. Deleting entries is safe; they are recreated on demand.
-- Group entries may include `displayName`, `channel`, `subject`, `room`, and `space` to label sessions in UIs.
-- Session entries include `origin` metadata (label + routing hints) so UIs can explain where a session came from.
-- OpenClaw does **not** read legacy Pi/Tau session folders.
+OpenClaw は、`sessions.json` や履歴ファイルが際限なく増え続けるのを防ぐため、自動的なメンテナンス機能を備えています。
 
-## Maintenance
+### デフォルト設定
+- 保持期間: 30 日間 (`pruneAfter: "30d"`)
+- 最大件数: 500 件 (`maxEntries: 500`)
+- ローテーション: 10MB を超えたら `sessions.json` を新しくする (`rotateBytes: "10mb"`)
+- ディスク容量制限: デフォルトでは無効 (`maxDiskBytes`)
 
-OpenClaw applies session-store maintenance to keep `sessions.json` and transcript artifacts bounded over time.
+### 仕組み
+セッションの書き込み時にメンテナンスが実行されます。`openclaw sessions cleanup` コマンドで手動実行も可能です。
 
-### Defaults
+- `mode: "warn"` (デフォルト): 削除対象となるエントリを報告するだけで、実際の削除は行いません。
+- `mode: "enforce"`: 以下の順序で実際にクリーンアップを行います:
+  1. 保持期間を過ぎた古いエントリを削除。
+  2. 上限件数を超える古いエントリを削除。
+  3. 参照されなくなった履歴ファイルをアーカイブ。
+  4. 構成されたディスク容量予算 (`maxDiskBytes`) を守るよう、古いものから順に削除。
 
-- `session.maintenance.mode`: `warn`
-- `session.maintenance.pruneAfter`: `30d`
-- `session.maintenance.maxEntries`: `500`
-- `session.maintenance.rotateBytes`: `10mb`
-- `session.maintenance.resetArchiveRetention`: defaults to `pruneAfter` (`30d`)
-- `session.maintenance.maxDiskBytes`: unset (disabled)
-- `session.maintenance.highWaterBytes`: defaults to `80%` of `maxDiskBytes` when budgeting is enabled
+## 転送手段（トランスポート）とセッションキーの紐付け
 
-### How it works
+- **ダイレクトチャット**: `session.dmScope` に従います。
+  - `main`: `agent:<agentId>:<mainKey>`。複数の電話番号やチャネルが 1 つのメインセッションに紐付き、単一の会話として機能します。
+  - `per-peer`: `agent:<agentId>:dm:<peerId>`。
+  - `per-channel-peer`: `agent:<agentId>:<channel>:dm:<peerId>`。
+- **グループチャット**: チャネルごとに独立した状態を持ちます。
+  - 形式: `agent:<agentId>:<channel>:group:<id>` (ルームの場合は `...:channel:<id>`)。
+  - Telegram のトピック（フォーラム）機能では、グループ ID に `:topic:<threadId>` が付加され、トピックごとに分離されます。
+- **その他のソース**:
+  - Cron ジョブ: `cron:<job.id>`
+  - Webhook: `hook:<uuid>`
+  - ノード実行: `node-<nodeId>`
 
-Maintenance runs during session-store writes, and you can trigger it on demand with `openclaw sessions cleanup`.
+## ライフサイクルとリセット
 
-- `mode: "warn"`: reports what would be evicted but does not mutate entries/transcripts.
-- `mode: "enforce"`: applies cleanup in this order:
-  1. prune stale entries older than `pruneAfter`
-  2. cap entry count to `maxEntries` (oldest first)
-  3. archive transcript files for removed entries that are no longer referenced
-  4. purge old `*.deleted.<timestamp>` and `*.reset.<timestamp>` archives by retention policy
-  5. rotate `sessions.json` when it exceeds `rotateBytes`
-  6. if `maxDiskBytes` is set, enforce disk budget toward `highWaterBytes` (oldest artifacts first, then oldest sessions)
+- **リセットポリシー**: セッションは有効期限が切れるまで再利用されます。期限切れの判定は、次にメッセージが届いた際に行われます。
+- **日次リセット**: デフォルトは **ゲートウェイホストの現地時間で午前 4:00** です。前回の更新がこの時間を跨いでいる場合、新しいセッション ID が発行されます。
+- **アイドルリセット**: `idleMinutes` を設定することで、一定時間操作がない場合にリセットできます。日次リセットと併用した場合、どちらか早い方のタイミングでリセットされます。
+- **リセットトリガー**: `/new` または `/reset` メッセージを送ると、即座に新しいセッションが開始されます。`/new <モデル名>` のように指定して、新しいセッションで使用するモデルを変更することも可能です。
+- **手動リセット**: `sessions.json` から特定のエントリを削除するか、JSONL ファイルを削除することで、強制的にリセットできます。
 
-### Performance caveat for large stores
+## 送信ポリシー (Send Policy)
 
-Large session stores are common in high-volume setups. Maintenance work is write-path work, so very large stores can increase write latency.
-
-What increases cost most:
-
-- very high `session.maintenance.maxEntries` values
-- long `pruneAfter` windows that keep stale entries around
-- many transcript/archive artifacts in `~/.openclaw/agents/<agentId>/sessions/`
-- enabling disk budgets (`maxDiskBytes`) without reasonable pruning/cap limits
-
-What to do:
-
-- use `mode: "enforce"` in production so growth is bounded automatically
-- set both time and count limits (`pruneAfter` + `maxEntries`), not just one
-- set `maxDiskBytes` + `highWaterBytes` for hard upper bounds in large deployments
-- keep `highWaterBytes` meaningfully below `maxDiskBytes` (default is 80%)
-- run `openclaw sessions cleanup --dry-run --json` after config changes to verify projected impact before enforcing
-- for frequent active sessions, pass `--active-key` when running manual cleanup
-
-### Customize examples
-
-Use a conservative enforce policy:
-
-```json5
-{
-  session: {
-    maintenance: {
-      mode: "enforce",
-      pruneAfter: "45d",
-      maxEntries: 800,
-      rotateBytes: "20mb",
-      resetArchiveRetention: "14d",
-    },
-  },
-}
-```
-
-Enable a hard disk budget for the sessions directory:
-
-```json5
-{
-  session: {
-    maintenance: {
-      mode: "enforce",
-      maxDiskBytes: "1gb",
-      highWaterBytes: "800mb",
-    },
-  },
-}
-```
-
-Tune for larger installs (example):
-
-```json5
-{
-  session: {
-    maintenance: {
-      mode: "enforce",
-      pruneAfter: "14d",
-      maxEntries: 2000,
-      rotateBytes: "25mb",
-      maxDiskBytes: "2gb",
-      highWaterBytes: "1.6gb",
-    },
-  },
-}
-```
-
-Preview or force maintenance from CLI:
-
-```bash
-openclaw sessions cleanup --dry-run
-openclaw sessions cleanup --enforce
-```
-
-## Session pruning
-
-OpenClaw trims **old tool results** from the in-memory context right before LLM calls by default.
-This does **not** rewrite JSONL history. See [/concepts/session-pruning](/concepts/session-pruning).
-
-## Pre-compaction memory flush
-
-When a session nears auto-compaction, OpenClaw can run a **silent memory flush**
-turn that reminds the model to write durable notes to disk. This only runs when
-the workspace is writable. See [Memory](/concepts/memory) and
-[Compaction](/concepts/compaction).
-
-## Mapping transports → session keys
-
-- Direct chats follow `session.dmScope` (default `main`).
-  - `main`: `agent:<agentId>:<mainKey>` (continuity across devices/channels).
-    - Multiple phone numbers and channels can map to the same agent main key; they act as transports into one conversation.
-  - `per-peer`: `agent:<agentId>:dm:<peerId>`.
-  - `per-channel-peer`: `agent:<agentId>:<channel>:dm:<peerId>`.
-  - `per-account-channel-peer`: `agent:<agentId>:<channel>:<accountId>:dm:<peerId>` (accountId defaults to `default`).
-  - If `session.identityLinks` matches a provider-prefixed peer id (for example `telegram:123`), the canonical key replaces `<peerId>` so the same person shares a session across channels.
-- Group chats isolate state: `agent:<agentId>:<channel>:group:<id>` (rooms/channels use `agent:<agentId>:<channel>:channel:<id>`).
-  - Telegram forum topics append `:topic:<threadId>` to the group id for isolation.
-  - Legacy `group:<id>` keys are still recognized for migration.
-- Inbound contexts may still use `group:<id>`; the channel is inferred from `Provider` and normalized to the canonical `agent:<agentId>:<channel>:group:<id>` form.
-- Other sources:
-  - Cron jobs: `cron:<job.id>`
-  - Webhooks: `hook:<uuid>` (unless explicitly set by the hook)
-  - Node runs: `node-<nodeId>`
-
-## Lifecycle
-
-- Reset policy: sessions are reused until they expire, and expiry is evaluated on the next inbound message.
-- Daily reset: defaults to **4:00 AM local time on the gateway host**. A session is stale once its last update is earlier than the most recent daily reset time.
-- Idle reset (optional): `idleMinutes` adds a sliding idle window. When both daily and idle resets are configured, **whichever expires first** forces a new session.
-- Legacy idle-only: if you set `session.idleMinutes` without any `session.reset`/`resetByType` config, OpenClaw stays in idle-only mode for backward compatibility.
-- Per-type overrides (optional): `resetByType` lets you override the policy for `direct`, `group`, and `thread` sessions (thread = Slack/Discord threads, Telegram topics, Matrix threads when provided by the connector).
-- Per-channel overrides (optional): `resetByChannel` overrides the reset policy for a channel (applies to all session types for that channel and takes precedence over `reset`/`resetByType`).
-- Reset triggers: exact `/new` or `/reset` (plus any extras in `resetTriggers`) start a fresh session id and pass the remainder of the message through. `/new <model>` accepts a model alias, `provider/model`, or provider name (fuzzy match) to set the new session model. If `/new` or `/reset` is sent alone, OpenClaw runs a short “hello” greeting turn to confirm the reset.
-- Manual reset: delete specific keys from the store or remove the JSONL transcript; the next message recreates them.
-- Isolated cron jobs always mint a fresh `sessionId` per run (no idle reuse).
-
-## Send policy (optional)
-
-Block delivery for specific session types without listing individual ids.
+特定のセッションタイプ（例: Discord のグループチャットのみ等）に対して、一括で送信を制限できます。
 
 ```json5
 {
@@ -227,8 +120,6 @@ Block delivery for specific session types without listing individual ids.
       rules: [
         { action: "deny", match: { channel: "discord", chatType: "group" } },
         { action: "deny", match: { keyPrefix: "cron:" } },
-        // Match the raw session key (including the `agent:<id>:` prefix).
-        { action: "deny", match: { rawKeyPrefix: "agent:main:discord:" } },
       ],
       default: "allow",
     },
@@ -236,75 +127,16 @@ Block delivery for specific session types without listing individual ids.
 }
 ```
 
-Runtime override (owner only):
+チャット内からの上書き（所有者のみ）:
+- `/send on` → このセッションでの送信を許可。
+- `/send off` → このセッションでの送信を拒否。
+- `/send inherit` → 上書きを解除し、構成ファイルの設定に従う。
 
-- `/send on` → allow for this session
-- `/send off` → deny for this session
-- `/send inherit` → clear override and use config rules
-  Send these as standalone messages so they register.
+## 検査とデバッグ
 
-## Configuration (optional rename example)
-
-```json5
-// ~/.openclaw/openclaw.json
-{
-  session: {
-    scope: "per-sender", // keep group keys separate
-    dmScope: "main", // DM continuity (set per-channel-peer/per-account-channel-peer for shared inboxes)
-    identityLinks: {
-      alice: ["telegram:123456789", "discord:987654321012345678"],
-    },
-    reset: {
-      // Defaults: mode=daily, atHour=4 (gateway host local time).
-      // If you also set idleMinutes, whichever expires first wins.
-      mode: "daily",
-      atHour: 4,
-      idleMinutes: 120,
-    },
-    resetByType: {
-      thread: { mode: "daily", atHour: 4 },
-      direct: { mode: "idle", idleMinutes: 240 },
-      group: { mode: "idle", idleMinutes: 120 },
-    },
-    resetByChannel: {
-      discord: { mode: "idle", idleMinutes: 10080 },
-    },
-    resetTriggers: ["/new", "/reset"],
-    store: "~/.openclaw/agents/{agentId}/sessions/sessions.json",
-    mainKey: "main",
-  },
-}
-```
-
-## Inspecting
-
-- `openclaw status` — shows store path and recent sessions.
-- `openclaw sessions --json` — dumps every entry (filter with `--active <minutes>`).
-- `openclaw gateway call sessions.list --params '{}'` — fetch sessions from the running gateway (use `--url`/`--token` for remote gateway access).
-- Send `/status` as a standalone message in chat to see whether the agent is reachable, how much of the session context is used, current thinking/verbose toggles, and when your WhatsApp web creds were last refreshed (helps spot relink needs).
-- Send `/context list` or `/context detail` to see what’s in the system prompt and injected workspace files (and the biggest context contributors).
-- Send `/stop` (or standalone abort phrases like `stop`, `stop action`, `stop run`, `stop openclaw`) to abort the current run, clear queued followups for that session, and stop any sub-agent runs spawned from it (the reply includes the stopped count).
-- Send `/compact` (optional instructions) as a standalone message to summarize older context and free up window space. See [/concepts/compaction](/concepts/compaction).
-- JSONL transcripts can be opened directly to review full turns.
-
-## Tips
-
-- Keep the primary key dedicated to 1:1 traffic; let groups keep their own keys.
-- When automating cleanup, delete individual keys instead of the whole store to preserve context elsewhere.
-
-## Session origin metadata
-
-Each session entry records where it came from (best-effort) in `origin`:
-
-- `label`: human label (resolved from conversation label + group subject/channel)
-- `provider`: normalized channel id (including extensions)
-- `from`/`to`: raw routing ids from the inbound envelope
-- `accountId`: provider account id (when multi-account)
-- `threadId`: thread/topic id when the channel supports it
-  The origin fields are populated for direct messages, channels, and groups. If a
-  connector only updates delivery routing (for example, to keep a DM main session
-  fresh), it should still provide inbound context so the session keeps its
-  explainer metadata. Extensions can do this by sending `ConversationLabel`,
-  `GroupSubject`, `GroupChannel`, `GroupSpace`, and `SenderName` in the inbound
-  context and calling `recordSessionMetaFromInbound` (or passing the same context
-  to `updateLastRoute`).
+- `openclaw status`: ストアのパスと最近のセッションを表示します。
+- `openclaw sessions --json`: すべてのエントリをダンプします。
+- チャットで `/status` を送る: エージェントの到達可能性、コンテキストの消費量、現在の設定などを確認できます。
+- チャットで `/context list` を送る: システムプロンプトに含まれる内容や、消費量の多い要因を確認できます。
+- チャットで `/stop` を送る: 現在の実行を中止し、キューに溜まったメッセージをクリアします。
+- チャットで `/compact` を送る: 古い履歴を要約して、コンテキストウィンドウの空きを増やします。詳細は [圧縮（コンパクション）](/concepts/compaction) を参照してください。

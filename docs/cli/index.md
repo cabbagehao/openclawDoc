@@ -1,98 +1,100 @@
 ---
-summary: "OpenClaw CLI reference for `openclaw` commands, subcommands, and options"
+summary: "`openclaw` コマンド、サブコマンド、およびオプションに関する CLI リファレンス"
 read_when:
-  - Adding or modifying CLI commands or options
-  - Documenting new command surfaces
-title: "CLI Reference"
+  - CLI コマンドやオプションを追加・変更する場合
+  - 新しいコマンド体系をドキュメント化する場合
+title: "CLI リファレンス"
+x-i18n:
+  source_hash: "122d1f3db36f15fd5ab39380cb6ae9dbf8fe42a575e864e73d5abc064be9f0d5"
 ---
 
-# CLI reference
+# CLI リファレンス
 
-This page describes the current CLI behavior. If commands change, update this doc.
+このページでは、現在の CLI の動作について説明します。コマンド仕様が変更された場合は、このドキュメントも更新してください。
 
-## Command pages
+## 各コマンドのページ
 
-- [`setup`](/cli/setup)
-- [`onboard`](/cli/onboard)
-- [`configure`](/cli/configure)
-- [`config`](/cli/config)
-- [`completion`](/cli/completion)
-- [`doctor`](/cli/doctor)
-- [`dashboard`](/cli/dashboard)
-- [`backup`](/cli/backup)
-- [`reset`](/cli/reset)
-- [`uninstall`](/cli/uninstall)
-- [`update`](/cli/update)
-- [`message`](/cli/message)
-- [`agent`](/cli/agent)
-- [`agents`](/cli/agents)
-- [`acp`](/cli/acp)
-- [`status`](/cli/status)
-- [`health`](/cli/health)
-- [`sessions`](/cli/sessions)
-- [`gateway`](/cli/gateway)
-- [`logs`](/cli/logs)
-- [`system`](/cli/system)
-- [`models`](/cli/models)
-- [`memory`](/cli/memory)
-- [`directory`](/cli/directory)
-- [`nodes`](/cli/nodes)
-- [`devices`](/cli/devices)
-- [`node`](/cli/node)
-- [`approvals`](/cli/approvals)
-- [`sandbox`](/cli/sandbox)
-- [`tui`](/cli/tui)
-- [`browser`](/cli/browser)
-- [`cron`](/cli/cron)
-- [`dns`](/cli/dns)
-- [`docs`](/cli/docs)
-- [`hooks`](/cli/hooks)
-- [`webhooks`](/cli/webhooks)
-- [`pairing`](/cli/pairing)
-- [`qr`](/cli/qr)
-- [`plugins`](/cli/plugins) (plugin commands)
-- [`channels`](/cli/channels)
-- [`security`](/cli/security)
-- [`secrets`](/cli/secrets)
-- [`skills`](/cli/skills)
-- [`daemon`](/cli/daemon) (legacy alias for gateway service commands)
-- [`clawbot`](/cli/clawbot) (legacy alias namespace)
-- [`voicecall`](/cli/voicecall) (plugin; if installed)
+- [`setup`](/cli/setup) - セットアップ
+- [`onboard`](/cli/onboard) - オンボーディング
+- [`configure`](/cli/configure) - 対話型設定
+- [`config`](/cli/config) - 構成管理
+- [`completion`](/cli/completion) - シェル補完
+- [`doctor`](/cli/doctor) - 診断と修復
+- [`dashboard`](/cli/dashboard) - コントロール UI
+- [`backup`](/cli/backup) - バックアップ
+- [`reset`](/cli/reset) - リセット
+- [`uninstall`](/cli/uninstall) - アンインストール
+- [`update`](/cli/update) - アップデート
+- [`message`](/cli/message) - メッセージ送信
+- [`agent`](/cli/agent) - エージェント実行
+- [`agents`](/cli/agents) - 複数エージェント管理
+- [`acp`](/cli/acp) - ACP ブリッジ
+- [`status`](/cli/status) - ステータス表示
+- [`health`](/cli/health) - ヘルスチェック
+- [`sessions`](/cli/sessions) - セッション管理
+- [`gateway`](/cli/gateway) - ゲートウェイ管理
+- [`logs`](/cli/logs) - ログ参照
+- [`system`](/cli/system) - システム制御
+- [`models`](/cli/models) - モデル管理
+- [`memory`](/cli/memory) - 記憶（ベクトル検索）
+- [`directory`](/cli/directory) - 連絡先ディレクトリ
+- [`nodes`](/cli/nodes) - ノード管理
+- [`devices`](/cli/devices) - デバイス管理
+- [`node`](/cli/node) - ノードホスト実行
+- [`approvals`](/cli/approvals) - 実行承認管理
+- [`sandbox`](/cli/sandbox) - サンドボックス管理
+- [`tui`](/cli/tui) - ターミナル UI
+- [`browser`](/cli/browser) - ブラウザ制御
+- [`cron`](/cli/cron) - Cron ジョブ管理
+- [`dns`](/cli/dns) - 検出用 DNS 設定
+- [`docs`](/cli/docs) - ドキュメント検索
+- [`hooks`](/cli/hooks) - フック管理
+- [`webhooks`](/cli/webhooks) - Webhook 管理
+- [`pairing`](/cli/pairing) - ペアリング承認
+- [`qr`](/cli/qr) - QR コード表示
+- [`plugins`](/cli/plugins) - プラグイン管理
+- [`channels`](/cli/channels) - チャネル管理
+- [`security`](/cli/security) - セキュリティ監査
+- [`secrets`](/cli/secrets) - シークレット管理
+- [`skills`](/cli/skills) - スキル管理
+- [`daemon`](/cli/daemon) - デーモン管理 (レガシー)
+- [`clawbot`](/cli/clawbot) - 旧コマンド別名
+- [`voicecall`](/cli/voicecall) - 音声通話プラグイン（インストール時のみ）
 
-## Global flags
+## グローバルフラグ
 
-- `--dev`: isolate state under `~/.openclaw-dev` and shift default ports.
-- `--profile <name>`: isolate state under `~/.openclaw-<name>`.
-- `--no-color`: disable ANSI colors.
-- `--update`: shorthand for `openclaw update` (source installs only).
-- `-V`, `--version`, `-v`: print version and exit.
+- `--dev`: 状態を `~/.openclaw-dev` に分離し、デフォルトポートを変更します。
+- `--profile <name>`: 状態を `~/.openclaw-<name>` に分離します。
+- `--no-color`: ANSI カラーを無効にします。
+- `--update`: `openclaw update` の短縮形 (ソースインストール時のみ有効)。
+- `-V`, `--version`, `-v`: バージョンを表示して終了します。
 
-## Output styling
+## 出力スタイル
 
-- ANSI colors and progress indicators only render in TTY sessions.
-- OSC-8 hyperlinks render as clickable links in supported terminals; otherwise we fall back to plain URLs.
-- `--json` (and `--plain` where supported) disables styling for clean output.
-- `--no-color` disables ANSI styling; `NO_COLOR=1` is also respected.
-- Long-running commands show a progress indicator (OSC 9;4 when supported).
+- ANSI カラーと進捗インジケーターは、TTY セッション（対話型ターミナル）でのみ表示されます。
+- OSC-8 ハイパーリンクは、対応しているターミナルではクリック可能なリンクとして表示されます。未対応の場合は通常の URL が表示されます。
+- `--json` (および対応コマンドでの `--plain`) は、装飾を無効にしてクリーンなデータを出力します。
+- `--no-color` または環境変数 `NO_COLOR=1` が指定された場合、カラー装飾が無効になります。
+- 実行時間の長いコマンドでは、進捗インジケーター（対応端末では OSC 9;4）が表示されます。
 
-## Color palette
+## カラーパレット
 
-OpenClaw uses a lobster palette for CLI output.
+OpenClaw CLI は、ロブスター（ザリガニ）をモチーフにしたパレットを使用しています。
 
-- `accent` (#FF5A2D): headings, labels, primary highlights.
-- `accentBright` (#FF7A3D): command names, emphasis.
-- `accentDim` (#D14A22): secondary highlight text.
-- `info` (#FF8A5B): informational values.
-- `success` (#2FBF71): success states.
-- `warn` (#FFB020): warnings, fallbacks, attention.
-- `error` (#E23D2D): errors, failures.
-- `muted` (#8B7F77): de-emphasis, metadata.
+- `accent` (#FF5A2D): 見出し、ラベル、主要なハイライト。
+- `accentBright` (#FF7A3D): コマンド名、強調。
+- `accentDim` (#D14A22): 二次的な強調テキスト。
+- `info` (#FF8A5B): 情報的な値。
+- `success` (#2FBF71): 成功ステータス。
+- `warn` (#FFB020): 警告、フォールバック、注意。
+- `error` (#E23D2D): エラー、失敗。
+- `muted` (#8B7F77): 非強調、メタデータ。
 
-Palette source of truth: `src/terminal/palette.ts` (aka “lobster seam”).
+パレットの定義元: `src/terminal/palette.ts`
 
-## Command tree
+## コマンドツリー
 
-```
+```text
 openclaw [--dev] [--profile <name>] <command>
   setup
   onboard
@@ -263,872 +265,270 @@ openclaw [--dev] [--profile <name>] <command>
   tui
 ```
 
-Note: plugins can add additional top-level commands (for example `openclaw voicecall`).
+注意: プラグインによって、さらにトップレベルコマンドが追加される場合があります（例: `openclaw voicecall`）。
 
-## Security
+---
 
-- `openclaw security audit` — audit config + local state for common security foot-guns.
-- `openclaw security audit --deep` — best-effort live Gateway probe.
-- `openclaw security audit --fix` — tighten safe defaults and chmod state/config.
+## セキュリティ (Security)
 
-## Secrets
+- `openclaw security audit` — 構成やローカル状態をスキャンし、セキュリティ上の脆弱な設定がないか監査します。
+- `openclaw security audit --deep` — 稼働中のゲートウェイに対してもライブプローブを実行します。
+- `openclaw security audit --fix` — 安全なデフォルト設定を適用し、状態ディレクトリや構成ファイルの権限を厳格化します。
 
-- `openclaw secrets reload` — re-resolve refs and atomically swap the runtime snapshot.
-- `openclaw secrets audit` — scan for plaintext residues, unresolved refs, and precedence drift.
-- `openclaw secrets configure` — interactive helper for provider setup + SecretRef mapping + preflight/apply.
-- `openclaw secrets apply --from <plan.json>` — apply a previously generated plan (`--dry-run` supported).
+## シークレット (Secrets)
 
-## Plugins
+- `openclaw secrets reload` — 参照を再解決し、実行時のスナップショットをアトミックに切り替えます。
+- `openclaw secrets audit` — 平文の残存、未解決の参照、優先順位の乖離をスキャンします。
+- `openclaw secrets configure` — プロバイダー設定、SecretRef マッピング、プリフライト/適用を支援する対話型ヘルパーです。
+- `openclaw secrets apply --from <plan.json>` — 事前に生成された実行計画を適用します（`--dry-run` 対応）。
 
-Manage extensions and their config:
+## プラグイン (Plugins)
 
-- `openclaw plugins list` — discover plugins (use `--json` for machine output).
-- `openclaw plugins info <id>` — show details for a plugin.
-- `openclaw plugins install <path|.tgz|npm-spec>` — install a plugin (or add a plugin path to `plugins.load.paths`).
-- `openclaw plugins enable <id>` / `disable <id>` — toggle `plugins.entries.<id>.enabled`.
-- `openclaw plugins doctor` — report plugin load errors.
+拡張機能とその構成を管理します:
 
-Most plugin changes require a gateway restart. See [/plugin](/tools/plugin).
+- `openclaw plugins list` — インストール済みのプラグインを確認します。
+- `openclaw plugins info <id>` — 特定のプラグインの詳細を表示します。
+- `openclaw plugins install <path|.tgz|npm-spec>` — プラグインをインストールします。
+- `openclaw plugins enable <id>` / `disable <id>` — プラグインの有効・無効を切り替えます。
+- `openclaw plugins doctor` — プラグインのロードエラーを報告します。
 
-## Memory
+ほとんどの変更を反映させるにはゲートウェイの再起動が必要です。詳細は [/plugin](/tools/plugin) を参照してください。
 
-Vector search over `MEMORY.md` + `memory/*.md`:
+## 記憶 (Memory)
 
-- `openclaw memory status` — show index stats.
-- `openclaw memory index` — reindex memory files.
-- `openclaw memory search "<query>"` (or `--query "<query>"`) — semantic search over memory.
+`MEMORY.md` や `memory/*.md` に対するベクトル検索を行います:
 
-## Chat slash commands
+- `openclaw memory status` — インデックスの統計情報を表示します。
+- `openclaw memory index` — 記憶ファイルのインデックスを再作成します。
+- `openclaw memory search "<query>"` — 記憶に対するセマンティック検索を実行します。
 
-Chat messages support `/...` commands (text and native). See [/tools/slash-commands](/tools/slash-commands).
+## チャット内スラッシュコマンド
 
-Highlights:
+チャットメッセージ内では `/...` 形式のコマンド（テキストおよびネイティブ）が利用可能です。詳細は [/tools/slash-commands](/tools/slash-commands) を参照してください。
 
-- `/status` for quick diagnostics.
-- `/config` for persisted config changes.
-- `/debug` for runtime-only config overrides (memory, not disk; requires `commands.debug: true`).
+主なコマンド:
+- `/status`: 迅速な自己診断。
+- `/config`: 永続的な構成変更。
+- `/debug`: 実行時のみの構成オーバーライド（ディスクではなくメモリ上のみ、`commands.debug: true` が必要）。
 
-## Setup + onboarding
+## セットアップとオンボーディング
 
 ### `setup`
 
-Initialize config + workspace.
+構成ファイルとワークスペースを初期化します。
 
-Options:
+オプション:
+- `--workspace <dir>`: ワークスペースのパス (デフォルト `~/.openclaw/workspace`)。
+- `--wizard`: オンボーディングウィザードを実行。
+- `--non-interactive`: プロンプトなしで実行。
+- `--mode <local|remote>`: ウィザードのモード。
 
-- `--workspace <dir>`: agent workspace path (default `~/.openclaw/workspace`).
-- `--wizard`: run the onboarding wizard.
-- `--non-interactive`: run wizard without prompts.
-- `--mode <local|remote>`: wizard mode.
-- `--remote-url <url>`: remote Gateway URL.
-- `--remote-token <token>`: remote Gateway token.
-
-Wizard auto-runs when any wizard flags are present (`--non-interactive`, `--mode`, `--remote-url`, `--remote-token`).
+ウィザード関連のフラグが指定された場合、ウィザードが自動的に開始されます。
 
 ### `onboard`
 
-Interactive wizard to set up gateway, workspace, and skills.
+ゲートウェイ、ワークスペース、スキルをセットアップするための対話型ウィザードです。
 
-Options:
-
-- `--workspace <dir>`
-- `--reset` (reset config + credentials + sessions before wizard)
-- `--reset-scope <config|config+creds+sessions|full>` (default `config+creds+sessions`; use `full` to also remove workspace)
-- `--non-interactive`
-- `--mode <local|remote>`
-- `--flow <quickstart|advanced|manual>` (manual is an alias for advanced)
-- `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ai-gateway-api-key|moonshot-api-key|moonshot-api-key-cn|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|mistral-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|custom-api-key|skip>`
-- `--token-provider <id>` (non-interactive; used with `--auth-choice token`)
-- `--token <token>` (non-interactive; used with `--auth-choice token`)
-- `--token-profile-id <id>` (non-interactive; default: `<provider>:manual`)
-- `--token-expires-in <duration>` (non-interactive; e.g. `365d`, `12h`)
-- `--secret-input-mode <plaintext|ref>` (default `plaintext`; use `ref` to store provider default env refs instead of plaintext keys)
-- `--anthropic-api-key <key>`
-- `--openai-api-key <key>`
-- `--mistral-api-key <key>`
-- `--openrouter-api-key <key>`
-- `--ai-gateway-api-key <key>`
-- `--moonshot-api-key <key>`
-- `--kimi-code-api-key <key>`
-- `--gemini-api-key <key>`
-- `--zai-api-key <key>`
-- `--minimax-api-key <key>`
-- `--opencode-zen-api-key <key>`
-- `--custom-base-url <url>` (non-interactive; used with `--auth-choice custom-api-key`)
-- `--custom-model-id <id>` (non-interactive; used with `--auth-choice custom-api-key`)
-- `--custom-api-key <key>` (non-interactive; optional; used with `--auth-choice custom-api-key`; falls back to `CUSTOM_API_KEY` when omitted)
-- `--custom-provider-id <id>` (non-interactive; optional custom provider id)
-- `--custom-compatibility <openai|anthropic>` (non-interactive; optional; default `openai`)
-- `--gateway-port <port>`
-- `--gateway-bind <loopback|lan|tailnet|auto|custom>`
-- `--gateway-auth <token|password>`
-- `--gateway-token <token>`
-- `--gateway-token-ref-env <name>` (non-interactive; store `gateway.auth.token` as an env SecretRef; requires that env var to be set; cannot be combined with `--gateway-token`)
-- `--gateway-password <password>`
-- `--remote-url <url>`
-- `--remote-token <token>`
-- `--tailscale <off|serve|funnel>`
-- `--tailscale-reset-on-exit`
-- `--install-daemon`
-- `--no-install-daemon` (alias: `--skip-daemon`)
-- `--daemon-runtime <node|bun>`
-- `--skip-channels`
-- `--skip-skills`
-- `--skip-health`
-- `--skip-ui`
-- `--node-manager <npm|pnpm|bun>` (pnpm recommended; bun not recommended for Gateway runtime)
-- `--json`
+主なオプション:
+- `--workspace <dir>`: ワークスペースのパス。
+- `--reset`: ウィザード実行前に既存の構成、認証情報、セッションをリセット。
+- `--reset-scope <config|config+creds+sessions|full>`: リセットの範囲。
+- `--auth-choice <...>`: 初期認証方法の選択。
+- `--secret-input-mode <plaintext|ref>`: 認証情報の保存形式（平文か環境変数参照か）。
+- 各プロバイダー用 API キー指定フラグ (`--anthropic-api-key` など)。
+- `--install-daemon`: 管理サービスとしてインストール。
+- `--node-manager <npm|pnpm|bun>`: パッケージマネージャーの選択。
 
 ### `configure`
 
-Interactive configuration wizard (models, channels, skills, gateway).
+対話型の構成設定ウィザード（モデル、チャネル、スキル、ゲートウェイ）です。
 
 ### `config`
 
-Non-interactive config helpers (get/set/unset/file/validate). Running `openclaw config` with no
-subcommand launches the wizard.
+非対話型の構成管理ヘルパーです。サブコマンドなしで実行するとウィザードが開始されます。
 
-Subcommands:
-
-- `config get <path>`: print a config value (dot/bracket path).
-- `config set <path> <value>`: set a value (JSON5 or raw string).
-- `config unset <path>`: remove a value.
-- `config file`: print the active config file path.
-- `config validate`: validate the current config against the schema without starting the gateway.
-- `config validate --json`: emit machine-readable JSON output.
+サブコマンド:
+- `config get <path>`: 指定したパスの値を表示。
+- `config set <path> <value>`: 値を設定 (JSON5 または生文字列)。
+- `config unset <path>`: 設定を削除。
+- `config file`: 有効な構成ファイルのパスを表示。
+- `config validate`: 構成内容をスキーマに対して検証。
 
 ### `doctor`
 
-Health checks + quick fixes (config + gateway + legacy services).
+ヘルスチェックと迅速な修復（構成、ゲートウェイ、レガシーサービス）を行います。
 
-Options:
+オプション:
+- `--yes`: プロンプトを表示せずデフォルト設定を適用。
+- `--non-interactive`: 安全な移行（マイグレーション）のみを自動適用。
+- `--deep`: システム全体をスキャンして余分なインストールがないか確認。
 
-- `--no-workspace-suggestions`: disable workspace memory hints.
-- `--yes`: accept defaults without prompting (headless).
-- `--non-interactive`: skip prompts; apply safe migrations only.
-- `--deep`: scan system services for extra gateway installs.
+---
 
-## Channel helpers
+## 各機能のヘルパー
 
 ### `channels`
 
-Manage chat channel accounts (WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage/MS Teams).
+チャットチャネルのアカウント（WhatsApp, Telegram, Discord, Google Chat, Slack, Mattermost, Signal, iMessage, MS Teams）を管理します。
 
-Subcommands:
-
-- `channels list`: show configured channels and auth profiles.
-- `channels status`: check gateway reachability and channel health (`--probe` runs extra checks; use `openclaw health` or `openclaw status --deep` for gateway health probes).
-- Tip: `channels status` prints warnings with suggested fixes when it can detect common misconfigurations (then points you to `openclaw doctor`).
-- `channels logs`: show recent channel logs from the gateway log file.
-- `channels add`: wizard-style setup when no flags are passed; flags switch to non-interactive mode.
-  - When adding a non-default account to a channel still using single-account top-level config, OpenClaw moves account-scoped values into `channels.<channel>.accounts.default` before writing the new account.
-  - Non-interactive `channels add` does not auto-create/upgrade bindings; channel-only bindings continue to match the default account.
-- `channels remove`: disable by default; pass `--delete` to remove config entries without prompts.
-- `channels login`: interactive channel login (WhatsApp Web only).
-- `channels logout`: log out of a channel session (if supported).
-
-Common options:
-
-- `--channel <name>`: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams`
-- `--account <id>`: channel account id (default `default`)
-- `--name <label>`: display name for the account
-
-`channels login` options:
-
-- `--channel <channel>` (default `whatsapp`; supports `whatsapp`/`web`)
-- `--account <id>`
-- `--verbose`
-
-`channels logout` options:
-
-- `--channel <channel>` (default `whatsapp`)
-- `--account <id>`
-
-`channels list` options:
-
-- `--no-usage`: skip model provider usage/quota snapshots (OAuth/API-backed only).
-- `--json`: output JSON (includes usage unless `--no-usage` is set).
-
-`channels logs` options:
-
-- `--channel <name|all>` (default `all`)
-- `--lines <n>` (default `200`)
-- `--json`
-
-More detail: [/concepts/oauth](/concepts/oauth)
-
-Examples:
-
-```bash
-openclaw channels add --channel telegram --account alerts --name "Alerts Bot" --token $TELEGRAM_BOT_TOKEN
-openclaw channels add --channel discord --account work --name "Work Bot" --token $DISCORD_BOT_TOKEN
-openclaw channels remove --channel discord --account work --delete
-openclaw channels status --probe
-openclaw status --deep
-```
+サブコマンド:
+- `channels list`: 構成済みのチャネルと認証プロファイルを表示。
+- `channels status`: 到達可能性と健全性を確認。
+- `channels logs`: ゲートウェイのログファイルから最近のチャネルログを抽出。
+- `channels add`: アカウントの追加（対話型ウィザードあり）。
+- `channels login`: 対話型ログイン (WhatsApp Web など)。
 
 ### `skills`
 
-List and inspect available skills plus readiness info.
+利用可能なスキルとその準備状況を確認します。
 
-Subcommands:
-
-- `skills list`: list skills (default when no subcommand).
-- `skills info <name>`: show details for one skill.
-- `skills check`: summary of ready vs missing requirements.
-
-Options:
-
-- `--eligible`: show only ready skills.
-- `--json`: output JSON (no styling).
-- `-v`, `--verbose`: include missing requirements detail.
-
-Tip: use `npx clawhub` to search, install, and sync skills.
+サブコマンド:
+- `skills list`: スキルの一覧表示。
+- `skills info <name>`: 特定のスキルの詳細。
+- `skills check`: 必要条件を満たしているかのチェック。
 
 ### `pairing`
 
-Approve DM pairing requests across channels.
-
-Subcommands:
-
-- `pairing list [channel] [--channel <channel>] [--account <id>] [--json]`
-- `pairing approve <channel> <code> [--account <id>] [--notify]`
-- `pairing approve --channel <channel> [--account <id>] <code> [--notify]`
+各チャネルにおける DM のペアリング要求を承認します。
 
 ### `devices`
 
-Manage gateway device pairing entries and per-role device tokens.
-
-Subcommands:
-
-- `devices list [--json]`
-- `devices approve [requestId] [--latest]`
-- `devices reject <requestId>`
-- `devices remove <deviceId>`
-- `devices clear --yes [--pending]`
-- `devices rotate --device <id> --role <role> [--scope <scope...>]`
-- `devices revoke --device <id> --role <role>`
+ゲートウェイのデバイスペアリングエントリと、ロールごとのデバイストークンを管理します。
 
 ### `webhooks gmail`
 
-Gmail Pub/Sub hook setup + runner. See [/automation/gmail-pubsub](/automation/gmail-pubsub).
-
-Subcommands:
-
-- `webhooks gmail setup` (requires `--account <email>`; supports `--project`, `--topic`, `--subscription`, `--label`, `--hook-url`, `--hook-token`, `--push-token`, `--bind`, `--port`, `--path`, `--include-body`, `--max-bytes`, `--renew-minutes`, `--tailscale`, `--tailscale-path`, `--tailscale-target`, `--push-endpoint`, `--json`)
-- `webhooks gmail run` (runtime overrides for the same flags)
+Gmail Pub/Sub フックのセットアップと実行を行います。
 
 ### `dns setup`
 
-Wide-area discovery DNS helper (CoreDNS + Tailscale). See [/gateway/discovery](/gateway/discovery).
+広域検出用 DNS ヘルパー（CoreDNS + Tailscale）の設定を行います。
 
-Options:
+---
 
-- `--apply`: install/update CoreDNS config (requires sudo; macOS only).
-
-## Messaging + agent
+## メッセージングとエージェント
 
 ### `message`
 
-Unified outbound messaging + channel actions.
+統合されたアウトバウンドメッセージ送信およびチャネル操作を行います。
 
-See: [/cli/message](/cli/message)
-
-Subcommands:
-
-- `message send|poll|react|reactions|read|edit|delete|pin|unpin|pins|permissions|search|timeout|kick|ban`
-- `message thread <create|list|reply>`
-- `message emoji <list|upload>`
-- `message sticker <send|upload>`
-- `message role <info|add|remove>`
-- `message channel <info|list>`
-- `message member info`
-- `message voice status`
-- `message event <list|create>`
-
-Examples:
-
-- `openclaw message send --target +15555550123 --message "Hi"`
-- `openclaw message poll --channel discord --target channel:123 --poll-question "Snack?" --poll-option Pizza --poll-option Sushi`
+サブコマンド:
+`send`, `poll`, `react`, `read`, `edit`, `delete`, `pin`, `permissions`, `search`, `thread`, `emoji`, `sticker`, `role`, `channel`, `member info` など。
 
 ### `agent`
 
-Run one agent turn via the Gateway (or `--local` embedded).
-
-Required:
-
-- `--message <text>`
-
-Options:
-
-- `--to <dest>` (for session key and optional delivery)
-- `--session-id <id>`
-- `--thinking <off|minimal|low|medium|high|xhigh>` (GPT-5.2 + Codex models only)
-- `--verbose <on|full|off>`
-- `--channel <whatsapp|telegram|discord|slack|mattermost|signal|imessage|msteams>`
-- `--local`
-- `--deliver`
-- `--json`
-- `--timeout <seconds>`
+ゲートウェイ経由でエージェントターンを 1 回実行します。
 
 ### `agents`
 
-Manage isolated agents (workspaces + auth + routing).
+分離されたエージェント（ワークスペース、認証、ルーティングが独立）を管理します。
 
-#### `agents list`
-
-List configured agents.
-
-Options:
-
-- `--json`
-- `--bindings`
-
-#### `agents add [name]`
-
-Add a new isolated agent. Runs the guided wizard unless flags (or `--non-interactive`) are passed; `--workspace` is required in non-interactive mode.
-
-Options:
-
-- `--workspace <dir>`
-- `--model <id>`
-- `--agent-dir <dir>`
-- `--bind <channel[:accountId]>` (repeatable)
-- `--non-interactive`
-- `--json`
-
-Binding specs use `channel[:accountId]`. When `accountId` is omitted, OpenClaw may resolve account scope via channel defaults/plugin hooks; otherwise it is a channel binding without explicit account scope.
-
-#### `agents bindings`
-
-List routing bindings.
-
-Options:
-
-- `--agent <id>`
-- `--json`
-
-#### `agents bind`
-
-Add routing bindings for an agent.
-
-Options:
-
-- `--agent <id>`
-- `--bind <channel[:accountId]>` (repeatable)
-- `--json`
-
-#### `agents unbind`
-
-Remove routing bindings for an agent.
-
-Options:
-
-- `--agent <id>`
-- `--bind <channel[:accountId]>` (repeatable)
-- `--all`
-- `--json`
-
-#### `agents delete <id>`
-
-Delete an agent and prune its workspace + state.
-
-Options:
-
-- `--force`
-- `--json`
+サブコマンド:
+`list`, `add`, `delete`, `bind`, `unbind`, `bindings` など。
 
 ### `acp`
 
-Run the ACP bridge that connects IDEs to the Gateway.
+IDE をゲートウェイに接続するための ACP ブリッジを実行します。
 
-See [`acp`](/cli/acp) for full options and examples.
+---
+
+## ステータスと診断
 
 ### `status`
 
-Show linked session health and recent recipients.
-
-Options:
-
-- `--json`
-- `--all` (full diagnosis; read-only, pasteable)
-- `--deep` (probe channels)
-- `--usage` (show model provider usage/quota)
-- `--timeout <ms>`
-- `--verbose`
-- `--debug` (alias for `--verbose`)
-
-Notes:
-
-- Overview includes Gateway + node host service status when available.
-
-### Usage tracking
-
-OpenClaw can surface provider usage/quota when OAuth/API creds are available.
-
-Surfaces:
-
-- `/status` (adds a short provider usage line when available)
-- `openclaw status --usage` (prints full provider breakdown)
-- macOS menu bar (Usage section under Context)
-
-Notes:
-
-- Data comes directly from provider usage endpoints (no estimates).
-- Providers: Anthropic, GitHub Copilot, OpenAI Codex OAuth, plus Gemini CLI/Antigravity when those provider plugins are enabled.
-- If no matching credentials exist, usage is hidden.
-- Details: see [Usage tracking](/concepts/usage-tracking).
+リンクされたセッションの健全性と、最近の通信相手を表示します。
 
 ### `health`
 
-Fetch health from the running Gateway.
-
-Options:
-
-- `--json`
-- `--timeout <ms>`
-- `--verbose`
+稼働中のゲートウェイからヘルス情報を取得します。
 
 ### `sessions`
 
-List stored conversation sessions.
+保存されている会話セッションを一覧表示します。
 
-Options:
+---
 
-- `--json`
-- `--verbose`
-- `--store <path>`
-- `--active <minutes>`
-
-## Reset / Uninstall
+## リセットとアンインストール
 
 ### `reset`
 
-Reset local config/state (keeps the CLI installed).
-
-Options:
-
-- `--scope <config|config+creds+sessions|full>`
-- `--yes`
-- `--non-interactive`
-- `--dry-run`
-
-Notes:
-
-- `--non-interactive` requires `--scope` and `--yes`.
+ローカルの構成や状態をリセットします（CLI 自体はインストールされたままになります）。
 
 ### `uninstall`
 
-Uninstall the gateway service + local data (CLI remains).
+ゲートウェイサービスとローカルデータをアンインストールします。
 
-Options:
+---
 
-- `--service`
-- `--state`
-- `--workspace`
-- `--app`
-- `--all`
-- `--yes`
-- `--non-interactive`
-- `--dry-run`
-
-Notes:
-
-- `--non-interactive` requires `--yes` and explicit scopes (or `--all`).
-
-## Gateway
+## ゲートウェイ (Gateway)
 
 ### `gateway`
 
-Run the WebSocket Gateway.
-
-Options:
-
-- `--port <port>`
-- `--bind <loopback|tailnet|lan|auto|custom>`
-- `--token <token>`
-- `--auth <token|password>`
-- `--password <password>`
-- `--password-file <path>`
-- `--tailscale <off|serve|funnel>`
-- `--tailscale-reset-on-exit`
-- `--allow-unconfigured`
-- `--dev`
-- `--reset` (reset dev config + credentials + sessions + workspace)
-- `--force` (kill existing listener on port)
-- `--verbose`
-- `--claude-cli-logs`
-- `--ws-log <auto|full|compact>`
-- `--compact` (alias for `--ws-log compact`)
-- `--raw-stream`
-- `--raw-stream-path <path>`
+WebSocket ゲートウェイ本体を起動します。
 
 ### `gateway service`
 
-Manage the Gateway service (launchd/systemd/schtasks).
+ゲートウェイをサービス（launchd, systemd, schtasks）として管理します。
 
-Subcommands:
+サブコマンド:
+`status`, `install`, `uninstall`, `start`, `stop`, `restart`
 
-- `gateway status` (probes the Gateway RPC by default)
-- `gateway install` (service install)
-- `gateway uninstall`
-- `gateway start`
-- `gateway stop`
-- `gateway restart`
+---
 
-Notes:
-
-- `gateway status` probes the Gateway RPC by default using the service’s resolved port/config (override with `--url/--token/--password`).
-- `gateway status` supports `--no-probe`, `--deep`, and `--json` for scripting.
-- `gateway status` also surfaces legacy or extra gateway services when it can detect them (`--deep` adds system-level scans). Profile-named OpenClaw services are treated as first-class and aren't flagged as "extra".
-- `gateway status` prints which config path the CLI uses vs which config the service likely uses (service env), plus the resolved probe target URL.
-- On Linux systemd installs, status token-drift checks include both `Environment=` and `EnvironmentFile=` unit sources.
-- `gateway install|uninstall|start|stop|restart` support `--json` for scripting (default output stays human-friendly).
-- `gateway install` defaults to Node runtime; bun is **not recommended** (WhatsApp/Telegram bugs).
-- `gateway install` options: `--port`, `--runtime`, `--token`, `--force`, `--json`.
+## ログ (Logs)
 
 ### `logs`
 
-Tail Gateway file logs via RPC.
+RPC 経由でゲートウェイのファイルログをリアルタイム表示（tail）します。
 
-Notes:
+---
 
-- TTY sessions render a colorized, structured view; non-TTY falls back to plain text.
-- `--json` emits line-delimited JSON (one log event per line).
+## モデル (Models)
 
-Examples:
+### `models`
 
-```bash
-openclaw logs --follow
-openclaw logs --limit 200
-openclaw logs --plain
-openclaw logs --json
-openclaw logs --no-color
-```
+認証プロファイルの概要や、OAuth の有効期限などを表示します。
 
-### `gateway <subcommand>`
+サブコマンド:
+`list`, `status`, `set`, `scan`, `auth`, `aliases`, `fallbacks` など。
 
-Gateway CLI helpers (use `--url`, `--token`, `--password`, `--timeout`, `--expect-final` for RPC subcommands).
-When you pass `--url`, the CLI does not auto-apply config or environment credentials.
-Include `--token` or `--password` explicitly. Missing explicit credentials is an error.
+---
 
-Subcommands:
+## システム (System)
 
-- `gateway call <method> [--params <json>]`
-- `gateway health`
-- `gateway status`
-- `gateway probe`
-- `gateway discover`
-- `gateway install|uninstall|start|stop|restart`
-- `gateway run`
+### `system`
 
-Common RPCs:
+システムイベントの投入、ハートビートの制御、プレゼンス情報の確認などを行います。
 
-- `config.apply` (validate + write config + restart + wake)
-- `config.patch` (merge a partial update + restart + wake)
-- `update.run` (run update + restart + wake)
-
-Tip: when calling `config.set`/`config.apply`/`config.patch` directly, pass `baseHash` from
-`config.get` if a config already exists.
-
-## Models
-
-See [/concepts/models](/concepts/models) for fallback behavior and scanning strategy.
-
-Anthropic setup-token (supported):
-
-```bash
-claude setup-token
-openclaw models auth setup-token --provider anthropic
-openclaw models status
-```
-
-Policy note: this is technical compatibility. Anthropic has blocked some
-subscription usage outside Claude Code in the past; verify current Anthropic
-terms before relying on setup-token in production.
-
-### `models` (root)
-
-`openclaw models` is an alias for `models status`.
-
-Root options:
-
-- `--status-json` (alias for `models status --json`)
-- `--status-plain` (alias for `models status --plain`)
-
-### `models list`
-
-Options:
-
-- `--all`
-- `--local`
-- `--provider <name>`
-- `--json`
-- `--plain`
-
-### `models status`
-
-Options:
-
-- `--json`
-- `--plain`
-- `--check` (exit 1=expired/missing, 2=expiring)
-- `--probe` (live probe of configured auth profiles)
-- `--probe-provider <name>`
-- `--probe-profile <id>` (repeat or comma-separated)
-- `--probe-timeout <ms>`
-- `--probe-concurrency <n>`
-- `--probe-max-tokens <n>`
-
-Always includes the auth overview and OAuth expiry status for profiles in the auth store.
-`--probe` runs live requests (may consume tokens and trigger rate limits).
-
-### `models set <model>`
-
-Set `agents.defaults.model.primary`.
-
-### `models set-image <model>`
-
-Set `agents.defaults.imageModel.primary`.
-
-### `models aliases list|add|remove`
-
-Options:
-
-- `list`: `--json`, `--plain`
-- `add <alias> <model>`
-- `remove <alias>`
-
-### `models fallbacks list|add|remove|clear`
-
-Options:
-
-- `list`: `--json`, `--plain`
-- `add <model>`
-- `remove <model>`
-- `clear`
-
-### `models image-fallbacks list|add|remove|clear`
-
-Options:
-
-- `list`: `--json`, `--plain`
-- `add <model>`
-- `remove <model>`
-- `clear`
-
-### `models scan`
-
-Options:
-
-- `--min-params <b>`
-- `--max-age-days <days>`
-- `--provider <name>`
-- `--max-candidates <n>`
-- `--timeout <ms>`
-- `--concurrency <n>`
-- `--no-probe`
-- `--yes`
-- `--no-input`
-- `--set-default`
-- `--set-image`
-- `--json`
-
-### `models auth add|setup-token|paste-token`
-
-Options:
-
-- `add`: interactive auth helper
-- `setup-token`: `--provider <name>` (default `anthropic`), `--yes`
-- `paste-token`: `--provider <name>`, `--profile-id <id>`, `--expires-in <duration>`
-
-### `models auth order get|set|clear`
-
-Options:
-
-- `get`: `--provider <name>`, `--agent <id>`, `--json`
-- `set`: `--provider <name>`, `--agent <id>`, `<profileIds...>`
-- `clear`: `--provider <name>`, `--agent <id>`
-
-## System
-
-### `system event`
-
-Enqueue a system event and optionally trigger a heartbeat (Gateway RPC).
-
-Required:
-
-- `--text <text>`
-
-Options:
-
-- `--mode <now|next-heartbeat>`
-- `--json`
-- `--url`, `--token`, `--timeout`, `--expect-final`
-
-### `system heartbeat last|enable|disable`
-
-Heartbeat controls (Gateway RPC).
-
-Options:
-
-- `--json`
-- `--url`, `--token`, `--timeout`, `--expect-final`
-
-### `system presence`
-
-List system presence entries (Gateway RPC).
-
-Options:
-
-- `--json`
-- `--url`, `--token`, `--timeout`, `--expect-final`
+---
 
 ## Cron
 
-Manage scheduled jobs (Gateway RPC). See [/automation/cron-jobs](/automation/cron-jobs).
+スケジュールされたジョブを管理します。
 
-Subcommands:
+---
 
-- `cron status [--json]`
-- `cron list [--all] [--json]` (table output by default; use `--json` for raw)
-- `cron add` (alias: `create`; requires `--name` and exactly one of `--at` | `--every` | `--cron`, and exactly one payload of `--system-event` | `--message`)
-- `cron edit <id>` (patch fields)
-- `cron rm <id>` (aliases: `remove`, `delete`)
-- `cron enable <id>`
-- `cron disable <id>`
-- `cron runs --id <id> [--limit <n>]`
-- `cron run <id> [--force]`
+## ノード (Node)
 
-All `cron` commands accept `--url`, `--token`, `--timeout`, `--expect-final`.
+### `node`
 
-## Node host
+ヘッドレスノードホストを実行、またはサービスとして管理します。
 
-`node` runs a **headless node host** or manages it as a background service. See
-[`openclaw node`](/cli/node).
+### `nodes`
 
-Subcommands:
+ゲートウェイと通信し、ペアリングされたノードを操作します。
 
-- `node run --host <gateway-host> --port 18789`
-- `node status`
-- `node install [--host <gateway-host>] [--port <port>] [--tls] [--tls-fingerprint <sha256>] [--node-id <id>] [--display-name <name>] [--runtime <node|bun>] [--force]`
-- `node uninstall`
-- `node stop`
-- `node restart`
+---
 
-Auth notes:
+## ブラウザ (Browser)
 
-- `node` resolves gateway auth from env/config (no `--token`/`--password` flags): `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`, then `gateway.auth.*`, with remote-mode support via `gateway.remote.*`.
-- Legacy `CLAWDBOT_GATEWAY_*` env vars are intentionally ignored for node-host auth resolution.
+### `browser`
 
-## Nodes
+ブラウザ制御用の CLI です。
 
-`nodes` talks to the Gateway and targets paired nodes. See [/nodes](/nodes).
-
-Common options:
-
-- `--url`, `--token`, `--timeout`, `--json`
-
-Subcommands:
-
-- `nodes status [--connected] [--last-connected <duration>]`
-- `nodes describe --node <id|name|ip>`
-- `nodes list [--connected] [--last-connected <duration>]`
-- `nodes pending`
-- `nodes approve <requestId>`
-- `nodes reject <requestId>`
-- `nodes rename --node <id|name|ip> --name <displayName>`
-- `nodes invoke --node <id|name|ip> --command <command> [--params <json>] [--invoke-timeout <ms>] [--idempotency-key <key>]`
-- `nodes run --node <id|name|ip> [--cwd <path>] [--env KEY=VAL] [--command-timeout <ms>] [--needs-screen-recording] [--invoke-timeout <ms>] <command...>` (mac node or headless node host)
-- `nodes notify --node <id|name|ip> [--title <text>] [--body <text>] [--sound <name>] [--priority <passive|active|timeSensitive>] [--delivery <system|overlay|auto>] [--invoke-timeout <ms>]` (mac only)
-
-Camera:
-
-- `nodes camera list --node <id|name|ip>`
-- `nodes camera snap --node <id|name|ip> [--facing front|back|both] [--device-id <id>] [--max-width <px>] [--quality <0-1>] [--delay-ms <ms>] [--invoke-timeout <ms>]`
-- `nodes camera clip --node <id|name|ip> [--facing front|back] [--device-id <id>] [--duration <ms|10s|1m>] [--no-audio] [--invoke-timeout <ms>]`
-
-Canvas + screen:
-
-- `nodes canvas snapshot --node <id|name|ip> [--format png|jpg|jpeg] [--max-width <px>] [--quality <0-1>] [--invoke-timeout <ms>]`
-- `nodes canvas present --node <id|name|ip> [--target <urlOrPath>] [--x <px>] [--y <px>] [--width <px>] [--height <px>] [--invoke-timeout <ms>]`
-- `nodes canvas hide --node <id|name|ip> [--invoke-timeout <ms>]`
-- `nodes canvas navigate <url> --node <id|name|ip> [--invoke-timeout <ms>]`
-- `nodes canvas eval [<js>] --node <id|name|ip> [--js <code>] [--invoke-timeout <ms>]`
-- `nodes canvas a2ui push --node <id|name|ip> (--jsonl <path> | --text <text>) [--invoke-timeout <ms>]`
-- `nodes canvas a2ui reset --node <id|name|ip> [--invoke-timeout <ms>]`
-- `nodes screen record --node <id|name|ip> [--screen <index>] [--duration <ms|10s>] [--fps <n>] [--no-audio] [--out <path>] [--invoke-timeout <ms>]`
-
-Location:
-
-- `nodes location get --node <id|name|ip> [--max-age <ms>] [--accuracy <coarse|balanced|precise>] [--location-timeout <ms>] [--invoke-timeout <ms>]`
-
-## Browser
-
-Browser control CLI (dedicated Chrome/Brave/Edge/Chromium). See [`openclaw browser`](/cli/browser) and the [Browser tool](/tools/browser).
-
-Common options:
-
-- `--url`, `--token`, `--timeout`, `--json`
-- `--browser-profile <name>`
-
-Manage:
-
-- `browser status`
-- `browser start`
-- `browser stop`
-- `browser reset-profile`
-- `browser tabs`
-- `browser open <url>`
-- `browser focus <targetId>`
-- `browser close [targetId]`
-- `browser profiles`
-- `browser create-profile --name <name> [--color <hex>] [--cdp-url <url>]`
-- `browser delete-profile --name <name>`
-
-Inspect:
-
-- `browser screenshot [targetId] [--full-page] [--ref <ref>] [--element <selector>] [--type png|jpeg]`
-- `browser snapshot [--format aria|ai] [--target-id <id>] [--limit <n>] [--interactive] [--compact] [--depth <n>] [--selector <sel>] [--out <path>]`
-
-Actions:
-
-- `browser navigate <url> [--target-id <id>]`
-- `browser resize <width> <height> [--target-id <id>]`
-- `browser click <ref> [--double] [--button <left|right|middle>] [--modifiers <csv>] [--target-id <id>]`
-- `browser type <ref> <text> [--submit] [--slowly] [--target-id <id>]`
-- `browser press <key> [--target-id <id>]`
-- `browser hover <ref> [--target-id <id>]`
-- `browser drag <startRef> <endRef> [--target-id <id>]`
-- `browser select <ref> <values...> [--target-id <id>]`
-- `browser upload <paths...> [--ref <ref>] [--input-ref <ref>] [--element <selector>] [--target-id <id>] [--timeout-ms <ms>]`
-- `browser fill [--fields <json>] [--fields-file <path>] [--target-id <id>]`
-- `browser dialog --accept|--dismiss [--prompt <text>] [--target-id <id>] [--timeout-ms <ms>]`
-- `browser wait [--time <ms>] [--text <value>] [--text-gone <value>] [--target-id <id>]`
-- `browser evaluate --fn <code> [--ref <ref>] [--target-id <id>]`
-- `browser console [--level <error|warn|info>] [--target-id <id>]`
-- `browser pdf [--target-id <id>]`
-
-## Docs search
-
-### `docs [query...]`
-
-Search the live docs index.
+---
 
 ## TUI
 
 ### `tui`
 
-Open the terminal UI connected to the Gateway.
-
-Options:
-
-- `--url <url>`
-- `--token <token>`
-- `--password <password>`
-- `--session <key>`
-- `--deliver`
-- `--thinking <level>`
-- `--message <text>`
-- `--timeout-ms <ms>` (defaults to `agents.defaults.timeoutSeconds`)
-- `--history-limit <n>`
+ゲートウェイに接続されたターミナル UI を開きます。

@@ -1,29 +1,31 @@
 ---
-title: "Tool-loop detection"
+title: "ツールループの検出"
 description: "Configure optional guardrails for preventing repetitive or stalled tool-call loops"
-summary: "How to enable and tune guardrails that detect repetitive tool-call loops"
+summary: "反復的なツール呼び出しループを検出するガードレールを有効にして調整する方法"
 read_when:
-  - A user reports agents getting stuck repeating tool calls
-  - You need to tune repetitive-call protection
-  - You are editing agent tool/runtime policies
+  - ユーザーから、エージェントがツール呼び出しを繰り返してスタックしていると報告されました。
+  - 反復通話保護を調整する必要がある
+  - エージェント ツール/ランタイム ポリシーを編集しています
+x-i18n:
+  source_hash: "5a1ac7541b178213cac587f5bdff19389b88c0f9425b325adc69c84c8707fdfd"
 ---
 
-# Tool-loop detection
+# ツールループの検出
 
-OpenClaw can keep agents from getting stuck in repeated tool-call patterns.
-The guard is **disabled by default**.
+OpenClaw は、エージェントが繰り返しのツール呼び出しパターンに陥るのを防ぐことができます。
+ガードは **デフォルトでは無効になっています**。
 
-Enable it only where needed, because it can block legitimate repeated calls with strict settings.
+厳密な設定を使用すると正当な繰り返し呼び出しをブロックできるため、必要な場合にのみ有効にします。
 
-## Why this exists
+## これが存在する理由
 
-- Detect repetitive sequences that do not make progress.
-- Detect high-frequency no-result loops (same tool, same inputs, repeated errors).
-- Detect specific repeated-call patterns for known polling tools.
+- 進行しない反復シーケンスを検出します。
+- 高頻度の結果のないループ (同じツール、同じ入力、繰り返されるエラー) を検出します。
+- 既知のポーリング ツールの特定の繰り返し通話パターンを検出します。
 
-## Configuration block
+## 構成ブロック
 
-Global defaults:
+グローバルデフォルト:
 
 ```json5
 {
@@ -44,7 +46,7 @@ Global defaults:
 }
 ```
 
-Per-agent override (optional):
+エージェントごとのオーバーライド (オプション):
 
 ```json5
 {
@@ -65,37 +67,36 @@ Per-agent override (optional):
 }
 ```
 
-### Field behavior
+### フィールドの動作
 
-- `enabled`: Master switch. `false` means no loop detection is performed.
-- `historySize`: number of recent tool calls kept for analysis.
-- `warningThreshold`: threshold before classifying a pattern as warning-only.
-- `criticalThreshold`: threshold for blocking repetitive loop patterns.
-- `globalCircuitBreakerThreshold`: global no-progress breaker threshold.
-- `detectors.genericRepeat`: detects repeated same-tool + same-params patterns.
-- `detectors.knownPollNoProgress`: detects known polling-like patterns with no state change.
-- `detectors.pingPong`: detects alternating ping-pong patterns.
+- `enabled`: マスター スイッチ。 `false` は、ループ検出が実行されないことを意味します。
+- `historySize`: 分析のために保存されている最近のツール呼び出しの数。
+- `warningThreshold`: パターンを警告のみとして分類する前のしきい値。
+- `criticalThreshold`: 反復ループ パターンをブロックするためのしきい値。
+- `globalCircuitBreakerThreshold`: グローバルな進行状況なしブレーカーのしきい値。
+- `detectors.genericRepeat`: 繰り返される同じツール + 同じパラメータのパターンを検出します。
+- `detectors.knownPollNoProgress`: 状態変化のない既知のポーリングのようなパターンを検出します。
+- `detectors.pingPong`: 交互のピンポン パターンを検出します。
 
-## Recommended setup
+## 推奨されるセットアップ- `enabled: true` で始まり、デフォルトは変更されません
 
-- Start with `enabled: true`, defaults unchanged.
-- Keep thresholds ordered as `warningThreshold < criticalThreshold < globalCircuitBreakerThreshold`.
-- If false positives occur:
-  - raise `warningThreshold` and/or `criticalThreshold`
-  - (optionally) raise `globalCircuitBreakerThreshold`
-  - disable only the detector causing issues
-  - reduce `historySize` for less strict historical context
+- しきい値を `warningThreshold < criticalThreshold < globalCircuitBreakerThreshold` として順序付けします。
+- 誤検知が発生した場合:
+  - `warningThreshold` および/または `criticalThreshold` を発生させます
+  - (オプションで) `globalCircuitBreakerThreshold` を発生させます
+  - 問題の原因となっている検出器のみを無効にします
+  - 厳密性の低い歴史的コンテキストのために `historySize` を削減します
 
-## Logs and expected behavior
+## ログと予期される動作
 
-When a loop is detected, OpenClaw reports a loop event and blocks or dampens the next tool-cycle depending on severity.
-This protects users from runaway token spend and lockups while preserving normal tool access.
+ループが検出されると、OpenClaw はループ イベントを報告し、重大度に応じて次のツール サイクルをブロックまたは抑制します。
+これにより、通常のツールへのアクセスを維持しながら、ユーザーをトークンの暴走やロックアップから保護します。
 
-- Prefer warning and temporary suppression first.
-- Escalate only when repeated evidence accumulates.
+- 警告と一時的な抑制を優先します。
+- 繰り返しの証拠が蓄積された場合にのみエスカレーションします。
 
-## Notes
+## 注意事項
 
-- `tools.loopDetection` is merged with agent-level overrides.
-- Per-agent config fully overrides or extends global values.
-- If no config exists, guardrails stay off.
+- `tools.loopDetection` はエージェント レベルのオーバーライドとマージされます。
+- エージェントごとの設定は、グローバル値を完全に上書きまたは拡張します。
+- 構成が存在しない場合、ガードレールはオフのままになります。

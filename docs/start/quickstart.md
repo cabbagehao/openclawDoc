@@ -1,22 +1,25 @@
 ---
-summary: "Quick start has moved to Getting Started."
+summary: "クイックスタートは「はじめに」に移動しました。"
 read_when:
-  - You are looking for the fastest setup steps
-  - You were sent here from an older link
-title: "Quick start"
+  - 最短のセットアップ手順を探しているとき
+  - 古いリンクからこのページに来たとき
+title: "クイックスタート"
+x-i18n:
+  source_path: "start/quickstart.md"
+  source_hash: "c03779abfcd92ec98e7eb4e7367f4a2a42e284fc78822e3eff4fdd301ecf697d"
 ---
 
-# Quick start
+# クイックスタート
 
 <Info>
-Quick start is now part of [Getting Started](/start/getting-started).
+クイックスタートは [はじめに](/start/getting-started) に移動しました。
 </Info>
 
 <Columns>
-  <Card title="Getting Started" href="/start/getting-started">
-    Install OpenClaw and run your first chat in minutes.
+  <Card title="はじめに" href="/start/getting-started">
+    OpenClaw をインストールして、数分で最初のチャットを始めましょう。
   </Card>
-  <Card title="Onboarding Wizard" href="/start/wizard">
-    Full CLI wizard reference and advanced options.
+  <Card title="オンボーディング ウィザード" href="/start/wizard">
+    CLI ウィザードの完全なリファレンスと高度なオプションを確認できます。
   </Card>
 </Columns>

@@ -1,23 +1,25 @@
 ---
-summary: "CLI reference for `openclaw onboard` (interactive onboarding wizard)"
+summary: "`openclaw onboard` の CLI リファレンス (対話形式のオンボーディングウィザード)"
 read_when:
-  - You want guided setup for gateway, workspace, auth, channels, and skills
+  - ゲートウェイ、ワークスペース、認証、チャネル、およびスキルのガイド付きセットアップを行いたい場合
 title: "onboard"
+x-i18n:
+  source_hash: "496651939f5f21f9b3921f38396ad1c59b450a51eb06f13d41f66dbb38053d57"
 ---
 
 # `openclaw onboard`
 
-Interactive onboarding wizard (local or remote Gateway setup).
+対話形式のオンボーディングウィザード（ローカルまたはリモートゲートウェイのセットアップ）を実行します。
 
-## Related guides
+## 関連ドキュメント
 
-- CLI onboarding hub: [Onboarding Wizard (CLI)](/start/wizard)
-- Onboarding overview: [Onboarding Overview](/start/onboarding-overview)
-- CLI onboarding reference: [CLI Onboarding Reference](/start/wizard-cli-reference)
-- CLI automation: [CLI Automation](/start/wizard-cli-automation)
-- macOS onboarding: [Onboarding (macOS App)](/start/onboarding)
+- オンボーディングハブ: [オンボーディングウィザード (CLI)](/start/wizard)
+- オンボーディングの概要: [オンボーディングの概要](/start/onboarding-overview)
+- CLI オンボーディングリファレンス: [CLI オンボーディング詳細](/start/wizard-cli-reference)
+- CLI 自動化: [CLI 自動化](/start/wizard-cli-automation)
+- macOS 版オンボーディング: [オンボーディング (macOS アプリ)](/start/onboarding)
 
-## Examples
+## 実行例
 
 ```bash
 openclaw onboard
@@ -26,10 +28,9 @@ openclaw onboard --flow manual
 openclaw onboard --mode remote --remote-url wss://gateway-host:18789
 ```
 
-For plaintext private-network `ws://` targets (trusted networks only), set
-`OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` in the onboarding process environment.
+信頼されたネットワーク内のプライベートな `ws://` ターゲットに対して平文で接続する場合は、実行環境で `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` を設定してください。
 
-Non-interactive custom provider:
+非対話形式でのカスタムプロバイダー設定:
 
 ```bash
 openclaw onboard --non-interactive \
@@ -41,9 +42,9 @@ openclaw onboard --non-interactive \
   --custom-compatibility openai
 ```
 
-`--custom-api-key` is optional in non-interactive mode. If omitted, onboarding checks `CUSTOM_API_KEY`.
+`--custom-api-key` は非対話モードでは任意です。省略された場合、`CUSTOM_API_KEY` 環境変数がチェックされます。
 
-Store provider keys as refs instead of plaintext:
+プロバイダーキーを平文ではなく参照（ref）として保存する:
 
 ```bash
 openclaw onboard --non-interactive \
@@ -52,26 +53,25 @@ openclaw onboard --non-interactive \
   --accept-risk
 ```
 
-With `--secret-input-mode ref`, onboarding writes env-backed refs instead of plaintext key values.
-For auth-profile backed providers this writes `keyRef` entries; for custom providers this writes `models.providers.<id>.apiKey` as an env ref (for example `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`).
+`--secret-input-mode ref` を指定すると、平文のキー値ではなく、環境変数を参照する SecretRef が書き込まれます。認証プロファイルに対応したプロバイダーでは `keyRef` エントリが、カスタムプロバイダーでは `models.providers.<id>.apiKey` が環境変数参照（例: `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`）として保存されます。
 
-Non-interactive `ref` mode contract:
+非対話形式の `ref` モードにおけるルール:
 
-- Set the provider env var in the onboarding process environment (for example `OPENAI_API_KEY`).
-- Do not pass inline key flags (for example `--openai-api-key`) unless that env var is also set.
-- If an inline key flag is passed without the required env var, onboarding fails fast with guidance.
+- プロバイダーの環境変数（例: `OPENAI_API_KEY`）を事前に設定しておいてください。
+- その環境変数が設定されていない状態で、インラインのキー指定フラグ（例: `--openai-api-key`）を渡さないでください。
+- 必要な環境変数が存在しない状態でインラインフラグが渡された場合、オンボーディングは即座にエラーとなります。
 
-Gateway token options in non-interactive mode:
+非対話モードにおけるゲートウェイのトークン指定:
 
-- `--gateway-auth token --gateway-token <token>` stores a plaintext token.
-- `--gateway-auth token --gateway-token-ref-env <name>` stores `gateway.auth.token` as an env SecretRef.
-- `--gateway-token` and `--gateway-token-ref-env` are mutually exclusive.
-- `--gateway-token-ref-env` requires a non-empty env var in the onboarding process environment.
-- With `--install-daemon`, when token auth requires a token, SecretRef-managed gateway tokens are validated but not persisted as resolved plaintext in supervisor service environment metadata.
-- With `--install-daemon`, if token mode requires a token and the configured token SecretRef is unresolved, onboarding fails closed with remediation guidance.
-- With `--install-daemon`, if both `gateway.auth.token` and `gateway.auth.password` are configured and `gateway.auth.mode` is unset, onboarding blocks install until mode is set explicitly.
+- `--gateway-auth token --gateway-token <token>` は平文のトークンを保存します。
+- `--gateway-auth token --gateway-token-ref-env <name>` は `gateway.auth.token` を環境変数参照として保存します。
+- `--gateway-token` と `--gateway-token-ref-env` は同時には指定できません。
+- `--gateway-token-ref-env` を使用する場合、指定した環境変数が空でない必要があります。
+- `--install-daemon` と併用し、トークン認証が必要な場合、SecretRef で管理されたトークンは妥当性の検証は行われますが、サービス環境設定には解決された平文のトークンではなく参照形式のまま保持されます。
+- トークン認証が必要かつ SecretRef が解決できない状態で `--install-daemon` を実行すると、インストールはブロックされます。
+- `gateway.auth.token` と `gateway.auth.password` の両方が構成され、かつ `gateway.auth.mode` が未設定の場合、モードが明示的に設定されるまでデーモンのインストールはブロックされます。
 
-Example:
+実行例:
 
 ```bash
 export OPENCLAW_GATEWAY_TOKEN="your-token"
@@ -83,33 +83,27 @@ openclaw onboard --non-interactive \
   --accept-risk
 ```
 
-Interactive onboarding behavior with reference mode:
+対話形式のオンボーディングにおける参照モードの動作:
 
-- Choose **Use secret reference** when prompted.
-- Then choose either:
-  - Environment variable
-  - Configured secret provider (`file` or `exec`)
-- Onboarding performs a fast preflight validation before saving the ref.
-  - If validation fails, onboarding shows the error and lets you retry.
+- プロンプトが表示されたら **Use secret reference** を選択します。
+- 次に以下からソースを選択します:
+  - Environment variable (環境変数)
+  - 構成済みのシークレットプロバイダー (`file` または `exec`)
+- ref を保存する前に、オンボーディングプログラムが簡易的な検証を行います。
+  - 検証に失敗した場合はエラーが表示され、再試行できます。
 
-Non-interactive Z.AI endpoint choices:
+非対話形式での Z.AI エンドポイントの選択:
 
-Note: `--auth-choice zai-api-key` now auto-detects the best Z.AI endpoint for your key (prefers the general API with `zai/glm-5`).
-If you specifically want the GLM Coding Plan endpoints, pick `zai-coding-global` or `zai-coding-cn`.
+注: `--auth-choice zai-api-key` は、指定されたキーに最適な Z.AI エンドポイント（通常は `zai/glm-5` などの一般 API）を自動検出するようになりました。GLM コーディングプラン専用のエンドポイントを使用したい場合は、`zai-coding-global` または `zai-coding-cn` を選択してください。
 
 ```bash
-# Promptless endpoint selection
+# プロンプトなしでのエンドポイント選択例
 openclaw onboard --non-interactive \
   --auth-choice zai-coding-global \
   --zai-api-key "$ZAI_API_KEY"
-
-# Other Z.AI endpoint choices:
-# --auth-choice zai-coding-cn
-# --auth-choice zai-global
-# --auth-choice zai-cn
 ```
 
-Non-interactive Mistral example:
+非対話形式での Mistral の例:
 
 ```bash
 openclaw onboard --non-interactive \
@@ -117,16 +111,15 @@ openclaw onboard --non-interactive \
   --mistral-api-key "$MISTRAL_API_KEY"
 ```
 
-Flow notes:
+フローに関する補足事項:
 
-- `quickstart`: minimal prompts, auto-generates a gateway token.
-- `manual`: full prompts for port/bind/auth (alias of `advanced`).
-- Local onboarding DM scope behavior: [CLI Onboarding Reference](/start/wizard-cli-reference#outputs-and-internals).
-- Fastest first chat: `openclaw dashboard` (Control UI, no channel setup).
-- Custom Provider: connect any OpenAI or Anthropic compatible endpoint,
-  including hosted providers not listed. Use Unknown to auto-detect.
+- `quickstart`: 最小限のプロンプトで進め、ゲートウェイトークンを自動生成します。
+- `manual`: ポート、バインド、認証などをすべて個別に設定します（`advanced` の別名）。
+- ローカル環境の DM スコープ設定: [CLI オンボーディング詳細](/start/wizard-cli-reference#outputs-and-internals) を参照してください。
+- 最速でチャットを始めるには: `openclaw dashboard` を実行します（コントロール UI を使用。チャネル設定は不要です）。
+- カスタムプロバイダー: OpenAI または Anthropic 互換のエンドポイントであれば、一覧にないプロバイダーでも接続可能です。自動検出には `Unknown` を選択してください。
 
-## Common follow-up commands
+## オンボーディング後によく使われるコマンド
 
 ```bash
 openclaw configure
@@ -134,5 +127,5 @@ openclaw agents add <name>
 ```
 
 <Note>
-`--json` does not imply non-interactive mode. Use `--non-interactive` for scripts.
+`--json` フラグを指定しても、自動的に非対話モードにはなりません。スクリプト等で使用する場合は必ず `--non-interactive` を指定してください。
 </Note>

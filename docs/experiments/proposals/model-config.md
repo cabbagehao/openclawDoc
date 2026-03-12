@@ -1,36 +1,37 @@
 ---
-summary: "Exploration: model config, auth profiles, and fallback behavior"
+summary: "調査: モデル構成、認証プロファイル、およびフォールバック挙動の検討"
 read_when:
-  - Exploring future model selection + auth profile ideas
-title: "Model Config Exploration"
+  - 将来的なモデル選択や認証プロファイルに関するアイデアを検討する場合
+title: "モデル構成の検討"
+x-i18n:
+  source_hash: "48623233d80f874c0ae853b51f888599cf8b50ae6fbfe47f6d7b0216bae9500b"
 ---
 
-# Model Config (Exploration)
+# モデル構成 (調査・検討)
 
-This document captures **ideas** for future model configuration. It is not a
-shipping spec. For current behavior, see:
+本ドキュメントは、将来的なモデル構成に関する**アイデア**をまとめたものです。現時点での製品仕様ではありません。現在の挙動については、以下を参照してください:
 
-- [Models](/concepts/models)
-- [Model failover](/concepts/model-failover)
-- [OAuth + profiles](/concepts/oauth)
+- [モデル](/concepts/models)
+- [モデルフェイルオーバー](/concepts/model-failover)
+- [OAuth とプロファイル](/concepts/oauth)
 
-## Motivation
+## 動機
 
-Operators want:
+運用にあたって、以下の機能が求められています:
 
-- Multiple auth profiles per provider (personal vs work).
-- Simple `/model` selection with predictable fallbacks.
-- Clear separation between text models and image-capable models.
+- 1 つのプロバイダーに対して複数の認証プロファイル（例: 個人用と仕事用）を使い分けたい。
+- `/model` コマンドによる選択をシンプルにしつつ、予測可能なフォールバック（代替）を機能させたい。
+- テキストモデルと画像対応モデルを明確に分離して管理したい。
 
-## Possible direction (high level)
+## 検討中の方向性 (ハイレベル)
 
-- Keep model selection simple: `provider/model` with optional aliases.
-- Let providers have multiple auth profiles, with an explicit order.
-- Use a global fallback list so all sessions fail over consistently.
-- Only override image routing when explicitly configured.
+- モデル選択をシンプルに保つ: `provider/model` 形式に、オプションで別名（エイリアス）を付けられるようにする。
+- プロバイダーが明示的な優先順位を持つ複数の認証プロファイルを持てるようにする。
+- すべてのセッションで一貫したフェイルオーバーが行われるよう、共通のフォールバックリストを使用する。
+- 明示的に構成されている場合にのみ、画像ルーティングを上書きする。
 
-## Open questions
+## 未解決の課題
 
-- Should profile rotation be per-provider or per-model?
-- How should the UI surface profile selection for a session?
-- What is the safest migration path from legacy config keys?
+- プロファイルのローテーションはプロバイダー単位で行うべきか、それともモデル単位か？
+- セッションで使用するプロファイルの選択を、UI 上でどのように表示・操作させるべきか？
+- レガシーな構成キー（Config keys）からの、最も安全な移行パスはどのようなものか？

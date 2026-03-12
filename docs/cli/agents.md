@@ -1,20 +1,21 @@
 ---
-summary: "CLI reference for `openclaw agents` (list/add/delete/bindings/bind/unbind/set identity)"
+summary: "`openclaw agents` の CLI リファレンス (エージェントの一覧表示/追加/削除、ルーティングバインディングの設定、アイデンティティの設定)"
 read_when:
-  - You want multiple isolated agents (workspaces + routing + auth)
+  - ワークスペース、ルーティング、認証が分離された複数のエージェントを運用したい場合
 title: "agents"
+x-i18n:
+  source_hash: "b6a6b7b9ac330a6eb35dbbb6c080fcca621b6310983534fe7ad10b90e7f0c38c"
 ---
 
 # `openclaw agents`
 
-Manage isolated agents (workspaces + auth + routing).
+ワークスペース、認証、ルーティングが分離された個別のエージェントを管理します。
 
-Related:
+関連ドキュメント:
+- マルチエージェントルーティング: [マルチエージェントルーティング](/concepts/multi-agent)
+- エージェントワークスペース: [エージェントワークスペース](/concepts/agent-workspace)
 
-- Multi-agent routing: [Multi-Agent Routing](/concepts/multi-agent)
-- Agent workspace: [Agent workspace](/concepts/agent-workspace)
-
-## Examples
+## 実行例
 
 ```bash
 openclaw agents list
@@ -27,83 +28,76 @@ openclaw agents set-identity --agent main --avatar avatars/openclaw.png
 openclaw agents delete work
 ```
 
-## Routing bindings
+## ルーティングバインディング (Routing bindings)
 
-Use routing bindings to pin inbound channel traffic to a specific agent.
+ルーティングバインディングを使用して、インバウンドのチャネルトラフィックを特定のエージェントに固定します。
 
-List bindings:
-
+バインディングの一覧表示:
 ```bash
 openclaw agents bindings
 openclaw agents bindings --agent work
 openclaw agents bindings --json
 ```
 
-Add bindings:
-
+バインディングの追加:
 ```bash
 openclaw agents bind --agent work --bind telegram:ops --bind discord:guild-a
 ```
 
-If you omit `accountId` (`--bind <channel>`), OpenClaw resolves it from channel defaults and plugin setup hooks when available.
+`accountId` を省略した形式 (`--bind <channel>`) で実行すると、OpenClaw はチャネルのデフォルト設定やプラグインのセットアップ情報からアカウント ID を自動的に解決しようと試みます。
 
-### Binding scope behavior
+### バインディングのスコープ動作
 
-- A binding without `accountId` matches the channel default account only.
-- `accountId: "*"` is the channel-wide fallback (all accounts) and is less specific than an explicit account binding.
-- If the same agent already has a matching channel binding without `accountId`, and you later bind with an explicit or resolved `accountId`, OpenClaw upgrades that existing binding in place instead of adding a duplicate.
+- `accountId` のないバインディングは、そのチャネルのデフォルトアカウントにのみ一致します。
+- `accountId: "*"` は、そのチャネルのすべてのアカウントに一致するフォールバック設定となり、明示的なアカウント指定よりも優先度が低くなります。
+- すでに特定のチャネルに対して `accountId` なしのバインディングが存在する状態で、後から明示的または自動解決された `accountId` を指定して再度バインドした場合、OpenClaw は重複を作成せずに既存のバインディングをアップグレード（書き換え）します。
 
-Example:
-
+例:
 ```bash
-# initial channel-only binding
+# 最初にチャネル全体（デフォルトアカウント）をバインド
 openclaw agents bind --agent work --bind telegram
 
-# later upgrade to account-scoped binding
+# その後、特定のアカウントスコープにアップグレード
 openclaw agents bind --agent work --bind telegram:ops
 ```
 
-After the upgrade, routing for that binding is scoped to `telegram:ops`. If you also want default-account routing, add it explicitly (for example `--bind telegram:default`).
+アップグレード後は、そのバインディングによるルーティング対象は `telegram:ops` に限定されます。もしデフォルトアカウントのルーティングも継続したい場合は、`--bind telegram:default` のように明示的に追加してください。
 
-Remove bindings:
-
+バインディングの削除:
 ```bash
 openclaw agents unbind --agent work --bind telegram:ops
 openclaw agents unbind --agent work --all
 ```
 
-## Identity files
+## アイデンティティファイル (Identity files)
 
-Each agent workspace can include an `IDENTITY.md` at the workspace root:
+各エージェントのワークスペースルートに `IDENTITY.md` を置くことができます:
 
-- Example path: `~/.openclaw/workspace/IDENTITY.md`
-- `set-identity --from-identity` reads from the workspace root (or an explicit `--identity-file`)
+- パスの例: `~/.openclaw/workspace/IDENTITY.md`
+- `set-identity --from-identity` コマンドを実行すると、ワークスペースルート (または `--identity-file` で指定したファイル) から情報を読み取ります。
 
-Avatar paths resolve relative to the workspace root.
+アバター（画像）のパスは、ワークスペースルートからの相対パスとして解決されます。
 
-## Set identity
+## アイデンティティの設定
 
-`set-identity` writes fields into `agents.list[].identity`:
+`set-identity` は `agents.list[].identity` の各フィールドを書き換えます:
 
-- `name`
-- `theme`
-- `emoji`
-- `avatar` (workspace-relative path, http(s) URL, or data URI)
+- `name` (名前)
+- `theme` (テーマ)
+- `emoji` (絵文字)
+- `avatar` (アバター画像。ワークスペース相対パス、http(s) URL、または data URI)
 
-Load from `IDENTITY.md`:
-
+`IDENTITY.md` から読み込む例:
 ```bash
 openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
 ```
 
-Override fields explicitly:
-
+各フィールドを明示的に指定して上書きする例:
 ```bash
 openclaw agents set-identity --agent main --name "OpenClaw" --emoji "🦞" --avatar avatars/openclaw.png
 ```
 
-Config sample:
-
+構成ファイルの記述例:
 ```json5
 {
   agents: {

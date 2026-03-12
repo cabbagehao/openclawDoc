@@ -1,33 +1,35 @@
 ---
-summary: "Date and time handling across envelopes, prompts, tools, and connectors"
+summary: "エンベロープ、プロンプト、ツール、およびコネクタにおける日付と時刻の扱い"
 read_when:
-  - You are changing how timestamps are shown to the model or users
-  - You are debugging time formatting in messages or system prompt output
-title: "Date and Time"
+  - モデルやユーザーへのタイムスタンプの表示方法を変更したい場合
+  - メッセージやシステムプロンプト内の時刻形式をデバッグしたい場合
+title: "日付と時刻"
+x-i18n:
+  source_hash: "9ee809c96897db1126c7efcaa5bf48a63cdcb2092abd4b3205af224ebd882766"
 ---
 
-# Date & Time
+# 日付と時刻
 
-OpenClaw defaults to **host-local time for transport timestamps** and **user timezone only in the system prompt**.
-Provider timestamps are preserved so tools keep their native semantics (current time is available via `session_status`).
+OpenClaw は、**トランスポート（通信路）のタイムスタンプにはホストの現地時間**を、**システムプロンプトにはユーザーのタイムゾーン**をデフォルトで使用します。
+プロバイダーから提供されるタイムスタンプはそのまま保持されるため、ツールはプラットフォーム独自のセマンティクスを維持できます（現在時刻は `session_status` ツールで確認可能です）。
 
-## Message envelopes (local by default)
+## メッセージエンベロープ (デフォルトは現地時間)
 
-Inbound messages are wrapped with a timestamp (minute precision):
+受信メッセージは、分単位の精度を持つタイムスタンプでラップされます:
 
 ```
-[Provider ... 2026-01-05 16:26 PST] message text
+[Provider ... 2026-01-05 16:26 PST] メッセージ本文
 ```
 
-This envelope timestamp is **host-local by default**, regardless of the provider timezone.
+このエンベロープのタイムスタンプは、プロバイダー側の設定に関わらず、**デフォルトでホストの現地時間**になります。
 
-You can override this behavior:
+この挙動は以下のように上書き可能です:
 
 ```json5
 {
   agents: {
     defaults: {
-      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA timezone
+      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA タイムゾーン
       envelopeTimestamp: "on", // "on" | "off"
       envelopeElapsed: "on", // "on" | "off"
     },
@@ -35,94 +37,88 @@ You can override this behavior:
 }
 ```
 
-- `envelopeTimezone: "utc"` uses UTC.
-- `envelopeTimezone: "local"` uses the host timezone.
-- `envelopeTimezone: "user"` uses `agents.defaults.userTimezone` (falls back to host timezone).
-- Use an explicit IANA timezone (e.g., `"America/Chicago"`) for a fixed zone.
-- `envelopeTimestamp: "off"` removes absolute timestamps from envelope headers.
-- `envelopeElapsed: "off"` removes elapsed time suffixes (the `+2m` style).
+- `envelopeTimezone: "utc"`: UTC (世界標準時) を使用。
+- `envelopeTimezone: "local"`: ホストマシンの現地時間を使用。
+- `envelopeTimezone: "user"`: `agents.defaults.userTimezone` で設定された時間を使用（未設定時はホストの現地時間にフォールバック）。
+- 特定の IANA タイムゾーン（例: `"Asia/Tokyo"`）を指定して固定することも可能です。
+- `envelopeTimestamp: "off"`: エンベロープヘッダーから絶対時刻を削除します。
+- `envelopeElapsed: "off"`: `+2m` のような経過時間の表示を削除します。
 
-### Examples
+### 表示例
 
-**Local (default):**
-
-```
-[WhatsApp +1555 2026-01-18 00:19 PST] hello
-```
-
-**User timezone:**
+**現地時間 (デフォルト):**
 
 ```
-[WhatsApp +1555 2026-01-18 00:19 CST] hello
+[WhatsApp +1555 2026-01-18 00:19 JST] こんにちは
 ```
 
-**Elapsed time enabled:**
+**ユーザータイムゾーン:**
 
 ```
-[WhatsApp +1555 +30s 2026-01-18T05:19Z] follow-up
+[WhatsApp +1555 2026-01-18 00:19 CST] こんにちは
 ```
 
-## System prompt: Current Date & Time
-
-If the user timezone is known, the system prompt includes a dedicated
-**Current Date & Time** section with the **time zone only** (no clock/time format)
-to keep prompt caching stable:
+**経過時間有効:**
 
 ```
-Time zone: America/Chicago
+[WhatsApp +1555 +30s 2026-01-18T05:19Z] 追記です
 ```
 
-When the agent needs the current time, use the `session_status` tool; the status
-card includes a timestamp line.
+## システムプロンプト: 現在の日付と時刻
 
-## System event lines (local by default)
-
-Queued system events inserted into agent context are prefixed with a timestamp using the
-same timezone selection as message envelopes (default: host-local).
+ユーザーのタイムゾーンが判明している場合、システムプロンプトには **Current Date & Time** セクションが含まれます。プロンプトキャッシュの効率を上げるため、ここには時刻そのものではなく **タイムゾーン名のみ** が記載されます:
 
 ```
-System: [2026-01-12 12:19:17 PST] Model switched.
+Time zone: Asia/Tokyo
 ```
 
-### Configure user timezone + format
+エージェント（モデル）が正確な現在時刻を必要とする場合は、`session_status` ツールを使用するよう指示されています。このツールのステータスカードには現在のタイムスタンプが含まれています。
+
+## システムイベント (デフォルトは現地時間)
+
+エージェントのコンテキストに挿入されるシステムイベント（キューイングされたものなど）には、メッセージエンベロープと同じタイムゾーン設定（デフォルトはホストの現地時間）でタイムスタンプが付与されます。
+
+```
+System: [2026-01-12 12:19:17 JST] モデルが切り替わりました。
+```
+
+### ユーザータイムゾーンと形式の設定
 
 ```json5
 {
   agents: {
     defaults: {
-      userTimezone: "America/Chicago",
+      userTimezone: "Asia/Tokyo",
       timeFormat: "auto", // auto | 12 | 24
     },
   },
 }
 ```
 
-- `userTimezone` sets the **user-local timezone** for prompt context.
-- `timeFormat` controls **12h/24h display** in the prompt. `auto` follows OS prefs.
+- `userTimezone`: プロンプト内で使用する **ユーザーの現地タイムゾーン** を設定します。
+- `timeFormat`: プロンプト内での **12時間/24時間表記** を制御します。`auto` は OS の設定に従います。
 
-## Time format detection (auto)
+## 時刻形式の自動検出 (auto)
 
-When `timeFormat: "auto"`, OpenClaw inspects the OS preference (macOS/Windows)
-and falls back to locale formatting. The detected value is **cached per process**
-to avoid repeated system calls.
+`timeFormat: "auto"` の場合、OpenClaw は OS の設定（macOS または Windows）を確認し、それ以外の場合はロケール情報から形式を判断します。検出された値は **プロセスごとにキャッシュ** されるため、頻繁にシステムコールが発生することはありません。
 
-## Tool payloads + connectors (raw provider time + normalized fields)
+## ツールペイロードとコネクタ (生の時刻 + 正規化されたフィールド)
 
-Channel tools return **provider-native timestamps** and add normalized fields for consistency:
+チャネル操作ツールは、**プロバイダー独自のタイムスタンプ** を返すと同時に、一貫性のために正規化された以下のフィールドを付加します:
 
-- `timestampMs`: epoch milliseconds (UTC)
-- `timestampUtc`: ISO 8601 UTC string
+- `timestampMs`: エポックミリ秒 (UTC)
+- `timestampUtc`: ISO 8601 形式の文字列 (UTC)
 
-Raw provider fields are preserved so nothing is lost.
+プロバイダー側の生データも保持されるため、情報が失われることはありません。
 
-- Slack: epoch-like strings from the API
-- Discord: UTC ISO timestamps
-- Telegram/WhatsApp: provider-specific numeric/ISO timestamps
+- Slack: API 由来のエポック秒風の文字列
+- Discord: UTC ISO タイムスタンプ
+- Telegram/WhatsApp: 数値または ISO 形式のプロバイダー固有タイムスタンプ
 
-If you need local time, convert it downstream using the known timezone.
+現地時間が必要な場合は、これらの値を元にダウンストリームで変換してください。
 
-## Related docs
+## 関連ドキュメント
 
-- [System Prompt](/concepts/system-prompt)
-- [Timezones](/concepts/timezone)
-- [Messages](/concepts/messages)
+- [システムプロンプト](/concepts/system-prompt)
+- [タイムゾーン](/concepts/timezone)
+- [メッセージ](/concepts/messages)

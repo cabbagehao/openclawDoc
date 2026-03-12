@@ -1,38 +1,40 @@
 ---
-title: "Diffs"
-summary: "Read-only diff viewer and file renderer for agents (optional plugin tool)"
+title: "差分"
+summary: "エージェント用の読み取り専用の差分ビューアとファイル レンダラー (オプションのプラグイン ツール)"
 description: "Use the optional Diffs plugin to render before and after text or unified patches as a gateway-hosted diff view, a file (PNG or PDF), or both."
 read_when:
-  - You want agents to show code or markdown edits as diffs
-  - You want a canvas-ready viewer URL or a rendered diff file
-  - You need controlled, temporary diff artifacts with secure defaults
+  - エージェントにコードまたはマークダウンの編集内容を差分として表示したい
+  - キャンバス対応のビューア URL またはレンダリングされた diff ファイルが必要な場合
+  - 安全なデフォルトを備えた、制御された一時的な diff アーティファクトが必要です
+x-i18n:
+  source_hash: "ef3b7a0fb4c20da0eef5f8d7f44668d979486a5a3d648d4abccd09388c69eea0"
 ---
 
-# Diffs
+差分の数
 
-`diffs` is an optional plugin tool with short built-in system guidance and a companion skill that turns change content into a read-only diff artifact for agents.
+`diffs` は、短い組み込みシステム ガイダンスと、変更内容をエージェント向けの読み取り専用の差分アーティファクトに変換するコンパニオン スキルを備えたオプションのプラグイン ツールです。
 
-It accepts either:
+次のいずれかを受け入れます。
 
-- `before` and `after` text
-- a unified `patch`
+- `before` および `after` テキスト
+- 統一された `patch`
 
-It can return:
+以下を返すことができます:
 
-- a gateway viewer URL for canvas presentation
-- a rendered file path (PNG or PDF) for message delivery
-- both outputs in one call
+- キャンバス プレゼンテーション用のゲートウェイ ビューア URL
+- メッセージ配信用にレンダリングされたファイル パス (PNG または PDF)
+- 1 回の呼び出しで両方の出力
 
-When enabled, the plugin prepends concise usage guidance into system-prompt space and also exposes a detailed skill for cases where the agent needs fuller instructions.
+プラグインを有効にすると、システム プロンプト領域に簡潔な使用方法のガイダンスが追加され、エージェントがより詳細な指示を必要とする場合に備えて詳細なスキルも公開されます。
 
-## Quick start
+## クイックスタート
 
-1. Enable the plugin.
-2. Call `diffs` with `mode: "view"` for canvas-first flows.
-3. Call `diffs` with `mode: "file"` for chat file delivery flows.
-4. Call `diffs` with `mode: "both"` when you need both artifacts.
+1. プラグインを有効にします。
+2. キャンバスファーストフローの場合は、`diffs` を `mode: "view"` とともに呼び出します。
+3. チャット ファイル配信フローのために、`diffs` を `mode: "file"` とともに呼び出します。
+4. 両方のアーティファクトが必要な場合は、`diffs` を `mode: "both"` とともに呼び出します。
 
-## Enable the plugin
+## プラグインを有効にする
 
 ```json5
 {
@@ -46,9 +48,9 @@ When enabled, the plugin prepends concise usage guidance into system-prompt spac
 }
 ```
 
-## Disable built-in system guidance
+## 組み込みのシステム ガイダンスを無効にする
 
-If you want to keep the `diffs` tool enabled but disable its built-in system-prompt guidance, set `plugins.entries.diffs.hooks.allowPromptInjection` to `false`:
+`diffs` ツールを有効にしたまま、組み込みのシステム プロンプト ガイダンスを無効にする場合は、 `plugins.entries.diffs.hooks.allowPromptInjection` を `false` に設定します。
 
 ```json5
 {
@@ -65,22 +67,21 @@ If you want to keep the `diffs` tool enabled but disable its built-in system-pro
 }
 ```
 
-This blocks the diffs plugin's `before_prompt_build` hook while keeping the plugin, tool, and companion skill available.
+これにより、プラグイン、ツール、およびコンパニオン スキルを利用可能な状態に保ちながら、diffs プラグインの `before_prompt_build` フックがブロックされます。
 
-If you want to disable both the guidance and the tool, disable the plugin instead.
+ガイダンスとツールの両方を無効にしたい場合は、代わりにプラグインを無効にしてください。
 
-## Typical agent workflow
+## 一般的なエージェントのワークフロー1. エージェントが `diffs` に電話します
 
-1. Agent calls `diffs`.
-2. Agent reads `details` fields.
-3. Agent either:
-   - opens `details.viewerUrl` with `canvas present`
-   - sends `details.filePath` with `message` using `path` or `filePath`
-   - does both
+2. エージェントは `details` フィールドを読み取ります。
+3. エージェントは次のいずれかを行います。
+   - `details.viewerUrl` を `canvas present` で開きます
+   - `path` または `filePath` を使用して、`details.filePath` を `message` とともに送信します
+   - 両方を行います
 
-## Input examples
+## 入力例
 
-Before and after:
+前後:
 
 ```json
 {
@@ -91,7 +92,7 @@ Before and after:
 }
 ```
 
-Patch:
+パッチ:
 
 ```json
 {
@@ -100,47 +101,45 @@ Patch:
 }
 ```
 
-## Tool input reference
+## ツール入力リファレンス
 
-All fields are optional unless noted:
+注記がない限り、すべてのフィールドはオプションです。- `before` (`string`): オリジナルのテキスト。 `patch` が省略された場合は、`after` で必須です。
 
-- `before` (`string`): original text. Required with `after` when `patch` is omitted.
-- `after` (`string`): updated text. Required with `before` when `patch` is omitted.
-- `patch` (`string`): unified diff text. Mutually exclusive with `before` and `after`.
-- `path` (`string`): display filename for before and after mode.
-- `lang` (`string`): language override hint for before and after mode.
-- `title` (`string`): viewer title override.
-- `mode` (`"view" | "file" | "both"`): output mode. Defaults to plugin default `defaults.mode`.
-- `theme` (`"light" | "dark"`): viewer theme. Defaults to plugin default `defaults.theme`.
-- `layout` (`"unified" | "split"`): diff layout. Defaults to plugin default `defaults.layout`.
-- `expandUnchanged` (`boolean`): expand unchanged sections when full context is available. Per-call option only (not a plugin default key).
-- `fileFormat` (`"png" | "pdf"`): rendered file format. Defaults to plugin default `defaults.fileFormat`.
-- `fileQuality` (`"standard" | "hq" | "print"`): quality preset for PNG or PDF rendering.
-- `fileScale` (`number`): device scale override (`1`-`4`).
-- `fileMaxWidth` (`number`): max render width in CSS pixels (`640`-`2400`).
-- `ttlSeconds` (`number`): viewer artifact TTL in seconds. Default 1800, max 21600.
-- `baseUrl` (`string`): viewer URL origin override. Must be `http` or `https`, no query/hash.
+- `after` (`string`): テキストを更新しました。 `patch` が省略された場合は、`before` で必須です。
+- `patch` (`string`): 統合された差分テキスト。 `before` および `after` とは相互に排他的です。
+- `path` (`string`): モード前後のファイル名を表示します。
+- `lang` (`string`): モードの前後の言語オーバーライドのヒント。
+- `title` (`string`): ビューアのタイトルの上書き。
+- `mode` (`"view" | "file" | "both"`): 出力モード。デフォルトはプラグインのデフォルト `defaults.mode` です。
+- `theme` (`"light" | "dark"`): ビューアのテーマ。デフォルトはプラグインのデフォルト `defaults.theme` です。
+- `layout` (`"unified" | "split"`): 差分レイアウト。デフォルトはプラグインのデフォルト `defaults.layout` です。
+- `expandUnchanged` (`boolean`): 完全なコンテキストが利用可能な場合、未変更のセクションを展開します。呼び出しごとのオプションのみ (プラグインのデフォルト キーではありません)。
+- `fileFormat` (`"png" | "pdf"`): レンダリングされたファイル形式。デフォルトはプラグインのデフォルト `defaults.fileFormat` です。
+- `fileQuality` (`"standard" | "hq" | "print"`): PNG または PDF レンダリング用の品質プリセット。
+- `fileScale` (`number`): デバイス スケール オーバーライド (`1`-`4`)。- `fileMaxWidth` (`number`): CSS ピクセル単位の最大レンダリング幅 (`640`-`2400`)。
+- `ttlSeconds` (`number`): 秒単位のビューア アーティファクト TTL。デフォルトは 1800、最大は 21600。
+- `baseUrl` (`string`): ビューア URL オリジン オーバーライド。 `http` または `https` である必要があり、クエリ/ハッシュはありません。
 
-Validation and limits:
+検証と制限:
 
-- `before` and `after` each max 512 KiB.
-- `patch` max 2 MiB.
-- `path` max 2048 bytes.
-- `lang` max 128 bytes.
-- `title` max 1024 bytes.
-- Patch complexity cap: max 128 files and 120000 total lines.
-- `patch` and `before` or `after` together are rejected.
-- Rendered file safety limits (apply to PNG and PDF):
-  - `fileQuality: "standard"`: max 8 MP (8,000,000 rendered pixels).
-  - `fileQuality: "hq"`: max 14 MP (14,000,000 rendered pixels).
-  - `fileQuality: "print"`: max 24 MP (24,000,000 rendered pixels).
-  - PDF also has a max of 50 pages.
+- `before` および `after` はそれぞれ最大 512 KiB。
+- `patch` 最大 2 MiB。
+- `path` 最大 2048 バイト。
+- `lang` 最大 128 バイト。
+- `title` 最大 1024 バイト。
+- パッチの複雑さの上限: 最大 128 ファイル、合計 120,000 行。
+- `patch` と `before` または `after` は一緒に拒否されます。
+- レンダリングされたファイルの安全制限 (PNG および PDF に適用):
+  - `fileQuality: "standard"`: 最大 8 MP (8,000,000 レンダリング ピクセル)。
+  - `fileQuality: "hq"`: 最大 14 MP (レンダリング ピクセル 14,000,000)。
+  - `fileQuality: "print"`: 最大 24 MP (24,000,000 レンダリング ピクセル)。
+  - PDF も最大 50 ページです。
 
-## Output details contract
+## 詳細コントラクトを出力します
 
-The tool returns structured metadata under `details`.
+このツールは、`details` の下に構造化メタデータを返します。
 
-Shared fields for modes that create a viewer:
+ビューアを作成するモードの共有フィールド:
 
 - `artifactId`
 - `viewerUrl`
@@ -151,33 +150,32 @@ Shared fields for modes that create a viewer:
 - `fileCount`
 - `mode`
 
-File fields when PNG or PDF is rendered:
+PNG または PDF がレンダリングされるときのファイル フィールド:- `filePath`
 
-- `filePath`
-- `path` (same value as `filePath`, for message tool compatibility)
+- `path` (メッセージ ツールの互換性のため、`filePath` と同じ値)
 - `fileBytes`
 - `fileFormat`
 - `fileQuality`
 - `fileScale`
 - `fileMaxWidth`
 
-Mode behavior summary:
+モード動作の概要:
 
-- `mode: "view"`: viewer fields only.
-- `mode: "file"`: file fields only, no viewer artifact.
-- `mode: "both"`: viewer fields plus file fields. If file rendering fails, viewer still returns with `fileError`.
+- `mode: "view"`: ビューア フィールドのみ。
+- `mode: "file"`: ファイル フィールドのみ。ビューア アーティファクトなし。
+- `mode: "both"`: ビューア フィールドとファイル フィールド。ファイルのレンダリングが失敗した場合でも、ビューアは `fileError` を返します。
 
-## Collapsed unchanged sections
+## 未変更のセクションを折りたたんだ
 
-- The viewer can show rows like `N unmodified lines`.
-- Expand controls on those rows are conditional and not guaranteed for every input kind.
-- Expand controls appear when the rendered diff has expandable context data, which is typical for before and after input.
-- For many unified patch inputs, omitted context bodies are not available in the parsed patch hunks, so the row can appear without expand controls. This is expected behavior.
-- `expandUnchanged` applies only when expandable context exists.
+- ビューアは `N unmodified lines` のような行を表示できます。
+- これらの行の展開コントロールは条件付きであり、すべての入力種類に対して保証されているわけではありません。
+- レンダリングされた差分に展開可能なコンテキスト データがある場合、展開コントロールが表示されます。これは入力の前後で一般的です。
+- 多くの統合パッチ入力では、解析されたパッチ ハンクでは省略されたコンテキスト本体を使用できないため、展開コントロールなしで行が表示されることがあります。これは予期された動作です。
+- `expandUnchanged` は、拡張可能なコンテキストが存在する場合にのみ適用されます。
 
-## Plugin defaults
+## プラグインのデフォルト
 
-Set plugin-wide defaults in `~/.openclaw/openclaw.json`:
+`~/.openclaw/openclaw.json` でプラグイン全体のデフォルトを設定します。
 
 ```json5
 {
@@ -209,7 +207,7 @@ Set plugin-wide defaults in `~/.openclaw/openclaw.json`:
 }
 ```
 
-Supported defaults:
+サポートされているデフォルト:
 
 - `fontFamily`
 - `fontSize`
@@ -226,15 +224,13 @@ Supported defaults:
 - `fileMaxWidth`
 - `mode`
 
-Explicit tool parameters override these defaults.
+明示的なツール パラメータはこれらのデフォルトをオーバーライドします。## セキュリティ構成
 
-## Security config
+- `security.allowRemoteViewer` (`boolean`、デフォルト `false`)
+  - `false`: ビューア ルートへの非ループバック リクエストは拒否されます。
+  - `true`: トークン化されたパスが有効な場合、リモート ビューアが許可されます。
 
-- `security.allowRemoteViewer` (`boolean`, default `false`)
-  - `false`: non-loopback requests to viewer routes are denied.
-  - `true`: remote viewers are allowed if tokenized path is valid.
-
-Example:
+例:
 
 ```json5
 {
@@ -253,131 +249,127 @@ Example:
 }
 ```
 
-## Artifact lifecycle and storage
+## アーティファクトのライフサイクルとストレージ
 
-- Artifacts are stored under the temp subfolder: `$TMPDIR/openclaw-diffs`.
-- Viewer artifact metadata contains:
-  - random artifact ID (20 hex chars)
-  - random token (48 hex chars)
-  - `createdAt` and `expiresAt`
-  - stored `viewer.html` path
-- Default viewer TTL is 30 minutes when not specified.
-- Maximum accepted viewer TTL is 6 hours.
-- Cleanup runs opportunistically after artifact creation.
-- Expired artifacts are deleted.
-- Fallback cleanup removes stale folders older than 24 hours when metadata is missing.
+- アーティファクトは、temp サブフォルダー `$TMPDIR/openclaw-diffs` に保存されます。
+- ビューア アーティファクト メタデータには次のものが含まれます。
+  - ランダムなアーティファクト ID (20 の 16 進数文字)
+  - ランダムなトークン (48 個の 16 進数文字)
+  - `createdAt` および `expiresAt`
+  - 保存された `viewer.html` パス
+- デフォルトのビューア TTL は、指定されていない場合は 30 分です。
+- 受け入れられる最大視聴者 TTL は 6 時間です。
+- クリーンアップはアーティファクトの作成後に都合よく実行されます。
+- 期限切れのアーティファクトは削除されます。
+- フォールバック クリーンアップは、メタデータが欠落している場合に 24 時間以上経過した古いフォルダーを削除します。
 
-## Viewer URL and network behavior
+## ビューアの URL とネットワークの動作
 
-Viewer route:
+視聴ルート:
 
 - `/plugins/diffs/view/{artifactId}/{token}`
 
-Viewer assets:
+ビューアアセット:
 
 - `/plugins/diffs/assets/viewer.js`
 - `/plugins/diffs/assets/viewer-runtime.js`
 
-URL construction behavior:
+URL 構築動作:
 
-- If `baseUrl` is provided, it is used after strict validation.
-- Without `baseUrl`, viewer URL defaults to loopback `127.0.0.1`.
-- If gateway bind mode is `custom` and `gateway.customBindHost` is set, that host is used.
+- `baseUrl` が指定された場合は、厳密な検証後に使用されます。
+- `baseUrl` を使用しない場合、ビューア URL はデフォルトでループバック `127.0.0.1` になります。
+- ゲートウェイ バインド モードが `custom` で、`gateway.customBindHost` が設定されている場合、そのホストが使用されます。
 
-`baseUrl` rules:
+`baseUrl` ルール:
 
-- Must be `http://` or `https://`.
-- Query and hash are rejected.
-- Origin plus optional base path is allowed.
+- `http://` または `https://` である必要があります。
+- クエリとハッシュは拒否されます。
+- 原点とオプションのベース パスが許可されます。
 
-## Security model
+## セキュリティモデルビューアの強化
 
-Viewer hardening:
-
-- Loopback-only by default.
-- Tokenized viewer paths with strict ID and token validation.
-- Viewer response CSP:
+- デフォルトではループバックのみ。
+- 厳密な ID とトークンの検証によるトークン化されたビューア パス。
+- 視聴者の応答 CSP:
   - `default-src 'none'`
-  - scripts and assets only from self
-  - no outbound `connect-src`
-- Remote miss throttling when remote access is enabled:
-  - 40 failures per 60 seconds
-  - 60 second lockout (`429 Too Many Requests`)
+  - 自分自身からのみのスクリプトとアセット
+  - アウトバウンドなし `connect-src`
+- リモート アクセスが有効な場合のリモート ミス スロットル:
+  - 60 秒あたり 40 回の失敗
+  - 60 秒のロックアウト (`429 Too Many Requests`)
 
-File rendering hardening:
+ファイルレンダリングの強化:
 
-- Screenshot browser request routing is deny-by-default.
-- Only local viewer assets from `http://127.0.0.1/plugins/diffs/assets/*` are allowed.
-- External network requests are blocked.
+- スクリーンショット ブラウザのリクエスト ルーティングはデフォルトで拒否されます。
+- `http://127.0.0.1/plugins/diffs/assets/*` のローカル ビューア アセットのみが許可されます。
+- 外部ネットワーク要求はブロックされます。
 
-## Browser requirements for file mode
+## ファイルモードのブラウザ要件
 
-`mode: "file"` and `mode: "both"` need a Chromium-compatible browser.
+`mode: "file"` および `mode: "both"` には、Chromium 互換のブラウザが必要です。
 
-Resolution order:
+解決順序:
 
-1. `browser.executablePath` in OpenClaw config.
-2. Environment variables:
+1. OpenClaw 構成の `browser.executablePath`。
+2. 環境変数:
    - `OPENCLAW_BROWSER_EXECUTABLE_PATH`
    - `BROWSER_EXECUTABLE_PATH`
    - `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`
-3. Platform command/path discovery fallback.
+3. プラットフォーム コマンド/パス検出フォールバック。
 
-Common failure text:
+よくある失敗テキスト:
 
 - `Diff PNG/PDF rendering requires a Chromium-compatible browser...`
 
-Fix by installing Chrome, Chromium, Edge, or Brave, or setting one of the executable path options above.
+Chrome、Chromium、Edge、または Brave をインストールするか、上記の実行可能パス オプションのいずれかを設定することで修正します。
 
-## Troubleshooting
+## トラブルシューティング
 
-Input validation errors:
+入力検証エラー:
 
 - `Provide patch or both before and after text.`
-  - Include both `before` and `after`, or provide `patch`.
+  - `before` と `after` の両方を含めるか、`patch` を指定します。
 - `Provide either patch or before/after input, not both.`
-  - Do not mix input modes.
+  - 入力モードを混在させないでください。
 - `Invalid baseUrl: ...`
-  - Use `http(s)` origin with optional path, no query/hash.
+  - `http(s)` オリジンをオプションのパスとともに使用し、クエリ/ハッシュは使用しません。
 - `{field} exceeds maximum size (...)`
-  - Reduce payload size.
-- Large patch rejection
-  - Reduce patch file count or total lines.
+  - ペイロードサイズを削減します。
+- 大きなパッチ拒否
+  - パッチファイルの数または総行数を減らします。ビューアのアクセシビリティの問題:
 
-Viewer accessibility issues:
+- ビューア URL はデフォルトで `127.0.0.1` に解決されます。
+- リモート アクセス シナリオの場合は、次のいずれかを実行します。
+  - ツール呼び出しごとに `baseUrl` を渡す、または
+  - `gateway.bind=custom` および `gateway.customBindHost` を使用します
+- 外部ビューア アクセスを目的とする場合にのみ、`security.allowRemoteViewer` を有効にします。
 
-- Viewer URL resolves to `127.0.0.1` by default.
-- For remote access scenarios, either:
-  - pass `baseUrl` per tool call, or
-  - use `gateway.bind=custom` and `gateway.customBindHost`
-- Enable `security.allowRemoteViewer` only when you intend external viewer access.
+未変更行の行には展開ボタンがありません。
 
-Unmodified-lines row has no expand button:
+- これは、パッチが展開可能なコンテキストを持たないパッチ入力で発生する可能性があります。
+- これは予期されたものであり、ビューアの障害を示すものではありません。
 
-- This can happen for patch input when the patch does not carry expandable context.
-- This is expected and does not indicate a viewer failure.
+アーティファクトが見つかりません:
 
-Artifact not found:
+- TTL によりアーティファクトの有効期限が切れました。
+- トークンまたはパスが変更されました。
+- クリーンアップにより古いデータが削除されました。
 
-- Artifact expired due TTL.
-- Token or path changed.
-- Cleanup removed stale data.
+## 操作ガイド
 
-## Operational guidance
+- キャンバスでのローカルのインタラクティブなレビューには `mode: "view"` を優先します。
+- 添付ファイルが必要なアウトバウンド チャット チャネルには `mode: "file"` を優先します。
+- 展開でリモート ビューア URL が必要な場合を除き、`allowRemoteViewer` を無効にしておきます。
+- 機密差分には明示的な短い `ttlSeconds` を設定します。
+- 必要がない場合は、差分入力でシークレットを送信しないようにします。
+- チャネルが画像を積極的に圧縮する場合 (Telegram や WhatsApp など)、PDF 出力 (`fileFormat: "pdf"`) を優先します。
 
-- Prefer `mode: "view"` for local interactive reviews in canvas.
-- Prefer `mode: "file"` for outbound chat channels that need an attachment.
-- Keep `allowRemoteViewer` disabled unless your deployment requires remote viewer URLs.
-- Set explicit short `ttlSeconds` for sensitive diffs.
-- Avoid sending secrets in diff input when not required.
-- If your channel compresses images aggressively (for example Telegram or WhatsApp), prefer PDF output (`fileFormat: "pdf"`).
+差分レンダリング エンジン:
 
-Diff rendering engine:
+- [差分](https://diffs.com) を利用しています。
 
-- Powered by [Diffs](https://diffs.com).
+## 関連ドキュメント
 
-## Related docs
-
-- [Tools overview](/tools)
-- [Plugins](/tools/plugin)
-- [Browser](/tools/browser)
+- [ツールの概要](/tools)
+- [プラグイン](/tools/plugin)
+- [ブラウザ](/tools/browser)

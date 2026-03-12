@@ -1,56 +1,50 @@
 ---
-summary: "What the OpenClaw system prompt contains and how it is assembled"
+summary: "OpenClaw のシステムプロンプトに含まれる内容とその構築プロセス"
 read_when:
-  - Editing system prompt text, tools list, or time/heartbeat sections
-  - Changing workspace bootstrap or skills injection behavior
-title: "System Prompt"
+  - システムプロンプトのテキスト、ツール一覧、時刻、またはハートビートセクションを編集する場合
+  - ワークスペースのブートストラップやスキルの注入動作を変更する場合
+title: "システムプロンプト"
+x-i18n:
+  source_hash: "e9ba54378cd062b82585c55453b1ad2c5c38e8c4a52dd30c48c8692fe6896c3c"
 ---
 
-# System Prompt
+# システムプロンプト
 
-OpenClaw builds a custom system prompt for every agent run. The prompt is **OpenClaw-owned** and does not use the pi-coding-agent default prompt.
+OpenClaw は、エージェントを実行するたびにカスタムのシステムプロンプトを構築します。このプロンプトは **OpenClaw が管理する独自のもの** であり、pi-coding-agent のデフォルトプロンプトは使用されません。
 
-The prompt is assembled by OpenClaw and injected into each agent run.
+## プロンプトの構造
 
-## Structure
+プロンプトは意図的にコンパクトに保たれており、以下の固定セクションで構成されています:
 
-The prompt is intentionally compact and uses fixed sections:
+- **Tooling**: 利用可能なツールの一覧と短い説明。
+- **Safety**: エージェントが独断で権限を拡大したり、監視を回避したりしないようにするための、短いガードレール（指針）。
+- **Skills** (利用可能な場合): 必要に応じてスキルの指示内容をロードする方法。
+- **OpenClaw Self-Update**: `config.apply` や `update.run` を実行する方法。
+- **Workspace**: 作業ディレクトリ (`agents.defaults.workspace`)。
+- **Documentation**: ローカルの OpenClaw ドキュメントへのパスと、それらを参照すべきタイミング。
+- **Workspace Files (injected)**: 下記のブートストラップファイルが含まれていることを示します。
+- **Sandbox** (有効な場合): サンドボックス化された実行環境の情報、パス、および権限昇格が可能かどうか。
+- **Current Date & Time**: ユーザーの現地時間、タイムゾーン、および時刻形式。
+- **Reply Tags**: 対応チャネルにおけるオプションの返信タグ構文。
+- **Heartbeats**: ハートビート（定期実行）時のプロンプトと確認（ack）の挙動。
+- **Runtime**: ホスト名、OS、ノード、モデル、リポジトリルート（検出時）、および思考レベル（1 行）。
+- **Reasoning**: 現在の推論プロセスの可視化レベルと `/reasoning` コマンドのヒント。
 
-- **Tooling**: current tool list + short descriptions.
-- **Safety**: short guardrail reminder to avoid power-seeking behavior or bypassing oversight.
-- **Skills** (when available): tells the model how to load skill instructions on demand.
-- **OpenClaw Self-Update**: how to run `config.apply` and `update.run`.
-- **Workspace**: working directory (`agents.defaults.workspace`).
-- **Documentation**: local path to OpenClaw docs (repo or npm package) and when to read them.
-- **Workspace Files (injected)**: indicates bootstrap files are included below.
-- **Sandbox** (when enabled): indicates sandboxed runtime, sandbox paths, and whether elevated exec is available.
-- **Current Date & Time**: user-local time, timezone, and time format.
-- **Reply Tags**: optional reply tag syntax for supported providers.
-- **Heartbeats**: heartbeat prompt and ack behavior.
-- **Runtime**: host, OS, node, model, repo root (when detected), thinking level (one line).
-- **Reasoning**: current visibility level + /reasoning toggle hint.
+システムプロンプト内の安全ガードレールはあくまで「助言」です。モデルの挙動をガイドしますが、ポリシーを強制するものではありません。強制力を持たせるには、ツールポリシー、実行承認（exec approvals）、サンドボックス、およびチャネルの許可リストを使用してください。これらは設計上、管理者によって無効化することが可能です。
 
-Safety guardrails in the system prompt are advisory. They guide model behavior but do not enforce policy. Use tool policy, exec approvals, sandboxing, and channel allowlists for hard enforcement; operators can disable these by design.
+## プロンプトモード
 
-## Prompt modes
+OpenClaw は、サブエージェント向けにさらに小さなシステムプロンプトを生成できます。実行時に `promptMode` が設定されます（ユーザー設定項目ではありません）:
 
-OpenClaw can render smaller system prompts for sub-agents. The runtime sets a
-`promptMode` for each run (not a user-facing config):
+- `full` (デフォルト): 上記のすべてのセクションを含みます。
+- `minimal`: サブエージェントに使用されます。**Skills**, **Memory Recall**, **OpenClaw Self-Update**, **Model Aliases**, **User Identity**, **Reply Tags**, **Messaging**, **Silent Replies**, **Heartbeats** が省略されます。Tooling, **Safety**, Workspace, Sandbox, 時刻（判明している場合）, Runtime, および注入されたコンテキストは引き続き利用可能です。
+- `none`: 基本的なアイデンティティ情報のみを返します。
 
-- `full` (default): includes all sections above.
-- `minimal`: used for sub-agents; omits **Skills**, **Memory Recall**, **OpenClaw
-  Self-Update**, **Model Aliases**, **User Identity**, **Reply Tags**,
-  **Messaging**, **Silent Replies**, and **Heartbeats**. Tooling, **Safety**,
-  Workspace, Sandbox, Current Date & Time (when known), Runtime, and injected
-  context stay available.
-- `none`: returns only the base identity line.
+`promptMode=minimal` の場合、追加で注入されたプロンプトのラベルは **Group Chat Context** ではなく **Subagent Context** になります。
 
-When `promptMode=minimal`, extra injected prompts are labeled **Subagent
-Context** instead of **Group Chat Context**.
+## ワークスペースブートストラップの注入
 
-## Workspace bootstrap injection
-
-Bootstrap files are trimmed and appended under **Project Context** so the model sees identity and profile context without needing explicit reads:
+ブートストラップファイルは適宜切り詰められ、**Project Context** セクションの下に追加されます。これにより、モデルは明示的な `read` を行わなくても、アイデンティティやプロフィールの文脈を把握できます:
 
 - `AGENTS.md`
 - `SOUL.md`
@@ -58,57 +52,36 @@ Bootstrap files are trimmed and appended under **Project Context** so the model 
 - `IDENTITY.md`
 - `USER.md`
 - `HEARTBEAT.md`
-- `BOOTSTRAP.md` (only on brand-new workspaces)
-- `MEMORY.md` and/or `memory.md` (when present in the workspace; either or both may be injected)
+- `BOOTSTRAP.md` (新規ワークスペースの場合のみ)
+- `MEMORY.md` および/または `memory.md` (ワークスペース内に存在する場合)
 
-All of these files are **injected into the context window** on every turn, which
-means they consume tokens. Keep them concise — especially `MEMORY.md`, which can
-grow over time and lead to unexpectedly high context usage and more frequent
-compaction.
+これらのファイルは実行のたびに **コンテキストウィンドウ内に注入される** ため、トークンを消費します。内容は簡潔に保ってください。特に `MEMORY.md` は時間とともに肥大化しやすく、予期せぬコンテキスト消費や頻繁な圧縮（コンパクション）の原因となります。
 
-> **Note:** `memory/*.md` daily files are **not** injected automatically. They
-> are accessed on demand via the `memory_search` and `memory_get` tools, so they
-> do not count against the context window unless the model explicitly reads them.
+> **注意:** `memory/*.md` の日次ログファイルは、自動的には注入 **されません**。これらは `memory_search` や `memory_get` ツールを介してオンデマンドでアクセスされるため、モデルが明示的に読み取らない限り、コンテキストウィンドウを消費することはありません。
 
-Large files are truncated with a marker. The max per-file size is controlled by
-`agents.defaults.bootstrapMaxChars` (default: 20000). Total injected bootstrap
-content across files is capped by `agents.defaults.bootstrapTotalMaxChars`
-(default: 150000). Missing files inject a short missing-file marker. When truncation
-occurs, OpenClaw can inject a warning block in Project Context; control this with
-`agents.defaults.bootstrapPromptTruncationWarning` (`off`, `once`, `always`;
-default: `once`).
+巨大なファイルはマーカーと共に切り詰められます。ファイルごとの上限は `agents.defaults.bootstrapMaxChars`（デフォルト 20,000）で制御されます。全ファイルの合計上限は `agents.defaults.bootstrapTotalMaxChars`（デフォルト 150,000）です。ファイルが欠落している場合は「missing」マーカーが注入されます。切り詰めが発生した際に警告を注入するかどうかは `agents.defaults.bootstrapPromptTruncationWarning` (`off`, `once`, `always`。デフォルトは `once`) で設定可能です。
 
-Sub-agent sessions only inject `AGENTS.md` and `TOOLS.md` (other bootstrap files
-are filtered out to keep the sub-agent context small).
+サブエージェントのセッションでは、コンテキストを小さく保つために `AGENTS.md` と `TOOLS.md` のみが注入され、他のファイルは除外されます。
 
-Internal hooks can intercept this step via `agent:bootstrap` to mutate or replace
-the injected bootstrap files (for example swapping `SOUL.md` for an alternate persona).
+内部フック `agent:bootstrap` を使用して、注入される内容を変更したり、別のペルソナ用の `SOUL.md` に差し替えたりすることが可能です。
 
-To inspect how much each injected file contributes (raw vs injected, truncation, plus tool schema overhead), use `/context list` or `/context detail`. See [Context](/concepts/context).
+注入された各ファイルがどの程度コンテキストを消費しているか（生のサイズ vs 注入サイズ、切り詰め、ツールスキーマによるオーバーヘッドなど）を確認するには、`/context list` または `/context detail` を使用してください。詳細は [コンテキスト](/concepts/context) を参照してください。
 
-## Time handling
+## 時刻の扱い
 
-The system prompt includes a dedicated **Current Date & Time** section when the
-user timezone is known. To keep the prompt cache-stable, it now only includes
-the **time zone** (no dynamic clock or time format).
+システムプロンプトには、ユーザーのタイムゾーンが判明している場合に **Current Date & Time** セクションが含まれます。プロンプトキャッシュを安定させるため、現在は **タイムゾーン名** のみが含まれています（動的な時刻や形式は含まれません）。
 
-Use `session_status` when the agent needs the current time; the status card
-includes a timestamp line.
+エージェントが現在時刻を必要とする場合は、`session_status` ツールを使用します。このツールのステータスカードには現在のタイムスタンプ行が含まれています。
 
-Configure with:
-
+時刻関連の設定:
 - `agents.defaults.userTimezone`
 - `agents.defaults.timeFormat` (`auto` | `12` | `24`)
 
-See [Date & Time](/date-time) for full behavior details.
+詳細は [日付と時刻](/date-time) を参照してください。
 
-## Skills
+## スキル (Skills)
 
-When eligible skills exist, OpenClaw injects a compact **available skills list**
-(`formatSkillsForPrompt`) that includes the **file path** for each skill. The
-prompt instructs the model to use `read` to load the SKILL.md at the listed
-location (workspace, managed, or bundled). If no skills are eligible, the
-Skills section is omitted.
+実行条件を満たすスキルがある場合、OpenClaw は各スキルの **ファイルパス** を含むコンパクトな **利用可能なスキル一覧** (`formatSkillsForPrompt`) を注入します。プロンプト内では、必要に応じてそのパスにある `SKILL.md` を `read` ツールで読み込むようモデルに指示されます。利用可能なスキルがない場合、このセクションは省略されます。
 
 ```
 <available_skills>
@@ -120,13 +93,8 @@ Skills section is omitted.
 </available_skills>
 ```
 
-This keeps the base prompt small while still enabling targeted skill usage.
+これにより、ベースのプロンプトを小さく保ちつつ、必要になったタイミングで特定のスキルを活用させることができます。
 
-## Documentation
+## ドキュメント (Documentation)
 
-When available, the system prompt includes a **Documentation** section that points to the
-local OpenClaw docs directory (either `docs/` in the repo workspace or the bundled npm
-package docs) and also notes the public mirror, source repo, community Discord, and
-ClawHub ([https://clawhub.com](https://clawhub.com)) for skills discovery. The prompt instructs the model to consult local docs first
-for OpenClaw behavior, commands, configuration, or architecture, and to run
-`openclaw status` itself when possible (asking the user only when it lacks access).
+利用可能な場合、システムプロンプトには **Documentation** セクションが含まれます。これはローカルの OpenClaw ドキュメントディレクトリ（リポジトリ内の `docs/` または npm パッケージに同梱されているもの）を指し、同時に公開ミラー、ソースリポジトリ、コミュニティ Discord、およびスキルの検索場所である ClawHub ([https://clawhub.com](https://clawhub.com)) についても言及します。プロンプト内では、OpenClaw の動作、コマンド、構成、またはアーキテクチャについて不明な点がある場合は、まずこれらのローカルドキュメントを参照するようモデルに指示されます。また、可能な限り `openclaw status` を自分自身で実行して確認し、どうしてもアクセスできない場合にのみユーザーに尋ねるよう指示されています。

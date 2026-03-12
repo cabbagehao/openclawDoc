@@ -1,63 +1,62 @@
 ---
-summary: "Elevated exec mode and /elevated directives"
+summary: "昇格された実行モードと /elevated ディレクティブ"
 read_when:
-  - Adjusting elevated mode defaults, allowlists, or slash command behavior
-title: "Elevated Mode"
+  - 昇格モードのデフォルト、許可リスト、またはスラッシュ コマンドの動作を調整する
+title: "昇格モード"
+x-i18n:
+  source_hash: "d3fcd557c3c792209eaa09773e215e70d9406e7bdea52f2ed80ca270c82ae750"
 ---
 
-# Elevated Mode (/elevated directives)
+# 昇格モード (/elevated ディレクティブ)
 
-## What it does
+## 何をするのか
 
-- `/elevated on` runs on the gateway host and keeps exec approvals (same as `/elevated ask`).
-- `/elevated full` runs on the gateway host **and** auto-approves exec (skips exec approvals).
-- `/elevated ask` runs on the gateway host but keeps exec approvals (same as `/elevated on`).
-- `on`/`ask` do **not** force `exec.security=full`; configured security/ask policy still applies.
-- Only changes behavior when the agent is **sandboxed** (otherwise exec already runs on the host).
-- Directive forms: `/elevated on|off|ask|full`, `/elev on|off|ask|full`.
-- Only `on|off|ask|full` are accepted; anything else returns a hint and does not change state.
+- `/elevated on` はゲートウェイ ホスト上で実行され、実行承認を維持します (`/elevated ask` と同じ)。
+- `/elevated full` はゲートウェイ ホスト上で実行され、\*\* 実行を自動承認します (実行の承認をスキップします)。
+- `/elevated ask` はゲートウェイ ホスト上で実行されますが、実行承認は維持されます (`/elevated on` と同じ)。
+- `on`/`ask` は `exec.security=full` を**強制しません**。設定されたセキュリティ/アスクポリシーは引き続き適用されます。
+- エージェントが **サンドボックス** である場合にのみ動作が変更されます (それ以外の場合は、exec がホスト上ですでに実行されている場合)。
+- ディレクティブ形式: `/elevated on|off|ask|full`、`/elev on|off|ask|full`。
+- `on|off|ask|full` のみが受け入れられます。それ以外の場合はヒントを返し、状態は変更されません。
 
-## What it controls (and what it doesn’t)
+## 制御するもの (および制御しないもの)- **可用性ゲート**: `tools.elevated` はグローバル ベースラインです。 `agents.list[].tools.elevated` は、エージェントごとの昇格をさらに制限できます (両方で許可する必要があります)
 
-- **Availability gates**: `tools.elevated` is the global baseline. `agents.list[].tools.elevated` can further restrict elevated per agent (both must allow).
-- **Per-session state**: `/elevated on|off|ask|full` sets the elevated level for the current session key.
-- **Inline directive**: `/elevated on|ask|full` inside a message applies to that message only.
-- **Groups**: In group chats, elevated directives are only honored when the agent is mentioned. Command-only messages that bypass mention requirements are treated as mentioned.
-- **Host execution**: elevated forces `exec` onto the gateway host; `full` also sets `security=full`.
-- **Approvals**: `full` skips exec approvals; `on`/`ask` honor them when allowlist/ask rules require.
-- **Unsandboxed agents**: no-op for location; only affects gating, logging, and status.
-- **Tool policy still applies**: if `exec` is denied by tool policy, elevated cannot be used.
-- **Separate from `/exec`**: `/exec` adjusts per-session defaults for authorized senders and does not require elevated.
+- **セッションごとの状態**: `/elevated on|off|ask|full` は、現在のセッション キーの昇格レベルを設定します。
+- **インライン ディレクティブ**: メッセージ内の `/elevated on|ask|full` は、そのメッセージにのみ適用されます。
+- **グループ**: グループ チャットでは、エージェントが言及された場合にのみ、昇格されたディレクティブが適用されます。メンション要件を回避するコマンドのみのメッセージは、メンションされたものとして扱われます。
+- **ホスト実行**: 昇格により、`exec` がゲートウェイ ホストに強制されます。 `full` は `security=full` も設定します。
+- **承認**: `full` は幹部の承認をスキップします。 `on`/`ask` は、ホワイトリスト/アスク ルールが必要とする場合にそれらを尊重します。
+- **サンドボックス化されていないエージェント**: 位置情報については何も操作しません。ゲート、ロギング、ステータスにのみ影響します。
+- **ツール ポリシーは引き続き適用されます**: `exec` がツール ポリシーによって拒否された場合、昇格は使用できません。
+- **`/exec`** とは別のもの: `/exec` は、承認された送信者のセッションごとのデフォルトを調整し、昇格する必要はありません。
 
-## Resolution order
+## 解決順序
 
-1. Inline directive on the message (applies only to that message).
-2. Session override (set by sending a directive-only message).
-3. Global default (`agents.defaults.elevatedDefault` in config).
+1. メッセージのインライン ディレクティブ (そのメッセージにのみ適用されます)。
+2. セッションオーバーライド (ディレクティブ専用メッセージの送信によって設定)。
+3. グローバルデフォルト (構成内の `agents.defaults.elevatedDefault`)。
 
-## Setting a session default
+## セッションのデフォルトの設定- ディレクティブ **のみ** のメッセージを送信します (空白は許可されます)。 `/elevated full`
 
-- Send a message that is **only** the directive (whitespace allowed), e.g. `/elevated full`.
-- Confirmation reply is sent (`Elevated mode set to full...` / `Elevated mode disabled.`).
-- If elevated access is disabled or the sender is not on the approved allowlist, the directive replies with an actionable error and does not change session state.
-- Send `/elevated` (or `/elevated:`) with no argument to see the current elevated level.
+- 確認応答が送信されます (`Elevated mode set to full...` / `Elevated mode disabled.`)。
+- 昇格されたアクセスが無効になっている場合、または送信者が承認された許可リストに載っていない場合、ディレクティブは対処可能なエラーを返し、セッション状態は変更されません。
+- 現在の高いレベルを確認するには、引数なしで `/elevated` (または `/elevated:`) を送信します。
 
-## Availability + allowlists
+## 可用性 + 許可リスト- 機能ゲート: `tools.elevated.enabled` (コードがサポートしている場合でも、デフォルトは設定によってオフにすることができます)
 
-- Feature gate: `tools.elevated.enabled` (default can be off via config even if the code supports it).
-- Sender allowlist: `tools.elevated.allowFrom` with per-provider allowlists (e.g. `discord`, `whatsapp`).
-- Unprefixed allowlist entries match sender-scoped identity values only (`SenderId`, `SenderE164`, `From`); recipient routing fields are never used for elevated authorization.
-- Mutable sender metadata requires explicit prefixes:
-  - `name:<value>` matches `SenderName`
-  - `username:<value>` matches `SenderUsername`
-  - `tag:<value>` matches `SenderTag`
-  - `id:<value>`, `from:<value>`, `e164:<value>` are available for explicit identity targeting
-- Per-agent gate: `agents.list[].tools.elevated.enabled` (optional; can only further restrict).
-- Per-agent allowlist: `agents.list[].tools.elevated.allowFrom` (optional; when set, the sender must match **both** global + per-agent allowlists).
-- Discord fallback: if `tools.elevated.allowFrom.discord` is omitted, the `channels.discord.allowFrom` list is used as a fallback (legacy: `channels.discord.dm.allowFrom`). Set `tools.elevated.allowFrom.discord` (even `[]`) to override. Per-agent allowlists do **not** use the fallback.
-- All gates must pass; otherwise elevated is treated as unavailable.
+- 送信者許可リスト: プロバイダーごとの許可リストを含む `tools.elevated.allowFrom` (例: `discord`、`whatsapp`)。
+- プレフィックスのない許可リスト エントリは、送信者スコープの ID 値のみと一致します (`SenderId`、`SenderE164`、`From`)。受信者ルーティング フィールドは、昇格された承認には決して使用されません。
+- 変更可能な送信者メタデータには明示的なプレフィックスが必要です。
+  - `name:<value>` は `SenderName` と一致します
+  - `username:<value>` は `SenderUsername` と一致します
+  - `tag:<value>` は `SenderTag` と一致します
+  - `id:<value>`、`from:<value>`、`e164:<value>` は明示的な ID ターゲティングに使用できます
+- エージェントごとのゲート: `agents.list[].tools.elevated.enabled` (オプション。さらに制限することのみ可能)。
+- エージェントごとの許可リスト: `agents.list[].tools.elevated.allowFrom` (オプション。設定すると、送信者はグローバル許可リストとエージェントごとの許可リストの **両方** に一致する必要があります)。
+- Discord フォールバック: `tools.elevated.allowFrom.discord` が省略された場合、`channels.discord.allowFrom` リストがフォールバックとして使用されます (レガシー: `channels.discord.dm.allowFrom`)。 `tools.elevated.allowFrom.discord` (`[]` も) をオーバーライドするように設定します。エージェントごとの許可リストはフォールバックを使用しません\*\*。
+- すべてのゲートを通過する必要があります。それ以外の場合、昇格されたものは利用できないものとして扱われます。
 
-## Logging + status
+## ロギング + ステータス
 
-- Elevated exec calls are logged at info level.
-- Session status includes elevated mode (e.g. `elevated=ask`, `elevated=full`).
+- 昇格された exec 呼び出しは情報レベルで記録されます。
+- セッション ステータスには昇格モードが含まれます (例: `elevated=ask`、`elevated=full`)。

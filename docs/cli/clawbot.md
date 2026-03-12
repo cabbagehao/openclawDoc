@@ -1,21 +1,23 @@
 ---
-summary: "CLI reference for `openclaw clawbot` (legacy alias namespace)"
+summary: "`openclaw clawbot` の CLI リファレンス (レガシーな別名名前空間)"
 read_when:
-  - You maintain older scripts using `openclaw clawbot ...`
-  - You need migration guidance to current commands
+  - "`openclaw clawbot ...` を使用した古いスクリプトを保守している場合"
+  - 現在の推奨コマンドへの移行ガイドが必要な場合
 title: "clawbot"
+x-i18n:
+  source_hash: "1db82065ecb0107d1ab1a2c6ddaee9df1dd02b983ca1f759974c9d73f0ee3bde"
 ---
 
 # `openclaw clawbot`
 
-Legacy alias namespace kept for backwards compatibility.
+下位互換性のために保持されているレガシーな別名（エイリアス）名前空間です。
 
-Current supported alias:
+現在サポートされている別名:
 
-- `openclaw clawbot qr` (same behavior as [`openclaw qr`](/cli/qr))
+- `openclaw clawbot qr` ([`openclaw qr`](/cli/qr) と同じ動作)
 
-## Migration
+## 移行ガイド
 
-Prefer modern top-level commands directly:
+現在は、トップレベルの最新コマンドを直接使用することを推奨します:
 
 - `openclaw clawbot qr` -> `openclaw qr`

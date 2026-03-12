@@ -1,17 +1,17 @@
 ---
-summary: "CLI reference for `openclaw config` (get/set/unset/file/validate)"
+summary: "`openclaw config` の CLI リファレンス (構成の取得、設定、削除、パスの確認、検証)"
 read_when:
-  - You want to read or edit config non-interactively
+  - 構成（config）を非対話的に読み取ったり編集したりしたい場合
 title: "config"
+x-i18n:
+  source_hash: "40f101e9159cf02175e461b248805b8b58692d7bbe94f62c7242c5a636f2efdf"
 ---
 
 # `openclaw config`
 
-Config helpers: get/set/unset/validate values by path and print the active
-config file. Run without a subcommand to open
-the configure wizard (same as `openclaw configure`).
+構成ファイルのヘルパーです。パスを指定して値の取得、設定、削除、検証を行ったり、現在有効な構成ファイルを表示したりできます。サブコマンドなしで実行した場合は、構成ウィザードが開きます（`openclaw configure` と同じです）。
 
-## Examples
+## 実行例
 
 ```bash
 openclaw config file
@@ -24,26 +24,26 @@ openclaw config validate
 openclaw config validate --json
 ```
 
-## Paths
+## パスの指定
 
-Paths use dot or bracket notation:
+パスにはドット記法またはブラケット記法を使用できます:
 
 ```bash
 openclaw config get agents.defaults.workspace
 openclaw config get agents.list[0].id
 ```
 
-Use the agent list index to target a specific agent:
+エージェントのリスト内インデックスを使用して、特定のエージェントを対象にできます:
 
 ```bash
 openclaw config get agents.list
 openclaw config set agents.list[1].tools.exec.node "node-id-or-name"
 ```
 
-## Values
+## 値の形式
 
-Values are parsed as JSON5 when possible; otherwise they are treated as strings.
-Use `--strict-json` to require JSON5 parsing. `--json` remains supported as a legacy alias.
+値は可能な限り JSON5 として解析され、解析できない場合は文字列として扱われます。
+明示的に JSON5 解析を行いたい場合は `--strict-json` を使用してください。`--json` フラグも互換性のためにサポートされています。
 
 ```bash
 openclaw config set agents.defaults.heartbeat.every "0m"
@@ -51,16 +51,15 @@ openclaw config set gateway.port 19001 --strict-json
 openclaw config set channels.whatsapp.groups '["*"]' --strict-json
 ```
 
-## Subcommands
+## サブコマンド
 
-- `config file`: Print the active config file path (resolved from `OPENCLAW_CONFIG_PATH` or default location).
+- `config file`: 現在有効な構成ファイルのパスを表示します（`OPENCLAW_CONFIG_PATH` またはデフォルトの場所から解決されます）。
 
-Restart the gateway after edits.
+編集後はゲートウェイを再起動してください。
 
-## Validate
+## 構成の検証 (Validate)
 
-Validate the current config against the active schema without starting the
-gateway.
+ゲートウェイを起動せずに、現在の構成がスキーマに従っているかを検証します。
 
 ```bash
 openclaw config validate

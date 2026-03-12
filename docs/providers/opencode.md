@@ -1,26 +1,28 @@
 ---
-summary: "Use OpenCode Zen (curated models) with OpenClaw"
+summary: "OpenClaw で OpenCode Zen の厳選モデルを利用する"
 read_when:
-  - You want OpenCode Zen for model access
-  - You want a curated list of coding-friendly models
+  - OpenCode Zen を使ってモデルへアクセスしたいとき
+  - コーディング向けに厳選されたモデル一覧を使いたいとき
 title: "OpenCode Zen"
+x-i18n:
+  source_hash: "b3b5c640ac32f3177f6f4ffce766f3f57ff75c6ca918822c817d9a18f680be8f"
 ---
 
 # OpenCode Zen
 
-OpenCode Zen is a **curated list of models** recommended by the OpenCode team for coding agents.
-It is an optional, hosted model access path that uses an API key and the `opencode` provider.
-Zen is currently in beta.
+OpenCode Zen は、OpenCode チームがコーディング エージェント向けに推奨する**厳選モデル一覧**です。
+API キーと `opencode` provider を使う、任意のホスト型モデル アクセス経路として利用できます。
+Zen は現在 beta です。
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice opencode-zen
-# or non-interactive
+# または non-interactive
 openclaw onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
 ```
 
-## Config snippet
+## 設定例
 
 ```json5
 {
@@ -29,8 +31,8 @@ openclaw onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
 }
 ```
 
-## Notes
+## 注意事項
 
-- `OPENCODE_ZEN_API_KEY` is also supported.
-- You sign in to Zen, add billing details, and copy your API key.
-- OpenCode Zen bills per request; check the OpenCode dashboard for details.
+- `OPENCODE_ZEN_API_KEY` も利用できます。
+- Zen にサインインし、請求情報を登録したうえで API キーを取得してください。
+- OpenCode Zen はリクエスト単位で課金されます。詳細は OpenCode のダッシュボードを確認してください。

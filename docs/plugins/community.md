@@ -1,51 +1,52 @@
 ---
-summary: "Community plugins: quality bar, hosting requirements, and PR submission path"
+summary: "コミュニティ プラグインの品質基準、公開要件、PR 提出方法"
 read_when:
-  - You want to publish a third-party OpenClaw plugin
-  - You want to propose a plugin for docs listing
-title: "Community plugins"
+  - サードパーティ製 OpenClaw プラグインを公開したいとき
+  - ドキュメント掲載用のプラグインを提案したいとき
+title: "コミュニティ プラグイン"
+x-i18n:
+  source_hash: "5203b7a6973ed0551fe87d17cda2f6f6e35ce520fe7f8078b1840a445ed67642"
 ---
 
 # Community plugins
 
-This page tracks high-quality **community-maintained plugins** for OpenClaw.
+このページでは、OpenClaw 向けの **コミュニティ保守プラグイン** のうち、一定の品質基準を満たしたものを掲載します。
 
-We accept PRs that add community plugins here when they meet the quality bar.
+品質基準を満たしていれば、このページへの追加 PR を受け付けます。
 
-## Required for listing
+## 掲載条件
 
-- Plugin package is published on npmjs (installable via `openclaw plugins install <npm-spec>`).
-- Source code is hosted on GitHub (public repository).
-- Repository includes setup/use docs and an issue tracker.
-- Plugin has a clear maintenance signal (active maintainer, recent updates, or responsive issue handling).
+- プラグイン パッケージが npmjs に公開されていること（`openclaw plugins install <npm-spec>` でインストール可能）
+- ソースコードが GitHub の公開リポジトリでホストされていること
+- リポジトリにセットアップ手順、使用方法のドキュメント、issue tracker があること
+- 明確なメンテナンス シグナルがあること（アクティブな maintainer、最近の更新、issue への継続対応など）
 
-## How to submit
+## 提出方法
 
-Open a PR that adds your plugin to this page with:
+このページにプラグインを追加する PR を作成し、次の情報を含めてください。
 
-- Plugin name
-- npm package name
+- プラグイン名
+- npm package 名
 - GitHub repository URL
-- One-line description
-- Install command
+- 1 行の説明
+- インストール コマンド
 
-## Review bar
+## 審査基準
 
-We prefer plugins that are useful, documented, and safe to operate.
-Low-effort wrappers, unclear ownership, or unmaintained packages may be declined.
+有用で、文書化されており、安全に運用できるプラグインを優先します。低労力な wrapper、所有者が不明確なもの、保守されていない package は掲載を見送る場合があります。
 
-## Candidate format
+## 候補の記載形式
 
-Use this format when adding entries:
+エントリを追加するときは、次の形式を使ってください。
 
 - **Plugin Name** — short description
   npm: `@scope/package`
   repo: `https://github.com/org/repo`
   install: `openclaw plugins install @scope/package`
 
-## Listed plugins
+## 掲載済みプラグイン
 
-- **WeChat** — Connect OpenClaw to WeChat personal accounts via WeChatPadPro (iPad protocol). Supports text, image, and file exchange with keyword-triggered conversations.
+- **WeChat** — WeChatPadPro（iPad protocol）を通じて、OpenClaw を WeChat の個人アカウントへ接続します。キーワード起動の会話で、テキスト、画像、ファイルをやり取りできます。
   npm: `@icesword760/openclaw-wechat`
   repo: `https://github.com/icesword0760/openclaw-wechat`
   install: `openclaw plugins install @icesword760/openclaw-wechat`

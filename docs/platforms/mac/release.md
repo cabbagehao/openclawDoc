@@ -1,36 +1,40 @@
 ---
-summary: "OpenClaw macOS release checklist (Sparkle feed, packaging, signing)"
+summary: "OpenClaw macOS リリース チェックリスト（Sparkle フィード、パッケージ化、署名）"
 read_when:
-  - Cutting or validating a OpenClaw macOS release
-  - Updating the Sparkle appcast or feed assets
-title: "macOS Release"
+  - OpenClaw macOS リリースの作成または検証
+  - Sparkle の appcast やフィード アセットを更新するとき
+title: "macOS リリース"
+x-i18n:
+  source_hash: "df73aa6c64c15917a7a370c7880bafbab73f9083839d0debafc16bff2f3990a6"
 ---
 
-# OpenClaw macOS release (Sparkle)
+# OpenClaw macOS リリース（Sparkle）
 
-This app now ships Sparkle auto-updates. Release builds must be Developer ID–signed, zipped, and published with a signed appcast entry.
+このアプリは Sparkle による自動更新を同梱しています。リリース ビルドは、Developer ID で署名し、zip 化したうえで、署名済みの appcast エントリと一緒に公開する必要があります。
 
-## Prereqs
+## 前提条件
 
-- Developer ID Application cert installed (example: `Developer ID Application: <Developer Name> (<TEAMID>)`).
-- Sparkle private key path set in the environment as `SPARKLE_PRIVATE_KEY_FILE` (path to your Sparkle ed25519 private key; public key baked into Info.plist). If it is missing, check `~/.profile`.
-- Notary credentials (keychain profile or API key) for `xcrun notarytool` if you want Gatekeeper-safe DMG/zip distribution.
-  - We use a Keychain profile named `openclaw-notary`, created from App Store Connect API key env vars in your shell profile:
-    - `APP_STORE_CONNECT_API_KEY_P8`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`
+- Developer ID Application 証明書がインストールされていること（例: `Developer ID Application: <Developer Name> (<TEAMID>)`）。
+- Sparkle の秘密鍵パスを `SPARKLE_PRIVATE_KEY_FILE` として環境変数に設定していること（Sparkle の ed25519 秘密鍵へのパス。公開鍵は `Info.plist` に組み込まれます）。見つからない場合は `~/.profile` を確認してください。
+- Gatekeeper で安全な DMG / zip 配布を行う場合は、`xcrun notarytool` 用の認証情報（キーチェーン プロファイルまたは API キー）が必要です。
+  - 使用しているキーチェーン プロファイル名は `openclaw-notary` です。これはシェル プロファイル内の App Store Connect API キー環境変数から作成します。
+    - `APP_STORE_CONNECT_API_KEY_P8`
+    - `APP_STORE_CONNECT_KEY_ID`
+    - `APP_STORE_CONNECT_ISSUER_ID`
     - `echo "$APP_STORE_CONNECT_API_KEY_P8" | sed 's/\\n/\n/g' > /tmp/openclaw-notary.p8`
     - `xcrun notarytool store-credentials "openclaw-notary" --key /tmp/openclaw-notary.p8 --key-id "$APP_STORE_CONNECT_KEY_ID" --issuer "$APP_STORE_CONNECT_ISSUER_ID"`
-- `pnpm` deps installed (`pnpm install --config.node-linker=hoisted`).
-- Sparkle tools are fetched automatically via SwiftPM at `apps/macos/.build/artifacts/sparkle/Sparkle/bin/` (`sign_update`, `generate_appcast`, etc.).
+- `pnpm` 依存関係をインストール済みであること（`pnpm install --config.node-linker=hoisted`）。
+- Sparkle ツールは `apps/macos/.build/artifacts/sparkle/Sparkle/bin/` に SwiftPM 経由で自動取得されます（`sign_update`、`generate_appcast` など）。
 
-## Build & package
+## ビルドとパッケージ化
 
-Notes:
+注意:
 
-- `APP_BUILD` maps to `CFBundleVersion`/`sparkle:version`; keep it numeric + monotonic (no `-beta`), or Sparkle compares it as equal.
-- If `APP_BUILD` is omitted, `scripts/package-mac-app.sh` derives a Sparkle-safe default from `APP_VERSION` (`YYYYMMDDNN`: stable defaults to `90`, prereleases use a suffix-derived lane) and uses the higher of that value and git commit count.
-- You can still override `APP_BUILD` explicitly when release engineering needs a specific monotonic value.
-- For `BUILD_CONFIG=release`, `scripts/package-mac-app.sh` now defaults to universal (`arm64 x86_64`) automatically. You can still override with `BUILD_ARCHS=arm64` or `BUILD_ARCHS=x86_64`. For local/dev builds (`BUILD_CONFIG=debug`), it defaults to the current architecture (`$(uname -m)`).
-- Use `scripts/package-mac-dist.sh` for release artifacts (zip + DMG + notarization). Use `scripts/package-mac-app.sh` for local/dev packaging.
+- `APP_BUILD` は `CFBundleVersion` / `sparkle:version` に対応します。Sparkle の比較が正しく動くよう、数値のみで単調増加にしてください（`-beta` は不可）。
+- `APP_BUILD` を省略した場合、`scripts/package-mac-app.sh` は `APP_VERSION` から Sparkle 安全な既定値を導出します（`YYYYMMDDNN` 形式。安定版は `90`、プレリリースはサフィックス由来のレーンを使用）。その値と git のコミット数を比較し、大きい方を採用します。
+- リリース エンジニアリング上、特定の単調増加値が必要であれば、`APP_BUILD` を明示的に上書きできます。
+- `BUILD_CONFIG=release` の場合、`scripts/package-mac-app.sh` は既定でユニバーサル ビルド（`arm64 x86_64`）になります。必要であれば `BUILD_ARCHS=arm64` または `BUILD_ARCHS=x86_64` で上書きできます。ローカル / 開発ビルド（`BUILD_CONFIG=debug`）では、既定で現在のアーキテクチャ（`$(uname -m)`）を使用します。
+- リリース用アーティファクト（zip + DMG + 公証）には `scripts/package-mac-dist.sh` を使います。ローカル / 開発用のパッケージングには `scripts/package-mac-app.sh` を使ってください。
 
 ```bash
 # From repo root; set release IDs so Sparkle feed is enabled.
@@ -67,24 +71,23 @@ scripts/package-mac-dist.sh
 ditto -c -k --keepParent apps/macos/.build/release/OpenClaw.app.dSYM dist/OpenClaw-2026.3.9.dSYM.zip
 ```
 
-## Appcast entry
+## appcast エントリ
 
-Use the release note generator so Sparkle renders formatted HTML notes:
+Sparkle が整形済み HTML のリリース ノートを表示できるよう、リリース ノート生成スクリプトを使用します。
 
 ```bash
 SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519-private-key scripts/make_appcast.sh dist/OpenClaw-2026.3.9.zip https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml
 ```
 
-Generates HTML release notes from `CHANGELOG.md` (via [`scripts/changelog-to-html.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/changelog-to-html.sh)) and embeds them in the appcast entry.
-Commit the updated `appcast.xml` alongside the release assets (zip + dSYM) when publishing.
+このスクリプトは `CHANGELOG.md` から HTML リリース ノートを生成し（[`scripts/changelog-to-html.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/changelog-to-html.sh) 経由）、appcast エントリへ埋め込みます。公開時には、更新済みの `appcast.xml` をリリース アセット（zip + dSYM）と一緒にコミットしてください。
 
-## Publish & verify
+## 公開と検証
 
-- Upload `OpenClaw-2026.3.9.zip` (and `OpenClaw-2026.3.9.dSYM.zip`) to the GitHub release for tag `v2026.3.9`.
-- Ensure the raw appcast URL matches the baked feed: `https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml`.
-- Sanity checks:
-  - `curl -I https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml` returns 200.
-  - `curl -I <enclosure url>` returns 200 after assets upload.
-  - On a previous public build, run “Check for Updates…” from the About tab and verify Sparkle installs the new build cleanly.
+- `OpenClaw-2026.3.9.zip`（および `OpenClaw-2026.3.9.dSYM.zip`）を、タグ `v2026.3.9` の GitHub リリースへアップロードします。
+- 生の appcast URL がアプリに組み込まれたフィード URL と一致することを確認します: `https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml`
+- 健全性チェック:
+  - `curl -I https://raw.githubusercontent.com/openclaw/openclaw/main/appcast.xml` が 200 を返すこと
+  - アセットのアップロード後、`curl -I <enclosure url>` が 200 を返すこと
+  - 以前の公開ビルドで About タブから `Check for Updates…` を実行し、Sparkle が新しいビルドを正常にインストールできること
 
-Definition of done: signed app + appcast are published, update flow works from an older installed version, and release assets are attached to the GitHub release.
+完了条件: 署名済みアプリと appcast が公開されており、古いインストール済みバージョンから更新フローが正常に動作し、リリース アセットが GitHub リリースへ添付されていることです。

@@ -1,32 +1,27 @@
 ---
-summary: "Agent workspace: location, layout, and backup strategy"
+summary: "エージェントワークスペース: 場所、構成、およびバックアップ戦略"
 read_when:
-  - You need to explain the agent workspace or its file layout
-  - You want to back up or migrate an agent workspace
-title: "Agent Workspace"
+  - エージェントワークスペースの役割やファイル構成について知りたい場合
+  - ワークスペースのバックアップや移行を行いたい場合
+title: "エージェントワークスペース"
+x-i18n:
+  source_hash: "6854ddbebe2d21da08c4e1773da6a44f02c815070677821996dab4c91cfb9cd4"
 ---
 
-# Agent workspace
+# エージェントワークスペース
 
-The workspace is the agent's home. It is the only working directory used for
-file tools and for workspace context. Keep it private and treat it as memory.
+ワークスペースはエージェントの活動拠点です。ファイル操作ツールやワークスペースコンテキストに使用される唯一の作業ディレクトリです。プライベートな空間として扱い、エージェントの「記憶」の一部として管理してください。
 
-This is separate from `~/.openclaw/`, which stores config, credentials, and
-sessions.
+これは、構成、認証情報、およびセッションを保存する `~/.openclaw/` とは別に管理されます。
 
-**Important:** the workspace is the **default cwd**, not a hard sandbox. Tools
-resolve relative paths against the workspace, but absolute paths can still reach
-elsewhere on the host unless sandboxing is enabled. If you need isolation, use
-[`agents.defaults.sandbox`](/gateway/sandboxing) (and/or per‑agent sandbox config).
-When sandboxing is enabled and `workspaceAccess` is not `"rw"`, tools operate
-inside a sandbox workspace under `~/.openclaw/sandboxes`, not your host workspace.
+**重要:** ワークスペースは**デフォルトの作業ディレクトリ (cwd)** であり、厳密なサンドボックスではありません。ツールはワークスペースを基準に相対パスを解決しますが、サンドボックスが有効でない限り、絶対パスを使用してホスト上の他の場所にアクセスできてしまいます。隔離が必要な場合は、[`agents.defaults.sandbox`](/gateway/sandboxing)（およびエージェントごとのサンドボックス構成）を使用してください。
+サンドボックスが有効で、かつ `workspaceAccess` が `"rw"` 以外に設定されている場合、ツールはホスト上のワークスペースではなく、`~/.openclaw/sandboxes` 配下のサンドボックス用ワークスペース内で動作します。
 
-## Default location
+## デフォルトの場所
 
-- Default: `~/.openclaw/workspace`
-- If `OPENCLAW_PROFILE` is set and not `"default"`, the default becomes
-  `~/.openclaw/workspace-<profile>`.
-- Override in `~/.openclaw/openclaw.json`:
+- デフォルト: `~/.openclaw/workspace`
+- `OPENCLAW_PROFILE` が設定されており、かつ `"default"` 以外の場合、デフォルトは `~/.openclaw/workspace-<profile>` になります。
+- `~/.openclaw/openclaw.json` で上書き可能です:
 
 ```json5
 {
@@ -36,181 +31,152 @@ inside a sandbox workspace under `~/.openclaw/sandboxes`, not your host workspac
 }
 ```
 
-`openclaw onboard`, `openclaw configure`, or `openclaw setup` will create the
-workspace and seed the bootstrap files if they are missing.
-Sandbox seed copies only accept regular in-workspace files; symlink/hardlink
-aliases that resolve outside the source workspace are ignored.
+`openclaw onboard`、`openclaw configure`、または `openclaw setup` を実行すると、ワークスペースが作成され、ブートストラップファイル（初期ファイル群）が不足している場合は生成されます。
+サンドボックスへの初期ファイルのコピーでは、通常のワークスペース内ファイルのみが対象となります。ワークスペース外を指すシンボリックリンクやハードリンクは無視されます。
 
-If you already manage the workspace files yourself, you can disable bootstrap
-file creation:
+ワークスペースファイルを自身で完全に管理している場合は、ブートストラップファイルの自動生成を無効にできます:
 
 ```json5
 { agent: { skipBootstrap: true } }
 ```
 
-## Extra workspace folders
+## 余分なワークスペースフォルダについて
 
-Older installs may have created `~/openclaw`. Keeping multiple workspace
-directories around can cause confusing auth or state drift, because only one
-workspace is active at a time.
+古いインストール環境では `~/openclaw` が作成されている場合があります。複数のワークスペースディレクトリが存在すると、認証や状態の不一致を招き混乱の原因となるため（一度にアクティブにできるワークスペースは 1 つだけです）、整理することを推奨します。
 
-**Recommendation:** keep a single active workspace. If you no longer use the
-extra folders, archive or move them to Trash (for example `trash ~/openclaw`).
-If you intentionally keep multiple workspaces, make sure
-`agents.defaults.workspace` points to the active one.
+**推奨:** アクティブなワークスペースを 1 つに絞ってください。不要になった古いフォルダは、アーカイブするかゴミ箱（例: `trash ~/openclaw`）へ移動してください。
+意図的に複数のワークスペースを使い分ける場合は、`agents.defaults.workspace` が常に正しい（現在使用したい）場所を指していることを確認してください。
 
-`openclaw doctor` warns when it detects extra workspace directories.
+`openclaw doctor` は、余分なワークスペースディレクトリを検出した場合に警告を表示します。
 
-## Workspace file map (what each file means)
+## ワークスペース内のファイルマップ
 
-These are the standard files OpenClaw expects inside the workspace:
+OpenClaw がワークスペース内で期待する標準的なファイルは以下の通りです:
 
 - `AGENTS.md`
-  - Operating instructions for the agent and how it should use memory.
-  - Loaded at the start of every session.
-  - Good place for rules, priorities, and "how to behave" details.
+  - エージェントの動作指示と、メモリの使用方法。
+  - すべてのセッション開始時にロードされます。
+  - ルール、優先順位、「どのように振る舞うべきか」の詳細を記述するのに適しています。
 
 - `SOUL.md`
-  - Persona, tone, and boundaries.
-  - Loaded every session.
+  - ペルソナ（人格）、トーン、および境界線（守るべきルール）。
+  - セッションごとにロードされます。
 
 - `USER.md`
-  - Who the user is and how to address them.
-  - Loaded every session.
+  - ユーザーが誰であるか、およびユーザーへの適切な呼びかけ方。
+  - セッションごとにロードされます。
 
 - `IDENTITY.md`
-  - The agent's name, vibe, and emoji.
-  - Created/updated during the bootstrap ritual.
+  - エージェントの名前、雰囲気、および絵文字。
+  - セットアップ儀式中に作成または更新されます。
 
 - `TOOLS.md`
-  - Notes about your local tools and conventions.
-  - Does not control tool availability; it is only guidance.
+  - ローカルツールや慣習に関するメモ。
+  - ツール自体の有効・無効を制御するものではなく、エージェントへの「ガイドライン」として機能します。
 
 - `HEARTBEAT.md`
-  - Optional tiny checklist for heartbeat runs.
-  - Keep it short to avoid token burn.
+  - ハートビート実行時にエージェントが確認する、オプションの小さなチェックリスト。
+  - トークンの消費を抑えるため、内容は短く保ってください。
 
 - `BOOT.md`
-  - Optional startup checklist executed on gateway restart when internal hooks are enabled.
-  - Keep it short; use the message tool for outbound sends.
+  - ゲートウェイ再起動時（内部フック有効時）に実行されるオプションの起動チェックリスト。
+  - 内容は短く保ち、外部への送信にはメッセージツールを使用してください。
 
 - `BOOTSTRAP.md`
-  - One-time first-run ritual.
-  - Only created for a brand-new workspace.
-  - Delete it after the ritual is complete.
+  - 初回実行時に一度だけ行われる「儀式」用のファイル。
+  - 新規ワークスペース作成時のみ生成されます。
+  - 儀式が完了したら削除してください。
 
 - `memory/YYYY-MM-DD.md`
-  - Daily memory log (one file per day).
-  - Recommended to read today + yesterday on session start.
+  - 日ごとの記憶ログ（1 日 1 ファイル）。
+  - セッション開始時に、今日と昨日のファイルを読み込むことが推奨されます。
 
-- `MEMORY.md` (optional)
-  - Curated long-term memory.
-  - Only load in the main, private session (not shared/group contexts).
+- `MEMORY.md` (オプション)
+  - 整理された長期記憶。
+  - プライベートなメインセッションでのみロードされます（共有チャネルやグループチャットではロードされません）。
 
-See [Memory](/concepts/memory) for the workflow and automatic memory flush.
+ワークフローやメモリの自動保存については、[記憶 (Memory)](/concepts/memory) を参照してください。
 
-- `skills/` (optional)
-  - Workspace-specific skills.
-  - Overrides managed/bundled skills when names collide.
+- `skills/` (オプション)
+  - ワークスペース固有のスキル。
+  - 同名の管理済みスキルや同梱スキルがある場合、ここにあるものが優先されます。
 
-- `canvas/` (optional)
-  - Canvas UI files for node displays (for example `canvas/index.html`).
+- `canvas/` (オプション)
+  - ノードのディスプレイに表示するための Canvas UI 用ファイル（例: `canvas/index.html`）。
 
-If any bootstrap file is missing, OpenClaw injects a "missing file" marker into
-the session and continues. Large bootstrap files are truncated when injected;
-adjust limits with `agents.defaults.bootstrapMaxChars` (default: 20000) and
-`agents.defaults.bootstrapTotalMaxChars` (default: 150000).
-`openclaw setup` can recreate missing defaults without overwriting existing
-files.
+ブートストラップファイルが欠落している場合、OpenClaw はセッションに「欠落」マーカーを注入して処理を続行します。巨大なファイルは注入時に切り詰められます。制限値は `agents.defaults.bootstrapMaxChars`（デフォルト 20,000）および `agents.defaults.bootstrapTotalMaxChars`（デフォルト 150,000）で調整可能です。
+`openclaw setup` を実行すると、既存のファイルを上書きせずに、不足しているデフォルトファイルを再作成できます。
 
-## What is NOT in the workspace
+## ワークスペースに含まれないもの
 
-These live under `~/.openclaw/` and should NOT be committed to the workspace repo:
+以下のファイルは `~/.openclaw/` 配下にあり、ワークスペースのリポジトリには**含めない（コミットしない）**でください:
 
-- `~/.openclaw/openclaw.json` (config)
-- `~/.openclaw/credentials/` (OAuth tokens, API keys)
-- `~/.openclaw/agents/<agentId>/sessions/` (session transcripts + metadata)
-- `~/.openclaw/skills/` (managed skills)
+- `~/.openclaw/openclaw.json` (構成設定)
+- `~/.openclaw/credentials/` (OAuth トークン、API キー)
+- `~/.openclaw/agents/<agentId>/sessions/` (会話履歴およびメタデータ)
+- `~/.openclaw/skills/` (管理済みのスキル)
 
-If you need to migrate sessions or config, copy them separately and keep them
-out of version control.
+セッションや構成を移行する必要がある場合は、これらを個別にコピーし、バージョン管理の対象外として扱ってください。
 
-## Git backup (recommended, private)
+## Git によるバックアップ (推奨、プライベート)
 
-Treat the workspace as private memory. Put it in a **private** git repo so it is
-backed up and recoverable.
+ワークスペースは「プライベートな記憶」として扱ってください。バックアップと復元を容易にするため、**プライベートな** Git リポジトリで管理することを推奨します。
 
-Run these steps on the machine where the Gateway runs (that is where the
-workspace lives).
+以下の手順は、ゲートウェイ（ワークスペースが存在するマシン）上で実行してください。
 
-### 1) Initialize the repo
+### 1) リポジトリの初期化
 
-If git is installed, brand-new workspaces are initialized automatically. If this
-workspace is not already a repo, run:
+Git がインストールされていれば、新規ワークスペース作成時に自動的に初期化されます。まだリポジトリになっていない場合は、以下を実行してください:
 
 ```bash
 cd ~/.openclaw/workspace
 git init
 git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md memory/
-git commit -m "Add agent workspace"
+git commit -m "エージェントワークスペースを追加"
 ```
 
-### 2) Add a private remote (beginner-friendly options)
+### 2) プライベートなリモートリポジトリの追加
 
-Option A: GitHub web UI
+OpenClaw ユーザーに適した一般的な方法を紹介します。
 
-1. Create a new **private** repository on GitHub.
-2. Do not initialize with a README (avoids merge conflicts).
-3. Copy the HTTPS remote URL.
-4. Add the remote and push:
+**方法 A: GitHub ウェブ UI を使用する場合**
+1. GitHub 上で新しい **Private** リポジトリを作成します。
+2. 初期化オプション（README の作成など）はすべてオフにします（競合を避けるため）。
+3. HTTPS のリモート URL をコピーします。
+4. 以下のコマンドでリモートを追加し、プッシュします:
 
 ```bash
 git branch -M main
-git remote add origin <https-url>
+git remote add origin <コピーしたURL>
 git push -u origin main
 ```
 
-Option B: GitHub CLI (`gh`)
-
+**方法 B: GitHub CLI (`gh`) を使用する場合**
 ```bash
 gh auth login
 gh repo create openclaw-workspace --private --source . --remote origin --push
 ```
 
-Option C: GitLab web UI
-
-1. Create a new **private** repository on GitLab.
-2. Do not initialize with a README (avoids merge conflicts).
-3. Copy the HTTPS remote URL.
-4. Add the remote and push:
-
-```bash
-git branch -M main
-git remote add origin <https-url>
-git push -u origin main
-```
-
-### 3) Ongoing updates
+### 3) 日々の更新
 
 ```bash
 git status
 git add .
-git commit -m "Update memory"
+git commit -m "記憶を更新"
 git push
 ```
 
-## Do not commit secrets
+## シークレット（機密情報）をコミットしないでください
 
-Even in a private repo, avoid storing secrets in the workspace:
+プライベートリポジトリであっても、以下の機密情報をワークスペースに保存することは避けてください:
 
-- API keys, OAuth tokens, passwords, or private credentials.
-- Anything under `~/.openclaw/`.
-- Raw dumps of chats or sensitive attachments.
+- API キー、OAuth トークン、パスワード、または個人用認証情報。
+- `~/.openclaw/` 配下にあるすべてのもの。
+- チャット履歴の生データや、機密性の高い添付ファイル。
 
-If you must store sensitive references, use placeholders and keep the real
-secret elsewhere (password manager, environment variables, or `~/.openclaw/`).
+機密情報の参照を記述する必要がある場合は、プレースホルダーを使用し、実際の内容は他の安全な場所（パスワードマネージャー、環境変数、または `~/.openclaw/`）に保管してください。
 
-Suggested `.gitignore` starter:
+推奨される `.gitignore` の内容:
 
 ```gitignore
 .DS_Store
@@ -220,17 +186,14 @@ Suggested `.gitignore` starter:
 **/secrets*
 ```
 
-## Moving the workspace to a new machine
+## ワークスペースを新しいマシンに移動する
 
-1. Clone the repo to the desired path (default `~/.openclaw/workspace`).
-2. Set `agents.defaults.workspace` to that path in `~/.openclaw/openclaw.json`.
-3. Run `openclaw setup --workspace <path>` to seed any missing files.
-4. If you need sessions, copy `~/.openclaw/agents/<agentId>/sessions/` from the
-   old machine separately.
+1. 新しいマシンの目的のパス（デフォルトは `~/.openclaw/workspace`）にリポジトリをクローンします。
+2. `~/.openclaw/openclaw.json` 内の `agents.defaults.workspace` にそのパスを設定します。
+3. `openclaw setup --workspace <パス>` を実行し、不足しているファイルを生成します。
+4. 会話セッションが必要な場合は、古いマシンから `~/.openclaw/agents/<agentId>/sessions/` を個別にコピーしてください。
 
-## Advanced notes
+## 高度な補足事項
 
-- Multi-agent routing can use different workspaces per agent. See
-  [Channel routing](/channels/channel-routing) for routing configuration.
-- If `agents.defaults.sandbox` is enabled, non-main sessions can use per-session sandbox
-  workspaces under `agents.defaults.sandbox.workspaceRoot`.
+- マルチエージェントルーティングでは、エージェントごとに異なるワークスペースを使用できます。詳細は [チャネルルーティング](/channels/channel-routing) を参照してください。
+- `agents.defaults.sandbox` が有効な場合、メイン以外のセッションでは `agents.defaults.sandbox.workspaceRoot` 配下にあるセッションごとのサンドボックスワークスペースを使用することがあります。

@@ -1,23 +1,24 @@
 ---
-summary: "Use OpenRouter's unified API to access many models in OpenClaw"
+summary: "OpenClaw で OpenRouter の統合 API を使って多数のモデルへアクセスする"
 read_when:
-  - You want a single API key for many LLMs
-  - You want to run models via OpenRouter in OpenClaw
+  - 1 つの API キーで多数の LLM を使いたいとき
+  - OpenClaw で OpenRouter 経由のモデルを使いたいとき
 title: "OpenRouter"
+x-i18n:
+  source_hash: "b7e29fc9c456c64d567dd909a85166e6dea8388ebd22155a31e69c970e081586"
 ---
 
 # OpenRouter
 
-OpenRouter provides a **unified API** that routes requests to many models behind a single
-endpoint and API key. It is OpenAI-compatible, so most OpenAI SDKs work by switching the base URL.
+OpenRouter は、単一の endpoint と API キーの背後で多数のモデルへリクエストをルーティングする**統合 API**を提供します。OpenAI 互換であるため、多くの OpenAI SDK は base URL を切り替えるだけで利用できます。
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice apiKey --token-provider openrouter --token "$OPENROUTER_API_KEY"
 ```
 
-## Config snippet
+## 設定例
 
 ```json5
 {
@@ -30,8 +31,8 @@ openclaw onboard --auth-choice apiKey --token-provider openrouter --token "$OPEN
 }
 ```
 
-## Notes
+## 注意事項
 
-- Model refs are `openrouter/<provider>/<model>`.
-- For more model/provider options, see [/concepts/model-providers](/concepts/model-providers).
-- OpenRouter uses a Bearer token with your API key under the hood.
+- モデル参照名は `openrouter/<provider>/<model>` です。
+- 利用可能なモデルや provider の詳細は [/concepts/model-providers](/concepts/model-providers) を参照してください。
+- OpenRouter では内部的に API キーを Bearer トークンとして使用します。

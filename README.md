@@ -70,10 +70,10 @@ pnpm docs:dev
   Refreshes the Moonshot/Kimi model tables in the docs from the local copied model dataset.
 
 - `pnpm docs:i18n -- -lang <locale> <files...>`
-  Runs the Go-based docs translation pipeline. Example:
+  Runs the Go-based docs translation pipeline against the current root docs source. Example:
 
   ```bash
-  pnpm docs:i18n -- -lang ja-JP docs/index.md docs/start/getting-started.md
+  pnpm docs:i18n -- -lang <locale> docs/index.md docs/start/getting-started.md
   ```
 
 ## Copied Scripts
@@ -100,7 +100,7 @@ pnpm docs:dev
   Local data source used by `scripts/sync-moonshot-docs.ts`.
 
 - `scripts/docs-i18n/`
-  Go translation pipeline that reads `docs/.i18n/glossary.<lang>.json` and `docs/.i18n/<lang>.tm.jsonl`, translates source docs, and writes output to `docs/<lang>/...`.
+  Go translation pipeline that reads `docs/.i18n/glossary.<lang>.json` and `docs/.i18n/<lang>.tm.jsonl`, translates the current root docs source, and writes output to `docs/<lang>/...`.
 
 - `scripts/codespell-dictionary.txt`
   Custom accepted spellings.

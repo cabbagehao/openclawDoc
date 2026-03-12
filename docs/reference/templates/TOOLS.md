@@ -1,26 +1,28 @@
 ---
-title: "TOOLS.md Template"
-summary: "Workspace template for TOOLS.md"
+title: "TOOLS.md テンプレート"
+summary: "TOOLS.md のワークスペース テンプレート"
 read_when:
-  - Bootstrapping a workspace manually
+  - ワークスペースを手動でブートストラップする
+x-i18n:
+  source_hash: "eed204d57e7221ae0455a87272da2b0730d6aee6ddd2446a851703276e4a96b7"
 ---
 
-# TOOLS.md - Local Notes
+# TOOLS.md - ローカルメモ
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+スキルはツールがどのように機能するかを定義します。このファイルは、_your_ の仕様、つまりセットアップに固有のものです。
 
-## What Goes Here
+## ここに何が入るのか
 
-Things like:
+次のようなもの:
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+- カメラの名前と場所
+- SSH ホストとエイリアス
+- TTS の優先音声
+- スピーカー/ルーム名
+- デバイスのニックネーム
+- 環境固有のもの
 
-## Examples
+## 例
 
 ```markdown
 ### Cameras
@@ -38,10 +40,10 @@ Things like:
 - Default speaker: Kitchen HomePod
 ```
 
-## Why Separate?
+## なぜ別れるのですか?
 
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+スキルは共有されます。あなたのセットアップはあなたのものです。それらを分離すると、メモを失うことなくスキルを更新でき、インフラストラクチャを漏らすことなくスキルを共有できます。
 
 ---
 
-Add whatever helps you do your job. This is your cheat sheet.
+仕事に役立つものは何でも追加してください。これはカンニングペーパーです。

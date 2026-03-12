@@ -1,99 +1,89 @@
 ---
-summary: "Gateway-owned node pairing (Option B) for iOS and other remote nodes"
+summary: "iOS およびその他のリモートノード向けの、ゲートウェイ主導のノードペアリング（オプション B）"
 read_when:
-  - Implementing node pairing approvals without macOS UI
-  - Adding CLI flows for approving remote nodes
-  - Extending gateway protocol with node management
-title: "Gateway-Owned Pairing"
+  - macOS UI を使用せずにノードのペアリング承認を実装する場合
+  - リモートノードを承認するための CLI フローを追加する場合
+  - ノード管理機能によってゲートウェイプロトコルを拡張する場合
+title: "ゲートウェイ主導のペアリング"
+x-i18n:
+  source_hash: "1f5154292a75ea2c1470324babc99c6c46a5e4e16afb394ed323d28f6168f459"
 ---
 
-# Gateway-owned pairing (Option B)
+# ゲートウェイ主導のペアリング (オプション B)
 
-In Gateway-owned pairing, the **Gateway** is the source of truth for which nodes
-are allowed to join. UIs (macOS app, future clients) are just frontends that
-approve or reject pending requests.
+ゲートウェイ主導のペアリングでは、どのノード（デバイス）の参加を許可するかについて、**ゲートウェイ** が「真実のソース」となります。macOS アプリや将来の他のクライアントなどの UI は、保留中の要求を承認または拒否するためのフロントエンドとして機能します。
 
-**Important:** WS nodes use **device pairing** (role `node`) during `connect`.
-`node.pair.*` is a separate pairing store and does **not** gate the WS handshake.
-Only clients that explicitly call `node.pair.*` use this flow.
+**重要:** WebSocket（WS）ノードは、`connect` ハンドシェイク時に **デバイスペアリング** (role: `node`) を使用します。`node.pair.*` は独立したペアリング用ストアであり、WS の接続確立そのものをゲート（制限）するものではありません。このフローは、明示的に `node.pair.*` メソッドを呼び出すクライアントのみが使用します。
 
-## Concepts
+## コンセプト
 
-- **Pending request**: a node asked to join; requires approval.
-- **Paired node**: approved node with an issued auth token.
-- **Transport**: the Gateway WS endpoint forwards requests but does not decide
-  membership. (Legacy TCP bridge support is deprecated/removed.)
+- **保留中の要求 (Pending request)**: 参加を求めているノード。管理者の承認が必要です。
+- **ペアリング済みノード (Paired node)**: 承認され、認証トークンが発行されたノード。
+- **通信路（トランスポート）**: ゲートウェイの WebSocket エンドポイントは要求を転送しますが、参加の可否を独自に判断することはありません（レガシーな TCP ブリッジのサポートは削除されました）。
 
-## How pairing works
+## ペアリングの流れ
 
-1. A node connects to the Gateway WS and requests pairing.
-2. The Gateway stores a **pending request** and emits `node.pair.requested`.
-3. You approve or reject the request (CLI or UI).
-4. On approval, the Gateway issues a **new token** (tokens are rotated on re‑pair).
-5. The node reconnects using the token and is now “paired”.
+1. ノードがゲートウェイの WebSocket に接続し、ペアリングを要求します。
+2. ゲートウェイは **保留中の要求** を保存し、`node.pair.requested` イベントを発行します。
+3. 管理者が要求を承認または拒否します（CLI または UI を使用）。
+4. 承認されると、ゲートウェイは **新しいトークン** を発行します（再ペアリング時にはトークンが更新されます）。
+5. ノードはそのトークンを使用して再接続し、「ペアリング済み」の状態になります。
 
-Pending requests expire automatically after **5 minutes**.
+保留中の要求は **5 分間** 経過すると自動的に期限切れになります。
 
-## CLI workflow (headless friendly)
+## CLI での操作 (ヘッドレス環境向け)
 
 ```bash
 openclaw nodes pending
 openclaw nodes approve <requestId>
 openclaw nodes reject <requestId>
 openclaw nodes status
-openclaw nodes rename --node <id|name|ip> --name "Living Room iPad"
+openclaw nodes rename --node <id|名前|ip> --name "リビングの iPad"
 ```
 
-`nodes status` shows paired/connected nodes and their capabilities.
+`nodes status` を実行すると、ペアリング済み・接続済みのノードとその機能（Capabilities）を確認できます。
 
-## API surface (gateway protocol)
+## API リファレンス (ゲートウェイプロトコル)
 
-Events:
+イベント:
+- `node.pair.requested` — 新しい保留中の要求が作成されたときに発行されます。
+- `node.pair.resolved` — 要求が承認、拒否、または期限切れになったときに発行されます。
 
-- `node.pair.requested` — emitted when a new pending request is created.
-- `node.pair.resolved` — emitted when a request is approved/rejected/expired.
+メソッド:
+- `node.pair.request` — 保留中の要求を作成、または既存のものを再利用します。
+- `node.pair.list` — 保留中およびペアリング済みのノードを一覧表示します。
+- `node.pair.approve` — 保留中の要求を承認します（トークンを発行します）。
+- `node.pair.reject` — 保留中の要求を拒否します。
+- `node.pair.verify` — `{ nodeId, token }` の妥当性を検証します。
 
-Methods:
+補足事項:
+- `node.pair.request` はノードごとにべき等（idempotent）です。同じ内容で繰り返し呼び出しても、同じ保留中の要求が返されます。
+- 承認時には **必ず** 新しいトークンが生成されます。`node.pair.request` メソッドの返り値にトークンが含まれることはありません。
+- 要求には、自動承認フローへのヒントとして `silent: true` を含めることができます。
 
-- `node.pair.request` — create or reuse a pending request.
-- `node.pair.list` — list pending + paired nodes.
-- `node.pair.approve` — approve a pending request (issues token).
-- `node.pair.reject` — reject a pending request.
-- `node.pair.verify` — verify `{ nodeId, token }`.
+## 自動承認 (macOS アプリ)
 
-Notes:
+macOS アプリは、以下の条件を満たす場合に **サイレント承認**（確認プロンプトなしの承認）を試みることができます:
+- 要求に `silent: true` が設定されている。
+- アプリが、同じユーザーを使用してゲートウェイホストへの SSH 接続を確認できる。
 
-- `node.pair.request` is idempotent per node: repeated calls return the same
-  pending request.
-- Approval **always** generates a fresh token; no token is ever returned from
-  `node.pair.request`.
-- Requests may include `silent: true` as a hint for auto-approval flows.
+サイレント承認に失敗した場合は、通常の「承認/拒否」プロンプトへフォールバックします。
 
-## Auto-approval (macOS app)
+## データの保存場所 (ローカル、非公開)
 
-The macOS app can optionally attempt a **silent approval** when:
-
-- the request is marked `silent`, and
-- the app can verify an SSH connection to the gateway host using the same user.
-
-If silent approval fails, it falls back to the normal “Approve/Reject” prompt.
-
-## Storage (local, private)
-
-Pairing state is stored under the Gateway state directory (default `~/.openclaw`):
+ペアリングの状態は、ゲートウェイの状態ディレクトリ（デフォルト `~/.openclaw`）配下に保存されます:
 
 - `~/.openclaw/nodes/paired.json`
 - `~/.openclaw/nodes/pending.json`
 
-If you override `OPENCLAW_STATE_DIR`, the `nodes/` folder moves with it.
+`OPENCLAW_STATE_DIR` 環境変数でディレクトリを変更した場合、`nodes/` フォルダも同様に移動します。
 
-Security notes:
+セキュリティ上の注意:
+- トークンはシークレット情報です。`paired.json` は機密性の高いファイルとして扱ってください。
+- トークンを更新するには、再承認を受けるか、既存のノードエントリを削除する必要があります。
 
-- Tokens are secrets; treat `paired.json` as sensitive.
-- Rotating a token requires re-approval (or deleting the node entry).
+## 通信路（トランスポート）の挙動
 
-## Transport behavior
-
-- The transport is **stateless**; it does not store membership.
-- If the Gateway is offline or pairing is disabled, nodes cannot pair.
-- If the Gateway is in remote mode, pairing still happens against the remote Gateway’s store.
+- 通信レイヤーは **ステートレス** です。参加資格に関する情報は保持しません。
+- ゲートウェイがオフラインの場合、またはペアリング機能が無効化されている場合は、ノードはペアリングできません。
+- ゲートウェイがリモートモードで動作している場合でも、ペアリング処理は接続先のリモートゲートウェイのストアに対して行われます。

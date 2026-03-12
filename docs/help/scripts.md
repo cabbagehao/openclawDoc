@@ -1,28 +1,30 @@
 ---
-summary: "Repository scripts: purpose, scope, and safety notes"
+summary: "リポジトリ スクリプト: 目的、範囲、安全上の注意事項"
 read_when:
-  - Running scripts from the repo
-  - Adding or changing scripts under ./scripts
-title: "Scripts"
+  - リポジトリ内のスクリプトを実行する場合
+  - "`./scripts` 配下のスクリプトを追加または変更する場合"
+title: "スクリプト"
+x-i18n:
+  source_hash: "efd220df28f20b338fbc4f5e6152c8abeade4b56f76496476e7e99928a8dedbe"
 ---
 
-# Scripts
+# スクリプト
 
-The `scripts/` directory contains helper scripts for local workflows and ops tasks.
-Use these when a task is clearly tied to a script; otherwise prefer the CLI.
+`scripts/` ディレクトリには、ローカルワークフローや運用作業を補助するスクリプトが含まれています。
+作業内容が特定のスクリプトと明確に結び付いている場合にのみ使用し、それ以外では CLI を優先してください。
 
-## Conventions
+## 規約
 
-- Scripts are **optional** unless referenced in docs or release checklists.
-- Prefer CLI surfaces when they exist (example: auth monitoring uses `openclaw models status --check`).
-- Assume scripts are host‑specific; read them before running on a new machine.
+- スクリプトは、ドキュメントやリリースチェックリストで参照されていない限り、**必須ではありません**。
+- 同等の CLI がある場合は、そちらを優先してください。たとえば認証監視には `openclaw models status --check` を使用できます。
+- スクリプトはホスト依存である前提で扱い、新しいマシンで実行する前に内容を確認してください。
 
-## Auth monitoring scripts
+## 認証監視スクリプト
 
-Auth monitoring scripts are documented here:
+認証監視スクリプトの説明は以下を参照してください。
 [/automation/auth-monitoring](/automation/auth-monitoring)
 
-## When adding scripts
+## スクリプトを追加する場合
 
-- Keep scripts focused and documented.
-- Add a short entry in the relevant doc (or create one if missing).
+- スクリプトは目的を絞って作成し、必ずドキュメント化してください。
+- 関連するドキュメントに短い説明を追加し、必要であれば新しいページを作成してください。

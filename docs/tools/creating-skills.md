@@ -1,32 +1,34 @@
 ---
-title: "Creating Skills"
-summary: "Build and test custom workspace skills with SKILL.md"
+title: "スキルの作成"
+summary: "SKILL.md を使用してカスタム ワークスペース スキルを構築してテストする"
 read_when:
-  - You are creating a new custom skill in your workspace
-  - You need a quick starter workflow for SKILL.md-based skills
+  - ワークスペースで新しいカスタム スキルを作成しています
+  - SKILL.md ベースのスキルのクイック スターター ワークフローが必要です
+x-i18n:
+  source_hash: "96de482d2a534b9220f2cea4130ce540cb732a13731764df9eb1748787f3acb8"
 ---
 
-# Creating Custom Skills 🛠
+# カスタムスキルの作成 🛠
 
-OpenClaw is designed to be easily extensible. "Skills" are the primary way to add new capabilities to your assistant.
+OpenClaw は、簡単に拡張できるように設計されています。 「スキル」は、アシスタントに新しい機能を追加する主な方法です。
 
-## What is a Skill?
+## スキルとは何ですか?
 
-A skill is a directory containing a `SKILL.md` file (which provides instructions and tool definitions to the LLM) and optionally some scripts or resources.
+スキルは、`SKILL.md` ファイル (LLM に指示とツール定義を提供する) と、オプションでいくつかのスクリプトまたはリソースを含むディレクトリです。
 
-## Step-by-Step: Your First Skill
+## ステップバイステップ: 最初のスキル
 
-### 1. Create the Directory
+### 1. ディレクトリを作成する
 
-Skills live in your workspace, usually `~/.openclaw/workspace/skills/`. Create a new folder for your skill:
+スキルはワークスペース (通常は `~/.openclaw/workspace/skills/`) に存在します。スキル用の新しいフォルダーを作成します。
 
 ```bash
 mkdir -p ~/.openclaw/workspace/skills/hello-world
 ```
 
-### 2. Define the `SKILL.md`
+### 2. `SKILL.md` を定義します
 
-Create a `SKILL.md` file in that directory. This file uses YAML frontmatter for metadata and Markdown for instructions.
+そのディレクトリに `SKILL.md` ファイルを作成します。このファイルは、メタデータに YAML フロントマッターを使用し、命令に Markdown を使用します。
 
 ```markdown
 ---
@@ -39,20 +41,18 @@ description: A simple skill that says hello.
 When the user asks for a greeting, use the `echo` tool to say "Hello from your custom skill!".
 ```
 
-### 3. Add Tools (Optional)
+### 3. ツールの追加 (オプション)
 
-You can define custom tools in the frontmatter or instruct the agent to use existing system tools (like `bash` or `browser`).
+フロントマターでカスタム ツールを定義したり、既存のシステム ツール (`bash` や `browser` など) を使用するようにエージェントに指示したりできます。
 
-### 4. Refresh OpenClaw
+### 4. OpenClaw を更新する
 
-Ask your agent to "refresh skills" or restart the gateway. OpenClaw will discover the new directory and index the `SKILL.md`.
+エージェントに「スキルを更新」するか、ゲートウェイを再起動するように依頼してください。 OpenClaw は新しいディレクトリを検出し、`SKILL.md` にインデックスを付けます。
 
-## Best Practices
+## ベストプラクティス
 
-- **Be Concise**: Instruct the model on _what_ to do, not how to be an AI.
-- **Safety First**: If your skill uses `bash`, ensure the prompts don't allow arbitrary command injection from untrusted user input.
-- **Test Locally**: Use `openclaw agent --message "use my new skill"` to test.
+- **簡潔にする**: AI になる方法ではなく、何をするかについてモデルに指示します。
+- **安全第一**: スキルで `bash` を使用する場合は、信頼できないユーザー入力による任意のコマンド インジェクションがプロンプトで許可されていないことを確認してください。
+- **ローカルでテスト**: `openclaw agent --message "use my new skill"` を使用してテストします。
 
-## Shared Skills
-
-You can also browse and contribute skills to [ClawHub](https://clawhub.com).
+## 共有スキル[ClawHub](https://clawhub.com) でスキルを参照して投稿することもできます

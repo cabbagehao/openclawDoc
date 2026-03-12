@@ -1,60 +1,61 @@
 ---
-summary: "ClawHub guide: public skills registry + CLI workflows"
+summary: "ClawHub ガイド: 公開スキル レジストリ + CLI ワークフロー"
 read_when:
-  - Introducing ClawHub to new users
-  - Installing, searching, or publishing skills
-  - Explaining ClawHub CLI flags and sync behavior
-title: "ClawHub"
+  - 新規ユーザーへの ClawHub の紹介
+  - スキルのインストール、検索、または公開
+  - ClawHub CLI フラグと同期動作の説明
+title: "クローハブ"
+x-i18n:
+  source_hash: "b572473a1124635744cfe537143249cd57659b511d060bb631ffddba7c8c8315"
 ---
 
-# ClawHub
+# クローハブ
 
-ClawHub is the **public skill registry for OpenClaw**. It is a free service: all skills are public, open, and visible to everyone for sharing and reuse. A skill is just a folder with a `SKILL.md` file (plus supporting text files). You can browse skills in the web app or use the CLI to search, install, update, and publish skills.
+ClawHub は **OpenClaw の公開スキル レジストリ**です。これは無料のサービスです。すべてのスキルは公開され、オープンであり、共有および再利用のために誰でも見ることができます。スキルは、`SKILL.md` ファイル (およびサポートするテキスト ファイル) を含む単なるフォルダーです。 Web アプリでスキルを参照したり、CLI を使用してスキルを検索、インストール、更新、公開したりできます。
 
-Site: [clawhub.ai](https://clawhub.ai)
+サイト: [clawhub.ai](https://clawhub.ai)
 
-## What ClawHub is
+## ClawHub とは
 
-- A public registry for OpenClaw skills.
-- A versioned store of skill bundles and metadata.
-- A discovery surface for search, tags, and usage signals.
+- OpenClaw スキルの公開レジストリ。
+- スキルバンドルとメタデータのバージョン管理されたストア。
+- 検索、タグ、および使用状況シグナルのためのディスカバリ サーフェス。
 
-## How it works
+## 仕組み
 
-1. A user publishes a skill bundle (files + metadata).
-2. ClawHub stores the bundle, parses metadata, and assigns a version.
-3. The registry indexes the skill for search and discovery.
-4. Users browse, download, and install skills in OpenClaw.
+1. ユーザーがスキル バンドル (ファイル + メタデータ) を公開します。
+2. ClawHub はバンドルを保存し、メタデータを解析し、バージョンを割り当てます。
+3. レジストリは、検索と検出のためにスキルにインデックスを付けます。
+4. ユーザーは OpenClaw でスキルを参照、ダウンロード、インストールします。
 
-## What you can do
+## あなたにできること
 
-- Publish new skills and new versions of existing skills.
-- Discover skills by name, tags, or search.
-- Download skill bundles and inspect their files.
-- Report skills that are abusive or unsafe.
-- If you are a moderator, hide, unhide, delete, or ban.
+- 新しいスキルと既存のスキルの新しいバージョンを公開します。
+- 名前、タグ、または検索によってスキルを見つけます。
+- スキル バンドルをダウンロードし、そのファイルを検査します。
+- 悪用的または危険なスキルを報告します。
+- モデレーターの場合は、非表示、再表示、削除、または禁止を行います。
 
-## Who this is for (beginner-friendly)
+## 対象者 (初心者向け)
 
-If you want to add new capabilities to your OpenClaw agent, ClawHub is the easiest way to find and install skills. You do not need to know how the backend works. You can:
+OpenClaw エージェントに新しい機能を追加したい場合は、ClawHub を使用するのがスキルを見つけてインストールする最も簡単な方法です。バックエンドがどのように機能するかを知る必要はありません。あなたはできる：- わかりやすい言葉でスキルを検索します。
 
-- Search for skills by plain language.
-- Install a skill into your workspace.
-- Update skills later with one command.
-- Back up your own skills by publishing them.
+- ワークスペースにスキルをインストールします。
+- 1 つのコマンドで後でスキルを更新します。
+- 自分のスキルを公開してバックアップします。
 
-## Quick start (non-technical)
+## クイック スタート (非技術的)
 
-1. Install the CLI (see next section).
-2. Search for something you need:
+1. CLI をインストールします (次のセクションを参照)。
+2. 必要なものを検索します。
    - `clawhub search "calendar"`
-3. Install a skill:
+3. スキルをインストールします。
    - `clawhub install <skill-slug>`
-4. Start a new OpenClaw session so it picks up the new skill.
+4. 新しい OpenClaw セッションを開始して、新しいスキルを習得します。
 
-## Install the CLI
+## CLI をインストールする
 
-Pick one:
+1 つ選択してください:
 
 ```bash
 npm i -g clawhub
@@ -64,194 +65,188 @@ npm i -g clawhub
 pnpm add -g clawhub
 ```
 
-## How it fits into OpenClaw
+## OpenClaw にどのように適合するか
 
-By default, the CLI installs skills into `./skills` under your current working directory. If a OpenClaw workspace is configured, `clawhub` falls back to that workspace unless you override `--workdir` (or `CLAWHUB_WORKDIR`). OpenClaw loads workspace skills from `<workspace>/skills` and will pick them up in the **next** session. If you already use `~/.openclaw/skills` or bundled skills, workspace skills take precedence.
+デフォルトでは、CLI は現在の作業ディレクトリの下の `./skills` にスキルをインストールします。 OpenClaw ワークスペースが構成されている場合、`--workdir` (または `CLAWHUB_WORKDIR`) をオーバーライドしない限り、`clawhub` はそのワークスペースにフォールバックします。 OpenClaw は、`<workspace>/skills` からワークスペース スキルをロードし、**次** セッションでそれらを取得します。すでに `~/.openclaw/skills` またはバンドルされたスキルを使用している場合は、ワークスペース スキルが優先されます。
 
-For more detail on how skills are loaded, shared, and gated, see
-[Skills](/tools/skills).
+スキルのロード、共有、ゲート制御の方法の詳細については、を参照してください。
+[スキル](/tools/skills)。
 
-## Skill system overview
+## スキルシステム概要
 
-A skill is a versioned bundle of files that teaches OpenClaw how to perform a
-specific task. Each publish creates a new version, and the registry keeps a
-history of versions so users can audit changes.
+スキルは、OpenClaw にスキルの実行方法を教える、バージョン管理されたファイルのバンドルです。
+特定のタスク。発行するたびに新しいバージョンが作成され、レジストリには
+ユーザーが変更を監査できるようにバージョンの履歴を保存します。
 
-A typical skill includes:
+典型的なスキルには次のようなものがあります。- 主な説明と使用法を含む `SKILL.md` ファイル。
 
-- A `SKILL.md` file with the primary description and usage.
-- Optional configs, scripts, or supporting files used by the skill.
-- Metadata such as tags, summary, and install requirements.
+- スキルで使用されるオプションの構成、スクリプト、またはサポート ファイル。
+- タグ、概要、インストール要件などのメタデータ。
 
-ClawHub uses metadata to power discovery and safely expose skill capabilities.
-The registry also tracks usage signals (such as stars and downloads) to improve
-ranking and visibility.
+ClawHub はメタデータを使用して検出を強化し、スキル機能を安全に公開します。
+レジストリは、改善のために使用状況のシグナル (スターやダウンロードなど) も追跡します。
+ランキングと知名度。
 
-## What the service provides (features)
+## サービスが提供するもの (機能)
 
-- **Public browsing** of skills and their `SKILL.md` content.
-- **Search** powered by embeddings (vector search), not just keywords.
-- **Versioning** with semver, changelogs, and tags (including `latest`).
-- **Downloads** as a zip per version.
-- **Stars and comments** for community feedback.
-- **Moderation** hooks for approvals and audits.
-- **CLI-friendly API** for automation and scripting.
+- スキルとその `SKILL.md` コンテンツの **パブリック ブラウジング**。
+- **検索** キーワードだけでなく埋め込み (ベクトル検索) を利用します。
+- サーバー、変更ログ、およびタグ (`latest` を含む) による **バージョン管理**。
+- **ダウンロード** はバージョンごとに zip 形式で行われます。
+- **スターとコメント** コミュニティのフィードバック用。
+- **モデレーション** 承認と監査のためのフック。
+- **CLI フレンドリーな API** による自動化とスクリプト作成。
 
-## Security and moderation
+## セキュリティとモデレーション
 
-ClawHub is open by default. Anyone can upload skills, but a GitHub account must
-be at least one week old to publish. This helps slow down abuse without blocking
-legitimate contributors.
+ClawHub はデフォルトで開いています。スキルは誰でもアップロードできますが、GitHub アカウントが必要です
+公開までに少なくとも 1 週間は必要です。これにより、ブロックせずに悪用を遅らせることができます
+正当な貢献者。
 
-Reporting and moderation:
+報告とモデレーション:- サインインしているユーザーは誰でもスキルを報告できます。
 
-- Any signed in user can report a skill.
-- Report reasons are required and recorded.
-- Each user can have up to 20 active reports at a time.
-- Skills with more than 3 unique reports are auto hidden by default.
-- Moderators can view hidden skills, unhide them, delete them, or ban users.
-- Abusing the report feature can result in account bans.
+- 報告理由は必須であり、記録されます。
+- 各ユーザーは一度に最大 20 個のアクティブなレポートを持つことができます。
+- 固有のレポートが 3 つを超えるスキルは、デフォルトで自動的に非表示になります。
+- モデレーターは、非表示のスキルを表示したり、再表示したり、削除したり、ユーザーを禁止したりできます。
+- レポート機能を悪用すると、アカウントが停止される可能性があります。
 
-Interested in becoming a moderator? Ask in the OpenClaw Discord and contact a
-moderator or maintainer.
+モデレーターになることに興味がありますか? OpenClaw Discord で質問し、連絡してください。
+モデレーターまたはメンテナー。
 
-## CLI commands and parameters
+## CLI コマンドとパラメータ
 
-Global options (apply to all commands):
+グローバル オプション (すべてのコマンドに適用):
 
-- `--workdir <dir>`: Working directory (default: current dir; falls back to OpenClaw workspace).
-- `--dir <dir>`: Skills directory, relative to workdir (default: `skills`).
-- `--site <url>`: Site base URL (browser login).
-- `--registry <url>`: Registry API base URL.
-- `--no-input`: Disable prompts (non-interactive).
-- `-V, --cli-version`: Print CLI version.
+- `--workdir <dir>`: 作業ディレクトリ (デフォルト: 現在のディレクトリ。OpenClaw ワークスペースに戻ります)。
+- `--dir <dir>`: workdir を基準としたスキル ディレクトリ (デフォルト: `skills`)。
+- `--site <url>`: サイトのベース URL (ブラウザー ログイン)。
+- `--registry <url>`: レジストリ API のベース URL。
+- `--no-input`: プロンプトを無効にします (非対話型)。
+- `-V, --cli-version`: CLI のバージョンを出力します。
 
-Auth:
+認証:
 
-- `clawhub login` (browser flow) or `clawhub login --token <token>`
+- `clawhub login` (ブラウザ フロー) または `clawhub login --token <token>`
 - `clawhub logout`
 - `clawhub whoami`
 
-Options:
+オプション:
 
-- `--token <token>`: Paste an API token.
-- `--label <label>`: Label stored for browser login tokens (default: `CLI token`).
-- `--no-browser`: Do not open a browser (requires `--token`).
+- `--token <token>`: API トークンを貼り付けます。
+- `--label <label>`: ブラウザーのログイン トークン用に保存されたラベル (デフォルト: `CLI token`)。
+- `--no-browser`: ブラウザを開かないでください (`--token` が必要です)。
 
-Search:
+検索:
 
 - `clawhub search "query"`
-- `--limit <n>`: Max results.
+- `--limit <n>`: 最大の結果。
 
-Install:
+インストール：- `clawhub install <slug>`
 
-- `clawhub install <slug>`
-- `--version <version>`: Install a specific version.
-- `--force`: Overwrite if the folder already exists.
+- `--version <version>`: 特定のバージョンをインストールします。
+- `--force`: フォルダーが既に存在する場合は上書きします。
 
-Update:
+更新:
 
 - `clawhub update <slug>`
 - `clawhub update --all`
-- `--version <version>`: Update to a specific version (single slug only).
-- `--force`: Overwrite when local files do not match any published version.
+- `--version <version>`: 特定のバージョンに更新します (単一のスラッグのみ)。
+- `--force`: ローカル ファイルがどの公開バージョンにも一致しない場合は上書きします。
 
-List:
+リスト:
 
-- `clawhub list` (reads `.clawhub/lock.json`)
+- `clawhub list` (`.clawhub/lock.json` と読み取られます)
 
-Publish:
+公開:
 
 - `clawhub publish <path>`
-- `--slug <slug>`: Skill slug.
-- `--name <name>`: Display name.
-- `--version <version>`: Semver version.
-- `--changelog <text>`: Changelog text (can be empty).
-- `--tags <tags>`: Comma-separated tags (default: `latest`).
+- `--slug <slug>`: スキルスラッグ。
+- `--name <name>`: 表示名。
+- `--version <version>`: セムバーのバージョン。
+- `--changelog <text>`: 変更ログのテキスト (空でも可)。
+- `--tags <tags>`: カンマ区切りのタグ (デフォルト: `latest`)。
 
-Delete/undelete (owner/admin only):
+削除/削除取り消し (所有者/管理者のみ):
 
 - `clawhub delete <slug> --yes`
 - `clawhub undelete <slug> --yes`
 
-Sync (scan local skills + publish new/updated):
+同期 (ローカル スキルをスキャン + 新規/更新を公開):
 
 - `clawhub sync`
-- `--root <dir...>`: Extra scan roots.
-- `--all`: Upload everything without prompts.
-- `--dry-run`: Show what would be uploaded.
-- `--bump <type>`: `patch|minor|major` for updates (default: `patch`).
-- `--changelog <text>`: Changelog for non-interactive updates.
-- `--tags <tags>`: Comma-separated tags (default: `latest`).
-- `--concurrency <n>`: Registry checks (default: 4).
+- `--root <dir...>`: 追加のスキャン ルート。
+- `--all`: プロンプトなしですべてをアップロードします。
+- `--dry-run`: アップロードされる内容を表示します。
+- `--bump <type>`: 更新用の `patch|minor|major` (デフォルト: `patch`)。
+- `--changelog <text>`: 非対話型更新の変更ログ。
+- `--tags <tags>`: カンマ区切りのタグ (デフォルト: `latest`)。
+- `--concurrency <n>`: レジストリ チェック (デフォルト: 4)。
 
-## Common workflows for agents
+## エージェントの一般的なワークフロー
 
-### Search for skills
+### スキルを検索する
 
 ```bash
 clawhub search "postgres backups"
 ```
 
-### Download new skills
+### 新しいスキルをダウンロードする
 
 ```bash
 clawhub install my-skill-pack
 ```
 
-### Update installed skills
+### インストールされているスキルを更新する
 
 ```bash
 clawhub update --all
 ```
 
-### Back up your skills (publish or sync)
-
-For a single skill folder:
+### スキルをバックアップする (公開または同期)単一のスキル フォルダーの場合
 
 ```bash
 clawhub publish ./my-skill --slug my-skill --name "My Skill" --version 1.0.0 --tags latest
 ```
 
-To scan and back up many skills at once:
+多くのスキルを一度にスキャンしてバックアップするには:
 
 ```bash
 clawhub sync --all
 ```
 
-## Advanced details (technical)
+## 高度な詳細 (技術的)
 
-### Versioning and tags
+### バージョン管理とタグ
 
-- Each publish creates a new **semver** `SkillVersion`.
-- Tags (like `latest`) point to a version; moving tags lets you roll back.
-- Changelogs are attached per version and can be empty when syncing or publishing updates.
+- 公開するたびに、新しい **semver** `SkillVersion` が作成されます。
+- タグ (`latest` など) はバージョンを指します。タグを移動すると、ロールバックできます。
+- 変更ログはバージョンごとに添付され、更新の同期または公開時には空にすることができます。
 
-### Local changes vs registry versions
+### ローカルの変更とレジストリのバージョン
 
-Updates compare the local skill contents to registry versions using a content hash. If local files do not match any published version, the CLI asks before overwriting (or requires `--force` in non-interactive runs).
+更新では、コンテンツ ハッシュを使用して、ローカル スキルのコンテンツとレジストリ バージョンを比較します。ローカル ファイルがどの公開バージョンにも一致しない場合、CLI は上書きする前に質問します (または、非対話型実行では `--force` が必要です)。
 
-### Sync scanning and fallback roots
+### 同期スキャンとフォールバック ルート
 
-`clawhub sync` scans your current workdir first. If no skills are found, it falls back to known legacy locations (for example `~/openclaw/skills` and `~/.openclaw/skills`). This is designed to find older skill installs without extra flags.
+`clawhub sync` は、最初に現在の作業ディレクトリをスキャンします。スキルが見つからない場合は、既知の従来の場所 (`~/openclaw/skills` や `~/.openclaw/skills` など) にフォールバックします。これは、追加のフラグなしで古いスキルのインストールを検索するように設計されています。
 
-### Storage and lockfile
+### ストレージとロックファイル
 
-- Installed skills are recorded in `.clawhub/lock.json` under your workdir.
-- Auth tokens are stored in the ClawHub CLI config file (override via `CLAWHUB_CONFIG_PATH`).
+- インストールされたスキルは、workdir の下の `.clawhub/lock.json` に記録されます。
+- 認証トークンは ClawHub CLI 構成ファイルに保存されます (`CLAWHUB_CONFIG_PATH` によってオーバーライドされます)。
 
-### Telemetry (install counts)
+### テレメトリ (インストール数)
 
-When you run `clawhub sync` while logged in, the CLI sends a minimal snapshot to compute install counts. You can disable this entirely:
+ログイン中に `clawhub sync` を実行すると、CLI はインストール数を計算するために最小限のスナップショットを送信します。これを完全に無効にすることもできます。
 
 ```bash
 export CLAWHUB_DISABLE_TELEMETRY=1
 ```
 
-## Environment variables
+## 環境変数- `CLAWHUB_SITE`: サイト URL をオーバーライドします
 
-- `CLAWHUB_SITE`: Override the site URL.
-- `CLAWHUB_REGISTRY`: Override the registry API URL.
-- `CLAWHUB_CONFIG_PATH`: Override where the CLI stores the token/config.
-- `CLAWHUB_WORKDIR`: Override the default workdir.
-- `CLAWHUB_DISABLE_TELEMETRY=1`: Disable telemetry on `sync`.
+- `CLAWHUB_REGISTRY`: レジストリ API URL をオーバーライドします。
+- `CLAWHUB_CONFIG_PATH`: CLI がトークン/構成を保存する場所をオーバーライドします。
+- `CLAWHUB_WORKDIR`: デフォルトの workdir をオーバーライドします。
+- `CLAWHUB_DISABLE_TELEMETRY=1`: `sync` のテレメトリを無効にします。

@@ -1,27 +1,26 @@
 ---
-summary: "Gateway WebSocket protocol: handshake, frames, versioning"
+summary: "ゲートウェイの WebSocket プロトコル: ハンドシェイク、フレーム構造、バージョン管理"
 read_when:
-  - Implementing or updating gateway WS clients
-  - Debugging protocol mismatches or connect failures
-  - Regenerating protocol schema/models
-title: "Gateway Protocol"
+  - ゲートウェイの WebSocket クライアントを実装・更新する場合
+  - プロトコルの不一致や接続エラーをデバッグする場合
+  - プロトコルのスキーマやモデルを再生成する場合
+title: "ゲートウェイプロトコル"
+x-i18n:
+  source_hash: "d0d110acae55813c5d8c126d95912e5ca145910b05d9a01a9a53822830cc8cd6"
 ---
 
-# Gateway protocol (WebSocket)
+# ゲートウェイプロトコル (WebSocket)
 
-The Gateway WS protocol is the **single control plane + node transport** for
-OpenClaw. All clients (CLI, web UI, macOS app, iOS/Android nodes, headless
-nodes) connect over WebSocket and declare their **role** + **scope** at
-handshake time.
+ゲートウェイの WebSocket (WS) プロトコルは、OpenClaw における **統合されたコントロールプレーンおよびノード通信路** です。すべてのクライアント（CLI、Web UI、macOS アプリ、iOS/Android ノード、ヘッドレスノード）は WebSocket 経由で接続し、接続確立（ハンドシェイク）時に自身の **ロール (Role)** と **スコープ (Scope)** を宣言します。
 
-## Transport
+## 通信方式（トランスポート）
 
-- WebSocket, text frames with JSON payloads.
-- First frame **must** be a `connect` request.
+- WebSocket を使用し、テキストフレーム内に JSON ペイロードを含めます。
+- 最初のフレームは **必ず** `connect` リクエストである必要があります。
 
-## Handshake (connect)
+## ハンドシェイク (connect)
 
-Gateway → Client (pre-connect challenge):
+ゲートウェイ → クライアント (接続前チャレンジ):
 
 ```json
 {
@@ -31,7 +30,7 @@ Gateway → Client (pre-connect challenge):
 }
 ```
 
-Client → Gateway:
+クライアント → ゲートウェイ:
 
 ```json
 {
@@ -53,7 +52,7 @@ Client → Gateway:
     "commands": [],
     "permissions": {},
     "auth": { "token": "…" },
-    "locale": "en-US",
+    "locale": "ja-JP",
     "userAgent": "openclaw-cli/1.2.3",
     "device": {
       "id": "device_fingerprint",
@@ -66,7 +65,7 @@ Client → Gateway:
 }
 ```
 
-Gateway → Client:
+ゲートウェイ → クライアント:
 
 ```json
 {
@@ -77,7 +76,7 @@ Gateway → Client:
 }
 ```
 
-When a device token is issued, `hello-ok` also includes:
+デバイストークンが発行された場合、`hello-ok` には以下も含まれます:
 
 ```json
 {
@@ -89,7 +88,7 @@ When a device token is issued, `hello-ok` also includes:
 }
 ```
 
-### Node example
+### ノードの例
 
 ```json
 {
@@ -111,7 +110,7 @@ When a device token is issued, `hello-ok` also includes:
     "commands": ["camera.snap", "canvas.navigate", "screen.record", "location.get"],
     "permissions": { "camera.capture": true, "screen.record": false },
     "auth": { "token": "…" },
-    "locale": "en-US",
+    "locale": "ja-JP",
     "userAgent": "openclaw-ios/1.2.3",
     "device": {
       "id": "device_fingerprint",
@@ -124,24 +123,24 @@ When a device token is issued, `hello-ok` also includes:
 }
 ```
 
-## Framing
+## フレーム構造
 
-- **Request**: `{type:"req", id, method, params}`
-- **Response**: `{type:"res", id, ok, payload|error}`
-- **Event**: `{type:"event", event, payload, seq?, stateVersion?}`
+- **リクエスト (Request)**: `{type:"req", id, method, params}`
+- **レスポンス (Response)**: `{type:"res", id, ok, payload|error}`
+- **イベント (Event)**: `{type:"event", event, payload, seq?, stateVersion?}`
 
-Side-effecting methods require **idempotency keys** (see schema).
+副作用を伴うメソッドには **べき等キー (idempotency keys)** が必要です（詳細はスキーマを参照）。
 
-## Roles + scopes
+## ロールとスコープ
 
-### Roles
+### ロール (Roles)
 
-- `operator` = control plane client (CLI/UI/automation).
-- `node` = capability host (camera/screen/canvas/system.run).
+- `operator`: コントロールプレーンクライアント (CLI, UI, 自動化ツールなど)。
+- `node`: 機能（Capabilities）を提供するホスト (カメラ, 画面, Canvas, system.run など)。
 
-### Scopes (operator)
+### スコープ (Scopes - operator 用)
 
-Common scopes:
+一般的なスコープ例:
 
 - `operator.read`
 - `operator.write`
@@ -149,112 +148,92 @@ Common scopes:
 - `operator.approvals`
 - `operator.pairing`
 
-Method scope is only the first gate. Some slash commands reached through
-`chat.send` apply stricter command-level checks on top. For example, persistent
-`/config set` and `/config unset` writes require `operator.admin`.
+メソッドごとのスコープチェックは最初のゲートに過ぎません。`chat.send` を介して実行される一部のスラッシュコマンドでは、さらに厳格なコマンドレベルのチェックが適用されます。例えば、永続的な `/config set` や `/config unset` の実行には `operator.admin` スコープが必要です。
 
-### Caps/commands/permissions (node)
+### 機能・コマンド・権限 (Caps/commands/permissions - node 用)
 
-Nodes declare capability claims at connect time:
+ノードは接続時に、自身が提供可能な機能の宣言（クレーム）を行います:
 
-- `caps`: high-level capability categories.
-- `commands`: command allowlist for invoke.
-- `permissions`: granular toggles (e.g. `screen.record`, `camera.capture`).
+- `caps`: 大まかな機能カテゴリ。
+- `commands`: 外部から呼び出し可能なコマンドの許可リスト。
+- `permissions`: 詳細なオン/オフ設定 (例: `screen.record`, `camera.capture`)。
 
-The Gateway treats these as **claims** and enforces server-side allowlists.
+ゲートウェイはこれらを **クレーム（自己申告）** として扱い、サーバー側で許可リストによる制限を適用します。
 
-## Presence
+## プレゼンス (Presence)
 
-- `system-presence` returns entries keyed by device identity.
-- Presence entries include `deviceId`, `roles`, and `scopes` so UIs can show a single row per device
-  even when it connects as both **operator** and **node**.
+- `system-presence` メソッドは、デバイスのアイデンティティをキーとしたエントリを返します。
+- プレゼンスエントリには `deviceId`, `roles`, `scopes` が含まれるため、同じデバイスが **operator** と **node** の両方として接続していても、UI 上では 1 つの行として集約して表示できます。
 
-### Node helper methods
+### ノード用ヘルパーメソッド
 
-- Nodes may call `skills.bins` to fetch the current list of skill executables
-  for auto-allow checks.
+- ノードは `skills.bins` を呼び出すことで、自動許可チェックに使用する現在のスキル実行ファイルのリストを取得できます。
 
-### Operator helper methods
+### オペレーター用ヘルパーメソッド
 
-- Operators may call `tools.catalog` (`operator.read`) to fetch the runtime tool catalog for an
-  agent. The response includes grouped tools and provenance metadata:
-  - `source`: `core` or `plugin`
-  - `pluginId`: plugin owner when `source="plugin"`
-  - `optional`: whether a plugin tool is optional
+- オペレーターは `tools.catalog` (`operator.read`) を呼び出すことで、特定のエージェントの実行時ツールカタログを取得できます。レスポンスには、グループ化されたツール情報と由来（provenance）メタデータが含まれます:
+  - `source`: `core` または `plugin`
+  - `pluginId`: `source="plugin"` の場合のプラグイン提供元
+  - `optional`: プラグインツールがオプション（任意）であるかどうか
 
-## Exec approvals
+## 実行承認 (Exec approvals)
 
-- When an exec request needs approval, the gateway broadcasts `exec.approval.requested`.
-- Operator clients resolve by calling `exec.approval.resolve` (requires `operator.approvals` scope).
-- For `host=node`, `exec.approval.request` must include `systemRunPlan` (canonical `argv`/`cwd`/`rawCommand`/session metadata). Requests missing `systemRunPlan` are rejected.
+- `exec` リクエストに承認が必要な場合、ゲートウェイは `exec.approval.requested` イベントをブロードキャスト（一斉送信）します。
+- オペレータークライアントは、`exec.approval.resolve` を呼び出すことでこれを解決します（`operator.approvals` スコープが必要です）。
+- `host=node` の場合、`exec.approval.request` には `systemRunPlan`（正規化された `argv`, `cwd`, `rawCommand`, セッションメタデータ）が含まれている必要があります。`systemRunPlan` が欠落しているリクエストは拒否されます。
 
-## Versioning
+## バージョン管理
 
-- `PROTOCOL_VERSION` lives in `src/gateway/protocol/schema.ts`.
-- Clients send `minProtocol` + `maxProtocol`; the server rejects mismatches.
-- Schemas + models are generated from TypeBox definitions:
+- `PROTOCOL_VERSION` は `src/gateway/protocol/schema.ts` で定義されています。
+- クライアントは接続時に `minProtocol` と `maxProtocol` を送信し、サーバーは不一致がある場合に拒否します。
+- スキーマとモデルは、TypeBox の定義から自動生成されます:
   - `pnpm protocol:gen`
   - `pnpm protocol:gen:swift`
   - `pnpm protocol:check`
 
-## Auth
+## 認証 (Auth)
 
-- If `OPENCLAW_GATEWAY_TOKEN` (or `--token`) is set, `connect.params.auth.token`
-  must match or the socket is closed.
-- After pairing, the Gateway issues a **device token** scoped to the connection
-  role + scopes. It is returned in `hello-ok.auth.deviceToken` and should be
-  persisted by the client for future connects.
-- Device tokens can be rotated/revoked via `device.token.rotate` and
-  `device.token.revoke` (requires `operator.pairing` scope).
+- `OPENCLAW_GATEWAY_TOKEN` (または `--token`) が設定されている場合、`connect.params.auth.token` が一致しなければソケットは即座に閉じられます。
+- ペアリング成功後、ゲートウェイは接続時のロールとスコープに制限された **デバイストークン** を発行します。これは `hello-ok.auth.deviceToken` として返され、クライアント側で保存して次回の接続時に再利用する必要があります。
+- デバイストークンは `device.token.rotate` および `device.token.revoke` メソッドで更新・取り消しが可能です（`operator.pairing` スコープが必要です）。
 
-## Device identity + pairing
+## デバイスアイデンティティとペアリング
 
-- Nodes should include a stable device identity (`device.id`) derived from a
-  keypair fingerprint.
-- Gateways issue tokens per device + role.
-- Pairing approvals are required for new device IDs unless local auto-approval
-  is enabled.
-- **Local** connects include loopback and the gateway host’s own tailnet address
-  (so same‑host tailnet binds can still auto‑approve).
-- All WS clients must include `device` identity during `connect` (operator + node).
-  Control UI can omit it **only** when `gateway.controlUi.dangerouslyDisableDeviceAuth`
-  is enabled for break-glass use.
-- All connections must sign the server-provided `connect.challenge` nonce.
+- ノードは、キーペアのフィンガープリントから派生した、固定のデバイスアイデンティティ (`device.id`) を含める必要があります。
+- ゲートウェイは、デバイスとロールの組み合わせごとにトークンを発行します。
+- 未登録のデバイス ID からの接続にはペアリング承認が必要ですが、ローカル環境での自動承認設定が有効な場合はスキップされます。
+- **ローカル**接続には、ループバックおよびゲートウェイホスト自身の Tailnet アドレスが含まれます（そのため、同じホスト内であれば Tailnet バインド経由でも自動承認が可能です）。
+- すべての WebSocket クライアント（operator および node）は、`connect` 時に `device` 情報を提示する必要があります。コントロール UI においては、緊急時（break-glass）の利用目的で `gateway.controlUi.dangerouslyDisableDeviceAuth` が有効な場合にのみ省略可能です。
+- すべての接続において、サーバーから提供された `connect.challenge` ノンス（一時的な数値）への署名が必要です。
 
-### Device auth migration diagnostics
+### デバイス認証の移行診断
 
-For legacy clients that still use pre-challenge signing behavior, `connect` now returns
-`DEVICE_AUTH_*` detail codes under `error.details.code` with a stable `error.details.reason`.
+チャレンジベースの署名に対応していない古いクライアントに対して、`connect` 時に `error.details.code` 配下で `DEVICE_AUTH_*` 形式の詳細コードと、固定の `error.details.reason` を返すようになりました。
 
-Common migration failures:
+よくある移行時の失敗例:
 
-| Message                     | details.code                     | details.reason           | Meaning                                            |
-| --------------------------- | -------------------------------- | ------------------------ | -------------------------------------------------- |
-| `device nonce required`     | `DEVICE_AUTH_NONCE_REQUIRED`     | `device-nonce-missing`   | Client omitted `device.nonce` (or sent blank).     |
-| `device nonce mismatch`     | `DEVICE_AUTH_NONCE_MISMATCH`     | `device-nonce-mismatch`  | Client signed with a stale/wrong nonce.            |
-| `device signature invalid`  | `DEVICE_AUTH_SIGNATURE_INVALID`  | `device-signature`       | Signature payload does not match v2 payload.       |
-| `device signature expired`  | `DEVICE_AUTH_SIGNATURE_EXPIRED`  | `device-signature-stale` | Signed timestamp is outside allowed skew.          |
-| `device identity mismatch`  | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch`     | `device.id` does not match public key fingerprint. |
-| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key`      | Public key format/canonicalization failed.         |
+| メッセージ | details.code | details.reason | 意味 |
+| :--- | :--- | :--- | :--- |
+| `device nonce required` | `DEVICE_AUTH_NONCE_REQUIRED` | `device-nonce-missing` | クライアントが `device.nonce` を省略した（または空で送った）。 |
+| `device nonce mismatch` | `DEVICE_AUTH_NONCE_MISMATCH` | `device-nonce-mismatch` | 古い、あるいは誤ったノンスで署名した。 |
+| `device signature invalid` | `DEVICE_AUTH_SIGNATURE_INVALID` | `device-signature` | 署名対象のペイロードが v2 の形式と一致しない。 |
+| `device signature expired` | `DEVICE_AUTH_SIGNATURE_EXPIRED` | `device-signature-stale` | 署名時刻が許容範囲外（古すぎる）。 |
+| `device identity mismatch` | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch` | `device.id` が公開鍵のフィンガープリントと一致しない。 |
+| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key` | 公開鍵のフォーマットや正規化に失敗した。 |
 
-Migration target:
+移行の目標仕様:
 
-- Always wait for `connect.challenge`.
-- Sign the v2 payload that includes the server nonce.
-- Send the same nonce in `connect.params.device.nonce`.
-- Preferred signature payload is `v3`, which binds `platform` and `deviceFamily`
-  in addition to device/client/role/scopes/token/nonce fields.
-- Legacy `v2` signatures remain accepted for compatibility, but paired-device
-  metadata pinning still controls command policy on reconnect.
+- 常に `connect.challenge` イベントを待機する。
+- サーバーからのノンスを含む v2 ペイロードに対して署名する。
+- `connect.params.device.nonce` に同じノンスを含めて送信する。
+- 推奨される署名ペイロードは `v3` です。これはデバイス/クライアント/ロール/スコープ/トークン/ノンスに加え、`platform` と `deviceFamily` も紐付けます。
+- 従来の `v2` 署名も互換性のために受け入れられますが、再接続時のコマンドポリシー制御のために、ペアリング済みデバイスのメタデータの固定（pinning）が引き続き適用されます。
 
-## TLS + pinning
+## TLS とピン留め (Pinning)
 
-- TLS is supported for WS connections.
-- Clients may optionally pin the gateway cert fingerprint (see `gateway.tls`
-  config plus `gateway.remote.tlsFingerprint` or CLI `--tls-fingerprint`).
+- WebSocket 接続における TLS をサポートしています。
+- クライアントは、オプションでゲートウェイ証明書のフィンガープリントを固定できます（`gateway.tls` 構成、`gateway.remote.tlsFingerprint`、または CLI の `--tls-fingerprint` を参照）。
 
-## Scope
+## 対象範囲 (Scope)
 
-This protocol exposes the **full gateway API** (status, channels, models, chat,
-agent, sessions, nodes, approvals, etc.). The exact surface is defined by the
-TypeBox schemas in `src/gateway/protocol/schema.ts`.
+本プロトコルは、**ゲートウェイの全 API**（ステータス、チャネル、モデル、チャット、エージェント、セッション、ノード、承認など）を公開します。具体的なインターフェース面は、`src/gateway/protocol/schema.ts` にある TypeBox スキーマによって定義されます。

@@ -1,22 +1,23 @@
 ---
-summary: "Model providers (LLMs) supported by OpenClaw"
+summary: "OpenClaw でサポートされるモデル プロバイダー (LLM)"
 read_when:
-  - You want to choose a model provider
-  - You need a quick overview of supported LLM backends
-title: "Model Providers"
+  - モデル プロバイダーを選びたいとき
+  - サポートされている LLM backend を手早く確認したいとき
+title: "モデル プロバイダー"
+x-i18n:
+  source_hash: "4d17e6399e5b0a8c7e4cb3b4678ec75aa61225a37c65bf3d6884c1d35d229466"
 ---
 
 # Model Providers
 
-OpenClaw can use many LLM providers. Pick a provider, authenticate, then set the
-default model as `provider/model`.
+OpenClaw は多数の LLM provider を利用できます。provider を選び、認証を済ませたうえで、既定モデルを `provider/model` 形式で設定します。
 
-Looking for chat channel docs (WhatsApp/Telegram/Discord/Slack/Mattermost (plugin)/etc.)? See [Channels](/channels).
+チャット用 channel の説明 (WhatsApp / Telegram / Discord / Slack / Mattermost (plugin) など) を探している場合は、[Channels](/channels) を参照してください。
 
-## Quick start
+## クイックスタート
 
-1. Authenticate with the provider (usually via `openclaw onboard`).
-2. Set the default model:
+1. provider で認証します (通常は `openclaw onboard` を使います)。
+2. 既定モデルを設定します。
 
 ```json5
 {
@@ -24,7 +25,7 @@ Looking for chat channel docs (WhatsApp/Telegram/Discord/Slack/Mattermost (plugi
 }
 ```
 
-## Provider docs
+## Provider ドキュメント
 
 - [Amazon Bedrock](/providers/bedrock)
 - [Anthropic (API + Claude Code CLI)](/providers/anthropic)
@@ -50,13 +51,12 @@ Looking for chat channel docs (WhatsApp/Telegram/Discord/Slack/Mattermost (plugi
 - [Xiaomi](/providers/xiaomi)
 - [Z.AI](/providers/zai)
 
-## Transcription providers
+## 文字起こし provider
 
 - [Deepgram (audio transcription)](/providers/deepgram)
 
-## Community tools
+## コミュニティ ツール
 
-- [Claude Max API Proxy](/providers/claude-max-api-proxy) - Community proxy for Claude subscription credentials (verify Anthropic policy/terms before use)
+- [Claude Max API Proxy](/providers/claude-max-api-proxy) - Claude subscription の認証情報を使うコミュニティ製 proxy です。使用前に Anthropic の policy / terms を確認してください。
 
-For the full provider catalog (xAI, Groq, Mistral, etc.) and advanced configuration,
-see [Model providers](/concepts/model-providers).
+完全な provider catalog (xAI、Groq、Mistral など) や高度な設定については、[Model providers](/concepts/model-providers) を参照してください。

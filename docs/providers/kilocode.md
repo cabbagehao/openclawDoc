@@ -1,34 +1,37 @@
 ---
-summary: "Use Kilo Gateway's unified API to access many models in OpenClaw"
+summary: "Kilo Gateway の統合 API を使用して、OpenClaw の多くのモデルにアクセスします"
 read_when:
-  - You want a single API key for many LLMs
-  - You want to run models via Kilo Gateway in OpenClaw
+  - 多数の LLM に対して単一の API キーが必要な場合
+  - OpenClaw で Kilo Gateway 経由でモデルを実行したい
+title: "キロゲートウェイ"
+x-i18n:
+  source_hash: "acd4c29496abc1ef8d4da6c48575763dfe3b4c1319874f900532223ac3775257"
 ---
 
-# Kilo Gateway
+# キロゲートウェイ
 
-Kilo Gateway provides a **unified API** that routes requests to many models behind a single
-endpoint and API key. It is OpenAI-compatible, so most OpenAI SDKs work by switching the base URL.
+Kilo Gateway は、単一のモジュールの背後にある多くのモデルにリクエストをルーティングする **統合 API** を提供します
+エンドポイントと API キー。 OpenAI と互換性があるため、ほとんどの OpenAI SDK はベース URL を切り替えることで動作します。
 
-## Getting an API key
+## APIキーの取得
 
-1. Go to [app.kilo.ai](https://app.kilo.ai)
-2. Sign in or create an account
-3. Navigate to API Keys and generate a new key
+1. [app.kilo.ai](https://app.kilo.ai) に移動します。
+2. サインインするかアカウントを作成します
+3. API キーに移動し、新しいキーを生成します
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --kilocode-api-key <key>
 ```
 
-Or set the environment variable:
+または、環境変数を設定します。
 
 ```bash
 export KILOCODE_API_KEY="<your-kilocode-api-key>" # pragma: allowlist secret
 ```
 
-## Config snippet
+## 構成スニペット
 
 ```json5
 {
@@ -41,20 +44,20 @@ export KILOCODE_API_KEY="<your-kilocode-api-key>" # pragma: allowlist secret
 }
 ```
 
-## Default model
+## デフォルトのモデル
 
-The default model is `kilocode/kilo/auto`, a smart routing model that automatically selects
-the best underlying model based on the task:
+デフォルトのモデルは `kilocode/kilo/auto` で、自動的に選択するスマート ルーティング モデルです。
+タスクに基づいた最適な基礎モデル:
 
-- Planning, debugging, and orchestration tasks route to Claude Opus
-- Code writing and exploration tasks route to Claude Sonnet
+- 計画、デバッグ、オーケストレーションのタスクは Claude Opus にルーティングされます
+- コード作成と探索タスクは Claude Sonnet にルーティングされます
 
-## Available models
+## 利用可能なモデル
 
-OpenClaw dynamically discovers available models from the Kilo Gateway at startup. Use
-`/models kilocode` to see the full list of models available with your account.
+OpenClaw は、起動時に Kilo Gateway から利用可能なモデルを動的に検出します。使用する
+`/models kilocode` を使用すると、アカウントで利用可能なモデルの完全なリストが表示されます。
 
-Any model available on the gateway can be used with the `kilocode/` prefix:
+ゲートウェイで利用可能なモデルはすべて、`kilocode/` プレフィックスを付けて使用できます。
 
 ```
 kilocode/kilo/auto              (default - smart routing)
@@ -64,10 +67,10 @@ kilocode/google/gemini-3-pro-preview
 ...and many more
 ```
 
-## Notes
+## 注意事項
 
-- Model refs are `kilocode/<model-id>` (e.g., `kilocode/anthropic/claude-sonnet-4`).
-- Default model: `kilocode/kilo/auto`
-- Base URL: `https://api.kilo.ai/api/gateway/`
-- For more model/provider options, see [/concepts/model-providers](/concepts/model-providers).
-- Kilo Gateway uses a Bearer token with your API key under the hood.
+- モデル参照は `kilocode/<model-id>` (例: `kilocode/anthropic/claude-sonnet-4`) です。
+- デフォルトのモデル: `kilocode/kilo/auto`
+- ベース URL: `https://api.kilo.ai/api/gateway/`
+- モデル/プロバイダーのオプションの詳細については、[/concepts/model-providers](/concepts/model-providers) を参照してください。
+- Kilo Gateway は、API キーを含むベアラー トークンを内部で使用します。

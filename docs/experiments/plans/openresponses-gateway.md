@@ -1,126 +1,119 @@
 ---
-summary: "Plan: Add OpenResponses /v1/responses endpoint and deprecate chat completions cleanly"
+summary: "計画: OpenResponses の `/v1/responses` エンドポイントを追加し、Chat Completions を段階的に非推奨化する"
 read_when:
-  - Designing or implementing `/v1/responses` gateway support
-  - Planning migration from Chat Completions compatibility
+  - "`/v1/responses` のゲートウェイサポートを設計または実装するとき"
+  - Chat Completions 互換からの移行を計画するとき
 owner: "openclaw"
 status: "draft"
 last_updated: "2026-01-19"
-title: "OpenResponses Gateway Plan"
+title: "OpenResponses ゲートウェイ計画"
+x-i18n:
+  source_hash: "c112e9eb5077ff7c88b1bd1b28d57f0526280207211e1f19ada88ebf212b51d1"
 ---
 
-# OpenResponses Gateway Integration Plan
+# OpenResponses ゲートウェイ統合計画
 
-## Context
+## コンテキスト
 
-OpenClaw Gateway currently exposes a minimal OpenAI-compatible Chat Completions endpoint at
-`/v1/chat/completions` (see [OpenAI Chat Completions](/gateway/openai-http-api)).
+OpenClaw Gateway は現在、最小限の OpenAI 互換 Chat Completions エンドポイントを `/v1/chat/completions` で公開しています。詳細は [OpenAI Chat Completions](/gateway/openai-http-api) を参照してください。
 
-Open Responses is an open inference standard based on the OpenAI Responses API. It is designed
-for agentic workflows and uses item-based inputs plus semantic streaming events. The OpenResponses
-spec defines `/v1/responses`, not `/v1/chat/completions`.
+Open Responses は、OpenAI Responses API をベースにしたオープンな推論標準です。エージェント型ワークフロー向けに設計されており、アイテムベースの入力と意味論的なストリーミングイベントを使用します。OpenResponses の仕様で定義されているのは `/v1/responses` であり、`/v1/chat/completions` ではありません。
 
-## Goals
+## 目標
 
-- Add a `/v1/responses` endpoint that adheres to OpenResponses semantics.
-- Keep Chat Completions as a compatibility layer that is easy to disable and eventually remove.
-- Standardize validation and parsing with isolated, reusable schemas.
+- OpenResponses のセマンティクスに準拠した `/v1/responses` エンドポイントを追加する
+- Chat Completions は、無効化しやすく、最終的に削除しやすい互換レイヤーとして維持する
+- 独立して再利用できるスキーマにより、検証とパースを標準化する
 
-## Non-goals
+## 非目標
 
-- Full OpenResponses feature parity in the first pass (images, files, hosted tools).
-- Replacing internal agent execution logic or tool orchestration.
-- Changing the existing `/v1/chat/completions` behavior during the first phase.
+- 初期フェーズで OpenResponses の全機能と同等にすること（画像、ファイル、ホスト型ツールを含む）
+- 内部のエージェント実行ロジックやツールオーケストレーションを置き換えること
+- 第 1 フェーズで既存の `/v1/chat/completions` の挙動を変更すること
 
-## Research Summary
+## 調査の要約
 
-Sources: OpenResponses OpenAPI, OpenResponses specification site, and the Hugging Face blog post.
+参照元: OpenResponses OpenAPI、OpenResponses 仕様サイト、Hugging Face のブログ記事。
 
-Key points extracted:
+主な確認事項:
 
-- `POST /v1/responses` accepts `CreateResponseBody` fields like `model`, `input` (string or
-  `ItemParam[]`), `instructions`, `tools`, `tool_choice`, `stream`, `max_output_tokens`, and
-  `max_tool_calls`.
-- `ItemParam` is a discriminated union of:
-  - `message` items with roles `system`, `developer`, `user`, `assistant`
-  - `function_call` and `function_call_output`
+- `POST /v1/responses` は、`model`、`input`（文字列または `ItemParam[]`）、`instructions`、`tools`、`tool_choice`、`stream`、`max_output_tokens`、`max_tool_calls` などの `CreateResponseBody` フィールドを受け付ける
+- `ItemParam` は次の判別共用体で構成される
+  - `system`、`developer`、`user`、`assistant` の各 role を持つ `message`
+  - `function_call` と `function_call_output`
   - `reasoning`
   - `item_reference`
-- Successful responses return a `ResponseResource` with `object: "response"`, `status`, and
-  `output` items.
-- Streaming uses semantic events such as:
-  - `response.created`, `response.in_progress`, `response.completed`, `response.failed`
-  - `response.output_item.added`, `response.output_item.done`
-  - `response.content_part.added`, `response.content_part.done`
-  - `response.output_text.delta`, `response.output_text.done`
-- The spec requires:
+- 正常応答では `object: "response"`、`status`、`output` を含む `ResponseResource` が返る
+- ストリーミングでは、次のような意味論的イベントを使用する
+  - `response.created`、`response.in_progress`、`response.completed`、`response.failed`
+  - `response.output_item.added`、`response.output_item.done`
+  - `response.content_part.added`、`response.content_part.done`
+  - `response.output_text.delta`、`response.output_text.done`
+- 仕様上の必須要件は次のとおり
   - `Content-Type: text/event-stream`
-  - `event:` must match the JSON `type` field
-  - terminal event must be literal `[DONE]`
-- Reasoning items may expose `content`, `encrypted_content`, and `summary`.
-- HF examples include `OpenResponses-Version: latest` in requests (optional header).
+  - `event:` は JSON の `type` フィールドと一致すること
+  - 終端イベントはリテラルの `[DONE]` であること
+- `reasoning` アイテムは `content`、`encrypted_content`、`summary` を公開する場合がある
+- Hugging Face の例では、リクエストに `OpenResponses-Version: latest` を含めている（任意ヘッダー）
 
-## Proposed Architecture
+## 提案アーキテクチャ
 
-- Add `src/gateway/open-responses.schema.ts` containing Zod schemas only (no gateway imports).
-- Add `src/gateway/openresponses-http.ts` (or `open-responses-http.ts`) for `/v1/responses`.
-- Keep `src/gateway/openai-http.ts` intact as a legacy compatibility adapter.
-- Add config `gateway.http.endpoints.responses.enabled` (default `false`).
-- Keep `gateway.http.endpoints.chatCompletions.enabled` independent; allow both endpoints to be
-  toggled separately.
-- Emit a startup warning when Chat Completions is enabled to signal legacy status.
+- Zod スキーマだけを持つ `src/gateway/open-responses.schema.ts` を追加する（ゲートウェイ側 import は含めない）
+- `/v1/responses` 向けに `src/gateway/openresponses-http.ts`（または `open-responses-http.ts`）を追加する
+- `src/gateway/openai-http.ts` は従来互換アダプターとしてそのまま維持する
+- 設定項目 `gateway.http.endpoints.responses.enabled` を追加する（デフォルトは `false`）
+- `gateway.http.endpoints.chatCompletions.enabled` は独立させ、両エンドポイントを個別に切り替えられるようにする
+- Chat Completions が有効な場合は、従来機能であることを示す起動時警告を出す
 
-## Deprecation Path for Chat Completions
+## Chat Completions の非推奨化方針
 
-- Maintain strict module boundaries: no shared schema types between responses and chat completions.
-- Make Chat Completions opt-in by config so it can be disabled without code changes.
-- Update docs to label Chat Completions as legacy once `/v1/responses` is stable.
-- Optional future step: map Chat Completions requests to the Responses handler for a simpler
-  removal path.
+- 厳密なモジュール境界を維持し、responses と chat completions の間でスキーマ型を共有しない
+- Chat Completions は設定による opt-in にして、コード変更なしで無効化できるようにする
+- `/v1/responses` が安定した段階で、Chat Completions を legacy と明示するようドキュメントを更新する
+- 将来的な任意の施策として、Chat Completions リクエストを Responses ハンドラーへマップし、削除経路を単純化することを検討する
 
-## Phase 1 Support Subset
+## フェーズ 1 のサポート範囲
 
-- Accept `input` as string or `ItemParam[]` with message roles and `function_call_output`.
-- Extract system and developer messages into `extraSystemPrompt`.
-- Use the most recent `user` or `function_call_output` as the current message for agent runs.
-- Reject unsupported content parts (image/file) with `invalid_request_error`.
-- Return a single assistant message with `output_text` content.
-- Return `usage` with zeroed values until token accounting is wired.
+- `input` は文字列、または message role と `function_call_output` を含む `ItemParam[]` として受け付ける
+- `system` / `developer` メッセージは `extraSystemPrompt` に抽出する
+- エージェント実行時の現在メッセージには、最新の `user` または `function_call_output` を使う
+- 未対応の content part（画像 / ファイル）は `invalid_request_error` で拒否する
+- `output_text` を含む単一の assistant message を返す
+- トークン集計が接続されるまでは、`usage` は 0 埋めした値を返す
 
-## Validation Strategy (No SDK)
+## 検証戦略（SDK なし）
 
-- Implement Zod schemas for the supported subset of:
+- 次の対応範囲について Zod スキーマを実装する
   - `CreateResponseBody`
-  - `ItemParam` + message content part unions
+  - `ItemParam` と message content part union
   - `ResponseResource`
-  - Streaming event shapes used by the gateway
-- Keep schemas in a single, isolated module to avoid drift and allow future codegen.
+  - ゲートウェイで使用するストリーミングイベント形状
+- スキーマは単一で独立したモジュールにまとめ、仕様との乖離を防ぎつつ、将来的な codegen にも対応しやすくする
 
-## Streaming Implementation (Phase 1)
+## ストリーミング実装（フェーズ 1）
 
-- SSE lines with both `event:` and `data:`.
-- Required sequence (minimum viable):
+- SSE 行には `event:` と `data:` の両方を含める
+- 必要となる最小シーケンス:
   - `response.created`
   - `response.output_item.added`
   - `response.content_part.added`
-  - `response.output_text.delta` (repeat as needed)
+  - `response.output_text.delta`（必要に応じて繰り返す）
   - `response.output_text.done`
   - `response.content_part.done`
   - `response.completed`
   - `[DONE]`
 
-## Tests and Verification Plan
+## テストと検証計画
 
-- Add e2e coverage for `/v1/responses`:
-  - Auth required
-  - Non-stream response shape
-  - Stream event ordering and `[DONE]`
-  - Session routing with headers and `user`
-- Keep `src/gateway/openai-http.test.ts` unchanged.
-- Manual: curl to `/v1/responses` with `stream: true` and verify event ordering and terminal
-  `[DONE]`.
+- `/v1/responses` 向けに e2e カバレッジを追加する
+  - 認証が必須であること
+  - 非ストリーミング応答の形状
+  - ストリームイベントの順序と `[DONE]`
+  - ヘッダーと `user` を使ったセッションルーティング
+- `src/gateway/openai-http.test.ts` は変更しない
+- 手動確認として、`stream: true` を指定して `/v1/responses` に `curl` し、イベント順序と終端の `[DONE]` を確認する
 
-## Doc Updates (Follow-up)
+## ドキュメント更新（後続タスク）
 
-- Add a new docs page for `/v1/responses` usage and examples.
-- Update `/gateway/openai-http-api` with a legacy note and pointer to `/v1/responses`.
+- `/v1/responses` の使い方と例を説明する新しいドキュメントページを追加する
+- `/gateway/openai-http-api` に legacy 注記を追加し、`/v1/responses` への導線を設ける

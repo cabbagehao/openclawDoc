@@ -1,22 +1,20 @@
 ---
-summary: "Write agent tools in a plugin (schemas, optional tools, allowlists)"
+summary: "プラグインで agent tool を作成する方法（schema、optional tool、allowlist）"
 read_when:
-  - You want to add a new agent tool in a plugin
-  - You need to make a tool opt-in via allowlists
-title: "Plugin Agent Tools"
+  - プラグインに新しい agent tool を追加したいとき
+  - allowlist 経由でツールを opt-in にしたいとき
+title: "プラグイン エージェント ツール"
+x-i18n:
+  source_hash: "4479462e9d8b17b664bf6b5f424f2efc8e7bedeaabfdb6a93126e051e635c659"
 ---
 
 # Plugin agent tools
 
-OpenClaw plugins can register **agent tools** (JSON‑schema functions) that are exposed
-to the LLM during agent runs. Tools can be **required** (always available) or
-**optional** (opt‑in).
+OpenClaw のプラグインは、エージェント実行時に LLM へ公開される **agent tool**（JSON Schema ベースの関数）を登録できます。ツールは **required**（常に利用可能）にも **optional**（opt-in）にもできます。
 
-Agent tools are configured under `tools` in the main config, or per‑agent under
-`agents.list[].tools`. The allowlist/denylist policy controls which tools the agent
-can call.
+agent tool は、メイン設定の `tools`、またはエージェントごとの `agents.list[].tools` で制御します。どのツールをエージェントが呼び出せるかは、allowlist / denylist ポリシーによって決まります。
 
-## Basic tool
+## 基本的なツール
 
 ```ts
 import { Type } from "@sinclair/typebox";
@@ -35,10 +33,9 @@ export default function (api) {
 }
 ```
 
-## Optional tool (opt‑in)
+## Optional tool（opt-in）
 
-Optional tools are **never** auto‑enabled. Users must add them to an agent
-allowlist.
+optional tool は **自動では有効になりません**。利用者がエージェントの allowlist へ明示的に追加する必要があります。
 
 ```ts
 export default function (api) {
@@ -62,7 +59,7 @@ export default function (api) {
 }
 ```
 
-Enable optional tools in `agents.list[].tools.allow` (or global `tools.allow`):
+optional tool は `agents.list[].tools.allow`（またはグローバルの `tools.allow`）で有効化します。
 
 ```json5
 {
@@ -83,17 +80,15 @@ Enable optional tools in `agents.list[].tools.allow` (or global `tools.allow`):
 }
 ```
 
-Other config knobs that affect tool availability:
+ツールの可用性に影響する他の設定項目:
 
-- Allowlists that only name plugin tools are treated as plugin opt-ins; core tools remain
-  enabled unless you also include core tools or groups in the allowlist.
-- `tools.profile` / `agents.list[].tools.profile` (base allowlist)
-- `tools.byProvider` / `agents.list[].tools.byProvider` (provider‑specific allow/deny)
-- `tools.sandbox.tools.*` (sandbox tool policy when sandboxed)
+- プラグイン ツールだけを列挙した allowlist は、plugin opt-in として扱われます。core tool を制限したい場合は、allowlist に core tool または group も含めてください。
+- `tools.profile` / `agents.list[].tools.profile`（基本 allowlist）
+- `tools.byProvider` / `agents.list[].tools.byProvider`（provider ごとの allow / deny）
+- `tools.sandbox.tools.*`（サンドボックス実行時のツール ポリシー）
 
-## Rules + tips
+## ルールとヒント
 
-- Tool names must **not** clash with core tool names; conflicting tools are skipped.
-- Plugin ids used in allowlists must not clash with core tool names.
-- Prefer `optional: true` for tools that trigger side effects or require extra
-  binaries/credentials.
+- ツール名は core tool 名と **衝突してはいけません**。衝突したツールはスキップされます。
+- allowlist で使う plugin id も、core tool 名と衝突してはいけません。
+- 副作用を持つツールや、追加のバイナリ / 認証情報を必要とするツールでは、`optional: true` を優先してください。

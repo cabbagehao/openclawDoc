@@ -1,45 +1,45 @@
 ---
-summary: "Community proxy to expose Claude subscription credentials as an OpenAI-compatible endpoint"
+summary: "Claude subscription の認証情報を OpenAI 互換 endpoint として公開するコミュニティ製 proxy"
 read_when:
-  - You want to use Claude Max subscription with OpenAI-compatible tools
-  - You want a local API server that wraps Claude Code CLI
-  - You want to evaluate subscription-based vs API-key-based Anthropic access
+  - OpenAI 互換ツールで Claude Max subscription を使いたいとき
+  - Claude Code CLI をラップするローカル API サーバーが必要なとき
+  - subscription ベースと API キー ベースの Anthropic 利用を比較したいとき
 title: "Claude Max API Proxy"
+x-i18n:
+  source_hash: "f1e379025bd26798973e6eff790a4c88835a8d5e3032abcef300d45fdf81afb9"
 ---
 
 # Claude Max API Proxy
 
-**claude-max-api-proxy** is a community tool that exposes your Claude Max/Pro subscription as an OpenAI-compatible API endpoint. This allows you to use your subscription with any tool that supports the OpenAI API format.
+**claude-max-api-proxy** は、Claude Max / Pro subscription を OpenAI 互換 API endpoint として公開するコミュニティ製ツールです。これにより、OpenAI API 形式をサポートする任意のツールから Claude subscription を利用できます。
 
 <Warning>
-This path is technical compatibility only. Anthropic has blocked some subscription
-usage outside Claude Code in the past. You must decide for yourself whether to use
-it and verify Anthropic's current terms before relying on it.
+この経路は、あくまで技術的な互換レイヤーです。Anthropic は過去に、Claude Code 以外での subscription 利用を一部制限したことがあります。利用するかどうかは各自で判断し、依存する前に Anthropic の最新利用規約を確認してください。
 </Warning>
 
-## Why Use This?
+## なぜ使うのか
 
 | Approach                | Cost                                                | Best For                                   |
 | ----------------------- | --------------------------------------------------- | ------------------------------------------ |
-| Anthropic API           | Pay per token (~$15/M input, $75/M output for Opus) | Production apps, high volume               |
-| Claude Max subscription | $200/month flat                                     | Personal use, development, unlimited usage |
+| Anthropic API           | トークン従量課金（Opus では入力 約 $15/M、出力 約 $75/M） | 本番アプリ、高トラフィック                 |
+| Claude Max subscription | 月額 $200 固定                                      | 個人利用、開発、実質的に多めの利用         |
 
-If you have a Claude Max subscription and want to use it with OpenAI-compatible tools, this proxy may reduce cost for some workflows. API keys remain the clearer policy path for production use.
+Claude Max subscription を OpenAI 互換ツールから使いたい場合、この proxy によってワークフローによってはコストを抑えられることがあります。ただし、本番用途では API キーの方が依然として方針上明確です。
 
-## How It Works
+## 仕組み
 
 ```
 Your App → claude-max-api-proxy → Claude Code CLI → Anthropic (via subscription)
      (OpenAI format)              (converts format)      (uses your login)
 ```
 
-The proxy:
+この proxy は次を行います。
 
-1. Accepts OpenAI-format requests at `http://localhost:3456/v1/chat/completions`
-2. Converts them to Claude Code CLI commands
-3. Returns responses in OpenAI format (streaming supported)
+1. `http://localhost:3456/v1/chat/completions` で OpenAI 形式の request を受け取る
+2. それを Claude Code CLI の command に変換する
+3. OpenAI 形式の response を返す（streaming 対応）
 
-## Installation
+## インストール
 
 ```bash
 # Requires Node.js 20+ and Claude Code CLI
@@ -49,16 +49,16 @@ npm install -g claude-max-api-proxy
 claude --version
 ```
 
-## Usage
+## 使い方
 
-### Start the server
+### サーバーを起動する
 
 ```bash
 claude-max-api
 # Server runs at http://localhost:3456
 ```
 
-### Test it
+### 動作確認
 
 ```bash
 # Health check
@@ -76,9 +76,9 @@ curl http://localhost:3456/v1/chat/completions \
   }'
 ```
 
-### With OpenClaw
+### OpenClaw で使う
 
-You can point OpenClaw at the proxy as a custom OpenAI-compatible endpoint:
+この proxy を、OpenClaw のカスタム OpenAI 互換 endpoint として指定できます。
 
 ```json5
 {
@@ -94,7 +94,7 @@ You can point OpenClaw at the proxy as a custom OpenAI-compatible endpoint:
 }
 ```
 
-## Available Models
+## 利用可能なモデル
 
 | Model ID          | Maps To         |
 | ----------------- | --------------- |
@@ -102,9 +102,9 @@ You can point OpenClaw at the proxy as a custom OpenAI-compatible endpoint:
 | `claude-sonnet-4` | Claude Sonnet 4 |
 | `claude-haiku-4`  | Claude Haiku 4  |
 
-## Auto-Start on macOS
+## macOS で自動起動する
 
-Create a LaunchAgent to run the proxy automatically:
+proxy を自動起動する LaunchAgent を作成します。
 
 ```bash
 cat > ~/Library/LaunchAgents/com.claude-max-api.plist << 'EOF'
@@ -141,14 +141,14 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude-max-api.plist
 - **GitHub:** [https://github.com/atalovesyou/claude-max-api-proxy](https://github.com/atalovesyou/claude-max-api-proxy)
 - **Issues:** [https://github.com/atalovesyou/claude-max-api-proxy/issues](https://github.com/atalovesyou/claude-max-api-proxy/issues)
 
-## Notes
+## 注意事項
 
-- This is a **community tool**, not officially supported by Anthropic or OpenClaw
-- Requires an active Claude Max/Pro subscription with Claude Code CLI authenticated
-- The proxy runs locally and does not send data to any third-party servers
-- Streaming responses are fully supported
+- これは **コミュニティ製ツール** であり、Anthropic も OpenClaw も公式にはサポートしていません。
+- Claude Code CLI で認証済みの、有効な Claude Max / Pro subscription が必要です。
+- proxy はローカルで動作し、データを第三者サーバーへ送信しません。
+- streaming response は完全にサポートされています。
 
-## See Also
+## 関連項目
 
-- [Anthropic provider](/providers/anthropic) - Native OpenClaw integration with Claude setup-token or API keys
-- [OpenAI provider](/providers/openai) - For OpenAI/Codex subscriptions
+- [Anthropic provider](/providers/anthropic) - setup-token または API キーを使う OpenClaw 標準統合
+- [OpenAI provider](/providers/openai) - OpenAI / Codex subscription を使う場合

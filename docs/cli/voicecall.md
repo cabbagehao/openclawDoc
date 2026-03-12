@@ -1,20 +1,22 @@
 ---
-summary: "CLI reference for `openclaw voicecall` (voice-call plugin command surface)"
+summary: "「openclaw voicecall」の CLI リファレンス (音声通話プラグイン コマンド サーフェス)"
 read_when:
-  - You use the voice-call plugin and want the CLI entry points
-  - You want quick examples for `voicecall call|continue|status|tail|expose`
-title: "voicecall"
+  - "音声通話プラグインを使用しており、CLI エントリ ポイントが必要な場合"
+  - "`voicecall call|Continue|status|tail|expose` の簡単な例が必要です"
+title: "音声通話"
+x-i18n:
+  source_hash: "2c99e7a3d256e1c74a0f07faba9675cc5a88b1eb2fc6e22993caf3874d4f340a"
 ---
 
 # `openclaw voicecall`
 
-`voicecall` is a plugin-provided command. It only appears if the voice-call plugin is installed and enabled.
+`voicecall` はプラグインが提供するコマンドです。これは、音声通話プラグインがインストールされ有効になっている場合にのみ表示されます。
 
-Primary doc:
+主なドキュメント:
 
-- Voice-call plugin: [Voice Call](/plugins/voice-call)
+- 音声通話プラグイン：[音声通話](/plugins/voice-call)
 
-## Common commands
+## 共通コマンド
 
 ```bash
 openclaw voicecall status --call-id <id>
@@ -23,7 +25,7 @@ openclaw voicecall continue --call-id <id> --message "Any questions?"
 openclaw voicecall end --call-id <id>
 ```
 
-## Exposing webhooks (Tailscale)
+## Webhook の公開 (Tailscale)
 
 ```bash
 openclaw voicecall expose --mode serve
@@ -31,4 +33,4 @@ openclaw voicecall expose --mode funnel
 openclaw voicecall expose --mode off
 ```
 
-Security note: only expose the webhook endpoint to networks you trust. Prefer Tailscale Serve over Funnel when possible.
+セキュリティ上の注意: Webhook エンドポイントは信頼できるネットワークにのみ公開してください。可能であれば、ファネルよりもテールスケール サーブを優先します。

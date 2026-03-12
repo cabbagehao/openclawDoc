@@ -1,40 +1,42 @@
 ---
-summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
+summary: "Slack のセットアップと実行時の動作 (ソケットモード + HTTP イベント API)"
 read_when:
-  - Setting up Slack or debugging Slack socket/HTTP mode
+  - Slack のセットアップまたは Slack のソケット/HTTP モードをデバッグする場合
 title: "Slack"
+x-i18n:
+  source_hash: "be99246c8d9235549e030416966b72b5db1d7d111364d35aeb2ae2760e66dc1e"
 ---
 
 # Slack
 
-Status: production-ready for DMs + channels via Slack app integrations. Default mode is Socket Mode; HTTP Events API mode is also supported.
+ステータス: Slack アプリ連携を介した DM およびチャネルでの利用が可能です。デフォルトはソケットモード（Socket Mode）ですが、HTTP イベント API モードもサポートされています。
 
 <CardGroup cols={3}>
-  <Card title="Pairing" icon="link" href="/channels/pairing">
-    Slack DMs default to pairing mode.
+  <Card title="ペアリング" icon="link" href="/channels/pairing">
+    Slack の DM はデフォルトでペアリングモードになります。
   </Card>
-  <Card title="Slash commands" icon="terminal" href="/tools/slash-commands">
-    Native command behavior and command catalog.
+  <Card title="スラッシュコマンド" icon="terminal" href="/tools/slash-commands">
+    ネイティブコマンドの動作とコマンドカタログ。
   </Card>
-  <Card title="Channel troubleshooting" icon="wrench" href="/channels/troubleshooting">
-    Cross-channel diagnostics and repair playbooks.
+  <Card title="トラブルシューティング" icon="wrench" href="/channels/troubleshooting">
+    チャネルを横断した診断と修復の手順。
   </Card>
 </CardGroup>
 
-## Quick setup
+## クイックセットアップ
 
 <Tabs>
-  <Tab title="Socket Mode (default)">
+  <Tab title="ソケットモード (デフォルト)">
     <Steps>
-      <Step title="Create Slack app and tokens">
-        In Slack app settings:
+      <Step title="Slack アプリとトークンの作成">
+        Slack アプリの設定で以下の操作を行います:
 
-        - enable **Socket Mode**
-        - create **App Token** (`xapp-...`) with `connections:write`
-        - install app and copy **Bot Token** (`xoxb-...`)
+        - **Socket Mode** を有効にする。
+        - `connections:write` 権限を持つ **App Token** (`xapp-...`) を作成する。
+        - アプリをインストールし、**Bot Token** (`xoxb-...`) をコピーする。
       </Step>
 
-      <Step title="Configure OpenClaw">
+      <Step title="OpenClaw の構成">
 
 ```json5
 {
@@ -49,7 +51,7 @@ Status: production-ready for DMs + channels via Slack app integrations. Default 
 }
 ```
 
-        Env fallback (default account only):
+        環境変数によるフォールバック (デフォルトアカウントのみ):
 
 ```bash
 SLACK_APP_TOKEN=xapp-...
@@ -58,8 +60,8 @@ SLACK_BOT_TOKEN=xoxb-...
 
       </Step>
 
-      <Step title="Subscribe app events">
-        Subscribe bot events for:
+      <Step title="アプリイベントの購読">
+        以下のボットイベントを購読（Subscribe）します:
 
         - `app_mention`
         - `message.channels`, `message.groups`, `message.im`, `message.mpim`
@@ -68,10 +70,10 @@ SLACK_BOT_TOKEN=xoxb-...
         - `channel_rename`
         - `pin_added`, `pin_removed`
 
-        Also enable App Home **Messages Tab** for DMs.
+        また、DM を利用するために App Home の **Messages Tab** を有効にしてください。
       </Step>
 
-      <Step title="Start gateway">
+      <Step title="ゲートウェイの起動">
 
 ```bash
 openclaw gateway
@@ -82,17 +84,17 @@ openclaw gateway
 
   </Tab>
 
-  <Tab title="HTTP Events API mode">
+  <Tab title="HTTP イベント API モード">
     <Steps>
-      <Step title="Configure Slack app for HTTP">
+      <Step title="Slack アプリを HTTP 用に構成">
 
-        - set mode to HTTP (`channels.slack.mode="http"`)
-        - copy Slack **Signing Secret**
-        - set Event Subscriptions + Interactivity + Slash command Request URL to the same webhook path (default `/slack/events`)
+        - モードを HTTP に設定 (`channels.slack.mode="http"`)。
+        - Slack の **Signing Secret** をコピーする。
+        - Event Subscriptions、Interactivity、および Slash command の Request URL をすべて同じ webhook パス（デフォルトは `/slack/events`）に設定する。
 
       </Step>
 
-      <Step title="Configure OpenClaw HTTP mode">
+      <Step title="OpenClaw HTTP モードの構成">
 
 ```json5
 {
@@ -110,237 +112,237 @@ openclaw gateway
 
       </Step>
 
-      <Step title="Use unique webhook paths for multi-account HTTP">
-        Per-account HTTP mode is supported.
+      <Step title="マルチアカウント HTTP で一意の webhook パスを使用">
+        アカウントごとの HTTP モードがサポートされています。
 
-        Give each account a distinct `webhookPath` so registrations do not collide.
+        登録が衝突しないように、各アカウントに個別の `webhookPath` を割り当ててください。
       </Step>
     </Steps>
 
   </Tab>
 </Tabs>
 
-## Token model
+## トークンモデル
 
-- `botToken` + `appToken` are required for Socket Mode.
-- HTTP mode requires `botToken` + `signingSecret`.
-- Config tokens override env fallback.
-- `SLACK_BOT_TOKEN` / `SLACK_APP_TOKEN` env fallback applies only to the default account.
-- `userToken` (`xoxp-...`) is config-only (no env fallback) and defaults to read-only behavior (`userTokenReadOnly: true`).
-- Optional: add `chat:write.customize` if you want outgoing messages to use the active agent identity (custom `username` and icon). `icon_emoji` uses `:emoji_name:` syntax.
+- ソケットモードには `botToken` と `appToken` が必要です。
+- HTTP モードには `botToken` と `signingSecret` が必要です。
+- 構成ファイル内のトークンは、環境変数の値を上書きします。
+- `SLACK_BOT_TOKEN` / `SLACK_APP_TOKEN` 環境変数は、デフォルトアカウントにのみ適用されます。
+- `userToken` (`xoxp-...`) は構成ファイルでのみ指定可能（環境変数なし）で、デフォルトは読み取り専用 (`userTokenReadOnly: true`) です。
+- オプション: 送信メッセージにアクティブなエージェントのアイデンティティ（カスタム `username` とアイコン）を使用したい場合は、`chat:write.customize` 権限を追加してください。`icon_emoji` は `:emoji_name:` 形式を使用します。
 
 <Tip>
-For actions/directory reads, user token can be preferred when configured. For writes, bot token remains preferred; user-token writes are only allowed when `userTokenReadOnly: false` and bot token is unavailable.
+アクションやディレクトリの読み取りでは、設定されていればユーザートークンが優先されます。書き込みに関してはボットトークンが優先されます。ユーザートークンによる書き込みは、`userTokenReadOnly: false` であり、かつボットトークンが利用できない場合にのみ許可されます。
 </Tip>
 
-## Access control and routing
+## アクセス制御とルーティング
 
 <Tabs>
-  <Tab title="DM policy">
-    `channels.slack.dmPolicy` controls DM access (legacy: `channels.slack.dm.policy`):
+  <Tab title="DM ポリシー">
+    `channels.slack.dmPolicy` で DM アクセスを制御します (旧キー: `channels.slack.dm.policy`):
 
-    - `pairing` (default)
+    - `pairing` (デフォルト)
     - `allowlist`
-    - `open` (requires `channels.slack.allowFrom` to include `"*"`; legacy: `channels.slack.dm.allowFrom`)
+    - `open` (`channels.slack.allowFrom` に `"*"` を含める必要があります。旧キー: `channels.slack.dm.allowFrom`)
     - `disabled`
 
-    DM flags:
+    DM 関連のフラグ:
 
-    - `dm.enabled` (default true)
-    - `channels.slack.allowFrom` (preferred)
-    - `dm.allowFrom` (legacy)
-    - `dm.groupEnabled` (group DMs default false)
-    - `dm.groupChannels` (optional MPIM allowlist)
+    - `dm.enabled` (デフォルト true)
+    - `channels.slack.allowFrom` (推奨)
+    - `dm.allowFrom` (旧キー)
+    - `dm.groupEnabled` (グループ DM。デフォルト false)
+    - `dm.groupChannels` (オプション。MPIM の許可リスト)
 
-    Multi-account precedence:
+    マルチアカウント時の優先順位:
 
-    - `channels.slack.accounts.default.allowFrom` applies only to the `default` account.
-    - Named accounts inherit `channels.slack.allowFrom` when their own `allowFrom` is unset.
-    - Named accounts do not inherit `channels.slack.accounts.default.allowFrom`.
+    - `channels.slack.accounts.default.allowFrom` は `default` アカウントにのみ適用されます。
+    - 名前付きアカウントは、自身の `allowFrom` が未設定の場合、`channels.slack.allowFrom` を継承します。
+    - 名前付きアカウントは `channels.slack.accounts.default.allowFrom` を継承しません。
 
-    Pairing in DMs uses `openclaw pairing approve slack <code>`.
+    DM でのペアリング承認には `openclaw pairing approve slack <code>` を使用します。
 
   </Tab>
 
-  <Tab title="Channel policy">
-    `channels.slack.groupPolicy` controls channel handling:
+  <Tab title="チャネルポリシー">
+    `channels.slack.groupPolicy` でチャネルの扱いを制御します:
 
     - `open`
     - `allowlist`
     - `disabled`
 
-    Channel allowlist lives under `channels.slack.channels`.
+    チャネルの許可リストは `channels.slack.channels` で管理します。
 
-    Runtime note: if `channels.slack` is completely missing (env-only setup), runtime falls back to `groupPolicy="allowlist"` and logs a warning (even if `channels.defaults.groupPolicy` is set).
+    注意: `channels.slack` 設定が完全に欠落している（環境変数のみのセットアップ）場合、ランタイムは `groupPolicy="allowlist"` にフォールバックし、警告をログに出力します（`channels.defaults.groupPolicy` が設定されていても同様です）。
 
-    Name/ID resolution:
+    名前/ID の解決:
 
-    - channel allowlist entries and DM allowlist entries are resolved at startup when token access allows
-    - unresolved entries are kept as configured
-    - inbound authorization matching is ID-first by default; direct username/slug matching requires `channels.slack.dangerouslyAllowNameMatching: true`
+    - トークン権限がある場合、チャネルおよび DM の許可リストのエントリは起動時に解決されます。
+    - 解決できなかったエントリは、設定されたままの形式で保持されます。
+    - インバウンドの認証一致は、デフォルトで ID が優先されます。ユーザー名やスラッグによる直接一致を有効にするには `channels.slack.dangerouslyAllowNameMatching: true` が必要です。
 
   </Tab>
 
-  <Tab title="Mentions and channel users">
-    Channel messages are mention-gated by default.
+  <Tab title="メンションとチャネルユーザー">
+    チャネルメッセージはデフォルトでメンション制約を受けます。
 
-    Mention sources:
+    メンションの判定基準:
 
-    - explicit app mention (`<@botId>`)
-    - mention regex patterns (`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
-    - implicit reply-to-bot thread behavior
+    - 明示的なアプリへのメンション (`<@botId>`)
+    - メンション正規表現パターン (`agents.list[].groupChat.mentionPatterns`, フォールバックは `messages.groupChat.mentionPatterns`)
+    - ボットへの返信スレッド内での暗黙的な動作
 
-    Per-channel controls (`channels.slack.channels.<id|name>`):
+    チャネルごとの制御 (`channels.slack.channels.<id|name>`):
 
     - `requireMention`
-    - `users` (allowlist)
+    - `users` (許可リスト)
     - `allowBots`
     - `skills`
     - `systemPrompt`
     - `tools`, `toolsBySender`
-    - `toolsBySender` key format: `id:`, `e164:`, `username:`, `name:`, or `"*"` wildcard
-      (legacy unprefixed keys still map to `id:` only)
+    - `toolsBySender` のキー形式: `id:`, `e164:`, `username:`, `name:`, または `"*"` ワイルドカード
+      （プレフィックスのない古いキーは引き続き `id:` のみとして扱われます）
 
   </Tab>
 </Tabs>
 
-## Commands and slash behavior
+## コマンドとスラッシュコマンドの動作
 
-- Native command auto-mode is **off** for Slack (`commands.native: "auto"` does not enable Slack native commands).
-- Enable native Slack command handlers with `channels.slack.commands.native: true` (or global `commands.native: true`).
-- When native commands are enabled, register matching slash commands in Slack (`/<command>` names), with one exception:
-  - register `/agentstatus` for the status command (Slack reserves `/status`)
-- If native commands are not enabled, you can run a single configured slash command via `channels.slack.slashCommand`.
-- Native arg menus now adapt their rendering strategy:
-  - up to 5 options: button blocks
-  - 6-100 options: static select menu
-  - more than 100 options: external select with async option filtering when interactivity options handlers are available
-  - if encoded option values exceed Slack limits, the flow falls back to buttons
-- For long option payloads, Slash command argument menus use a confirm dialog before dispatching a selected value.
+- Slack ではネイティブコマンドの自動モードは **オフ** です (`commands.native: "auto"` では Slack のネイティブコマンドは有効になりません)。
+- Slack ネイティブのコマンドハンドラーを有効にするには `channels.slack.commands.native: true` (またはグローバルな `commands.native: true`) を設定してください。
+- ネイティブコマンドを有効にした場合は、Slack 側で対応するスラッシュコマンド (`/<command>` 名) を登録してください。ただし、以下の例外があります:
+  - ステータスコマンドには `/agentstatus` を登録してください (Slack は `/status` を予約済みのため)。
+- ネイティブコマンドが有効でない場合、`channels.slack.slashCommand` 経由で構成された単一のスラッシュコマンドを実行できます。
+- ネイティブの引数メニューは、選択肢の数に応じてレンダリング戦略を自動調整します:
+  - 5 つまで: ボタンブロック。
+  - 6〜100 個: 静的セレクトメニュー。
+  - 100 個超: インタラクティブオプションハンドラーが利用可能な場合、非同期フィルタリング付きの外部セレクト。
+  - エンコードされたオプション値が Slack の制限を超える場合はボタンにフォールバックします。
+- 長いオプションペイロードの場合、スラッシュコマンド引数メニューは値を送信する前に確認ダイアログを表示します。
 
-Default slash command settings:
+デフォルトのスラッシュコマンド設定:
 
 - `enabled: false`
 - `name: "openclaw"`
 - `sessionPrefix: "slack:slash"`
 - `ephemeral: true`
 
-Slash sessions use isolated keys:
+スラッシュコマンドのセッションは分離されたキーを使用します:
 
 - `agent:<agentId>:slack:slash:<userId>`
 
-and still route command execution against the target conversation session (`CommandTargetSessionKey`).
+ただし、コマンドの実行自体はターゲットの会話セッション (`CommandTargetSessionKey`) に対してルーティングされます。
 
-## Threading, sessions, and reply tags
+## スレッド、セッション、および返信タグ
 
-- DMs route as `direct`; channels as `channel`; MPIMs as `group`.
-- With default `session.dmScope=main`, Slack DMs collapse to agent main session.
-- Channel sessions: `agent:<agentId>:slack:channel:<channelId>`.
-- Thread replies can create thread session suffixes (`:thread:<threadTs>`) when applicable.
-- `channels.slack.thread.historyScope` default is `thread`; `thread.inheritParent` default is `false`.
-- `channels.slack.thread.initialHistoryLimit` controls how many existing thread messages are fetched when a new thread session starts (default `20`; set `0` to disable).
+- DM は `direct`、チャネルは `channel`、MPIM は `group` としてルーティングされます。
+- デフォルトの `session.dmScope=main` 設定では、Slack の DM はエージェントのメインセッションに集約されます。
+- チャネルセッション: `agent:<agentId>:slack:channel:<channelId>`。
+- スレッドへの返信は、適用可能な場合にスレッドセッションサフィックス (`:thread:<threadTs>`) を作成します。
+- `channels.slack.thread.historyScope` のデフォルトは `thread` です。`thread.inheritParent` のデフォルトは `false` です。
+- `channels.slack.thread.initialHistoryLimit` は、新しいスレッドセッション開始時に取得する既存メッセージの数を制御します（デフォルト `20`。`0` で無効）。
 
-Reply threading controls:
+返信スレッドの制御:
 
-- `channels.slack.replyToMode`: `off|first|all` (default `off`)
-- `channels.slack.replyToModeByChatType`: per `direct|group|channel`
-- legacy fallback for direct chats: `channels.slack.dm.replyToMode`
+- `channels.slack.replyToMode`: `off|first|all` (デフォルト `off`)
+- `channels.slack.replyToModeByChatType`: `direct|group|channel` ごとに設定
+- ダイレクトチャット用のレガシーフォールバック: `channels.slack.dm.replyToMode`
 
-Manual reply tags are supported:
+手動返信タグがサポートされています:
 
 - `[[reply_to_current]]`
 - `[[reply_to:<id>]]`
 
-Note: `replyToMode="off"` disables **all** reply threading in Slack, including explicit `[[reply_to_*]]` tags. This differs from Telegram, where explicit tags are still honored in `"off"` mode. The difference reflects the platform threading models: Slack threads hide messages from the channel, while Telegram replies remain visible in the main chat flow.
+注: `replyToMode="off"` は、明示的な `[[reply_to_*]]` タグを含め、Slack における **すべての** 返信スレッド化を無効にします。これは、`"off"` モードでも明示的なタグが尊重される Telegram とは異なります。この違いはプラットフォームのスレッドモデルを反映しています（Slack のスレッドはチャネルのメインフローからメッセージを隠しますが、Telegram の返信はメインフローに見えたままになります）。
 
-## Media, chunking, and delivery
+## メディア、チャンク化、配信
 
 <AccordionGroup>
-  <Accordion title="Inbound attachments">
-    Slack file attachments are downloaded from Slack-hosted private URLs (token-authenticated request flow) and written to the media store when fetch succeeds and size limits permit.
+  <Accordion title="受信添付ファイル">
+    Slack の添付ファイルは、Slack がホストするプライベート URL（トークン認証されたリクエストフロー）からダウンロードされ、フェッチ成功時かつサイズ制限内であればメディアストアに書き込まれます。
 
-    Runtime inbound size cap defaults to `20MB` unless overridden by `channels.slack.mediaMaxMb`.
+    インバウンドのサイズ上限はデフォルトで `20MB` です（`channels.slack.mediaMaxMb` で上書き可能）。
 
   </Accordion>
 
-  <Accordion title="Outbound text and files">
-    - text chunks use `channels.slack.textChunkLimit` (default 4000)
-    - `channels.slack.chunkMode="newline"` enables paragraph-first splitting
-    - file sends use Slack upload APIs and can include thread replies (`thread_ts`)
-    - outbound media cap follows `channels.slack.mediaMaxMb` when configured; otherwise channel sends use MIME-kind defaults from media pipeline
+  <Accordion title="送信テキストとファイル">
+    - テキストチャンクは `channels.slack.textChunkLimit` (デフォルト 4000) を使用します。
+    - `channels.slack.chunkMode="newline"` を設定すると段落優先の分割が有効になります。
+    - ファイル送信は Slack のアップロード API を使用し、スレッド返信 (`thread_ts`) を含めることができます。
+    - 送信メディアの上限は `channels.slack.mediaMaxMb` に従います（設定されている場合）。未設定時はメディアパイプラインの MIME タイプごとのデフォルトが使用されます。
   </Accordion>
 
-  <Accordion title="Delivery targets">
-    Preferred explicit targets:
+  <Accordion title="配信ターゲット">
+    推奨される明示的なターゲット:
 
-    - `user:<id>` for DMs
-    - `channel:<id>` for channels
+    - DM の場合: `user:<id>`
+    - チャネルの場合: `channel:<id>`
 
-    Slack DMs are opened via Slack conversation APIs when sending to user targets.
+    ユーザーターゲットに送信する場合、Slack の conversation API を介して DM が開かれます。
 
   </Accordion>
 </AccordionGroup>
 
-## Actions and gates
+## アクションとゲート (Action Gating)
 
-Slack actions are controlled by `channels.slack.actions.*`.
+Slack のアクションは `channels.slack.actions.*` で制御されます。
 
-Available action groups in current Slack tooling:
+現在の Slack ツールで利用可能なアクショングループ:
 
-| Group      | Default |
-| ---------- | ------- |
-| messages   | enabled |
-| reactions  | enabled |
-| pins       | enabled |
-| memberInfo | enabled |
-| emojiList  | enabled |
+| グループ名 | デフォルト |
+| :--- | :--- |
+| `messages` | 有効 |
+| `reactions` | 有効 |
+| `pins` | 有効 |
+| `memberInfo` | 有効 |
+| `emojiList` | 有効 |
 
-## Events and operational behavior
+## イベントと運用の動作
 
-- Message edits/deletes/thread broadcasts are mapped into system events.
-- Reaction add/remove events are mapped into system events.
-- Member join/leave, channel created/renamed, and pin add/remove events are mapped into system events.
-- Assistant thread status updates (for "is typing..." indicators in threads) use `assistant.threads.setStatus` and require bot scope `assistant:write`.
-- `channel_id_changed` can migrate channel config keys when `configWrites` is enabled.
-- Channel topic/purpose metadata is treated as untrusted context and can be injected into routing context.
-- Block actions and modal interactions emit structured `Slack interaction: ...` system events with rich payload fields:
-  - block actions: selected values, labels, picker values, and `workflow_*` metadata
-  - modal `view_submission` and `view_closed` events with routed channel metadata and form inputs
+- メッセージの編集、削除、スレッド放送（Thread broadcast）はシステムイベントにマップされます。
+- リアクションの追加および削除イベントはシステムイベントにマップされます。
+- メンバーの参加・脱退、チャネルの作成・名前変更、およびピンの追加・削除イベントはシステムイベントにマップされます。
+- アシスタントのスレッドステータス更新（スレッド内の「入力中...」インジケーター用）は `assistant.threads.setStatus` を使用し、ボットスコープ `assistant:write` を必要とします。
+- `configWrites` が有効な場合、`channel_id_changed` イベントによってチャネル構成キーが移行されることがあります。
+- チャネルのトピックや目的（Purpose）のメタデータは信頼できないコンテキストとして扱われ、ルーティングコンテキストに注入される場合があります。
+- ブロックアクションやモーダル操作は、豊富なペイロードフィールドを持つ構造化された `Slack interaction: ...` システムイベントを発行します:
+  - ブロックアクション: 選択された値、ラベル、ピッカーの値、および `workflow_*` メタデータ。
+  - モーダルの `view_submission` および `view_closed` イベント: ルーティングされたチャネルメタデータとフォーム入力。
 
-## Ack reactions
+## 確認リアクション (Ack reactions)
 
-`ackReaction` sends an acknowledgement emoji while OpenClaw is processing an inbound message.
+`ackReaction` は、OpenClaw がメッセージを処理している間、確認用の絵文字を送信します。
 
-Resolution order:
+解決順序:
 
 - `channels.slack.accounts.<accountId>.ackReaction`
 - `channels.slack.ackReaction`
 - `messages.ackReaction`
-- agent identity emoji fallback (`agents.list[].identity.emoji`, else "👀")
+- エージェントのアイデンティティ絵文字 (`agents.list[].identity.emoji`, なければ "👀")
 
-Notes:
+注意点:
 
-- Slack expects shortcodes (for example `"eyes"`).
-- Use `""` to disable the reaction for the Slack account or globally.
+- Slack ではショートコード（例: `"eyes"`) を指定してください。
+- `""` を設定すると、そのアカウントまたはグローバルでリアクションを無効にできます。
 
-## Typing reaction fallback
+## タイピングリアクションのフォールバック
 
-`typingReaction` adds a temporary reaction to the inbound Slack message while OpenClaw is processing a reply, then removes it when the run finishes. This is a useful fallback when Slack native assistant typing is unavailable, especially in DMs.
+`typingReaction` は、OpenClaw が返信を生成している間、受信メッセージに一時的なリアクションを追加し、完了後に削除します。これは、Slack ネイティブのアシスタントタイピングが利用できない場合（特に DM など）に有用なフォールバックです。
 
-Resolution order:
+解決順序:
 
 - `channels.slack.accounts.<accountId>.typingReaction`
 - `channels.slack.typingReaction`
 
-Notes:
+注意点:
 
-- Slack expects shortcodes (for example `"hourglass_flowing_sand"`).
-- The reaction is best-effort and cleanup is attempted automatically after the reply or failure path completes.
+- Slack ではショートコード（例: `"hourglass_flowing_sand"`) を指定してください。
+- このリアクションはベストエフォートであり、返信の完了時または失敗時に自動的に削除が試みられます。
 
-## Manifest and scope checklist
+## マニフェストとスコープのチェックリスト
 
 <AccordionGroup>
-  <Accordion title="Slack app manifest example">
+  <Accordion title="Slack アプリマニフェストの例">
 
 ```json
 {
@@ -416,8 +418,8 @@ Notes:
 
   </Accordion>
 
-  <Accordion title="Optional user-token scopes (read operations)">
-    If you configure `channels.slack.userToken`, typical read scopes are:
+  <Accordion title="オプションのユーザートークンスコープ (読み取り操作)">
+    `channels.slack.userToken` を構成する場合、一般的な読み取りスコープは以下の通りです:
 
     - `channels:history`, `groups:history`, `im:history`, `mpim:history`
     - `channels:read`, `groups:read`, `im:read`, `mpim:read`
@@ -425,23 +427,23 @@ Notes:
     - `reactions:read`
     - `pins:read`
     - `emoji:read`
-    - `search:read` (if you depend on Slack search reads)
+    - `search:read` (Slack の検索結果を読み取る必要がある場合)
 
   </Accordion>
 </AccordionGroup>
 
-## Troubleshooting
+## トラブルシューティング
 
 <AccordionGroup>
-  <Accordion title="No replies in channels">
-    Check, in order:
+  <Accordion title="チャネルで返信がない">
+    以下の項目を順番に確認してください:
 
     - `groupPolicy`
-    - channel allowlist (`channels.slack.channels`)
+    - チャネルの許可リスト (`channels.slack.channels`)
     - `requireMention`
-    - per-channel `users` allowlist
+    - チャネルごとの `users` 許可リスト
 
-    Useful commands:
+    便利なコマンド:
 
 ```bash
 openclaw channels status --probe
@@ -451,12 +453,12 @@ openclaw doctor
 
   </Accordion>
 
-  <Accordion title="DM messages ignored">
-    Check:
+  <Accordion title="DM メッセージが無視される">
+    以下の項目を確認してください:
 
     - `channels.slack.dm.enabled`
-    - `channels.slack.dmPolicy` (or legacy `channels.slack.dm.policy`)
-    - pairing approvals / allowlist entries
+    - `channels.slack.dmPolicy` (または旧キー `channels.slack.dm.policy`)
+    - ペアリングの承認状態、または許可リストのエントリ
 
 ```bash
 openclaw pairing list slack
@@ -464,45 +466,45 @@ openclaw pairing list slack
 
   </Accordion>
 
-  <Accordion title="Socket mode not connecting">
-    Validate bot + app tokens and Socket Mode enablement in Slack app settings.
+  <Accordion title="Socket Mode が接続されない">
+    Slack アプリ設定で Bot トークンと App トークンが正しいか、また Socket Mode が有効になっているかを確認してください。
   </Accordion>
 
-  <Accordion title="HTTP mode not receiving events">
-    Validate:
+  <Accordion title="HTTP モードでイベントを受信しない">
+    以下を確認してください:
 
-    - signing secret
-    - webhook path
-    - Slack Request URLs (Events + Interactivity + Slash Commands)
-    - unique `webhookPath` per HTTP account
+    - Signing Secret
+    - webhook パス
+    - Slack の Request URL (Events, Interactivity, Slash Commands)
+    - 各 HTTP アカウントごとに一意の `webhookPath` が設定されているか
 
   </Accordion>
 
-  <Accordion title="Native/slash commands not firing">
-    Verify whether you intended:
+  <Accordion title="ネイティブコマンド/スラッシュコマンドが動作しない">
+    意図したモードが正しく設定されているか確認してください:
 
-    - native command mode (`channels.slack.commands.native: true`) with matching slash commands registered in Slack
-    - or single slash command mode (`channels.slack.slashCommand.enabled: true`)
+    - ネイティブコマンドモード (`channels.slack.commands.native: true`) で、Slack 側に一致するスラッシュコマンドが登録されているか。
+    - または、単一スラッシュコマンドモード (`channels.slack.slashCommand.enabled: true`)。
 
-    Also check `commands.useAccessGroups` and channel/user allowlists.
+    また、`commands.useAccessGroups` やチャネル/ユーザーの許可リストも確認してください。
 
   </Accordion>
 </AccordionGroup>
 
-## Text streaming
+## テキストストリーミング
 
-OpenClaw supports Slack native text streaming via the Agents and AI Apps API.
+OpenClaw は、Agents and AI Apps API を介した Slack ネイティブのテキストストリーミングをサポートしています。
 
-`channels.slack.streaming` controls live preview behavior:
+`channels.slack.streaming` でライブプレビューの動作を制御します:
 
-- `off`: disable live preview streaming.
-- `partial` (default): replace preview text with the latest partial output.
-- `block`: append chunked preview updates.
-- `progress`: show progress status text while generating, then send final text.
+- `off`: ライブプレビューのストリーミングを無効にします。
+- `partial` (デフォルト): プレビューテキストを最新の部分出力で置き換えます。
+- `block`: チャンク化されたプレビュー更新を追記します。
+- `progress`: 生成中に進行状況ステータステキストを表示し、最後に最終テキストを送信します。
 
-`channels.slack.nativeStreaming` controls Slack's native streaming API (`chat.startStream` / `chat.appendStream` / `chat.stopStream`) when `streaming` is `partial` (default: `true`).
+`channels.slack.nativeStreaming` は、`streaming` が `partial` の場合に Slack ネイティブのストリーミング API (`chat.startStream` / `chat.appendStream` / `chat.stopStream`) を使用するかどうかを制御します (デフォルト: `true`)。
 
-Disable native Slack streaming (keep draft preview behavior):
+ネイティブストリーミングを無効にする（ドラフトプレビュー動作を維持する）場合:
 
 ```yaml
 channels:
@@ -511,44 +513,44 @@ channels:
     nativeStreaming: false
 ```
 
-Legacy keys:
+レガシーなキー:
 
-- `channels.slack.streamMode` (`replace | status_final | append`) is auto-migrated to `channels.slack.streaming`.
-- boolean `channels.slack.streaming` is auto-migrated to `channels.slack.nativeStreaming`.
+- `channels.slack.streamMode` (`replace | status_final | append`) は `channels.slack.streaming` に自動移行されます。
+- ブール値の `channels.slack.streaming` は `channels.slack.nativeStreaming` に自動移行されます。
 
-### Requirements
+### 要件
 
-1. Enable **Agents and AI Apps** in your Slack app settings.
-2. Ensure the app has the `assistant:write` scope.
-3. A reply thread must be available for that message. Thread selection still follows `replyToMode`.
+1. Slack アプリ設定で **Agents and AI Apps** を有効にする。
+2. アプリに `assistant:write` スコープが付与されていること。
+3. そのメッセージに対して返信スレッドが利用可能であること（スレッドの選択は `replyToMode` に従います）。
 
-### Behavior
+### 動作
 
-- First text chunk starts a stream (`chat.startStream`).
-- Later text chunks append to the same stream (`chat.appendStream`).
-- End of reply finalizes stream (`chat.stopStream`).
-- Media and non-text payloads fall back to normal delivery.
-- If streaming fails mid-reply, OpenClaw falls back to normal delivery for remaining payloads.
+- 最初のテキストチャンクでストリームが開始されます (`chat.startStream`)。
+- 以降のテキストチャンクは同じストリームに追加されます (`chat.appendStream`)。
+- 返信の終了時にストリームが完了します (`chat.stopStream`)。
+- メディアやテキスト以外のペイロードは、通常の配信方法にフォールバックします。
+- 返信の途中でストリーミングが失敗した場合、残りのペイロードは通常の配信方法で送信されます。
 
-## Configuration reference pointers
+## 構成リファレンスのポインタ
 
-Primary reference:
+主要なリファレンス:
 
-- [Configuration reference - Slack](/gateway/configuration-reference#slack)
+- [構成リファレンス - Slack](/gateway/configuration-reference#slack)
 
-  High-signal Slack fields:
-  - mode/auth: `mode`, `botToken`, `appToken`, `signingSecret`, `webhookPath`, `accounts.*`
-  - DM access: `dm.enabled`, `dmPolicy`, `allowFrom` (legacy: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
-  - compatibility toggle: `dangerouslyAllowNameMatching` (break-glass; keep off unless needed)
-  - channel access: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
-  - threading/history: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
-  - delivery: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `streaming`, `nativeStreaming`
-  - ops/features: `configWrites`, `commands.native`, `slashCommand.*`, `actions.*`, `userToken`, `userTokenReadOnly`
+  重要な Slack フィールド:
+  - モード/認証: `mode`, `botToken`, `appToken`, `signingSecret`, `webhookPath`, `accounts.*`
+  - DM アクセス: `dm.enabled`, `dmPolicy`, `allowFrom` (旧: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
+  - 互換性スイッチ: `dangerouslyAllowNameMatching` (非常時のみ。通常はオフ推奨)
+  - チャネルアクセス: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
+  - スレッド/履歴: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
+  - 配信: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `streaming`, `nativeStreaming`
+  - 機能/運用: `configWrites`, `commands.native`, `slashCommand.*`, `actions.*`, `userToken`, `userTokenReadOnly`
 
-## Related
+## 関連ドキュメント
 
-- [Pairing](/channels/pairing)
-- [Channel routing](/channels/channel-routing)
-- [Troubleshooting](/channels/troubleshooting)
-- [Configuration](/gateway/configuration)
-- [Slash commands](/tools/slash-commands)
+- [ペアリング](/channels/pairing)
+- [チャネルルーティング](/channels/channel-routing)
+- [トラブルシューティング](/channels/troubleshooting)
+- [構成](/gateway/configuration)
+- [スラッシュコマンド](/tools/slash-commands)

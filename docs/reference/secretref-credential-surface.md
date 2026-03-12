@@ -1,28 +1,29 @@
 ---
-summary: "Canonical supported vs unsupported SecretRef credential surface"
+summary: "サポートされている正規の SecretRef 資格情報サーフェスとサポートされていない SecretRef 資格情報サーフェス"
 read_when:
-  - Verifying SecretRef credential coverage
-  - Auditing whether a credential is eligible for `secrets configure` or `secrets apply`
-  - Verifying why a credential is outside the supported surface
-title: "SecretRef Credential Surface"
+  - SecretRef 資格情報の適用範囲の確認
+  - 資格情報が「secrets configure」または「secrets apply」の対象となるかどうかを監査する
+  - 資格情報がサポート対象外である理由の検証
+title: "SecretRef 資格情報表面"
+x-i18n:
+  source_hash: "836ed5867601d359f966eca357ebcf675bff06d52f046ca47e7a79d3ee5f0b9a"
 ---
 
-# SecretRef credential surface
+# SecretRef 資格情報サーフェス
 
-This page defines the canonical SecretRef credential surface.
+このページは、正規の SecretRef 資格情報サーフェスを定義します。
 
-Scope intent:
+スコープの意図:
 
-- In scope: strictly user-supplied credentials that OpenClaw does not mint or rotate.
-- Out of scope: runtime-minted or rotating credentials, OAuth refresh material, and session-like artifacts.
+- 範囲内: OpenClaw が作成またはローテーションしない、厳密にユーザー提供の資格情報。
+- 範囲外: 実行時に生成または循環される認証情報、OAuth 更新マテリアル、およびセッションのようなアーティファクト。
 
-## Supported credentials
+## サポートされている認証情報
 
-### `openclaw.json` targets (`secrets configure` + `secrets apply` + `secrets audit`)
+### `openclaw.json` ターゲット (`secrets configure` + `secrets apply` + `secrets audit`)
 
-[//]: # "secretref-supported-list-start"
+[//]: # "secretref-supported-list-start"- `models.providers.*.apiKey`
 
-- `models.providers.*.apiKey`
 - `models.providers.*.headers.*`
 - `skills.entries.*.apiKey`
 - `agents.defaults.memorySearch.remote.apiKey`
@@ -84,29 +85,27 @@ Scope intent:
 - `channels.zalo.webhookSecret`
 - `channels.zalo.accounts.*.botToken`
 - `channels.zalo.accounts.*.webhookSecret`
-- `channels.googlechat.serviceAccount` via sibling `serviceAccountRef` (compatibility exception)
-- `channels.googlechat.accounts.*.serviceAccount` via sibling `serviceAccountRef` (compatibility exception)
-
-### `auth-profiles.json` targets (`secrets configure` + `secrets apply` + `secrets audit`)
+- `channels.googlechat.serviceAccount` 兄弟 `serviceAccountRef` 経由 (互換性例外)
+- `channels.googlechat.accounts.*.serviceAccount` 兄弟 `serviceAccountRef` 経由 (互換性例外)### `auth-profiles.json` ターゲット (`secrets configure` + `secrets apply` + `secrets audit`)
 
 - `profiles.*.keyRef` (`type: "api_key"`)
 - `profiles.*.tokenRef` (`type: "token"`)
 
 [//]: # "secretref-supported-list-end"
 
-Notes:
+注:
 
-- Auth-profile plan targets require `agentId`.
-- Plan entries target `profiles.*.key` / `profiles.*.token` and write sibling refs (`keyRef` / `tokenRef`).
-- Auth-profile refs are included in runtime resolution and audit coverage.
-- For SecretRef-managed model providers, generated `agents/*/agent/models.json` entries persist non-secret markers (not resolved secret values) for `apiKey`/header surfaces.
-- For web search:
-  - In explicit provider mode (`tools.web.search.provider` set), only the selected provider key is active.
-  - In auto mode (`tools.web.search.provider` unset), `tools.web.search.apiKey` and provider-specific keys are active.
+- 認証プロファイル プランのターゲットには `agentId` が必要です。
+- 計画エントリは `profiles.*.key` / `profiles.*.token` をターゲットにし、兄弟参照 (`keyRef` / `tokenRef`) を書き込みます。
+- 認証プロファイル参照は、実行時解決と監査カバレッジに含まれます。
+- SecretRef 管理モデル プロバイダーの場合、生成された `agents/*/agent/models.json` エントリは、`apiKey`/ヘッダー サーフェスの非シークレット マーカー (解決されたシークレット値ではない) を保持します。
+- Web 検索の場合:
+  - 明示的プロバイダー モード (`tools.web.search.provider` セット) では、選択したプロバイダー キーのみがアクティブになります。
+  - 自動モード (`tools.web.search.provider` 未設定) では、`tools.web.search.apiKey` およびプロバイダー固有のキーがアクティブになります。
 
-## Unsupported credentials
+## サポートされていない認証情報
 
-Out-of-scope credentials include:
+範囲外の資格情報には次のものが含まれます。
 
 [//]: # "secretref-unsupported-list-start"
 
@@ -122,6 +121,6 @@ Out-of-scope credentials include:
 
 [//]: # "secretref-unsupported-list-end"
 
-Rationale:
+理論的根拠:
 
-- These credentials are minted, rotated, session-bearing, or OAuth-durable classes that do not fit read-only external SecretRef resolution.
+- これらの認証情報は、読み取り専用の外部 SecretRef 解決に適合しない、ミント、ローテーション、セッション保持クラス、または OAuth 永続クラスです。

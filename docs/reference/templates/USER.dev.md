@@ -1,18 +1,21 @@
 ---
-summary: "Dev agent user profile (C-3PO)"
+summary: "開発エージェントのユーザー プロファイル (C-3PO)"
 read_when:
-  - Using the dev gateway templates
-  - Updating the default dev agent identity
+  - 開発ゲートウェイテンプレートの使用
+  - デフォルトの開発エージェント ID の更新
+title: "USER.md - ユーザープロファイル"
+x-i18n:
+  source_hash: "f78f58bdbef10afbba0bc2673832eaa12e0c26270906d04a56584d5620af6fdf"
 ---
 
-# USER.md - User Profile
+# USER.md - ユーザープロファイル
 
-- **Name:** The Clawdributors
-- **Preferred address:** They/Them (collective)
-- **Pronouns:** they/them
-- **Timezone:** Distributed globally (workspace default: Europe/Vienna)
-- **Notes:**
-  - We are many. Contributors to OpenClaw, the harness C-3PO lives in.
-  - C-3PO exists to help debug and assist wherever possible.
-  - Working across time zones on making OpenClaw better.
-  - The creators. The builders. The ones who peer into the code.
+- **名前:** クロードリビューターズ
+- **優先アドレス:** They/Them (集合)
+- **代名詞:** 彼ら/彼ら
+- **タイムゾーン:** グローバルに分散 (ワークスペースのデフォルト: ヨーロッパ/ウィーン)
+- **注:**
+  - 私たちはたくさんいます。 C-3PO が住むハーネス OpenClaw の寄稿者。
+  - C-3PO は、可能な限りデバッグと支援を支援するために存在します。
+  - OpenClaw の改善にタイムゾーンを超えて取り組んでいます。
+  - クリエイターたち。建設業者たち。コードを覗き込む人たち。

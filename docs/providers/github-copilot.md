@@ -1,61 +1,53 @@
 ---
-summary: "Sign in to GitHub Copilot from OpenClaw using the device flow"
+summary: "OpenClaw から device flow を使って GitHub Copilot にサインインする"
 read_when:
-  - You want to use GitHub Copilot as a model provider
-  - You need the `openclaw models auth login-github-copilot` flow
+  - GitHub Copilot を model provider として使いたいとき
+  - "`openclaw models auth login-github-copilot` フローが必要なとき"
 title: "GitHub Copilot"
+x-i18n:
+  source_hash: "503e0496d92c921e2f7111b1b4ba16374f5b781643bfbc6cb69cea97d9395c25"
 ---
 
 # GitHub Copilot
 
-## What is GitHub Copilot?
+## GitHub Copilot とは
 
-GitHub Copilot is GitHub's AI coding assistant. It provides access to Copilot
-models for your GitHub account and plan. OpenClaw can use Copilot as a model
-provider in two different ways.
+GitHub Copilot は GitHub の AI コーディング アシスタントです。GitHub アカウントと契約プランに応じて Copilot モデルへアクセスできます。OpenClaw では、Copilot を 2 通りの方法で model provider として利用できます。
 
-## Two ways to use Copilot in OpenClaw
+## OpenClaw で Copilot を使う 2 つの方法
 
-### 1) Built-in GitHub Copilot provider (`github-copilot`)
+### 1) 組み込みの GitHub Copilot provider（`github-copilot`）
 
-Use the native device-login flow to obtain a GitHub token, then exchange it for
-Copilot API tokens when OpenClaw runs. This is the **default** and simplest path
-because it does not require VS Code.
+ネイティブの device login flow で GitHub token を取得し、OpenClaw 実行時に Copilot API token へ交換します。これが **既定の**、最もシンプルな方法で、VS Code は不要です。
 
-### 2) Copilot Proxy plugin (`copilot-proxy`)
+### 2) Copilot Proxy plugin（`copilot-proxy`）
 
-Use the **Copilot Proxy** VS Code extension as a local bridge. OpenClaw talks to
-the proxy’s `/v1` endpoint and uses the model list you configure there. Choose
-this when you already run Copilot Proxy in VS Code or need to route through it.
-You must enable the plugin and keep the VS Code extension running.
+VS Code の **Copilot Proxy** 拡張をローカル bridge として利用します。OpenClaw は proxy の `/v1` endpoint と通信し、そこに設定された model list を使います。すでに VS Code で Copilot Proxy を使っている場合や、そこを経由する必要がある場合はこちらを選びます。この方法では plugin を有効にし、VS Code 拡張を起動し続ける必要があります。
 
-Use GitHub Copilot as a model provider (`github-copilot`). The login command runs
-the GitHub device flow, saves an auth profile, and updates your config to use that
-profile.
+`github-copilot` provider を使う場合、login command は GitHub device flow を実行し、auth profile を保存し、その profile を使うよう設定を更新します。
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw models auth login-github-copilot
 ```
 
-You'll be prompted to visit a URL and enter a one-time code. Keep the terminal
-open until it completes.
+URL を開いてワンタイム コードを入力するよう求められます。完了するまで terminal を閉じないでください。
 
-### Optional flags
+### 任意のフラグ
 
 ```bash
 openclaw models auth login-github-copilot --profile-id github-copilot:work
 openclaw models auth login-github-copilot --yes
 ```
 
-## Set a default model
+## 既定モデルを設定する
 
 ```bash
 openclaw models set github-copilot/gpt-4o
 ```
 
-### Config snippet
+### 設定例
 
 ```json5
 {
@@ -63,10 +55,8 @@ openclaw models set github-copilot/gpt-4o
 }
 ```
 
-## Notes
+## 注意事項
 
-- Requires an interactive TTY; run it directly in a terminal.
-- Copilot model availability depends on your plan; if a model is rejected, try
-  another ID (for example `github-copilot/gpt-4.1`).
-- The login stores a GitHub token in the auth profile store and exchanges it for a
-  Copilot API token when OpenClaw runs.
+- 対話的な TTY が必要です。必ず terminal から直接実行してください。
+- Copilot で利用できるモデルは契約プランに依存します。ある model id が拒否された場合は、`github-copilot/gpt-4.1` など別の ID を試してください。
+- login により GitHub token が auth profile store に保存され、OpenClaw 実行時に Copilot API token へ交換されます。

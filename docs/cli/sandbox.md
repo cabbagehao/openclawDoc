@@ -1,23 +1,27 @@
 ---
-title: Sandbox CLI
-summary: "Manage sandbox containers and inspect effective sandbox policy"
-read_when: "You are managing sandbox containers or debugging sandbox/tool-policy behavior."
+title: サンドボックス CLI
+summary: "サンドボックスコンテナの管理と現在のポリシーの確認"
+read_when:
+  - サンドボックスコンテナを管理したい場合
+  - サンドボックスやツールポリシーの動作をデバッグしたい場合
 status: active
+x-i18n:
+  source_hash: "6e1186f26c77e188206ce5e198ab624d6b38bc7bb7c06e4d2281b6935c39e347"
 ---
 
-# Sandbox CLI
+# サンドボックス CLI
 
-Manage Docker-based sandbox containers for isolated agent execution.
+エージェントを分離して実行するための Docker ベースのサンドボックスコンテナを管理します。
 
-## Overview
+## 概要
 
-OpenClaw can run agents in isolated Docker containers for security. The `sandbox` commands help you manage these containers, especially after updates or configuration changes.
+OpenClaw はセキュリティ向上のため、分離された Docker コンテナ内でエージェントを実行できます。`sandbox` コマンドは、アップデート後や構成変更時などにこれらのコンテナを管理するのに役立ちます。
 
-## Commands
+## コマンド一覧
 
 ### `openclaw sandbox explain`
 
-Inspect the **effective** sandbox mode/scope/workspace access, sandbox tool policy, and elevated gates (with fix-it config key paths).
+**実際に適用されている**サンドボックスモード、スコープ、ワークスペースへのアクセス権限、ツールポリシー、および権限昇格ゲートの状態を確認します。修正が必要な場合の構成キーのパスも表示されます。
 
 ```bash
 openclaw sandbox explain
@@ -28,100 +32,99 @@ openclaw sandbox explain --json
 
 ### `openclaw sandbox list`
 
-List all sandbox containers with their status and configuration.
+すべてのサンドボックスコンテナの状態と構成を一覧表示します。
 
 ```bash
 openclaw sandbox list
-openclaw sandbox list --browser  # List only browser containers
-openclaw sandbox list --json     # JSON output
+openclaw sandbox list --browser  # ブラウザ用コンテナのみを表示
+openclaw sandbox list --json     # JSON 形式で出力
 ```
 
-**Output includes:**
+**出力内容:**
 
-- Container name and status (running/stopped)
-- Docker image and whether it matches config
-- Age (time since creation)
-- Idle time (time since last use)
-- Associated session/agent
+- コンテナ名とステータス（実行中/停止中）
+- Docker イメージ名、および構成と一致しているか
+- 作成からの経過時間
+- 最終使用からのアイドル時間
+- 紐付けられているセッションまたはエージェント
 
 ### `openclaw sandbox recreate`
 
-Remove sandbox containers to force recreation with updated images/config.
+サンドボックスコンテナを削除し、最新のイメージや構成で強制的に再作成します。
 
 ```bash
-openclaw sandbox recreate --all                # Recreate all containers
-openclaw sandbox recreate --session main       # Specific session
-openclaw sandbox recreate --agent mybot        # Specific agent
-openclaw sandbox recreate --browser            # Only browser containers
-openclaw sandbox recreate --all --force        # Skip confirmation
+openclaw sandbox recreate --all                # すべてのコンテナを再作成
+openclaw sandbox recreate --session main       # 特定のセッション用のみ
+openclaw sandbox recreate --agent mybot        # 特定のエージェント用のみ
+openclaw sandbox recreate --browser            # ブラウザ用コンテナのみ
+openclaw sandbox recreate --all --force        # 確認プロンプトをスキップ
 ```
 
-**Options:**
+**オプション:**
 
-- `--all`: Recreate all sandbox containers
-- `--session <key>`: Recreate container for specific session
-- `--agent <id>`: Recreate containers for specific agent
-- `--browser`: Only recreate browser containers
-- `--force`: Skip confirmation prompt
+- `--all`: すべてのサンドボックスコンテナを再作成
+- `--session <キー>`: 特定のセッションのコンテナを再作成
+- `--agent <id>`: 特定のエージェントのコンテナを再作成
+- `--browser`: ブラウザ用コンテナのみを再作成
+- `--force`: 確認プロンプトを表示せずに実行
 
-**Important:** Containers are automatically recreated when the agent is next used.
+**重要:** コンテナは、そのエージェントが次回使用される際に自動的に再作成されます。
 
-## Use Cases
+## ユースケース
 
-### After updating Docker images
+### Docker イメージを更新したとき
 
 ```bash
-# Pull new image
+# 新しいイメージを取得
 docker pull openclaw-sandbox:latest
 docker tag openclaw-sandbox:latest openclaw-sandbox:bookworm-slim
 
-# Update config to use new image
-# Edit config: agents.defaults.sandbox.docker.image (or agents.list[].sandbox.docker.image)
+# 構成ファイルを更新して新しいイメージを指定
+# 編集箇所: agents.defaults.sandbox.docker.image (または agents.list[].sandbox.docker.image)
 
-# Recreate containers
+# コンテナを再作成
 openclaw sandbox recreate --all
 ```
 
-### After changing sandbox configuration
+### サンドボックスの構成を変更したとき
 
 ```bash
-# Edit config: agents.defaults.sandbox.* (or agents.list[].sandbox.*)
+# 構成ファイルを編集: agents.defaults.sandbox.* (または agents.list[].sandbox.*)
 
-# Recreate to apply new config
+# 新しい設定を適用するためにコンテナを再作成
 openclaw sandbox recreate --all
 ```
 
-### After changing setupCommand
+### `setupCommand` を変更したとき
 
 ```bash
 openclaw sandbox recreate --all
-# or just one agent:
+# または特定のエージェントのみ:
 openclaw sandbox recreate --agent family
 ```
 
-### For a specific agent only
+### 特定のエージェントのみを更新したいとき
 
 ```bash
-# Update only one agent's containers
+# 特定のエージェントのコンテナのみを更新
 openclaw sandbox recreate --agent alfred
 ```
 
-## Why is this needed?
+## なぜこの操作が必要なのか
 
-**Problem:** When you update sandbox Docker images or configuration:
+**問題:** サンドボックス用の Docker イメージや構成を更新しても、以下の状況が発生します:
 
-- Existing containers continue running with old settings
-- Containers are only pruned after 24h of inactivity
-- Regularly-used agents keep old containers running indefinitely
+- 既存のコンテナは古い設定のまま動き続ける
+- コンテナは 24 時間以上アイドル状態でなければ自動削除されない
+- 頻繁に使用されるエージェントでは、古いコンテナがいつまでも残り続ける
 
-**Solution:** Use `openclaw sandbox recreate` to force removal of old containers. They'll be recreated automatically with current settings when next needed.
+**解決策:** `openclaw sandbox recreate` を使用して古いコンテナを強制的に削除してください。次に必要になった際に、最新の設定で自動的に再作成されます。
 
-Tip: prefer `openclaw sandbox recreate` over manual `docker rm`. It uses the
-Gateway’s container naming and avoids mismatches when scope/session keys change.
+ヒント: 手動で `docker rm` を行うよりも、`openclaw sandbox recreate` の使用を推奨します。ゲートウェイのコンテナ命名規則に従って処理されるため、スコープやセッションキーが変更された際の不一致を避けることができます。
 
-## Configuration
+## 構成設定
 
-Sandbox settings live in `~/.openclaw/openclaw.json` under `agents.defaults.sandbox` (per-agent overrides go in `agents.list[].sandbox`):
+サンドボックスの設定は `~/.openclaw/openclaw.json` の `agents.defaults.sandbox` 配下に記述します（エージェントごとの上書きは `agents.list[].sandbox` で行います）:
 
 ```jsonc
 {
@@ -133,11 +136,11 @@ Sandbox settings live in `~/.openclaw/openclaw.json` under `agents.defaults.sand
         "docker": {
           "image": "openclaw-sandbox:bookworm-slim",
           "containerPrefix": "openclaw-sbx-",
-          // ... more Docker options
+          // ... その他の Docker オプション
         },
         "prune": {
-          "idleHours": 24, // Auto-prune after 24h idle
-          "maxAgeDays": 7, // Auto-prune after 7 days
+          "idleHours": 24, // 24時間アイドル状態で自動削除
+          "maxAgeDays": 7, // 作成から7日で自動削除
         },
       },
     },
@@ -145,8 +148,8 @@ Sandbox settings live in `~/.openclaw/openclaw.json` under `agents.defaults.sand
 }
 ```
 
-## See Also
+## 関連情報
 
-- [Sandbox Documentation](/gateway/sandboxing)
-- [Agent Configuration](/concepts/agent-workspace)
-- [Doctor Command](/gateway/doctor) - Check sandbox setup
+- [サンドボックス詳細ドキュメント](/gateway/sandboxing)
+- [エージェント構成](/concepts/agent-workspace)
+- [Doctor コマンド](/gateway/doctor) - サンドボックス環境のチェック

@@ -1,60 +1,60 @@
 ---
-summary: "VPS hosting hub for OpenClaw (Oracle/Fly/Hetzner/GCP/exe.dev)"
+summary: "OpenClaw 用 VPS ホスティング ハブ (Oracle/Fly/Hetzner/GCP/exe.dev)"
 read_when:
-  - You want to run the Gateway in the cloud
-  - You need a quick map of VPS/hosting guides
-title: "VPS Hosting"
+  - ゲートウェイをクラウドで実行したい
+  - VPS/ホスティング ガイドの簡単な地図が必要です
+title: "VPSホスティング"
+x-i18n:
+  source_hash: "f318a6f719121da27565de9f9869235b77d4b5ef05b86a11be82933da579e459"
 ---
 
-# VPS hosting
+# VPS ホスティング
 
-This hub links to the supported VPS/hosting guides and explains how cloud
-deployments work at a high level.
+このハブは、サポートされている VPS/ホスティング ガイドにリンクしており、クラウドの利用方法について説明しています。
+導入は高いレベルで機能します。
 
-## Pick a provider
+## プロバイダーを選択してください
 
-- **Railway** (one‑click + browser setup): [Railway](/install/railway)
-- **Northflank** (one‑click + browser setup): [Northflank](/install/northflank)
-- **Oracle Cloud (Always Free)**: [Oracle](/platforms/oracle) — $0/month (Always Free, ARM; capacity/signup can be finicky)
+- **鉄道** (ワンクリック + ブラウザ設定): [鉄道](/install/railway)
+- **ノースフランク** (ワンクリック + ブラウザ設定): [ノースフランク](/install/northflank)
+- **Oracle Cloud (常時無料)**: [Oracle](/platforms/oracle) — 月額 0 ドル (常時無料、ARM、容量/サインアップは難しい場合があります)
 - **Fly.io**: [Fly.io](/install/fly)
-- **Hetzner (Docker)**: [Hetzner](/install/hetzner)
-- **GCP (Compute Engine)**: [GCP](/install/gcp)
-- **exe.dev** (VM + HTTPS proxy): [exe.dev](/install/exe-dev)
-- **AWS (EC2/Lightsail/free tier)**: works well too. Video guide:
+- **ヘッツナー (Docker)**: [ヘッツナー](/install/hetzner)
+- **GCP (コンピューティング エンジン)**: [GCP](/install/gcp)
+- **exe.dev** (VM + HTTPS プロキシ): [exe.dev](/install/exe-dev)
+- **AWS (EC2/Lightsail/無料利用枠)**: もうまく機能します。ビデオガイド:
   [https://x.com/techfrenAJ/status/2014934471095812547](https://x.com/techfrenAJ/status/2014934471095812547)
 
-## How cloud setups work
+## クラウド設定の仕組み
 
-- The **Gateway runs on the VPS** and owns state + workspace.
-- You connect from your laptop/phone via the **Control UI** or **Tailscale/SSH**.
-- Treat the VPS as the source of truth and **back up** the state + workspace.
-- Secure default: keep the Gateway on loopback and access it via SSH tunnel or Tailscale Serve.
-  If you bind to `lan`/`tailnet`, require `gateway.auth.token` or `gateway.auth.password`.
+- **ゲートウェイは VPS** 上で実行され、状態とワークスペースを所有します。
+- **コントロール UI** または **Tailscale/SSH** を介してラップトップ/電話から接続します。
+- VPS を信頼できる情報源として扱い、状態とワークスペースを **バックアップ**します。
+- 安全なデフォルト: ゲートウェイをループバックに保ち、SSH トンネルまたは Tailscale Serve 経由でアクセスします。
+  `lan`/`tailnet` にバインドする場合は、`gateway.auth.token` または `gateway.auth.password` が必要です。
 
-Remote access: [Gateway remote](/gateway/remote)  
-Platforms hub: [Platforms](/platforms)
+リモート アクセス: [ゲートウェイ リモート](/gateway/remote)  
+プラットフォーム ハブ: [プラットフォーム](/platforms)
 
-## Shared company agent on a VPS
+## VPS 上の共有会社エージェントこれは、ユーザーが 1 つの信頼境界内 (たとえば、1 つの企業チーム) に属し、エージェントがビジネス専用である場合に有効な設定です
 
-This is a valid setup when the users are in one trust boundary (for example one company team), and the agent is business-only.
+- 専用ランタイム (VPS/VM/コンテナ + 専用 OS ユーザー/アカウント) 上に保持します。
+- そのランタイムを個人の Apple/Google アカウントまたは個人のブラウザ/パスワード マネージャー プロファイルにサインインしないでください。
+- ユーザーが互いに敵対する場合は、ゲートウェイ/ホスト/OS ユーザーごとに分割します。
 
-- Keep it on a dedicated runtime (VPS/VM/container + dedicated OS user/accounts).
-- Do not sign that runtime into personal Apple/Google accounts or personal browser/password-manager profiles.
-- If users are adversarial to each other, split by gateway/host/OS user.
+セキュリティ モデルの詳細: [セキュリティ](/gateway/security)
 
-Security model details: [Security](/gateway/security)
+## VPS でノードを使用する
 
-## Using nodes with a VPS
+ゲートウェイをクラウドに保持し、ローカル デバイス上で **ノード** をペアリングできます
+(Mac/iOS/Android/ヘッドレス)。ノードはローカル画面/カメラ/キャンバスと `system.run` を提供します
+ゲートウェイがクラウド上にある間も、これらの機能を利用できます。
 
-You can keep the Gateway in the cloud and pair **nodes** on your local devices
-(Mac/iOS/Android/headless). Nodes provide local screen/camera/canvas and `system.run`
-capabilities while the Gateway stays in the cloud.
+ドキュメント: [ノード](/nodes)、[ノード CLI](/cli/nodes)
 
-Docs: [Nodes](/nodes), [Nodes CLI](/cli/nodes)
+## 小規模な VM および ARM ホストの起動チューニング
 
-## Startup tuning for small VMs and ARM hosts
-
-If CLI commands feel slow on low-power VMs (or ARM hosts), enable Node's module compile cache:
+低電力 VM (または ARM ホスト) で CLI コマンドが遅いと感じる場合は、ノードのモジュール コンパイル キャッシュを有効にします。
 
 ```bash
 grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF'
@@ -65,25 +65,24 @@ EOF
 source ~/.bashrc
 ```
 
-- `NODE_COMPILE_CACHE` improves repeated command startup times.
-- `OPENCLAW_NO_RESPAWN=1` avoids extra startup overhead from a self-respawn path.
-- First command run warms cache; subsequent runs are faster.
-- For Raspberry Pi specifics, see [Raspberry Pi](/platforms/raspberry-pi).
+- `NODE_COMPILE_CACHE` は、コマンドの繰り返し起動時間を短縮します。
+- `OPENCLAW_NO_RESPAWN=1` は、自己リスポーン パスによる余分な起動オーバーヘッドを回避します。
+- 最初のコマンド実行によりキャッシュがウォーム化されます。以降の実行は高速になります。
+- Raspberry Pi の詳細については、[Raspberry Pi](/platforms/raspberry-pi) を参照してください。
 
-### systemd tuning checklist (optional)
+### systemd チューニング チェックリスト (オプション)
 
-For VM hosts using `systemd`, consider:
+`systemd` を使用する VM ホストの場合は、次のことを考慮してください。- 安定した起動パス用のサービス環境を追加します。
 
-- Add service env for stable startup path:
-  - `OPENCLAW_NO_RESPAWN=1`
-  - `NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache`
-- Keep restart behavior explicit:
+- `OPENCLAW_NO_RESPAWN=1`
+- `NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache`
+- 再起動動作を明示的に保ちます。
   - `Restart=always`
   - `RestartSec=2`
   - `TimeoutStartSec=90`
-- Prefer SSD-backed disks for state/cache paths to reduce random-I/O cold-start penalties.
+- ランダム I/O コールド スタート ペナルティを軽減するために、ステート/キャッシュ パスには SSD バックアップ ディスクを優先します。
 
-Example:
+例:
 
 ```bash
 sudo systemctl edit openclaw
@@ -98,5 +97,5 @@ RestartSec=2
 TimeoutStartSec=90
 ```
 
-How `Restart=` policies help automated recovery:
-[systemd can automate service recovery](https://www.redhat.com/en/blog/systemd-automate-recovery).
+`Restart=` ポリシーが自動リカバリにどのように役立つか:
+[systemd はサービスの回復を自動化できます](https://www.redhat.com/en/blog/systemd-automate-recovery)。

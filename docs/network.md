@@ -1,54 +1,54 @@
 ---
-summary: "Network hub: gateway surfaces, pairing, discovery, and security"
+summary: "ネットワークハブ: ゲートウェイの接続面、ペアリング、検出、セキュリティ"
 read_when:
-  - You need the network architecture + security overview
-  - You are debugging local vs tailnet access or pairing
-  - You want the canonical list of networking docs
+  - ネットワーク構成とセキュリティの概要を把握したいとき
+  - ローカルアクセスと tailnet アクセス、またはペアリングを切り分けるとき
+  - ネットワーク関連ドキュメントの正規一覧を確認したいとき
 title: "Network"
+x-i18n:
+  source_hash: "6a0d5080db73de4c21d9bf376059f6c4a26ab129c8280ce6b1f54fa9ace48beb"
 ---
 
-# Network hub
+# ネットワークハブ
 
-This hub links the core docs for how OpenClaw connects, pairs, and secures
-devices across localhost, LAN, and tailnet.
+このハブでは、OpenClaw が localhost、LAN、tailnet をまたいでデバイスと接続し、ペアリングし、安全性を確保するための中核ドキュメントをまとめています。
 
-## Core model
+## コアモデル
 
-- [Gateway architecture](/concepts/architecture)
-- [Gateway protocol](/gateway/protocol)
-- [Gateway runbook](/gateway)
-- [Web surfaces + bind modes](/web)
+- [ゲートウェイアーキテクチャ](/concepts/architecture)
+- [ゲートウェイプロトコル](/gateway/protocol)
+- [ゲートウェイランブック](/gateway)
+- [Web サーフェスと bind mode](/web)
 
-## Pairing + identity
+## ペアリングと識別
 
-- [Pairing overview (DM + nodes)](/channels/pairing)
-- [Gateway-owned node pairing](/gateway/pairing)
-- [Devices CLI (pairing + token rotation)](/cli/devices)
-- [Pairing CLI (DM approvals)](/cli/pairing)
+- [ペアリング概要（DM + ノード）](/channels/pairing)
+- [ゲートウェイ管理ノードのペアリング](/gateway/pairing)
+- [Devices CLI（ペアリング + トークンローテーション）](/cli/devices)
+- [Pairing CLI（DM 承認）](/cli/pairing)
 
-Local trust:
+ローカルトラスト:
 
-- Local connections (loopback or the gateway host’s own tailnet address) can be
-  auto‑approved for pairing to keep same‑host UX smooth.
-- Non‑local tailnet/LAN clients still require explicit pairing approval.
+- ローカル接続（loopback、またはゲートウェイホスト自身の tailnet アドレス）は、同一ホスト上の UX を損なわないよう、ペアリングが自動承認される場合があります
+- 非ローカルの tailnet / LAN クライアントでは、引き続き明示的なペアリング承認が必要です
 
-## Discovery + transports
+## 検出とトランスポート
 
-- [Discovery & transports](/gateway/discovery)
+- [Discovery と transports](/gateway/discovery)
 - [Bonjour / mDNS](/gateway/bonjour)
-- [Remote access (SSH)](/gateway/remote)
+- [リモートアクセス（SSH）](/gateway/remote)
 - [Tailscale](/gateway/tailscale)
 
-## Nodes + transports
+## ノードとトランスポート
 
-- [Nodes overview](/nodes)
-- [Bridge protocol (legacy nodes)](/gateway/bridge-protocol)
-- [Node runbook: iOS](/platforms/ios)
-- [Node runbook: Android](/platforms/android)
+- [ノード概要](/nodes)
+- [Bridge protocol（legacy ノード）](/gateway/bridge-protocol)
+- [ノードランブック: iOS](/platforms/ios)
+- [ノードランブック: Android](/platforms/android)
 
-## Security
+## セキュリティ
 
-- [Security overview](/gateway/security)
-- [Gateway config reference](/gateway/configuration)
-- [Troubleshooting](/gateway/troubleshooting)
+- [セキュリティ概要](/gateway/security)
+- [ゲートウェイ設定リファレンス](/gateway/configuration)
+- [トラブルシューティング](/gateway/troubleshooting)
 - [Doctor](/gateway/doctor)

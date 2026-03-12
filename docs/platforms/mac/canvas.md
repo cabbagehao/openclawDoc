@@ -1,56 +1,55 @@
 ---
-summary: "Agent-controlled Canvas panel embedded via WKWebView + custom URL scheme"
+summary: "WKWebView とカスタム URL スキームで埋め込まれた、エージェント制御の Canvas パネル"
 read_when:
-  - Implementing the macOS Canvas panel
-  - Adding agent controls for visual workspace
-  - Debugging WKWebView canvas loads
+  - macOS キャンバス パネルの実装
+  - ビジュアルワークスペースのエージェントコントロールの追加
+  - WKWebView キャンバスのロードのデバッグ
 title: "Canvas"
+x-i18n:
+  source_hash: "b6c71763d693264d943e570a852208cce69fc469976b2a1cdd9e39e2550534c1"
 ---
 
-# Canvas (macOS app)
+# Canvas（macOS アプリ）
 
-The macOS app embeds an agent‑controlled **Canvas panel** using `WKWebView`. It
-is a lightweight visual workspace for HTML/CSS/JS, A2UI, and small interactive
-UI surfaces.
+macOS アプリには、`WKWebView` を使ったエージェント制御の **Canvas パネル**が組み込まれています。これは HTML / CSS / JS、A2UI、小規模なインタラクティブ UI を扱うための軽量なビジュアル ワークスペースです。
 
-## Where Canvas lives
+## Canvas の保存場所
 
-Canvas state is stored under Application Support:
+Canvas の状態は Application Support 配下に保存されます。
 
 - `~/Library/Application Support/OpenClaw/canvas/<session>/...`
 
-The Canvas panel serves those files via a **custom URL scheme**:
+Canvas パネルは、これらのファイルを **カスタム URL スキーム** 経由で配信します。
 
 - `openclaw-canvas://<session>/<path>`
 
-Examples:
+例:
 
 - `openclaw-canvas://main/` → `<canvasRoot>/main/index.html`
 - `openclaw-canvas://main/assets/app.css` → `<canvasRoot>/main/assets/app.css`
 - `openclaw-canvas://main/widgets/todo/` → `<canvasRoot>/main/widgets/todo/index.html`
 
-If no `index.html` exists at the root, the app shows a **built‑in scaffold page**.
+ルートに `index.html` が存在しない場合は、アプリが **組み込みのスキャフォールド ページ** を表示します。
 
-## Panel behavior
+## パネルの挙動
 
-- Borderless, resizable panel anchored near the menu bar (or mouse cursor).
-- Remembers size/position per session.
-- Auto‑reloads when local canvas files change.
-- Only one Canvas panel is visible at a time (session is switched as needed).
+- メニューバー付近、またはマウスカーソル付近に表示される、枠なしでリサイズ可能なパネルです。
+- サイズと位置はセッションごとに記憶されます。
+- ローカルの Canvas ファイルが変更されると自動で再読み込みされます。
+- 同時に表示できる Canvas パネルは 1 つだけで、必要に応じてセッションが切り替わります。
 
-Canvas can be disabled from Settings → **Allow Canvas**. When disabled, canvas
-node commands return `CANVAS_DISABLED`.
+Canvas は、設定の **Allow Canvas** から無効化できます。無効な場合、Canvas ノード コマンドは `CANVAS_DISABLED` を返します。
 
-## Agent API surface
+## エージェント API
 
-Canvas is exposed via the **Gateway WebSocket**, so the agent can:
+Canvas は **ゲートウェイ WebSocket** 経由で公開されるため、エージェントは次の操作を実行できます。
 
-- show/hide the panel
-- navigate to a path or URL
-- evaluate JavaScript
-- capture a snapshot image
+- パネルの表示と非表示
+- パスまたは URL への移動
+- JavaScript の評価
+- スナップショット画像の取得
 
-CLI examples:
+CLI の例:
 
 ```bash
 openclaw nodes canvas present --node <id>
@@ -59,35 +58,33 @@ openclaw nodes canvas eval --node <id> --js "document.title"
 openclaw nodes canvas snapshot --node <id>
 ```
 
-Notes:
+注:
 
-- `canvas.navigate` accepts **local canvas paths**, `http(s)` URLs, and `file://` URLs.
-- If you pass `"/"`, the Canvas shows the local scaffold or `index.html`.
+- `canvas.navigate` は **ローカル Canvas パス**、`http(s)` URL、`file://` URL を受け付けます。
+- `"/"` を渡すと、Canvas にはローカルのスキャフォールド、または `index.html` が表示されます。
 
-## A2UI in Canvas
+## Canvas 上の A2UI
 
-A2UI is hosted by the Gateway canvas host and rendered inside the Canvas panel.
-When the Gateway advertises a Canvas host, the macOS app auto‑navigates to the
-A2UI host page on first open.
+A2UI はゲートウェイの Canvas host によって配信され、Canvas パネル内に描画されます。ゲートウェイが Canvas host を通知している場合、macOS アプリは最初に Canvas を開いたとき、自動的に A2UI host ページへ移動します。
 
-Default A2UI host URL:
+デフォルトの A2UI host URL:
 
 ```
 http://<gateway-host>:18789/__openclaw__/a2ui/
 ```
 
-### A2UI commands (v0.8)
+### A2UI コマンド（v0.8）
 
-Canvas currently accepts **A2UI v0.8** server→client messages:
+Canvas は現在、**A2UI v0.8** の server-to-client メッセージを受け付けます。
 
 - `beginRendering`
 - `surfaceUpdate`
 - `dataModelUpdate`
 - `deleteSurface`
 
-`createSurface` (v0.9) is not supported.
+`createSurface`（v0.9）はサポートされていません。
 
-CLI example:
+CLI の例:
 
 ```bash
 cat > /tmp/a2ui-v0.8.jsonl <<'EOFA2'
@@ -98,28 +95,28 @@ EOFA2
 openclaw nodes canvas a2ui push --jsonl /tmp/a2ui-v0.8.jsonl --node <id>
 ```
 
-Quick smoke:
+クイックスモーク:
 
 ```bash
 openclaw nodes canvas a2ui push --node <id> --text "Hello from A2UI"
 ```
 
-## Triggering agent runs from Canvas
+## Canvas からエージェント実行を開始する
 
-Canvas can trigger new agent runs via deep links:
+Canvas はディープリンク経由で新しいエージェント実行を開始できます。
 
 - `openclaw://agent?...`
 
-Example (in JS):
+例（JS の場合）:
 
 ```js
 window.location.href = "openclaw://agent?message=Review%20this%20design";
 ```
 
-The app prompts for confirmation unless a valid key is provided.
+有効なキーが指定されていない限り、アプリは確認ダイアログを表示します。
 
-## Security notes
+## セキュリティに関する注意事項
 
-- Canvas scheme blocks directory traversal; files must live under the session root.
-- Local Canvas content uses a custom scheme (no loopback server required).
-- External `http(s)` URLs are allowed only when explicitly navigated.
+- Canvas スキームではディレクトリ トラバーサルを防止しており、ファイルは必ずセッション ルート配下に置く必要があります。
+- ローカル Canvas コンテンツはカスタム スキームで提供されるため、ループバック サーバーは不要です。
+- 外部 `http(s)` URL は、明示的にナビゲートされた場合にのみ許可されます。

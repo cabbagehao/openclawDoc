@@ -1,232 +1,150 @@
 ---
-summary: "Plan: isolate browser act:evaluate from Playwright queue using CDP, with end-to-end deadlines and safer ref resolution"
+summary: "計画: CDP を使用してブラウザの act:evaluate を Playwright のキューから分離し、エンドツーエンドの期限管理と安全な参照解決を実現する"
 read_when:
-  - Working on browser `act:evaluate` timeout, abort, or queue blocking issues
-  - Planning CDP based isolation for evaluate execution
+  - ブラウザツールにおける `act:evaluate` のタイムアウト、中断、またはキューのブロッキング問題を修正する場合
+  - evaluate 実行のための CDP ベースの分離構成を計画する場合
 owner: "openclaw"
 status: "draft"
 last_updated: "2026-02-10"
-title: "Browser Evaluate CDP Refactor"
+title: "ブラウザ Evaluate の CDP リファクタリング"
+x-i18n:
+  source_hash: "7176b8e2d41c3114657e57262938089635c7dbb3617c20ac796c2f8957e9dac2"
 ---
 
-# Browser Evaluate CDP Refactor Plan
+# ブラウザ Evaluate の CDP リファクタリング計画
 
-## Context
+## 背景
 
-`act:evaluate` executes user provided JavaScript in the page. Today it runs via Playwright
-(`page.evaluate` or `locator.evaluate`). Playwright serializes CDP commands per page, so a
-stuck or long running evaluate can block the page command queue and make every later action
-on that tab look "stuck".
+`act:evaluate` は、ページ内でユーザー指定の JavaScript を実行する機能です。現在は Playwright (`page.evaluate` または `locator.evaluate`) 経由で実行されています。Playwright はページごとに CDP コマンドをシリアル化（直列化）するため、evaluate がスタックしたり長時間実行されたりすると、そのページのコマンドキューがブロックされ、その後の操作がすべて「スタック」したように見えてしまいます。
 
-PR #13498 adds a pragmatic safety net (bounded evaluate, abort propagation, and best-effort
-recovery). This document describes a larger refactor that makes `act:evaluate` inherently
-isolated from Playwright so a stuck evaluate cannot wedge normal Playwright operations.
+PR #13498 では実用的なセーフティネット（限定的な evaluate、中断の伝播、ベストエフォートでの復旧）が追加されました。本ドキュメントでは、`act:evaluate` を Playwright から本質的に分離し、スタックした実行が通常の Playwright 操作を妨げないようにする、より大規模なリファクタリングについて説明します。
 
-## Goals
+## 目標
 
-- `act:evaluate` cannot permanently block later browser actions on the same tab.
-- Timeouts are single source of truth end to end so a caller can rely on a budget.
-- Abort and timeout are treated the same way across HTTP and in-process dispatch.
-- Element targeting for evaluate is supported without switching everything off Playwright.
-- Maintain backward compatibility for existing callers and payloads.
+- `act:evaluate` が、同じタブにおけるその後のブラウザ操作を永続的にブロックしないようにする。
+- タイムアウト設定をエンドツーエンドで唯一の「真実のソース」とし、呼び出し側が時間枠（バジェット）を信頼できるようにする。
+- HTTP 経由およびインプロセスでのディスパッチの両方で、中断（Abort）とタイムアウトを同一に扱う。
+- すべての機能を Playwright から切り替えることなく、evaluate での要素指定（targeting）をサポートする。
+- 既存の呼び出し側やペイロードとの後方互換性を維持する。
 
-## Non-goals
+## 非目標
 
-- Replace all browser actions (click, type, wait, etc.) with CDP implementations.
-- Remove the existing safety net introduced in PR #13498 (it remains a useful fallback).
-- Introduce new unsafe capabilities beyond the existing `browser.evaluateEnabled` gate.
-- Add process isolation (worker process/thread) for evaluate. If we still see hard to recover
-  stuck states after this refactor, that is a follow-up idea.
+- すべてのブラウザ操作（click, type, wait 等）を CDP 実装に置き換えること。
+- PR #13498 で導入された既存のセーフティネットを削除すること（有用なフォールバックとして残します）。
+- 既存の `browser.evaluateEnabled` ゲートを超えて、新しい安全でない機能を導入すること。
+- evaluate のためのプロセス分離（ワーカープロセス/スレッド）を追加すること。本リファクタリング後も復旧困難なスタック状態が続くようであれば、今後の検討課題とします。
 
-## Current Architecture (Why It Gets Stuck)
+## 現在のアーキテクチャ（スタックする原因）
 
-At a high level:
+大まかな流れ:
+- 呼び出し側が `act:evaluate` をブラウザ制御サービスに送信。
+- ルートハンドラーが Playwright を呼び出して JavaScript を実行。
+- Playwright はページコマンドをシリアル化するため、終了しない evaluate がキューをブロック。
+- キューがスタックすると、その後の click/type/wait 操作がハングしたように見える。
 
-- Callers send `act:evaluate` to the browser control service.
-- The route handler calls into Playwright to execute the JavaScript.
-- Playwright serializes page commands, so an evaluate that never finishes blocks the queue.
-- A stuck queue means later click/type/wait operations on the tab can appear to hang.
+## 提案するアーキテクチャ
 
-## Proposed Architecture
+### 1. 期限 (Deadline) の伝播
 
-### 1. Deadline Propagation
+単一の「バジェット（時間枠）」という概念を導入し、すべてをそこから導出します:
+- 呼び出し側が `timeoutMs`（または将来の期限）を設定。
+- 外部リクエストのタイムアウト、ルートハンドラーのロジック、およびページ内での実行バジェットのすべてが同じバジェットを共有し、シリアル化のオーバーヘッドのためにわずかな余裕（ヘッドルーム）を持たせる。
+- 中止（Abort）は `AbortSignal` としてどこへでも伝播され、一貫したキャンセルを実現。
 
-Introduce a single budget concept and derive everything from it:
+実装の方向性:
+- 以下を返す小さなヘルパー（例: `createBudget({ timeoutMs, signal })`）を追加:
+  - `signal`: 紐付けられた AbortSignal
+  - `deadlineAtMs`: 絶対的な期限（時刻）
+  - `remainingMs()`: 子操作に割り当て可能な残り時間
+- 以下の箇所でこのヘルパーを使用:
+  - `src/browser/client-fetch.ts` (HTTP およびインプロセスディスパッチ)
+  - `src/node-host/runner.ts` (プロキシパス)
+  - ブラウザアクションの実装（Playwright および CDP）
 
-- Caller sets `timeoutMs` (or a deadline in the future).
-- The outer request timeout, route handler logic, and the execution budget inside the page
-  all use the same budget, with small headroom where needed for serialization overhead.
-- Abort is propagated as an `AbortSignal` everywhere so cancellation is consistent.
+### 2. evaluate エンジンの分離 (CDP パス)
 
-Implementation direction:
+Playwright のページごとのコマンドキューを共有しない、CDP ベースの evaluate 実装を追加します。重要なポイントは、evaluate 用の通信路が独立した WebSocket 接続であり、ターゲットにアタッチされた個別の CDP セッションであることです。
 
-- Add a small helper (for example `createBudget({ timeoutMs, signal })`) that returns:
-  - `signal`: the linked AbortSignal
-  - `deadlineAtMs`: absolute deadline
-  - `remainingMs()`: remaining budget for child operations
-- Use this helper in:
-  - `src/browser/client-fetch.ts` (HTTP and in-process dispatch)
-  - `src/node-host/runner.ts` (proxy path)
-  - browser action implementations (Playwright and CDP)
+実装の方向性:
+- 新しいモジュール（例: `src/browser/cdp-evaluate.ts`）を作成し、以下を実行:
+  - 構成済みの CDP エンドポイント（ブラウザレベルのソケット）に接続。
+  - `Target.attachToTarget({ targetId, flatten: true })` を使用して `sessionId` を取得。
+  - ページレベルの実行には `Runtime.evaluate` を、要素レベルの実行には `DOM.resolveNode` + `Runtime.callFunctionOn` を使用。
+- タイムアウトまたは中断時:
+  - セッションに対してベストエフォートで `Runtime.terminateExecution` を送信。
+  - WebSocket を閉じ、明確なエラーを返す。
 
-### 2. Separate Evaluate Engine (CDP Path)
+補足:
+- 依然としてページ内で JavaScript を実行するため、強制終了には副作用が伴う可能性があります。メリットは、Playwright のキューを固めることがなく、CDP セッションを破棄することで通信レイヤーでのキャンセルが可能になる点です。
 
-Add a CDP based evaluate implementation that does not share Playwright's per page command
-queue. The key property is that the evaluate transport is a separate WebSocket connection
-and a separate CDP session attached to the target.
+### 3. 参照（Ref）の扱い (大幅な書き換えなしでの要素指定)
 
-Implementation direction:
+難関は要素指定です。CDP には DOM ハンドルまたは `backendDOMNodeId` が必要ですが、現在はスナップショットの参照に基づく Playwright のロケーターを使用しています。
 
-- New module, for example `src/browser/cdp-evaluate.ts`, that:
-  - Connects to the configured CDP endpoint (browser level socket).
-  - Uses `Target.attachToTarget({ targetId, flatten: true })` to get a `sessionId`.
-  - Runs either:
-    - `Runtime.evaluate` for page level evaluate, or
-    - `DOM.resolveNode` plus `Runtime.callFunctionOn` for element evaluate.
-  - On timeout or abort:
-    - Sends `Runtime.terminateExecution` best-effort for the session.
-    - Closes the WebSocket and returns a clear error.
+推奨アプローチ: 既存の参照（ref）を維持しつつ、オプションで CDP 解決可能な ID を付加します。
 
-Notes:
+#### 3.1 保存される参照情報の拡張
+ロール参照のメタデータを拡張し、CDP ID を含められるようにします:
+- 現状: `{ role, name, nth }`
+- 提案: `{ role, name, nth, backendDOMNodeId?: number }`
 
-- This still executes JavaScript in the page, so termination can have side effects. The win
-  is that it does not wedge the Playwright queue, and it is cancelable at the transport
-  layer by killing the CDP session.
+これにより、既存の Playwright ベースのアクションを維持したまま、`backendDOMNodeId` が利用可能な場合には CDP evaluate を実行できるようになります。
 
-### 3. Ref Story (Element Targeting Without A Full Rewrite)
+#### 3.2 スナップショット生成時の ID 取得
+ロールスナップショットを生成する際、以下の処理を行います:
+1. 現在と同様にロール参照マップ（role, name, nth）を生成。
+2. CDP (`Accessibility.getFullAXTree`) 経由で AX ツリーを取得し、同一の重複判定ルールを用いて `(role, name, nth) -> backendDOMNodeId` の並列マップを計算。
+3. 取得した ID を現在のタブの参照情報にマージして保存。
 
-The hard part is element targeting. CDP needs a DOM handle or `backendDOMNodeId`, while
-today most browser actions use Playwright locators based on refs from snapshots.
+マッピングに失敗した場合は `backendDOMNodeId` を未定義のままにします。これにより、本機能はベストエフォート（可能な範囲で実施）かつ安全に導入できます。
 
-Recommended approach: keep existing refs, but attach an optional CDP resolvable id.
+#### 3.3 参照を用いた evaluate の挙動
+`act:evaluate` において:
+- `ref` があり、かつ `backendDOMNodeId` が存在する場合、CDP 経由で要素 evaluate を実行。
+- `ref` はあるが `backendDOMNodeId` がない場合、Playwright パス（セーフティネット付き）へフォールバック。
 
-#### 3.1 Extend Stored Ref Info
+オプションの回避策:
+- 高度な利用者やデバッグ向けに、`ref` とは別に `backendDOMNodeId` を直接受け取れるようにリクエスト形式を拡張。
 
-Extend the stored role ref metadata to optionally include a CDP id:
+### 4. 最終手段としての復旧パスの維持
+CDP evaluate を導入しても、タブや接続が固まる要因は他にもあります。以下のケースのための「最終手段」として、既存の復旧メカニズム（実行終了 + Playwright 切断）を維持します:
+- レガシーな呼び出し側
+- CDP アタッチがブロックされている環境
+- 予期せぬ Playwright のエッジケース
 
-- Today: `{ role, name, nth }`
-- Proposed: `{ role, name, nth, backendDOMNodeId?: number }`
+## 実装計画
 
-This keeps all existing Playwright based actions working and allows CDP evaluate to accept
-the same `ref` value when the `backendDOMNodeId` is available.
+### 成果物
+- Playwright のコマンドキュー外で動作する CDP ベースの evaluate エンジン。
+- 呼び出し側とハンドラーで一貫して使用される、単一のエンドツーエンドの期限/中断バジェット。
+- 要素 evaluate のために `backendDOMNodeId` を保持可能な参照メタデータ。
+- 可能な限り CDP エンジンを優先し、不可な場合にのみ Playwright へフォールバックする `act:evaluate`。
+- スタックした evaluate がその後の操作を妨げないことを証明するテスト。
+- 失敗やフォールバックを可視化するログ/メトリクス。
 
-#### 3.2 Populate backendDOMNodeId At Snapshot Time
+### 実装チェックリスト
+1. `timeoutMs` + `AbortSignal` を統合する共通の「バジェット（時間枠）」ヘルパーを追加。
+2. すべての呼び出しパスを更新し、`timeoutMs` の意味をどこでも統一。
+3. `src/browser/cdp-evaluate.ts` の実装。
+4. 参照メタデータを拡張し、`backendDOMNodeId` を保持可能にする。
+5. スナップショット作成時に `backendDOMNodeId` をベストエフォートで取得・マージ。
+6. `act:evaluate` のルーティング処理を更新（CDP 優先、Playwright フォールバック）。
+7. 既存の復旧パスをデフォルトではなくフォールバックとして維持。
+8. テストの追加（スタックした evaluate が後続の click を妨げないこと、中断が正しく機能すること、マッピング失敗時の適切なフォールバック等）。
+9. 可観測性の向上（所要時間、タイムアウト、強制終了の使用回数、フォールバック率等の記録）。
 
-When producing a role snapshot:
+### 合格基準
+- 意図的にハングさせた `act:evaluate` が呼び出し側の時間枠内で終了し、その後の操作（click 等）が正常に行えること。
+- `timeoutMs` が CLI、エージェントツール、ノードプロキシ、インプロセス呼び出しのすべてにおいて一貫した挙動を示すこと。
+- `ref` が `backendDOMNodeId` にマッピング可能な場合は CDP が使用され、そうでない場合もフォールバックパスで安全に復旧可能であること。
 
-1. Generate the existing role ref map as today (role, name, nth).
-2. Fetch the AX tree via CDP (`Accessibility.getFullAXTree`) and compute a parallel map of
-   `(role, name, nth) -> backendDOMNodeId` using the same duplicate handling rules.
-3. Merge the id back into the stored ref info for the current tab.
+## テスト計画
+- ユニットテスト: ロール参照と AX ツリーノードのマッチングロジック、バジェットヘルパーの計算。
+- 結合テスト: CDP evaluate のタイムアウトが適切に返り、次をブロックしないこと。中断が適切に実行終了をトリガーすること。
+- コントラクトテスト: `BrowserActRequest` と `BrowserActResponse` の互換性維持の確認。
 
-If mapping fails for a ref, leave `backendDOMNodeId` undefined. This makes the feature
-best-effort and safe to roll out.
-
-#### 3.3 Evaluate Behavior With Ref
-
-In `act:evaluate`:
-
-- If `ref` is present and has `backendDOMNodeId`, run element evaluate via CDP.
-- If `ref` is present but has no `backendDOMNodeId`, fall back to the Playwright path (with
-  the safety net).
-
-Optional escape hatch:
-
-- Extend the request shape to accept `backendDOMNodeId` directly for advanced callers (and
-  for debugging), while keeping `ref` as the primary interface.
-
-### 4. Keep A Last Resort Recovery Path
-
-Even with CDP evaluate, there are other ways to wedge a tab or a connection. Keep the
-existing recovery mechanisms (terminate execution + disconnect Playwright) as a last resort
-for:
-
-- legacy callers
-- environments where CDP attach is blocked
-- unexpected Playwright edge cases
-
-## Implementation Plan (Single Iteration)
-
-### Deliverables
-
-- A CDP based evaluate engine that runs outside the Playwright per-page command queue.
-- A single end-to-end timeout/abort budget used consistently by callers and handlers.
-- Ref metadata that can optionally carry `backendDOMNodeId` for element evaluate.
-- `act:evaluate` prefers the CDP engine when possible and falls back to Playwright when not.
-- Tests that prove a stuck evaluate does not wedge later actions.
-- Logs/metrics that make failures and fallbacks visible.
-
-### Implementation Checklist
-
-1. Add a shared "budget" helper to link `timeoutMs` + upstream `AbortSignal` into:
-   - a single `AbortSignal`
-   - an absolute deadline
-   - a `remainingMs()` helper for downstream operations
-2. Update all caller paths to use that helper so `timeoutMs` means the same thing everywhere:
-   - `src/browser/client-fetch.ts` (HTTP and in-process dispatch)
-   - `src/node-host/runner.ts` (node proxy path)
-   - CLI wrappers that call `/act` (add `--timeout-ms` to `browser evaluate`)
-3. Implement `src/browser/cdp-evaluate.ts`:
-   - connect to the browser-level CDP socket
-   - `Target.attachToTarget` to get a `sessionId`
-   - run `Runtime.evaluate` for page evaluate
-   - run `DOM.resolveNode` + `Runtime.callFunctionOn` for element evaluate
-   - on timeout/abort: best-effort `Runtime.terminateExecution` then close the socket
-4. Extend stored role ref metadata to optionally include `backendDOMNodeId`:
-   - keep existing `{ role, name, nth }` behavior for Playwright actions
-   - add `backendDOMNodeId?: number` for CDP element targeting
-5. Populate `backendDOMNodeId` during snapshot creation (best-effort):
-   - fetch AX tree via CDP (`Accessibility.getFullAXTree`)
-   - compute `(role, name, nth) -> backendDOMNodeId` and merge into the stored ref map
-   - if mapping is ambiguous or missing, leave the id undefined
-6. Update `act:evaluate` routing:
-   - if no `ref`: always use CDP evaluate
-   - if `ref` resolves to a `backendDOMNodeId`: use CDP element evaluate
-   - otherwise: fall back to Playwright evaluate (still bounded and abortable)
-7. Keep the existing "last resort" recovery path as a fallback, not the default path.
-8. Add tests:
-   - stuck evaluate times out within budget and the next click/type succeeds
-   - abort cancels evaluate (client disconnect or timeout) and unblocks subsequent actions
-   - mapping failures cleanly fall back to Playwright
-9. Add observability:
-   - evaluate duration and timeout counters
-   - terminateExecution usage
-   - fallback rate (CDP -> Playwright) and reasons
-
-### Acceptance Criteria
-
-- A deliberately hung `act:evaluate` returns within the caller budget and does not wedge the
-  tab for later actions.
-- `timeoutMs` behaves consistently across CLI, agent tool, node proxy, and in-process calls.
-- If `ref` can be mapped to `backendDOMNodeId`, element evaluate uses CDP; otherwise the
-  fallback path is still bounded and recoverable.
-
-## Testing Plan
-
-- Unit tests:
-  - `(role, name, nth)` matching logic between role refs and AX tree nodes.
-  - Budget helper behavior (headroom, remaining time math).
-- Integration tests:
-  - CDP evaluate timeout returns within budget and does not block the next action.
-  - Abort cancels evaluate and triggers termination best-effort.
-- Contract tests:
-  - Ensure `BrowserActRequest` and `BrowserActResponse` remain compatible.
-
-## Risks And Mitigations
-
-- Mapping is imperfect:
-  - Mitigation: best-effort mapping, fallback to Playwright evaluate, and add debug tooling.
-- `Runtime.terminateExecution` has side effects:
-  - Mitigation: only use on timeout/abort and document the behavior in errors.
-- Extra overhead:
-  - Mitigation: only fetch AX tree when snapshots are requested, cache per target, and keep
-    CDP session short lived.
-- Extension relay limitations:
-  - Mitigation: use browser level attach APIs when per page sockets are not available, and
-    keep the current Playwright path as fallback.
-
-## Open Questions
-
-- Should the new engine be configurable as `playwright`, `cdp`, or `auto`?
-- Do we want to expose a new "nodeRef" format for advanced users, or keep `ref` only?
-- How should frame snapshots and selector scoped snapshots participate in AX mapping?
+## リスクと緩和策
+- マッピングの不完全さ: ベストエフォートでのマッピング、Playwright へのフォールバック、およびデバッグツールの提供で対応。
+- `Runtime.terminateExecution` の副作用: タイムアウト/中断時のみに使用し、エラー内容にその旨を明記。
+- オーバーヘッドの増加: スナップショット要求時のみ AX ツリーを取得し、ターゲットごとにキャッシュして CDP セッションを短命に保つ。
+- 拡張機能リレーの制限: ページごとのソケットが利用できない場合はブラウザレベルのアタッチ API を使用し、既存の Playwright パスもフォールバックとして維持。

@@ -1,16 +1,18 @@
 ---
-summary: "CLI reference for `openclaw completion` (generate/install shell completion scripts)"
+summary: "`openclaw completion` の CLI リファレンス (シェル補完スクリプトの生成とインストール)"
 read_when:
-  - You want shell completions for zsh/bash/fish/PowerShell
-  - You need to cache completion scripts under OpenClaw state
+  - zsh, bash, fish, PowerShell 用のシェル補完を導入したい場合
+  - 補完スクリプトを OpenClaw の状態ディレクトリにキャッシュしたい場合
 title: "completion"
+x-i18n:
+  source_hash: "7bbf140a880bafdb7140149f85465d66d0d46e5a3da6a1e41fb78be2fd2bd4d0"
 ---
 
 # `openclaw completion`
 
-Generate shell completion scripts and optionally install them into your shell profile.
+シェル補完スクリプトを生成し、オプションでシェルプロファイルにインストールします。
 
-## Usage
+## 使用法
 
 ```bash
 openclaw completion
@@ -21,15 +23,15 @@ openclaw completion --write-state
 openclaw completion --shell bash --write-state
 ```
 
-## Options
+## オプション
 
-- `-s, --shell <shell>`: shell target (`zsh`, `bash`, `powershell`, `fish`; default: `zsh`)
-- `-i, --install`: install completion by adding a source line to your shell profile
-- `--write-state`: write completion script(s) to `$OPENCLAW_STATE_DIR/completions` without printing to stdout
-- `-y, --yes`: skip install confirmation prompts
+- `-s, --shell <shell>`: 対象とするシェルを指定 (`zsh`, `bash`, `powershell`, `fish`。デフォルトは `zsh`)
+- `-i, --install`: シェルプロファイルに source 行を追加して補完を有効化
+- `--write-state`: 標準出力への表示は行わず、補完スクリプトを `$OPENCLAW_STATE_DIR/completions` に書き込む
+- `-y, --yes`: インストール時の確認プロンプトをスキップ
 
-## Notes
+## 補足事項
 
-- `--install` writes a small "OpenClaw Completion" block into your shell profile and points it at the cached script.
-- Without `--install` or `--write-state`, the command prints the script to stdout.
-- Completion generation eagerly loads command trees so nested subcommands are included.
+- `--install` を指定すると、シェルプロファイルに小さな "OpenClaw Completion" ブロックが書き込まれ、キャッシュされたスクリプトが読み込まれるようになります。
+- `--install` または `--write-state` を指定しない場合、スクリプトの内容が標準出力に表示されます。
+- 補完の生成時にはコマンドツリーが即座にロードされるため、入れ子になったサブコマンドもすべて含まれます。

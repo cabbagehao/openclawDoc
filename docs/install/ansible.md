@@ -1,208 +1,210 @@
 ---
-summary: "Automated, hardened OpenClaw installation with Ansible, Tailscale VPN, and firewall isolation"
+summary: "Ansible、Tailscale VPN、ファイアウォール分離を使った、自動化された堅牢な OpenClaw インストール"
 read_when:
-  - You want automated server deployment with security hardening
-  - You need firewall-isolated setup with VPN access
-  - You're deploying to remote Debian/Ubuntu servers
+  - セキュリティを考慮した自動サーバーデプロイを行いたいとき
+  - VPN 経由のみで到達できる、ファイアウォール分離構成が必要なとき
+  - リモートの Debian / Ubuntu サーバーへデプロイするとき
 title: "Ansible"
+x-i18n:
+  source_hash: "b1e1e1ea13bff37b22bc58dad4b15a2233c6492771403dff364c738504aa7159"
 ---
 
-# Ansible Installation
+# Ansible インストール
 
-The recommended way to deploy OpenClaw to production servers is via **[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** — an automated installer with security-first architecture.
+OpenClaw を本番サーバーへデプロイする推奨手段は、**[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** を使う方法です。これは、セキュリティを優先した設計の自動インストーラーです。
 
-## Quick Start
+## クイックスタート
 
-One-command install:
+1 コマンドでインストールできます。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw-ansible/main/install.sh | bash
 ```
 
-> **📦 Full guide: [github.com/openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible)**
+> **完全ガイド: [github.com/openclaw/openclaw-ansible](https://github.com/openclaw/openclaw-ansible)**
 >
-> The openclaw-ansible repo is the source of truth for Ansible deployment. This page is a quick overview.
+> Ansible デプロイに関する一次情報は `openclaw-ansible` リポジトリです。このページは概要だけをまとめています。
 
-## What You Get
+## 導入されるもの
 
-- 🔒 **Firewall-first security**: UFW + Docker isolation (only SSH + Tailscale accessible)
-- 🔐 **Tailscale VPN**: Secure remote access without exposing services publicly
-- 🐳 **Docker**: Isolated sandbox containers, localhost-only bindings
-- 🛡️ **Defense in depth**: 4-layer security architecture
-- 🚀 **One-command setup**: Complete deployment in minutes
-- 🔧 **Systemd integration**: Auto-start on boot with hardening
+- **ファイアウォール優先のセキュリティ**: UFW + Docker 分離により、外部公開は SSH と Tailscale のみ
+- **Tailscale VPN**: サービスを公開せずに安全なリモートアクセスを確保
+- **Docker**: 分離されたサンドボックスコンテナを提供し、localhost バインドを維持
+- **多層防御**: 4 層のセキュリティアーキテクチャ
+- **1 コマンドセットアップ**: 数分で一式をデプロイ
+- **systemd 統合**: ハードニング付きで起動時に自動起動
 
-## Requirements
+## 要件
 
-- **OS**: Debian 11+ or Ubuntu 20.04+
-- **Access**: Root or sudo privileges
-- **Network**: Internet connection for package installation
-- **Ansible**: 2.14+ (installed automatically by quick-start script)
+- **OS**: Debian 11 以降、または Ubuntu 20.04 以降
+- **権限**: root または sudo 権限
+- **ネットワーク**: パッケージを取得できるインターネット接続
+- **Ansible**: 2.14 以降 (クイックスタートスクリプトが自動で導入)
 
-## What Gets Installed
+## インストールされる内容
 
-The Ansible playbook installs and configures:
+Ansible playbook では、次をインストールして設定します。
 
-1. **Tailscale** (mesh VPN for secure remote access)
-2. **UFW firewall** (SSH + Tailscale ports only)
-3. **Docker CE + Compose V2** (for agent sandboxes)
-4. **Node.js 22.x + pnpm** (runtime dependencies)
-5. **OpenClaw** (host-based, not containerized)
-6. **Systemd service** (auto-start with security hardening)
+1. **Tailscale** (安全なリモートアクセス用のメッシュ VPN)
+2. **UFW firewall** (SSH + Tailscale のポートのみ許可)
+3. **Docker CE + Compose V2** (エージェント用サンドボックスで使用)
+4. **Node.js 22.x + pnpm** (実行に必要な依存関係)
+5. **OpenClaw** (コンテナ化せず、ホスト上で実行)
+6. **systemd service** (セキュリティ強化付きの自動起動)
 
-Note: The gateway runs **directly on the host** (not in Docker), but agent sandboxes use Docker for isolation. See [Sandboxing](/gateway/sandboxing) for details.
+補足: ゲートウェイ自体は **Docker ではなくホスト上で直接動作** します。一方で、エージェントのサンドボックスは Docker を使って分離します。詳細は [Sandboxing](/gateway/sandboxing) を参照してください。
 
-## Post-Install Setup
+## インストール後のセットアップ
 
-After installation completes, switch to the openclaw user:
+インストールが完了したら、`openclaw` ユーザーへ切り替えます。
 
 ```bash
 sudo -i -u openclaw
 ```
 
-The post-install script will guide you through:
+post-install スクリプトの案内に従って、次を進めます。
 
-1. **Onboarding wizard**: Configure OpenClaw settings
-2. **Provider login**: Connect WhatsApp/Telegram/Discord/Signal
-3. **Gateway testing**: Verify the installation
-4. **Tailscale setup**: Connect to your VPN mesh
+1. **オンボーディングウィザード**: OpenClaw の基本設定
+2. **プロバイダーログイン**: WhatsApp / Telegram / Discord / Signal の接続
+3. **ゲートウェイテスト**: インストール結果の確認
+4. **Tailscale セットアップ**: VPN メッシュへの参加
 
-### Quick commands
+### よく使うコマンド
 
 ```bash
-# Check service status
+# サービス状態の確認
 sudo systemctl status openclaw
 
-# View live logs
+# ライブログの確認
 sudo journalctl -u openclaw -f
 
-# Restart gateway
+# ゲートウェイの再起動
 sudo systemctl restart openclaw
 
-# Provider login (run as openclaw user)
+# プロバイダーログイン (openclaw ユーザーで実行)
 sudo -i -u openclaw
 openclaw channels login
 ```
 
-## Security Architecture
+## セキュリティアーキテクチャ
 
-### 4-Layer Defense
+### 4 層防御
 
-1. **Firewall (UFW)**: Only SSH (22) + Tailscale (41641/udp) exposed publicly
-2. **VPN (Tailscale)**: Gateway accessible only via VPN mesh
-3. **Docker Isolation**: DOCKER-USER iptables chain prevents external port exposure
-4. **Systemd Hardening**: NoNewPrivileges, PrivateTmp, unprivileged user
+1. **Firewall (UFW)**: 公開されるのは SSH (22) と Tailscale (41641/udp) のみ
+2. **VPN (Tailscale)**: ゲートウェイには VPN メッシュ経由でのみ到達可能
+3. **Docker isolation**: `DOCKER-USER` iptables チェーンで外部ポート公開を防止
+4. **Systemd hardening**: `NoNewPrivileges`、`PrivateTmp`、非特権ユーザーで実行
 
-### Verification
+### 検証
 
-Test external attack surface:
+外部から見える攻撃面は次で確認できます。
 
 ```bash
 nmap -p- YOUR_SERVER_IP
 ```
 
-Should show **only port 22** (SSH) open. All other services (gateway, Docker) are locked down.
+**開いているのは 22 番ポート (SSH) のみ** であるべきです。その他のサービス (ゲートウェイ、Docker) はすべて閉じられている想定です。
 
-### Docker Availability
+### Docker の位置づけ
 
-Docker is installed for **agent sandboxes** (isolated tool execution), not for running the gateway itself. The gateway binds to localhost only and is accessible via Tailscale VPN.
+Docker は **エージェント用サンドボックス** (隔離されたツール実行環境) のために導入されます。ゲートウェイ本体は Docker 上では動かず、localhost のみにバインドされ、Tailscale VPN 経由でアクセスします。
 
-See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for sandbox configuration.
+サンドボックス設定の詳細は [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) を参照してください。
 
-## Manual Installation
+## 手動インストール
 
-If you prefer manual control over the automation:
+自動化ではなく、手順を手元で制御したい場合は次の流れでも導入できます。
 
 ```bash
-# 1. Install prerequisites
+# 1. 前提パッケージを導入
 sudo apt update && sudo apt install -y ansible git
 
-# 2. Clone repository
+# 2. リポジトリを clone
 git clone https://github.com/openclaw/openclaw-ansible.git
 cd openclaw-ansible
 
-# 3. Install Ansible collections
+# 3. Ansible collections を導入
 ansible-galaxy collection install -r requirements.yml
 
-# 4. Run playbook
+# 4. Playbook を実行
 ./run-playbook.sh
 
-# Or run directly (then manually execute /tmp/openclaw-setup.sh after)
+# あるいは直接実行 (その場合は後で /tmp/openclaw-setup.sh を手動実行)
 # ansible-playbook playbook.yml --ask-become-pass
 ```
 
-## Updating OpenClaw
+## OpenClaw の更新
 
-The Ansible installer sets up OpenClaw for manual updates. See [Updating](/install/updating) for the standard update flow.
+Ansible インストーラーで構築した環境では、OpenClaw 本体の更新は手動運用になります。標準の更新手順は [Updating](/install/updating) を参照してください。
 
-To re-run the Ansible playbook (e.g., for configuration changes):
+設定変更などで Ansible playbook を再実行したい場合は、次を使います。
 
 ```bash
 cd openclaw-ansible
 ./run-playbook.sh
 ```
 
-Note: This is idempotent and safe to run multiple times.
+補足: この処理は冪等であり、複数回実行しても安全です。
 
-## Troubleshooting
+## トラブルシューティング
 
-### Firewall blocks my connection
+### Firewall によって接続できない
 
-If you're locked out:
+接続できなくなった場合は、次を確認してください。
 
-- Ensure you can access via Tailscale VPN first
-- SSH access (port 22) is always allowed
-- The gateway is **only** accessible via Tailscale by design
+- まず Tailscale VPN 経由で入れることを確認する
+- SSH (22 番ポート) は常に許可されている
+- ゲートウェイは設計上 **Tailscale 経由でのみ** 到達可能
 
-### Service won't start
+### Service が起動しない
 
 ```bash
-# Check logs
+# ログを確認
 sudo journalctl -u openclaw -n 100
 
-# Verify permissions
+# 権限を確認
 sudo ls -la /opt/openclaw
 
-# Test manual start
+# 手動起動を試す
 sudo -i -u openclaw
 cd ~/openclaw
 pnpm start
 ```
 
-### Docker sandbox issues
+### Docker サンドボックスに問題がある
 
 ```bash
-# Verify Docker is running
+# Docker の状態を確認
 sudo systemctl status docker
 
-# Check sandbox image
+# サンドボックスイメージを確認
 sudo docker images | grep openclaw-sandbox
 
-# Build sandbox image if missing
+# イメージがなければビルド
 cd /opt/openclaw/openclaw
 sudo -u openclaw ./scripts/sandbox-setup.sh
 ```
 
-### Provider login fails
+### プロバイダーログインが失敗する
 
-Make sure you're running as the `openclaw` user:
+`openclaw` ユーザーとして実行していることを確認してください。
 
 ```bash
 sudo -i -u openclaw
 openclaw channels login
 ```
 
-## Advanced Configuration
+## 高度な設定
 
-For detailed security architecture and troubleshooting:
+セキュリティアーキテクチャや詳細な調査手順は、次の資料を参照してください。
 
 - [Security Architecture](https://github.com/openclaw/openclaw-ansible/blob/main/docs/security.md)
 - [Technical Details](https://github.com/openclaw/openclaw-ansible/blob/main/docs/architecture.md)
 - [Troubleshooting Guide](https://github.com/openclaw/openclaw-ansible/blob/main/docs/troubleshooting.md)
 
-## Related
+## 関連項目
 
-- [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) — full deployment guide
-- [Docker](/install/docker) — containerized gateway setup
-- [Sandboxing](/gateway/sandboxing) — agent sandbox configuration
-- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — per-agent isolation
+- [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) — 完全なデプロイガイド
+- [Docker](/install/docker) — コンテナ化したゲートウェイ構成
+- [Sandboxing](/gateway/sandboxing) — エージェントサンドボックス設定
+- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — エージェント単位の分離

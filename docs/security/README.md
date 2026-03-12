@@ -1,17 +1,21 @@
-# OpenClaw Security & Trust
+---
+title: "OpenClaw のセキュリティと信頼"
+---
+
+# OpenClaw のセキュリティと信頼
 
 **Live:** [trust.openclaw.ai](https://trust.openclaw.ai)
 
-## Documents
+## ドキュメント
 
-- [Threat Model](/security/THREAT-MODEL-ATLAS) - MITRE ATLAS-based threat model for the OpenClaw ecosystem
-- [Contributing to the Threat Model](/security/CONTRIBUTING-THREAT-MODEL) - How to add threats, mitigations, and attack chains
+- [脅威モデル](/security/THREAT-MODEL-ATLAS) - OpenClaw エコシステム向けの MITRE ATLAS ベースの脅威モデル
+- [脅威モデルへの貢献](/security/CONTRIBUTING-THREAT-MODEL) - 脅威、緩和策、攻撃チェーンの追加方法
 
-## Reporting Vulnerabilities
+## 脆弱性の報告
 
-See the [Trust page](https://trust.openclaw.ai) for full reporting instructions covering all repos.
+すべてのリポジトリを対象とした完全な報告手順は [Trust ページ](https://trust.openclaw.ai) を参照してください。
 
-## Contact
+## 連絡先
 
 - **Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) - Security & Trust
-- Discord: #security channel
+- Discord: #security チャンネル

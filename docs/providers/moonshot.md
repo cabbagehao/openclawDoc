@@ -1,48 +1,44 @@
 ---
-summary: "Configure Moonshot K2 vs Kimi Coding (separate providers + keys)"
+summary: "Moonshot K2 と Kimi コーディングの構成 (個別のプロバイダー + キー)"
 read_when:
-  - You want Moonshot K2 (Moonshot Open Platform) vs Kimi Coding setup
-  - You need to understand separate endpoints, keys, and model refs
-  - You want copy/paste config for either provider
-title: "Moonshot AI"
+  - Moonshot K2 (Moonshot Open Platform) と Kimicoding のセットアップが必要な場合
+  - 個別のエンドポイント、キー、モデル参照を理解する必要がある
+  - いずれかのプロバイダーの設定をコピー/ペーストする必要がある
+title: "ムーンショットAI"
+x-i18n:
+  source_hash: "fb44b0d1213834934aac9b049193104d65fe01dbedc73558495d3cc8a1d3b6bf"
 ---
 
-# Moonshot AI (Kimi)
+# ムーンショットAI(キミ)
 
-Moonshot provides the Kimi API with OpenAI-compatible endpoints. Configure the
-provider and set the default model to `moonshot/kimi-k2.5`, or use
-Kimi Coding with `kimi-coding/k2p5`.
+Moonshot は、OpenAI 互換エンドポイントを備えた Kim API を提供します。を設定します。
+プロバイダーを選択し、デフォルトのモデルを `moonshot/kimi-k2.5` に設定するか、使用します
+`kimi-coding/k2p5` を使用したキミ コーディング。
 
-Current Kimi K2 model IDs:
+現在の Kim K2 モデル ID:
 
-<!-- markdownlint-disable MD037 -->
-
-{/_ moonshot-kimi-k2-ids:start _/ && null}
-
-<!-- markdownlint-enable MD037 -->
+{/_Moonshot-kimi-k2-ids:start_/}
 
 - `kimi-k2.5`
 - `kimi-k2-0905-preview`
 - `kimi-k2-turbo-preview`
 - `kimi-k2-thinking`
 - `kimi-k2-thinking-turbo`
-  <!-- markdownlint-disable MD037 -->
-  {/_ moonshot-kimi-k2-ids:end _/ && null}
-  <!-- markdownlint-enable MD037 -->
+  {/_ムーンショット-キミ-k2-ids:end_/}
 
 ```bash
 openclaw onboard --auth-choice moonshot-api-key
 ```
 
-Kimi Coding:
+キミコーディング:
 
 ```bash
 openclaw onboard --auth-choice kimi-code-api-key
 ```
 
-Note: Moonshot and Kimi Coding are separate providers. Keys are not interchangeable, endpoints differ, and model refs differ (Moonshot uses `moonshot/...`, Kimi Coding uses `kimi-coding/...`).
+注: Moonshot と Kimicoding は別のプロバイダーです。キーは交換可能ではなく、エンドポイントが異なり、モデル参照も異なります (Moonshot は `moonshot/...` を使用し、Kimicoding は `kimi-coding/...` を使用します)。
 
-## Config snippet (Moonshot API)
+## 構成スニペット (Moonshot API)
 
 ```json5
 {
@@ -123,7 +119,7 @@ Note: Moonshot and Kimi Coding are separate providers. Keys are not interchangea
 }
 ```
 
-## Kimi Coding
+## キミコーディング
 
 ```json5
 {
@@ -139,22 +135,22 @@ Note: Moonshot and Kimi Coding are separate providers. Keys are not interchangea
 }
 ```
 
-## Notes
+## 注意事項
 
-- Moonshot model refs use `moonshot/<modelId>`. Kimi Coding model refs use `kimi-coding/<modelId>`.
-- Override pricing and context metadata in `models.providers` if needed.
-- If Moonshot publishes different context limits for a model, adjust
-  `contextWindow` accordingly.
-- Use `https://api.moonshot.ai/v1` for the international endpoint, and `https://api.moonshot.cn/v1` for the China endpoint.
+- ムーンショット モデルの参照では `moonshot/<modelId>` を使用します。 kimicoding モデル参照では `kimi-coding/<modelId>` を使用します。
+- 必要に応じて、`models.providers` の価格設定とコンテキスト メタデータを上書きします。
+- Moonshot がモデルに対して異なるコンテキスト制限を公開している場合は、調整します
+  `contextWindow` となります。
+- 国際エンドポイントには `https://api.moonshot.ai/v1` を使用し、中国エンドポイントには `https://api.moonshot.cn/v1` を使用します。
 
-## Native thinking mode (Moonshot)
+## ネイティブ思考モード (ムーンショット)
 
-Moonshot Kimi supports binary native thinking:
+Moonshot Kim はバイナリ ネイティブ思考をサポートしています。
 
 - `thinking: { type: "enabled" }`
 - `thinking: { type: "disabled" }`
 
-Configure it per model via `agents.defaults.models.<provider/model>.params`:
+`agents.defaults.models.<provider/model>.params` を介してモデルごとに構成します。
 
 ```json5
 {
@@ -172,9 +168,8 @@ Configure it per model via `agents.defaults.models.<provider/model>.params`:
 }
 ```
 
-OpenClaw also maps runtime `/think` levels for Moonshot:
+OpenClaw は、Moonshot のランタイム `/think` レベルもマッピングします。- `/think off` -> `thinking.type=disabled`
 
-- `/think off` -> `thinking.type=disabled`
-- any non-off thinking level -> `thinking.type=enabled`
+- オフではない思考レベル -> `thinking.type=enabled`
 
-When Moonshot thinking is enabled, `tool_choice` must be `auto` or `none`. OpenClaw normalizes incompatible `tool_choice` values to `auto` for compatibility.
+ムーンショット思考が有効な場合、`tool_choice` は `auto` または `none` でなければなりません。 OpenClaw は、互換性を確保するために、互換性のない `tool_choice` 値を `auto` に正規化します。

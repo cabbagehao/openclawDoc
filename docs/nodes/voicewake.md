@@ -1,66 +1,68 @@
 ---
-summary: "Global voice wake words (Gateway-owned) and how they sync across nodes"
+summary: "グローバルな voice wake word（gateway 管理）と node 間同期の仕組み"
 read_when:
-  - Changing voice wake words behavior or defaults
-  - Adding new node platforms that need wake word sync
+  - voice wake word の挙動やデフォルトを変更するとき
+  - wake word 同期が必要な新しい node platform を追加するとき
 title: "Voice Wake"
+x-i18n:
+  source_hash: "a80e0cf7f68a3d48ff79af0ffb3058a7a0ecebd2cdbaad20b9ff53bc2b39dc84"
 ---
 
 # Voice Wake (Global Wake Words)
 
-OpenClaw treats **wake words as a single global list** owned by the **Gateway**.
+OpenClaw では、**wake word は gateway が管理する 1 つのグローバルリスト** として扱われます。
 
-- There are **no per-node custom wake words**.
-- **Any node/app UI may edit** the list; changes are persisted by the Gateway and broadcast to everyone.
-- macOS and iOS keep local **Voice Wake enabled/disabled** toggles (local UX + permissions differ).
-- Android currently keeps Voice Wake off and uses a manual mic flow in the Voice tab.
+- **node ごとのカスタム wake word** はありません
+- **どの node / app UI からでも** リストを編集でき、変更は gateway に保存されたうえで全体へブロードキャストされます
+- macOS と iOS にはローカルの **Voice Wake enabled / disabled** toggle が残っています（ローカル UX と権限モデルが異なるため）
+- Android は現状 Voice Wake を無効にしており、Voice タブの手動 mic フローを使います
 
-## Storage (Gateway host)
+## 保存場所（gateway host）
 
-Wake words are stored on the gateway machine at:
+wake word は gateway マシン上の次のファイルに保存されます。
 
 - `~/.openclaw/settings/voicewake.json`
 
-Shape:
+形式:
 
 ```json
 { "triggers": ["openclaw", "claude", "computer"], "updatedAtMs": 1730000000000 }
 ```
 
-## Protocol
+## protocol
 
-### Methods
+### method
 
 - `voicewake.get` → `{ triggers: string[] }`
-- `voicewake.set` with params `{ triggers: string[] }` → `{ triggers: string[] }`
+- `voicewake.set` に `{ triggers: string[] }` を渡す → `{ triggers: string[] }`
 
-Notes:
+注:
 
-- Triggers are normalized (trimmed, empties dropped). Empty lists fall back to defaults.
-- Limits are enforced for safety (count/length caps).
+- trigger は正規化されます（trim し、空文字は削除）。空リストになった場合はデフォルトへ戻ります
+- 安全性のため、件数と長さには上限があります
 
-### Events
+### event
 
 - `voicewake.changed` payload `{ triggers: string[] }`
 
-Who receives it:
+受信対象:
 
-- All WebSocket clients (macOS app, WebChat, etc.)
-- All connected nodes (iOS/Android), and also on node connect as an initial “current state” push.
+- すべての WebSocket client（macOS app、WebChat など）
+- 接続中のすべての node（iOS / Android）。さらに node 接続時には、初期状態として現在値も push されます
 
-## Client behavior
+## client 挙動
 
 ### macOS app
 
-- Uses the global list to gate `VoiceWakeRuntime` triggers.
-- Editing “Trigger words” in Voice Wake settings calls `voicewake.set` and then relies on the broadcast to keep other clients in sync.
+- グローバルリストを `VoiceWakeRuntime` の trigger 判定に使います
+- Voice Wake 設定で “Trigger words” を編集すると `voicewake.set` を呼び、その後は broadcast によって他 client との同期を保ちます
 
 ### iOS node
 
-- Uses the global list for `VoiceWakeManager` trigger detection.
-- Editing Wake Words in Settings calls `voicewake.set` (over the Gateway WS) and also keeps local wake-word detection responsive.
+- グローバルリストを `VoiceWakeManager` の trigger 検出に使います
+- Settings で Wake Words を編集すると、Gateway WS 経由で `voicewake.set` を呼び出し、同時にローカルの wake-word 検出もすぐ反映されるようにします
 
 ### Android node
 
-- Voice Wake is currently disabled in Android runtime/Settings.
-- Android voice uses manual mic capture in the Voice tab instead of wake-word triggers.
+- Voice Wake は現在の Android runtime / Settings では無効です
+- Android の voice は wake word trigger ではなく、Voice タブの手動 mic capture を使います

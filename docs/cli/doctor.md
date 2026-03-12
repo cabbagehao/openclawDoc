@@ -1,21 +1,22 @@
 ---
-summary: "CLI reference for `openclaw doctor` (health checks + guided repairs)"
+summary: "`openclaw doctor` の CLI リファレンス (ヘルスチェックとガイド付き修復)"
 read_when:
-  - You have connectivity/auth issues and want guided fixes
-  - You updated and want a sanity check
+  - 接続や認証に問題があり、解決のためのガイドが必要な場合
+  - アップデート後に環境の健全性を確認したい場合
 title: "doctor"
+x-i18n:
+  source_hash: "d6d5cbb3d5a90d2a3de883d5af9ffbad30bf59bd7471231dc54d3428f129d2dc"
 ---
 
 # `openclaw doctor`
 
-Health checks + quick fixes for the gateway and channels.
+ゲートウェイや各チャネルのヘルスチェック（健全性確認）と、一般的な問題に対するクイックフィックスを提供します。
 
-Related:
+関連ドキュメント:
+- トラブルシューティング: [トラブルシューティング](/gateway/troubleshooting)
+- セキュリティ監査: [セキュリティ](/gateway/security)
 
-- Troubleshooting: [Troubleshooting](/gateway/troubleshooting)
-- Security audit: [Security](/gateway/security)
-
-## Examples
+## 実行例
 
 ```bash
 openclaw doctor
@@ -23,23 +24,27 @@ openclaw doctor --repair
 openclaw doctor --deep
 ```
 
-Notes:
+補足事項:
 
-- Interactive prompts (like keychain/OAuth fixes) only run when stdin is a TTY and `--non-interactive` is **not** set. Headless runs (cron, Telegram, no terminal) will skip prompts.
-- `--fix` (alias for `--repair`) writes a backup to `~/.openclaw/openclaw.json.bak` and drops unknown config keys, listing each removal.
-- State integrity checks now detect orphan transcript files in the sessions directory and can archive them as `.deleted.<timestamp>` to reclaim space safely.
-- Doctor also scans `~/.openclaw/cron/jobs.json` (or `cron.store`) for legacy cron job shapes and can rewrite them in place before the scheduler has to auto-normalize them at runtime.
-- Doctor includes a memory-search readiness check and can recommend `openclaw configure --section model` when embedding credentials are missing.
-- If sandbox mode is enabled but Docker is unavailable, doctor reports a high-signal warning with remediation (`install Docker` or `openclaw config set agents.defaults.sandbox.mode off`).
+- キーチェーンや OAuth の修正といった対話型のプロンプトは、標準入力が TTY であり、かつ `--non-interactive` が指定されて**いない**場合にのみ表示されます。Cron や Telegram 経由などのヘッドレス環境（ターミナルがない状態）では、これらのプロンプトはスキップされます。
+- `--fix`（`--repair` の別名）を実行すると、現在の `~/.openclaw/openclaw.json` を `.bak` ファイルとしてバックアップした上で、不明な構成キーを削除し、削除した内容を一覧表示します。
+- 状態の整合性チェックでは、セッションディレクトリ内の孤立したトランスクリプト（履歴）ファイルを検出し、`.deleted.<timestamp>` としてアーカイブすることで、安全にディスク容量を回収できます。
+- `~/.openclaw/cron/jobs.json` (または `cron.store` で指定されたファイル) を走査し、古い形式の Cron ジョブがあれば、実行時に自動正規化される前にその場で最新形式に書き換えます。
+- メモリ検索の準備状況もチェックします。埋め込み（embedding）用の認証情報が不足している場合は、`openclaw configure --section model` の実行を推奨します。
+- サンドボックスモードが有効になっているにもかかわらず Docker が利用できない場合、解決策（Docker のインストール、または `sandbox.mode` を `off` に設定するコマンド）と共に重要度の高い警告を表示します。
 
-## macOS: `launchctl` env overrides
+## macOS における `launchctl` 環境変数の上書き
 
-If you previously ran `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (or `...PASSWORD`), that value overrides your config file and can cause persistent “unauthorized” errors.
+過去に `launchctl setenv OPENCLAW_GATEWAY_TOKEN ...` (または `...PASSWORD`) を実行したことがある場合、その値が構成ファイルの設定を上書きし、永続的な "unauthorized"（認証エラー）の原因となることがあります。
 
+現在の値を確認する:
 ```bash
 launchctl getenv OPENCLAW_GATEWAY_TOKEN
 launchctl getenv OPENCLAW_GATEWAY_PASSWORD
+```
 
+上書き設定を解除する:
+```bash
 launchctl unsetenv OPENCLAW_GATEWAY_TOKEN
 launchctl unsetenv OPENCLAW_GATEWAY_PASSWORD
 ```

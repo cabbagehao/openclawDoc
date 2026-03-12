@@ -1,40 +1,33 @@
 ---
-summary: "Model authentication: OAuth, API keys, and setup-token"
+summary: "モデル認証の仕組み: OAuth、API キー、および setup-token"
 read_when:
-  - Debugging model auth or OAuth expiry
-  - Documenting authentication or credential storage
-title: "Authentication"
+  - モデル認証や OAuth の有効期限の問題をデバッグする場合
+  - 認証方式や認証情報の保存レイアウトを確認したい場合
+title: "認証"
 ---
 
-# Authentication
+# 認証
 
-OpenClaw supports OAuth and API keys for model providers. For always-on gateway
-hosts, API keys are usually the most predictable option. Subscription/OAuth
-flows are also supported when they match your provider account model.
+OpenClaw は、モデルプロバイダー向けの OAuth 認証と API キー認証をサポートしています。常時稼働させるゲートウェイホストにおいては、通常、API キー認証が最も挙動が予測しやすく安定した選択肢となります。プロバイダーのアカウントモデルに応じて、サブスクリプションベースの OAuth フローも利用可能です。
 
-See [/concepts/oauth](/concepts/oauth) for the full OAuth flow and storage
-layout.
-For SecretRef-based auth (`env`/`file`/`exec` providers), see [Secrets Management](/gateway/secrets).
-For credential eligibility/reason-code rules used by `models status --probe`, see
-[Auth Credential Semantics](/auth-credential-semantics).
+OAuth の詳細なフローと保存レイアウトについては、[/concepts/oauth](/concepts/oauth) を参照してください。
+SecretRef ベースの認証（`env`/`file`/`exec` プロバイダー）については、[シークレット管理](/gateway/secrets) を参照してください。
+`models status --probe` で使用される、認証情報の適格性や理由コードの判定ルールについては、[認証情報のセマンティクス](/auth-credential-semantics) を参照してください。
 
-## Recommended setup (API key, any provider)
+## 推奨されるセットアップ (API キー、全プロバイダー共通)
 
-If you’re running a long-lived gateway, start with an API key for your chosen
-provider.
-For Anthropic specifically, API key auth is the safe path and is recommended
-over subscription setup-token auth.
+長期間ゲートウェイを運用する場合は、選択したプロバイダーの API キーを使用することから始めてください。
+特に Anthropic に関しては、API キーによる認証が安全な経路であり、サブスクリプションベースの setup-token 認証よりも推奨されます。
 
-1. Create an API key in your provider console.
-2. Put it on the **gateway host** (the machine running `openclaw gateway`).
+1. プロバイダーの管理コンソールで API キーを作成します。
+2. そのキーを **ゲートウェイホスト**（`openclaw gateway` を実行しているマシン）に設定します。
 
 ```bash
 export <PROVIDER>_API_KEY="..."
 openclaw models status
 ```
 
-3. If the Gateway runs under systemd/launchd, prefer putting the key in
-   `~/.openclaw/.env` so the daemon can read it:
+3. ゲートウェイを systemd や launchd 下で実行している場合は、デーモンが読み込めるように `~/.openclaw/.env` にキーを記述することを推奨します:
 
 ```bash
 cat >> ~/.openclaw/.env <<'EOF'
@@ -42,112 +35,104 @@ cat >> ~/.openclaw/.env <<'EOF'
 EOF
 ```
 
-Then restart the daemon (or restart your Gateway process) and re-check:
+その後、デーモン（またはゲートウェイプロセス）を再起動して確認します:
 
 ```bash
 openclaw models status
 openclaw doctor
 ```
 
-If you’d rather not manage env vars yourself, the onboarding wizard can store
-API keys for daemon use: `openclaw onboard`.
+環境変数を手動で管理したくない場合は、オンボーディングウィザードを使用して、デーモン用の API キーを保存できます: `openclaw onboard`。
 
-See [Help](/help) for details on env inheritance (`env.shellEnv`,
-`~/.openclaw/.env`, systemd/launchd).
+環境変数の継承（`env.shellEnv`, `~/.openclaw/.env`, systemd/launchd）に関する詳細は、[ヘルプ](/help) を参照してください。
 
-## Anthropic: setup-token (subscription auth)
+## Anthropic: setup-token (サブスクリプション認証)
 
-If you’re using a Claude subscription, the setup-token flow is supported. Run
-it on the **gateway host**:
+Claude のサブスクリプション（個人・プロ）を利用している場合は、setup-token フローを使用できます。**ゲートウェイホスト**上で以下を実行してください:
 
 ```bash
 claude setup-token
 ```
 
-Then paste it into OpenClaw:
+表示された内容を OpenClaw に貼り付けます:
 
 ```bash
 openclaw models auth setup-token --provider anthropic
 ```
 
-If the token was created on another machine, paste it manually:
+トークンを別のマシンで生成済みの場合は、手動で貼り付けることも可能です:
 
 ```bash
 openclaw models auth paste-token --provider anthropic
 ```
 
-If you see an Anthropic error like:
+もし、以下のような Anthropic のエラーが表示された場合:
 
 ```
 This credential is only authorized for use with Claude Code and cannot be used for other API requests.
 ```
 
-…use an Anthropic API key instead.
+…サブスクリプションではなく、Anthropic の API キーを使用してください。
 
 <Warning>
-Anthropic setup-token support is technical compatibility only. Anthropic has blocked
-some subscription usage outside Claude Code in the past. Use it only if you decide
-the policy risk is acceptable, and verify Anthropic's current terms yourself.
+Anthropic setup-token のサポートは、技術的な互換性維持のためのものです。過去に Anthropic が Claude Code 以外からのサブスクリプション利用を一部制限した事例があります。リスクを考慮した上で、自己責任で利用してください。また、最新の Anthropic の利用規約をご自身で確認してください。
 </Warning>
 
-Manual token entry (any provider; writes `auth-profiles.json` + updates config):
+手動でのトークン入力（全プロバイダー共通。`auth-profiles.json` への書き込みと構成の更新を行います）:
 
 ```bash
 openclaw models auth paste-token --provider anthropic
 openclaw models auth paste-token --provider openrouter
 ```
 
-Auth profile refs are also supported for static credentials:
+静的な認証情報に対しては、認証プロファイル参照（Auth profile refs）もサポートされています:
+- `api_key` 認証情報では `keyRef: { source, provider, id }` を使用可能。
+- `token` 認証情報では `tokenRef: { source, provider, id }` を使用可能。
 
-- `api_key` credentials can use `keyRef: { source, provider, id }`
-- `token` credentials can use `tokenRef: { source, provider, id }`
-
-Automation-friendly check (exit `1` when expired/missing, `2` when expiring):
+自動化に適したチェック（期限切れ/欠落時は `1`、期限間近は `2` で終了します）:
 
 ```bash
 openclaw models status --check
 ```
 
-Optional ops scripts (systemd/Termux) are documented here:
+運用に便利なスクリプト（systemd/Termux 用）のドキュメントはこちらです:
 [/automation/auth-monitoring](/automation/auth-monitoring)
 
-> `claude setup-token` requires an interactive TTY.
+> `claude setup-token` の実行には対話型の TTY 端末が必要です。
 
-## Checking model auth status
+## モデル認証ステータスの確認
 
 ```bash
 openclaw models status
 openclaw doctor
 ```
 
-## API key rotation behavior (gateway)
+## API キーのローテーション挙動 (ゲートウェイ)
 
-Some providers support retrying a request with alternative keys when an API call
-hits a provider rate limit.
+一部のプロバイダーにおいて、API 呼び出しがレート制限に達した際、別のキーを使用してリクエストを再試行する機能をサポートしています。
 
-- Priority order:
-  - `OPENCLAW_LIVE_<PROVIDER>_KEY` (single override)
-  - `<PROVIDER>_API_KEYS`
-  - `<PROVIDER>_API_KEY`
-  - `<PROVIDER>_API_KEY_*`
-- Google providers also include `GOOGLE_API_KEY` as an additional fallback.
-- The same key list is deduplicated before use.
-- OpenClaw retries with the next key only for rate-limit errors (for example
-  `429`, `rate_limit`, `quota`, `resource exhausted`).
-- Non-rate-limit errors are not retried with alternate keys.
-- If all keys fail, the final error from the last attempt is returned.
+- 優先順位:
+  - `OPENCLAW_LIVE_<PROVIDER>_KEY` (単一の上書き設定。最優先)
+  - `<PROVIDER>_API_KEYS` (カンマ区切り等のリスト)
+  - `<PROVIDER>_API_KEY` (メインのキー)
+  - `<PROVIDER>_API_KEY_*` (連番付きのリスト)
+- Google プロバイダーの場合は、`GOOGLE_API_KEY` も追加のフォールバックとして含まれます。
+- キーリストは使用前に重複排除されます。
+- レート制限エラー（例: `429`, `rate_limit`, `quota`, `resource exhausted`）が発生した場合にのみ、次のキーを使用して再試行します。
+- レート制限以外のエラー（認証失敗、リクエスト不正など）では、別のキーによる再試行は行われません。
+- すべてのキーを試しても失敗した場合は、最後の試行時に発生したエラーが返されます。
 
-## Controlling which credential is used
+## 使用する認証情報の制御
 
-### Per-session (chat command)
+### セッション単位 (チャットコマンド)
 
-Use `/model <alias-or-id>@<profileId>` to pin a specific provider credential for the current session (example profile ids: `anthropic:default`, `anthropic:work`).
+`/model <alias-or-id>@<profileId>` を使用して、現在のセッションで使用する特定の認証プロファイルを固定できます（例: `anthropic:default`, `anthropic:work`）。
 
-Use `/model` (or `/model list`) for a compact picker; use `/model status` for the full view (candidates + next auth profile, plus provider endpoint details when configured).
+コンパクトな選択メニューには `/model` (または `/model list`) を、詳細な情報の確認（候補リスト、次に使用されるプロファイル、プロバイダーのエンドポイント詳細など）には `/model status` を使用してください。
 
-### Per-agent (CLI override)
+### エージェント単位 (CLI による上書き)
 
-Set an explicit auth profile order override for an agent (stored in that agent’s `auth-profiles.json`):
+特定のエージェントに対して、明示的な認証プロファイルの優先順位を設定できます（該当エージェントの `auth-profiles.json` に保存されます）:
 
 ```bash
 openclaw models auth order get --provider anthropic
@@ -155,25 +140,23 @@ openclaw models auth order set --provider anthropic anthropic:default
 openclaw models auth order clear --provider anthropic
 ```
 
-Use `--agent <id>` to target a specific agent; omit it to use the configured default agent.
+特定の対象を指定するには `--agent <id>` を使用してください。省略した場合は構成済みのデフォルトエージェントが対象となります。
 
-## Troubleshooting
+## トラブルシューティング
 
-### “No credentials found”
+### 「No credentials found」
 
-If the Anthropic token profile is missing, run `claude setup-token` on the
-**gateway host**, then re-check:
+Anthropic のトークンプロファイルが見つからない場合は、**ゲートウェイホスト**上で `claude setup-token` を再実行し、ステータスを確認してください:
 
 ```bash
 openclaw models status
 ```
 
-### Token expiring/expired
+### トークンの期限切れ (Expiring/Expired)
 
-Run `openclaw models status` to confirm which profile is expiring. If the profile
-is missing, rerun `claude setup-token` and paste the token again.
+`openclaw models status` を実行して、どのプロファイルが期限切れ（あるいは間近）かを確認してください。プロファイルが不足している場合は、再度 `claude setup-token` を実行してトークンを貼り付け直してください。
 
-## Requirements
+## 必要条件
 
-- Anthropic subscription account (for `claude setup-token`)
-- Claude Code CLI installed (`claude` command available)
+- Anthropic のサブスクリプションアカウント (`claude setup-token` の利用に必要)
+- Claude Code CLI がインストール済みであること (`claude` コマンドが利用可能なこと)

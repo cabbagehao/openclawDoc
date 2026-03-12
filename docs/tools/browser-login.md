@@ -1,47 +1,49 @@
 ---
-summary: "Manual logins for browser automation + X/Twitter posting"
+summary: "ブラウザ自動化のための手動ログイン + X/Twitter 投稿"
 read_when:
-  - You need to log into sites for browser automation
-  - You want to post updates to X/Twitter
-title: "Browser Login"
+  - ブラウザ自動化のためにサイトにログインする必要があります
+  - X/Twitter に更新情報を投稿したい
+title: "ブラウザログイン"
+x-i18n:
+  source_hash: "c30faa9da6c6ef70ab8ee7dd9835572d8b16efd3ac3b99c2f55d25f798564ee9"
 ---
 
-# Browser login + X/Twitter posting
+# ブラウザログイン + X/Twitter投稿
 
-## Manual login (recommended)
+## 手動ログイン (推奨)
 
-When a site requires login, **sign in manually** in the **host** browser profile (the openclaw browser).
+サイトでログインが必要な場合は、**ホスト** ブラウザ プロファイル (openclaw ブラウザ) で **手動でサインイン**します。
 
-Do **not** give the model your credentials. Automated logins often trigger anti‑bot defenses and can lock the account.
+モデルに資格情報を**与えないでください**。自動ログインは多くの場合、ボット対策の防御をトリガーし、アカウントをロックする可能性があります。
 
-Back to the main browser docs: [Browser](/tools/browser).
+メインのブラウザのドキュメントに戻ります: [ブラウザ](/tools/browser)。
 
-## Which Chrome profile is used?
+## どの Chrome プロファイルが使用されていますか?
 
-OpenClaw controls a **dedicated Chrome profile** (named `openclaw`, orange‑tinted UI). This is separate from your daily browser profile.
+OpenClaw は、**専用の Chrome プロファイル** (`openclaw` という名前、オレンジ色の UI) を制御します。これは、毎日のブラウザ プロファイルとは別のものです。
 
-Two easy ways to access it:
+アクセスするには 2 つの簡単な方法があります:
 
-1. **Ask the agent to open the browser** and then log in yourself.
-2. **Open it via CLI**:
+1. **エージェントにブラウザを開いてもらい**、自分でログインします。
+2. **CLI 経由で開きます**:
 
 ```bash
 openclaw browser start
 openclaw browser open https://x.com
 ```
 
-If you have multiple profiles, pass `--browser-profile <name>` (the default is `openclaw`).
+複数のプロファイルがある場合は、`--browser-profile <name>` を渡します (デフォルトは `openclaw`)。
 
-## X/Twitter: recommended flow
+## X/Twitter: 推奨フロー
 
-- **Read/search/threads:** use the **host** browser (manual login).
-- **Post updates:** use the **host** browser (manual login).
+- **読み取り/検索/スレッド:** ホスト\*\* ブラウザを使用します (手動ログイン)。
+- **更新を投稿する:** **ホスト** ブラウザを使用します (手動ログイン)。
 
-## Sandboxing + host browser access
+## サンドボックス + ホスト ブラウザー アクセス
 
-Sandboxed browser sessions are **more likely** to trigger bot detection. For X/Twitter (and other strict sites), prefer the **host** browser.
+サンドボックス化されたブラウザ セッションでは、ボット検出がトリガーされる可能性が**高くなります**。 X/Twitter (およびその他の厳密なサイト) の場合は、**ホスト** ブラウザを推奨します。
 
-If the agent is sandboxed, the browser tool defaults to the sandbox. To allow host control:
+エージェントがサンドボックス化されている場合、ブラウザ ツールはデフォルトでサンドボックスになります。ホスト制御を許可するには:
 
 ```json5
 {
@@ -58,10 +60,10 @@ If the agent is sandboxed, the browser tool defaults to the sandbox. To allow ho
 }
 ```
 
-Then target the host browser:
+次に、ホスト ブラウザをターゲットにします。
 
 ```bash
 openclaw browser open https://x.com --browser-profile openclaw --target host
 ```
 
-Or disable sandboxing for the agent that posts updates.
+または、更新を投稿するエージェントのサンドボックスを無効にします。

@@ -1,73 +1,74 @@
 ---
-summary: "Chrome extension: let OpenClaw drive your existing Chrome tab"
+summary: "Chrome 拡張機能: OpenClaw で既存の Chrome タブを駆動させます"
 read_when:
-  - You want the agent to drive an existing Chrome tab (toolbar button)
-  - You need remote Gateway + local browser automation via Tailscale
-  - You want to understand the security implications of browser takeover
-title: "Chrome Extension"
+  - エージェントが既存の Chrome タブ (ツールバー ボタン) を操作できるようにしたい
+  - リモート ゲートウェイ + Tailscale によるローカル ブラウザ自動化が必要です
+  - ブラウザ乗っ取りによるセキュリティへの影響を理解したい
+title: "Chrome拡張機能"
+x-i18n:
+  source_hash: "7ecc9356e7fce6edd6b12a4ae117339ef404c292466dc28052852a3dd644b51d"
 ---
 
-# Chrome extension (browser relay)
+# Chrome 拡張機能 (ブラウザリレー)
 
-The OpenClaw Chrome extension lets the agent control your **existing Chrome tabs** (your normal Chrome window) instead of launching a separate openclaw-managed Chrome profile.
+OpenClaw Chrome 拡張機能を使用すると、エージェントは、openclaw で管理される個別の Chrome プロファイルを起動する代わりに、**既存の Chrome タブ** (通常の Chrome ウィンドウ) を制御できるようになります。
 
-Attach/detach happens via a **single Chrome toolbar button**.
+**単一の Chrome ツールバー ボタン**を使用して接続/切断が行われます。
 
-## What it is (concept)
+## それは何ですか (概念)
 
-There are three parts:
+次の 3 つの部分があります。
 
-- **Browser control service** (Gateway or node): the API the agent/tool calls (via the Gateway)
-- **Local relay server** (loopback CDP): bridges between the control server and the extension (`http://127.0.0.1:18792` by default)
-- **Chrome MV3 extension**: attaches to the active tab using `chrome.debugger` and pipes CDP messages to the relay
+- **ブラウザ制御サービス** (ゲートウェイまたはノード): エージェント/ツールが(ゲートウェイ経由で)呼び出すAPI
+- **ローカル リレー サーバー** (ループバック CDP): コントロール サーバーと拡張機能の間のブリッジ (デフォルトでは `http://127.0.0.1:18792`)
+- **Chrome MV3 拡張機能**: `chrome.debugger` を使用してアクティブなタブに接続し、CDP メッセージをリレーにパイプします。
 
-OpenClaw then controls the attached tab through the normal `browser` tool surface (selecting the right profile).
+次に、OpenClaw は、通常の `browser` ツール表面 (適切なプロファイルの選択) を通じて、接続されたタブを制御します。
 
-## Install / load (unpacked)
+## インストール/ロード (解凍された状態)
 
-1. Install the extension to a stable local path:
+1. 拡張機能を安定したローカル パスにインストールします。
 
 ```bash
 openclaw browser extension install
 ```
 
-2. Print the installed extension directory path:
+2. インストールされている拡張機能のディレクトリ パスを出力します。
 
 ```bash
 openclaw browser extension path
 ```
 
-3. Chrome → `chrome://extensions`
+3. クロム → `chrome://extensions`
 
-- Enable “Developer mode”
-- “Load unpacked” → select the directory printed above
+- 「開発者モード」を有効にする
+- 「解凍してロード」 → 上で印刷されたディレクトリを選択します
 
-4. Pin the extension.
+4. エクステンションを固定します。
 
-## Updates (no build step)
+## 更新 (ビルドステップなし)
 
-The extension ships inside the OpenClaw release (npm package) as static files. There is no separate “build” step.
+この拡張機能は、OpenClaw リリース (npm パッケージ) 内に静的ファイルとして同梱されています。個別の「ビルド」ステップはありません。
 
-After upgrading OpenClaw:
+OpenClaw をアップグレードした後:- `openclaw browser extension install` を再実行して、OpenClaw 状態ディレクトリにインストールされているファイルを更新します。
 
-- Re-run `openclaw browser extension install` to refresh the installed files under your OpenClaw state directory.
-- Chrome → `chrome://extensions` → click “Reload” on the extension.
+- Chrome → `chrome://extensions` → 拡張機能の「再読み込み」をクリックします。
 
-## Use it (set gateway token once)
+## それを使用します (ゲートウェイ トークンを一度設定します)
 
-OpenClaw ships with a built-in browser profile named `chrome` that targets the extension relay on the default port.
+OpenClaw には、デフォルト ポート上の拡張リレーをターゲットとする `chrome` という名前の組み込みブラウザ プロファイルが付属しています。
 
-Before first attach, open extension Options and set:
+最初にアタッチする前に、拡張機能のオプションを開いて次のように設定します。
 
-- `Port` (default `18792`)
-- `Gateway token` (must match `gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN`)
+- `Port` (デフォルト `18792`)
+- `Gateway token` (`gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN` と一致する必要があります)
 
-Use it:
+使用してください:
 
 - CLI: `openclaw browser --browser-profile chrome tabs`
-- Agent tool: `browser` with `profile="chrome"`
+- エージェント ツール: `browser` と `profile="chrome"`
 
-If you want a different name or a different relay port, create your own profile:
+別の名前または別のリレー ポートが必要な場合は、独自のプロファイルを作成します。
 
 ```bash
 openclaw browser create-profile \
@@ -77,67 +78,64 @@ openclaw browser create-profile \
   --color "#00AA00"
 ```
 
-### Custom Gateway ports
+### カスタムゲートウェイポート
 
-If you're using a custom gateway port, the extension relay port is automatically derived:
+カスタム ゲートウェイ ポートを使用している場合、拡張リレー ポートは自動的に導出されます。
 
-**Extension Relay Port = Gateway Port + 3**
+**拡張リレー ポート = ゲートウェイ ポート + 3**
 
-Example: if `gateway.port: 19001`, then:
+例: `gateway.port: 19001` の場合、次のようになります。
 
-- Extension relay port: `19004` (gateway + 3)
+- 拡張中継ポート: `19004` (ゲートウェイ + 3)
 
-Configure the extension to use the derived relay port in the extension Options page.
+拡張機能のオプション ページで、派生リレー ポートを使用するように拡張機能を構成します。
 
-## Attach / detach (toolbar button)
+## アタッチ/デタッチ (ツールバー ボタン)
 
-- Open the tab you want OpenClaw to control.
-- Click the extension icon.
-  - Badge shows `ON` when attached.
-- Click again to detach.
+- OpenClaw で制御したいタブを開きます。
+- 拡張機能アイコンをクリックします。
+  - バッジを取り付けると、`ON` と表示されます。
+- もう一度クリックすると切り離されます。
 
-## Which tab does it control?
+## どのタブで制御されますか?- 「表示されているタブ」を自動的に制御するわけではありません\*\*
 
-- It does **not** automatically control “whatever tab you’re looking at”.
-- It controls **only the tab(s) you explicitly attached** by clicking the toolbar button.
-- To switch: open the other tab and click the extension icon there.
+- ツールバー ボタンをクリックして **明示的にアタッチしたタブのみ**を制御します。
+- 切り替えるには、別のタブを開き、そこにある拡張機能アイコンをクリックします。
 
-## Badge + common errors
+## バッジ + 一般的なエラー
 
-- `ON`: attached; OpenClaw can drive that tab.
-- `…`: connecting to the local relay.
-- `!`: relay not reachable/authenticated (most common: relay server not running, or gateway token missing/wrong).
+- `ON`: 添付。 OpenClaw はそのタブを駆動できます。
+- `…`: ローカルリレーに接続しています。
+- `!`: リレーに到達できない/認証されていません (最も一般的なのは、リレー サーバーが実行されていない、またはゲートウェイ トークンが見つからない/間違っている)。
 
-If you see `!`:
+`!` が表示された場合:
 
-- Make sure the Gateway is running locally (default setup), or run a node host on this machine if the Gateway runs elsewhere.
-- Open the extension Options page; it validates relay reachability + gateway-token auth.
+- ゲートウェイがローカルで実行されていることを確認します (デフォルト設定)。ゲートウェイが別の場所で実行されている場合は、このマシン上でノード ホストを実行します。
+- 拡張機能のオプション ページを開きます。リレーの到達可能性とゲートウェイ トークン認証を検証します。
 
-## Remote Gateway (use a node host)
+## リモート ゲートウェイ (ノード ホストを使用)
 
-### Local Gateway (same machine as Chrome) — usually **no extra steps**
+### ローカル ゲートウェイ (Chrome と同じマシン) - 通常 **追加の手順はありません**
 
-If the Gateway runs on the same machine as Chrome, it starts the browser control service on loopback
-and auto-starts the relay server. The extension talks to the local relay; the CLI/tool calls go to the Gateway.
+ゲートウェイが Chrome と同じマシン上で実行されている場合、ゲートウェイはループバックでブラウザ制御サービスを開始します。
+そしてリレーサーバーを自動起動します。拡張機能はローカルリレーと通信します。 CLI/ツール呼び出しはゲートウェイに送られます。
 
-### Remote Gateway (Gateway runs elsewhere) — **run a node host**
+### リモート ゲートウェイ (ゲートウェイは別の場所で実行) — **ノード ホストを実行**
 
-If your Gateway runs on another machine, start a node host on the machine that runs Chrome.
-The Gateway will proxy browser actions to that node; the extension + relay stay local to the browser machine.
+ゲートウェイが別のマシンで実行されている場合は、Chrome を実行しているマシンでノード ホストを起動します。
+ゲートウェイは、ブラウザーのアクションをそのノードにプロキシします。拡張機能とリレーはブラウザ マシンに対してローカルに留まります。複数のノードが接続されている場合は、`gateway.nodes.browser.node` で 1 つを固定するか、`gateway.nodes.browser.mode` を設定します。
 
-If multiple nodes are connected, pin one with `gateway.nodes.browser.node` or set `gateway.nodes.browser.mode`.
+## サンドボックス (ツールコンテナ)
 
-## Sandboxing (tool containers)
+エージェント セッションがサンドボックス化されている場合 (`agents.defaults.sandbox.mode != "off"`)、`browser` ツールは制限される可能性があります。
 
-If your agent session is sandboxed (`agents.defaults.sandbox.mode != "off"`), the `browser` tool can be restricted:
+- デフォルトでは、サンドボックス セッションはホスト Chrome ではなく **サンドボックス ブラウザ** (`target="sandbox"`) をターゲットとすることがよくあります。
+- Chrome 拡張機能リレーの引き継ぎには、**ホスト** ブラウザ制御サーバーを制御する必要があります。
 
-- By default, sandboxed sessions often target the **sandbox browser** (`target="sandbox"`), not your host Chrome.
-- Chrome extension relay takeover requires controlling the **host** browser control server.
+オプション:
 
-Options:
-
-- Easiest: use the extension from a **non-sandboxed** session/agent.
-- Or allow host browser control for sandboxed sessions:
+- 最も簡単: **非サンドボックス** セッション/エージェントの拡張機能を使用します。
+- または、サンドボックス セッションのホスト ブラウザー制御を許可します。
 
 ```json5
 {
@@ -153,44 +151,42 @@ Options:
 }
 ```
 
-Then ensure the tool isn’t denied by tool policy, and (if needed) call `browser` with `target="host"`.
+次に、ツールがツール ポリシーによって拒否されていないことを確認し、(必要に応じて) `target="host"` を使用して `browser` を呼び出します。
 
-Debugging: `openclaw sandbox explain`
+デバッグ: `openclaw sandbox explain`
 
-## Remote access tips
+## リモート アクセスのヒント
 
-- Keep the Gateway and node host on the same tailnet; avoid exposing relay ports to LAN or public Internet.
-- Pair nodes intentionally; disable browser proxy routing if you don’t want remote control (`gateway.nodes.browser.mode="off"`).
-- Leave the relay on loopback unless you have a real cross-namespace need. For WSL2 or similar split-host setups, set `browser.relayBindHost` to an explicit bind address such as `0.0.0.0`, then keep access constrained with Gateway auth, node pairing, and a private network.
+- ゲートウェイとノード ホストを同じテールネット上に維持します。中継ポートを LAN または公衆インターネットに公開しないようにします。
+- ノードを意図的にペアリングします。リモート制御が必要ない場合は、ブラウザのプロキシ ルーティングを無効にしてください (`gateway.nodes.browser.mode="off"`)。
+- 実際にクロスネームスペースが必要でない限り、リレーをループバックのままにしておきます。 WSL2 または同様の分割ホスト設定の場合は、`browser.relayBindHost` を `0.0.0.0` などの明示的なバインド アドレスに設定し、ゲートウェイ認証、ノード ペアリング、およびプライベート ネットワークを使用してアクセスの制限を維持します。
 
-## How “extension path” works
+## 「拡張パス」の仕組み
 
-`openclaw browser extension path` prints the **installed** on-disk directory containing the extension files.
+`openclaw browser extension path` は、拡張ファイルを含む **インストールされている** ディスク上のディレクトリを出力します。CLI は意図的に `node_modules` パスを出力しません\*\*。常に最初に `openclaw browser extension install` を実行して、拡張機能を OpenClaw 状態ディレクトリの下の安定した場所にコピーします。
 
-The CLI intentionally does **not** print a `node_modules` path. Always run `openclaw browser extension install` first to copy the extension to a stable location under your OpenClaw state directory.
+そのインストール ディレクトリを移動または削除すると、有効なパスから再ロードするまで、Chrome は拡張機能を壊れているとマークします。
 
-If you move or delete that install directory, Chrome will mark the extension as broken until you reload it from a valid path.
+## セキュリティへの影響 (これをお読みください)
 
-## Security implications (read this)
+これは強力かつ危険です。モデルに「ブラウザ上で実際に操作してもらう」のと同じように扱ってください。
 
-This is powerful and risky. Treat it like giving the model “hands on your browser”.
+- 拡張機能は Chrome のデバッガー API (`chrome.debugger`) を使用します。接続すると、モデルは次のことが可能になります。
+  - そのタブをクリック/入力/移動します
+  - ページのコンテンツを読む
+  - タブのログインセッションがアクセスできるものすべてにアクセスします
+- **これは、専用の openclaw 管理プロファイルのように分離されていません**。
+  - 毎日のドライバーのプロフィール/タブに添付すると、そのアカウントの状態へのアクセスが許可されます。
 
-- The extension uses Chrome’s debugger API (`chrome.debugger`). When attached, the model can:
-  - click/type/navigate in that tab
-  - read page content
-  - access whatever the tab’s logged-in session can access
-- **This is not isolated** like the dedicated openclaw-managed profile.
-  - If you attach to your daily-driver profile/tab, you’re granting access to that account state.
+推奨事項:
 
-Recommendations:
+- 拡張機能リレーの使用には、専用の Chrome プロファイル (個人的なブラウジングとは別) を推奨します。
+- ゲートウェイとすべてのノード ホストをテールネットのみにします。ゲートウェイ認証 + ノードのペアリングに依存します。
+- LAN (`0.0.0.0`) 経由でリレー ポートを公開しないようにし、ファネル (パブリック) を回避します。
+- リレーは非拡張オリジンをブロックし、`/cdp` と `/extension` の両方に対してゲートウェイ トークン認証を必要とします。
 
-- Prefer a dedicated Chrome profile (separate from your personal browsing) for extension relay usage.
-- Keep the Gateway and any node hosts tailnet-only; rely on Gateway auth + node pairing.
-- Avoid exposing relay ports over LAN (`0.0.0.0`) and avoid Funnel (public).
-- The relay blocks non-extension origins and requires gateway-token auth for both `/cdp` and `/extension`.
+関連:
 
-Related:
-
-- Browser tool overview: [Browser](/tools/browser)
-- Security audit: [Security](/gateway/security)
-- Tailscale setup: [Tailscale](/gateway/tailscale)
+- ブラウザツール概要：[ブラウザ](/tools/browser)
+- セキュリティ監査: [セキュリティ](/gateway/security)
+- テールスケール設定: [テールスケール](/gateway/tailscale)

@@ -1,99 +1,101 @@
 ---
-summary: "Discord bot support status, capabilities, and configuration"
+summary: "Discord ボットのサポート状況、機能、設定"
 read_when:
-  - Working on Discord channel features
+  - Discord チャンネル機能を扱うとき
 title: "Discord"
+x-i18n:
+  source_hash: "62001ac1c2832bc2321787bbdb97e40240dc9478b7b4f024434e299d580f763c"
 ---
 
 # Discord (Bot API)
 
-Status: ready for DMs and guild channels via the official Discord gateway.
+ステータス: 公式 Discord ゲートウェイ経由で、DM とギルドチャンネルに対応しています。
 
 <CardGroup cols={3}>
-  <Card title="Pairing" icon="link" href="/channels/pairing">
-    Discord DMs default to pairing mode.
+  <Card title="ペアリング" icon="link" href="/channels/pairing">
+    Discord の DM はデフォルトでペアリングモードです。
   </Card>
-  <Card title="Slash commands" icon="terminal" href="/tools/slash-commands">
-    Native command behavior and command catalog.
+  <Card title="スラッシュコマンド" icon="terminal" href="/tools/slash-commands">
+    ネイティブコマンドの挙動とコマンド一覧を確認できます。
   </Card>
-  <Card title="Channel troubleshooting" icon="wrench" href="/channels/troubleshooting">
-    Cross-channel diagnostics and repair flow.
+  <Card title="チャンネルトラブルシューティング" icon="wrench" href="/channels/troubleshooting">
+    チャンネル横断の診断手順と修復フローを確認できます。
   </Card>
 </CardGroup>
 
-## Quick setup
+## クイックセットアップ
 
-You will need to create a new application with a bot, add the bot to your server, and pair it to OpenClaw. We recommend adding your bot to your own private server. If you don't have one yet, [create one first](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server) (choose **Create My Own > For me and my friends**).
+新しいアプリケーションとボットを作成し、ボットを Discord サーバーに追加したうえで、OpenClaw とペアリングする必要があります。ボットは、自分専用のプライベートサーバーに追加する構成を推奨します。まだサーバーがない場合は、先に [作成してください](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server)（**Create My Own > For me and my friends** を選択します）。
 
 <Steps>
-  <Step title="Create a Discord application and bot">
-    Go to the [Discord Developer Portal](https://discord.com/developers/applications) and click **New Application**. Name it something like "OpenClaw".
+  <Step title="Discord アプリケーションとボットを作成する">
+    [Discord Developer Portal](https://discord.com/developers/applications) に移動し、**New Application** をクリックします。名前は「OpenClaw」などで構いません。
 
-    Click **Bot** on the sidebar. Set the **Username** to whatever you call your OpenClaw agent.
-
-  </Step>
-
-  <Step title="Enable privileged intents">
-    Still on the **Bot** page, scroll down to **Privileged Gateway Intents** and enable:
-
-    - **Message Content Intent** (required)
-    - **Server Members Intent** (recommended; required for role allowlists and name-to-ID matching)
-    - **Presence Intent** (optional; only needed for presence updates)
+    左側の **Bot** を開き、**Username** を OpenClaw エージェントとして使いたい名前に設定します。
 
   </Step>
 
-  <Step title="Copy your bot token">
-    Scroll back up on the **Bot** page and click **Reset Token**.
+  <Step title="特権インテントを有効にする">
+    引き続き **Bot** ページで、**Privileged Gateway Intents** までスクロールし、次を有効にします。
+
+    - **Message Content Intent**（必須）
+    - **Server Members Intent**（推奨。ロール allowlist と名前から ID への解決に必要です）
+    - **Presence Intent**（任意。プレゼンス更新を受信する場合のみ必要です）
+
+  </Step>
+
+  <Step title="ボットトークンをコピーする">
+    **Bot** ページ上部に戻り、**Reset Token** をクリックします。
 
     <Note>
-    Despite the name, this generates your first token — nothing is being "reset."
+    名前に反して、ここでは最初のトークンが生成されます。既存の何かが「リセット」されるわけではありません。
     </Note>
 
-    Copy the token and save it somewhere. This is your **Bot Token** and you will need it shortly.
+    表示されたトークンをコピーして安全な場所に保存します。これは **Bot Token** であり、後続の設定で使用します。
 
   </Step>
 
-  <Step title="Generate an invite URL and add the bot to your server">
-    Click **OAuth2** on the sidebar. You'll generate an invite URL with the right permissions to add the bot to your server.
+  <Step title="招待 URL を生成してボットをサーバーに追加する">
+    左側の **OAuth2** を開き、ボットをサーバーに追加するための招待 URL を生成します。
 
-    Scroll down to **OAuth2 URL Generator** and enable:
+    **OAuth2 URL Generator** までスクロールし、次を有効にします。
 
     - `bot`
     - `applications.commands`
 
-    A **Bot Permissions** section will appear below. Enable:
+    その下に **Bot Permissions** が表示されるので、次を有効にします。
 
     - View Channels
     - Send Messages
     - Read Message History
     - Embed Links
     - Attach Files
-    - Add Reactions (optional)
+    - Add Reactions（任意）
 
-    Copy the generated URL at the bottom, paste it into your browser, select your server, and click **Continue** to connect. You should now see your bot in the Discord server.
-
-  </Step>
-
-  <Step title="Enable Developer Mode and collect your IDs">
-    Back in the Discord app, you need to enable Developer Mode so you can copy internal IDs.
-
-    1. Click **User Settings** (gear icon next to your avatar) → **Advanced** → toggle on **Developer Mode**
-    2. Right-click your **server icon** in the sidebar → **Copy Server ID**
-    3. Right-click your **own avatar** → **Copy User ID**
-
-    Save your **Server ID** and **User ID** alongside your Bot Token — you'll send all three to OpenClaw in the next step.
+    下部に表示された URL をコピーしてブラウザで開き、対象サーバーを選択して **Continue** を押します。完了すると、Discord サーバーにボットが追加されます。
 
   </Step>
 
-  <Step title="Allow DMs from server members">
-    For pairing to work, Discord needs to allow your bot to DM you. Right-click your **server icon** → **Privacy Settings** → toggle on **Direct Messages**.
+  <Step title="Developer Mode を有効にして ID を取得する">
+    Discord アプリ側で Developer Mode を有効にし、内部 ID をコピーできるようにします。
 
-    This lets server members (including bots) send you DMs. Keep this enabled if you want to use Discord DMs with OpenClaw. If you only plan to use guild channels, you can disable DMs after pairing.
+    1. **User Settings**（アバター横の歯車）→ **Advanced** → **Developer Mode** をオンにする
+    2. サイドバーの **サーバーアイコン** を右クリックして **Copy Server ID**
+    3. **自分のアバター** を右クリックして **Copy User ID**
+
+    **Server ID** と **User ID** は、Bot Token とあわせて保存しておきます。次の手順でこの 3 つを使います。
 
   </Step>
 
-  <Step title="Step 0: Set your bot token securely (do not send it in chat)">
-    Your Discord bot token is a secret (like a password). Set it on the machine running OpenClaw before messaging your agent.
+  <Step title="サーバーメンバーからの DM を許可する">
+    ペアリングを成立させるには、Discord 側でボットから DM を受け取れる必要があります。**サーバーアイコン** を右クリックし、**Privacy Settings** を開いて **Direct Messages** をオンにします。
+
+    これにより、サーバーメンバー（ボットを含む）から DM を受信できます。OpenClaw で Discord DM を使う場合は、この設定を有効のままにしてください。ギルドチャンネルだけを使う予定であれば、ペアリング完了後に無効化しても構いません。
+
+  </Step>
+
+  <Step title="Step 0: ボットトークンを安全に設定する（チャットには送らない）">
+    Discord のボットトークンは、パスワードと同様に機密情報です。エージェントへメッセージを送る前に、OpenClaw を動かしているマシンに設定してください。
 
 ```bash
 openclaw config set channels.discord.token '"YOUR_BOT_TOKEN"' --json
@@ -101,20 +103,20 @@ openclaw config set channels.discord.enabled true --json
 openclaw gateway
 ```
 
-    If OpenClaw is already running as a background service, use `openclaw gateway restart` instead.
+    すでに OpenClaw をバックグラウンドサービスとして実行している場合は、`openclaw gateway restart` を使います。
 
   </Step>
 
-  <Step title="Configure OpenClaw and pair">
+  <Step title="OpenClaw を設定してペアリングする">
 
     <Tabs>
-      <Tab title="Ask your agent">
-        Chat with your OpenClaw agent on any existing channel (e.g. Telegram) and tell it. If Discord is your first channel, use the CLI / config tab instead.
+      <Tab title="エージェントに依頼する">
+        既存のチャンネル（例: Telegram）で OpenClaw エージェントに次のように伝えます。Discord が最初のチャンネルである場合は、CLI / config タブを使ってください。
 
-        > "I already set my Discord bot token in config. Please finish Discord setup with User ID `<user_id>` and Server ID `<server_id>`."
+        > 「Discord の bot token はすでに config に設定済みです。User ID `<user_id>` と Server ID `<server_id>` を使って Discord のセットアップを完了してください。」
       </Tab>
       <Tab title="CLI / config">
-        If you prefer file-based config, set:
+        ファイルベースで設定する場合は、次のように指定します。
 
 ```json5
 {
@@ -127,27 +129,27 @@ openclaw gateway
 }
 ```
 
-        Env fallback for the default account:
+        デフォルトアカウントでは、環境変数によるフォールバックも使用できます。
 
 ```bash
 DISCORD_BOT_TOKEN=...
 ```
 
-        SecretRef values are also supported for `channels.discord.token` (env/file/exec providers). See [Secrets Management](/gateway/secrets).
+        `channels.discord.token` には SecretRef（env/file/exec プロバイダー）も利用できます。詳しくは [Secrets Management](/gateway/secrets) を参照してください。
 
       </Tab>
     </Tabs>
 
   </Step>
 
-  <Step title="Approve first DM pairing">
-    Wait until the gateway is running, then DM your bot in Discord. It will respond with a pairing code.
+  <Step title="最初の DM ペアリングを承認する">
+    ゲートウェイが起動していることを確認したうえで、Discord からボットへ DM を送ります。ボットからペアリングコードが返されます。
 
     <Tabs>
-      <Tab title="Ask your agent">
-        Send the pairing code to your agent on your existing channel:
+      <Tab title="エージェントに依頼する">
+        既存のチャンネル上でエージェントにペアリングコードを送ります。
 
-        > "Approve this Discord pairing code: `<CODE>`"
+        > 「この Discord のペアリングコードを承認してください: `<CODE>`」
       </Tab>
       <Tab title="CLI">
 
@@ -159,28 +161,28 @@ openclaw pairing approve discord <CODE>
       </Tab>
     </Tabs>
 
-    Pairing codes expire after 1 hour.
+    ペアリングコードの有効期限は 1 時間です。
 
-    You should now be able to chat with your agent in Discord via DM.
+    これで Discord の DM からエージェントと会話できるようになります。
 
   </Step>
 </Steps>
 
 <Note>
-Token resolution is account-aware. Config token values win over env fallback. `DISCORD_BOT_TOKEN` is only used for the default account.
+トークン解決はアカウント単位で行われます。config に設定されたトークンが環境変数より優先されます。`DISCORD_BOT_TOKEN` が使われるのはデフォルトアカウントだけです。
 </Note>
 
-## Recommended: Set up a guild workspace
+## 推奨: ギルドワークスペースを用意する
 
-Once DMs are working, you can set up your Discord server as a full workspace where each channel gets its own agent session with its own context. This is recommended for private servers where it's just you and your bot.
+DM が動作したら、Discord サーバー全体をワークスペースとして構成できます。各チャンネルは独自のコンテキストを持つ個別のエージェントセッションになり、プライベートサーバーではこの構成が特に有効です。
 
 <Steps>
-  <Step title="Add your server to the guild allowlist">
-    This enables your agent to respond in any channel on your server, not just DMs.
+  <Step title="サーバーをギルド allowlist に追加する">
+    これにより、エージェントは DM だけでなく、サーバー内のチャンネルにも応答できるようになります。
 
     <Tabs>
-      <Tab title="Ask your agent">
-        > "Add my Discord Server ID `<server_id>` to the guild allowlist"
+      <Tab title="エージェントに依頼する">
+        > 「Discord Server ID `<server_id>` を guild allowlist に追加してください」
       </Tab>
       <Tab title="Config">
 
@@ -205,15 +207,15 @@ Once DMs are working, you can set up your Discord server as a full workspace whe
 
   </Step>
 
-  <Step title="Allow responses without @mention">
-    By default, your agent only responds in guild channels when @mentioned. For a private server, you probably want it to respond to every message.
+  <Step title="@mention なしでも応答できるようにする">
+    デフォルトでは、ギルドチャンネルではエージェントへの @mention がある場合だけ応答します。プライベートサーバーでは、すべてのメッセージに応答させたいケースが多くあります。
 
     <Tabs>
-      <Tab title="Ask your agent">
-        > "Allow my agent to respond on this server without having to be @mentioned"
+      <Tab title="エージェントに依頼する">
+        > 「このサーバーでは、@mention なしでもエージェントが応答できるようにしてください」
       </Tab>
       <Tab title="Config">
-        Set `requireMention: false` in your guild config:
+        ギルド設定で `requireMention: false` を指定します。
 
 ```json5
 {
@@ -234,84 +236,84 @@ Once DMs are working, you can set up your Discord server as a full workspace whe
 
   </Step>
 
-  <Step title="Plan for memory in guild channels">
-    By default, long-term memory (MEMORY.md) only loads in DM sessions. Guild channels do not auto-load MEMORY.md.
+  <Step title="ギルドチャンネルでのメモリの扱いを決める">
+    デフォルトでは、長期メモリ（`MEMORY.md`）は DM セッションでのみ自動読み込みされます。ギルドチャンネルでは自動では読み込まれません。
 
     <Tabs>
-      <Tab title="Ask your agent">
-        > "When I ask questions in Discord channels, use memory_search or memory_get if you need long-term context from MEMORY.md."
+      <Tab title="エージェントに依頼する">
+        > 「Discord チャンネルで質問したとき、`MEMORY.md` の長期コンテキストが必要なら `memory_search` または `memory_get` を使ってください」
       </Tab>
-      <Tab title="Manual">
-        If you need shared context in every channel, put the stable instructions in `AGENTS.md` or `USER.md` (they are injected for every session). Keep long-term notes in `MEMORY.md` and access them on demand with memory tools.
+      <Tab title="手動で設定する">
+        すべてのチャンネルで共通コンテキストを使いたい場合は、安定した指示を `AGENTS.md` や `USER.md` に置きます。これらはすべてのセッションに注入されます。長期メモは `MEMORY.md` に保持し、必要なときだけメモリツールで参照する運用を推奨します。
       </Tab>
     </Tabs>
 
   </Step>
 </Steps>
 
-Now create some channels on your Discord server and start chatting. Your agent can see the channel name, and each channel gets its own isolated session — so you can set up `#coding`, `#home`, `#research`, or whatever fits your workflow.
+ここまで完了したら、Discord サーバー上にいくつかチャンネルを作成して会話を始めてください。エージェントはチャンネル名を認識でき、各チャンネルには独立したセッションキーが割り当てられます。`#coding`、`#home`、`#research` など、用途ごとに分けて運用できます。
 
-## Runtime model
+## ランタイムモデル
 
-- Gateway owns the Discord connection.
-- Reply routing is deterministic: Discord inbound replies back to Discord.
-- By default (`session.dmScope=main`), direct chats share the agent main session (`agent:main:main`).
-- Guild channels are isolated session keys (`agent:<agentId>:discord:channel:<channelId>`).
-- Group DMs are ignored by default (`channels.discord.dm.groupEnabled=false`).
-- Native slash commands run in isolated command sessions (`agent:<agentId>:discord:slash:<userId>`), while still carrying `CommandTargetSessionKey` to the routed conversation session.
+- ゲートウェイが Discord 接続を保持します。
+- 応答ルーティングは決定的です。Discord から入った返信は Discord に返ります。
+- デフォルトでは（`session.dmScope=main`）、DM はエージェントのメインセッション（`agent:main:main`）を共有します。
+- ギルドチャンネルは独立したセッションキー（`agent:<agentId>:discord:channel:<channelId>`）として扱われます。
+- グループ DM はデフォルトで無視されます（`channels.discord.dm.groupEnabled=false`）。
+- ネイティブスラッシュコマンドは独立したコマンドセッション（`agent:<agentId>:discord:slash:<userId>`）で実行されますが、ルーティング先の会話セッションに対する `CommandTargetSessionKey` は保持されます。
 
-## Forum channels
+## フォーラムチャンネル
 
-Discord forum and media channels only accept thread posts. OpenClaw supports two ways to create them:
+Discord の forum チャンネルと media チャンネルでは、投稿はスレッド形式のみ受け付けられます。OpenClaw では、次の 2 通りの作成方法に対応しています。
 
-- Send a message to the forum parent (`channel:<forumId>`) to auto-create a thread. The thread title uses the first non-empty line of your message.
-- Use `openclaw message thread create` to create a thread directly. Do not pass `--message-id` for forum channels.
+- forum 親（`channel:<forumId>`）にメッセージを送信してスレッドを自動作成する
+- `openclaw message thread create` でスレッドを直接作成する。forum チャンネルでは `--message-id` を渡さないでください
 
-Example: send to forum parent to create a thread
+例: forum 親に送信してスレッドを作成する
 
 ```bash
 openclaw message send --channel discord --target channel:<forumId> \
   --message "Topic title\nBody of the post"
 ```
 
-Example: create a forum thread explicitly
+例: forum スレッドを明示的に作成する
 
 ```bash
 openclaw message thread create --channel discord --target channel:<forumId> \
   --thread-name "Topic title" --message "Body of the post"
 ```
 
-Forum parents do not accept Discord components. If you need components, send to the thread itself (`channel:<threadId>`).
+forum 親では Discord コンポーネントを受け付けません。コンポーネントが必要な場合は、スレッド本体（`channel:<threadId>`）に送信してください。
 
-## Interactive components
+## インタラクティブコンポーネント
 
-OpenClaw supports Discord components v2 containers for agent messages. Use the message tool with a `components` payload. Interaction results are routed back to the agent as normal inbound messages and follow the existing Discord `replyToMode` settings.
+OpenClaw は、エージェントメッセージ向けに Discord components v2 コンテナをサポートしています。`components` ペイロードを含む message ツールを使用してください。インタラクション結果は通常の受信メッセージとしてエージェントへ戻り、既存の Discord `replyToMode` 設定に従って処理されます。
 
-Supported blocks:
+サポートされるブロック:
 
-- `text`, `section`, `separator`, `actions`, `media-gallery`, `file`
-- Action rows allow up to 5 buttons or a single select menu
-- Select types: `string`, `user`, `role`, `mentionable`, `channel`
+- `text`、`section`、`separator`、`actions`、`media-gallery`、`file`
+- action row では最大 5 個のボタン、または 1 個の select menu を使用できます
+- select の型は `string`、`user`、`role`、`mentionable`、`channel` です
 
-By default, components are single use. Set `components.reusable=true` to allow buttons, selects, and forms to be used multiple times until they expire.
+デフォルトでは、コンポーネントは 1 回限りの利用です。`components.reusable=true` を指定すると、有効期限が切れるまでボタン、select、フォームを複数回利用できます。
 
-To restrict who can click a button, set `allowedUsers` on that button (Discord user IDs, tags, or `*`). When configured, unmatched users receive an ephemeral denial.
+ボタンを押せるユーザーを制限するには、そのボタンに `allowedUsers` を設定します（Discord ユーザー ID、タグ、または `*`）。設定されている場合、一致しないユーザーには一時的な拒否メッセージが返されます。
 
-The `/model` and `/models` slash commands open an interactive model picker with provider and model dropdowns plus a Submit step. The picker reply is ephemeral and only the invoking user can use it.
+`/model` と `/models` スラッシュコマンドでは、プロバイダーとモデルのドロップダウン、および Submit ステップを持つ対話型モデルピッカーが開きます。ピッカーの応答は ephemeral で、実行したユーザーだけが利用できます。
 
-File attachments:
+ファイル添付:
 
-- `file` blocks must point to an attachment reference (`attachment://<filename>`)
-- Provide the attachment via `media`/`path`/`filePath` (single file); use `media-gallery` for multiple files
-- Use `filename` to override the upload name when it should match the attachment reference
+- `file` ブロックは、添付参照（`attachment://<filename>`）を指している必要があります
+- 添付ファイルは `media` / `path` / `filePath`（単一ファイル）で渡します。複数ファイルには `media-gallery` を使用してください
+- 添付参照名とアップロード名を一致させたい場合は、`filename` でアップロード名を上書きします
 
-Modal forms:
+モーダルフォーム:
 
-- Add `components.modal` with up to 5 fields
-- Field types: `text`, `checkbox`, `radio`, `select`, `role-select`, `user-select`
-- OpenClaw adds a trigger button automatically
+- 最大 5 フィールドまで持てる `components.modal` を追加できます
+- フィールド型は `text`、`checkbox`、`radio`、`select`、`role-select`、`user-select` です
+- OpenClaw がトリガーボタンを自動で追加します
 
-Example:
+例:
 
 ```json5
 {
@@ -365,53 +367,53 @@ Example:
 }
 ```
 
-## Access control and routing
+## アクセス制御とルーティング
 
 <Tabs>
-  <Tab title="DM policy">
-    `channels.discord.dmPolicy` controls DM access (legacy: `channels.discord.dm.policy`):
+  <Tab title="DM ポリシー">
+    `channels.discord.dmPolicy` は DM へのアクセスを制御します（旧設定: `channels.discord.dm.policy`）。
 
-    - `pairing` (default)
+    - `pairing`（デフォルト）
     - `allowlist`
-    - `open` (requires `channels.discord.allowFrom` to include `"*"`; legacy: `channels.discord.dm.allowFrom`)
+    - `open`（`channels.discord.allowFrom` に `"*"` を含める必要があります。旧設定: `channels.discord.dm.allowFrom`）
     - `disabled`
 
-    If DM policy is not open, unknown users are blocked (or prompted for pairing in `pairing` mode).
+    DM ポリシーが `open` でない場合、不明なユーザーはブロックされます。`pairing` モードではペアリングが要求されます。
 
-    Multi-account precedence:
+    マルチアカウント時の優先順位:
 
-    - `channels.discord.accounts.default.allowFrom` applies only to the `default` account.
-    - Named accounts inherit `channels.discord.allowFrom` when their own `allowFrom` is unset.
-    - Named accounts do not inherit `channels.discord.accounts.default.allowFrom`.
+    - `channels.discord.accounts.default.allowFrom` は `default` アカウントにのみ適用されます
+    - 名前付きアカウントは、自身の `allowFrom` が未設定なら `channels.discord.allowFrom` を継承します
+    - 名前付きアカウントは `channels.discord.accounts.default.allowFrom` を継承しません
 
-    DM target format for delivery:
+    DM 配信時のターゲット形式:
 
     - `user:<id>`
-    - `<@id>` mention
+    - `<@id>` 形式の mention
 
-    Bare numeric IDs are ambiguous and rejected unless an explicit user/channel target kind is provided.
+    数値 ID を裸で渡すと曖昧になるため、明示的な user/channel ターゲット種別がない限り拒否されます。
 
   </Tab>
 
-  <Tab title="Guild policy">
-    Guild handling is controlled by `channels.discord.groupPolicy`:
+  <Tab title="ギルドポリシー">
+    ギルドの処理は `channels.discord.groupPolicy` で制御されます。
 
     - `open`
     - `allowlist`
     - `disabled`
 
-    Secure baseline when `channels.discord` exists is `allowlist`.
+    `channels.discord` ブロックが存在する場合の安全なベースラインは `allowlist` です。
 
-    `allowlist` behavior:
+    `allowlist` の挙動:
 
-    - guild must match `channels.discord.guilds` (`id` preferred, slug accepted)
-    - optional sender allowlists: `users` (stable IDs recommended) and `roles` (role IDs only); if either is configured, senders are allowed when they match `users` OR `roles`
-    - direct name/tag matching is disabled by default; enable `channels.discord.dangerouslyAllowNameMatching: true` only as break-glass compatibility mode
-    - names/tags are supported for `users`, but IDs are safer; `openclaw security audit` warns when name/tag entries are used
-    - if a guild has `channels` configured, non-listed channels are denied
-    - if a guild has no `channels` block, all channels in that allowlisted guild are allowed
+    - ギルドは `channels.discord.guilds` に一致する必要があります（`id` 推奨、slug も可）
+    - 送信者 allowlist として `users` と `roles` を任意で指定できます。どちらかが設定されている場合、送信者は `users` または `roles` のどちらかに一致すれば許可されます
+    - 直接の名前／タグ一致はデフォルトで無効です。互換性維持のための緊急措置としてのみ `channels.discord.dangerouslyAllowNameMatching: true` を使ってください
+    - `users` には名前やタグも指定できますが、監査の安定性を考えると ID の使用を推奨します。`openclaw security audit` は名前／タグ指定に対して警告を出します
+    - ギルドに `channels` が設定されている場合、列挙されていないチャンネルは拒否されます
+    - ギルドに `channels` ブロックがなければ、その allowlist 対象ギルド内の全チャンネルが許可されます
 
-    Example:
+    例:
 
 ```json5
 {
@@ -435,33 +437,33 @@ Example:
 }
 ```
 
-    If you only set `DISCORD_BOT_TOKEN` and do not create a `channels.discord` block, runtime fallback is `groupPolicy="allowlist"` (with a warning in logs), even if `channels.defaults.groupPolicy` is `open`.
+    `DISCORD_BOT_TOKEN` だけを設定し、`channels.discord` ブロックを作成していない場合でも、ランタイムのフォールバックは `groupPolicy="allowlist"` です（ログに警告が出ます）。`channels.defaults.groupPolicy` が `open` でも同様です。
 
   </Tab>
 
-  <Tab title="Mentions and group DMs">
-    Guild messages are mention-gated by default.
+  <Tab title="メンションとグループ DM">
+    ギルドメッセージはデフォルトで mention によるゲート制御が有効です。
 
-    Mention detection includes:
+    mention 検出には次が含まれます。
 
-    - explicit bot mention
-    - configured mention patterns (`agents.list[].groupChat.mentionPatterns`, fallback `messages.groupChat.mentionPatterns`)
-    - implicit reply-to-bot behavior in supported cases
+    - ボットへの明示的な mention
+    - 設定済みの mention パターン（`agents.list[].groupChat.mentionPatterns`、未設定時は `messages.groupChat.mentionPatterns`）
+    - 対応ケースにおける、ボット宛て返信の暗黙的判定
 
-    `requireMention` is configured per guild/channel (`channels.discord.guilds...`).
-    `ignoreOtherMentions` optionally drops messages that mention another user/role but not the bot (excluding @everyone/@here).
+    `requireMention` はギルドまたはチャンネル単位（`channels.discord.guilds...`）で設定します。
+    `ignoreOtherMentions` を有効にすると、ボットに言及せず別のユーザーやロールだけを mention しているメッセージを無視できます（`@everyone` / `@here` は除外されます）。
 
-    Group DMs:
+    グループ DM:
 
-    - default: ignored (`dm.groupEnabled=false`)
-    - optional allowlist via `dm.groupChannels` (channel IDs or slugs)
+    - デフォルトでは無視されます（`dm.groupEnabled=false`）
+    - 必要であれば `dm.groupChannels` で allowlist 指定できます（チャンネル ID または slug）
 
   </Tab>
 </Tabs>
 
-### Role-based agent routing
+### ロールベースのエージェントルーティング
 
-Use `bindings[].match.roles` to route Discord guild members to different agents by role ID. Role-based bindings accept role IDs only and are evaluated after peer or parent-peer bindings and before guild-only bindings. If a binding also sets other match fields (for example `peer` + `guildId` + `roles`), all configured fields must match.
+`bindings[].match.roles` を使うと、Discord ギルドメンバーをロール ID に応じて別のエージェントへ振り分けられます。ロールベースの binding はロール ID のみを受け付け、評価順は peer / parent-peer binding の後、guild 単位 binding の前です。binding に `peer`、`guildId`、`roles` など複数の条件がある場合は、設定されたすべての条件に一致する必要があります。
 
 ```json5
 {
@@ -485,102 +487,102 @@ Use `bindings[].match.roles` to route Discord guild members to different agents 
 }
 ```
 
-## Developer Portal setup
+## Developer Portal の設定
 
 <AccordionGroup>
-  <Accordion title="Create app and bot">
+  <Accordion title="アプリとボットを作成する">
 
-    1. Discord Developer Portal -> **Applications** -> **New Application**
-    2. **Bot** -> **Add Bot**
-    3. Copy bot token
+    1. Discord Developer Portal → **Applications** → **New Application**
+    2. **Bot** → **Add Bot**
+    3. ボットトークンをコピーする
 
   </Accordion>
 
-  <Accordion title="Privileged intents">
-    In **Bot -> Privileged Gateway Intents**, enable:
+  <Accordion title="特権インテント">
+    **Bot → Privileged Gateway Intents** で次を有効にします。
 
     - Message Content Intent
-    - Server Members Intent (recommended)
+    - Server Members Intent（推奨）
 
-    Presence intent is optional and only required if you want to receive presence updates. Setting bot presence (`setPresence`) does not require enabling presence updates for members.
+    Presence Intent は任意で、メンバーのプレゼンス更新を受信したい場合にのみ必要です。ボット自身のプレゼンス設定（`setPresence`）だけであれば、メンバー向けの presence updates を有効化する必要はありません。
 
   </Accordion>
 
-  <Accordion title="OAuth scopes and baseline permissions">
+  <Accordion title="OAuth スコープと基本権限">
     OAuth URL generator:
 
     - scopes: `bot`, `applications.commands`
 
-    Typical baseline permissions:
+    一般的な最小権限:
 
     - View Channels
     - Send Messages
     - Read Message History
     - Embed Links
     - Attach Files
-    - Add Reactions (optional)
+    - Add Reactions（任意）
 
-    Avoid `Administrator` unless explicitly needed.
+    明示的に必要な場合を除き、`Administrator` は付与しないでください。
 
   </Accordion>
 
-  <Accordion title="Copy IDs">
-    Enable Discord Developer Mode, then copy:
+  <Accordion title="ID をコピーする">
+    Discord の Developer Mode を有効にしたうえで、次の ID をコピーします。
 
     - server ID
     - channel ID
     - user ID
 
-    Prefer numeric IDs in OpenClaw config for reliable audits and probes.
+    OpenClaw の設定では、監査や probe の信頼性のため、数値 ID の使用を推奨します。
 
   </Accordion>
 </AccordionGroup>
 
-## Native commands and command auth
+## ネイティブコマンドとコマンド認可
 
-- `commands.native` defaults to `"auto"` and is enabled for Discord.
-- Per-channel override: `channels.discord.commands.native`.
-- `commands.native=false` explicitly clears previously registered Discord native commands.
-- Native command auth uses the same Discord allowlists/policies as normal message handling.
-- Commands may still be visible in Discord UI for users who are not authorized; execution still enforces OpenClaw auth and returns "not authorized".
+- `commands.native` のデフォルトは `"auto"` で、Discord では有効になります
+- チャンネル単位の上書きは `channels.discord.commands.native` です
+- `commands.native=false` を指定すると、以前に登録された Discord ネイティブコマンドを明示的に削除します
+- ネイティブコマンドの認可には、通常メッセージ処理と同じ Discord allowlist / policy が使われます
+- 権限のないユーザーにも Discord UI 上でコマンドが見えることがありますが、実行時には OpenClaw の認可が適用され、"not authorized" が返ります
 
-See [Slash commands](/tools/slash-commands) for command catalog and behavior.
+コマンド一覧と挙動は [Slash commands](/tools/slash-commands) を参照してください。
 
-Default slash command settings:
+デフォルトのスラッシュコマンド設定:
 
 - `ephemeral: true`
 
-## Feature details
+## 機能の詳細
 
 <AccordionGroup>
-  <Accordion title="Reply tags and native replies">
-    Discord supports reply tags in agent output:
+  <Accordion title="返信タグとネイティブ返信">
+    Discord は、エージェント出力に含まれる返信タグをサポートします。
 
     - `[[reply_to_current]]`
     - `[[reply_to:<id>]]`
 
-    Controlled by `channels.discord.replyToMode`:
+    これらは `channels.discord.replyToMode` で制御されます。
 
-    - `off` (default)
+    - `off`（デフォルト）
     - `first`
     - `all`
 
-    Note: `off` disables implicit reply threading. Explicit `[[reply_to_*]]` tags are still honored.
+    注: `off` は暗黙的な reply threading を無効にしますが、明示的な `[[reply_to_*]]` タグは引き続き有効です。
 
-    Message IDs are surfaced in context/history so agents can target specific messages.
+    メッセージ ID はコンテキストや履歴にも現れるため、エージェントは特定のメッセージを対象にできます。
 
   </Accordion>
 
-  <Accordion title="Live stream preview">
-    OpenClaw can stream draft replies by sending a temporary message and editing it as text arrives.
+  <Accordion title="ライブストリームプレビュー">
+    OpenClaw は、一時メッセージを送信し、テキストの到着にあわせて編集することで、返信ドラフトをストリーミング表示できます。
 
-    - `channels.discord.streaming` controls preview streaming (`off` | `partial` | `block` | `progress`, default: `off`).
-    - `progress` is accepted for cross-channel consistency and maps to `partial` on Discord.
-    - `channels.discord.streamMode` is a legacy alias and is auto-migrated.
-    - `partial` edits a single preview message as tokens arrive.
-    - `block` emits draft-sized chunks (use `draftChunk` to tune size and breakpoints).
+    - `channels.discord.streaming` はプレビュー配信を制御します（`off` | `partial` | `block` | `progress`、デフォルト: `off`）
+    - `progress` はチャンネル間の一貫性のために受け付けられ、Discord では `partial` にマッピングされます
+    - `channels.discord.streamMode` は旧エイリアスで、自動移行されます
+    - `partial` では、トークン到着に応じて 1 つのプレビューメッセージを編集します
+    - `block` では、ドラフトサイズのチャンク単位で出力します。サイズや分割位置は `draftChunk` で調整できます
 
-    Example:
+    例:
 
 ```json5
 {
@@ -592,7 +594,7 @@ Default slash command settings:
 }
 ```
 
-    `block` mode chunking defaults (clamped to `channels.discord.textChunkLimit`):
+    `block` モードのデフォルトチャンク設定（`channels.discord.textChunkLimit` の範囲内に丸められます）:
 
 ```json5
 {
@@ -609,47 +611,46 @@ Default slash command settings:
 }
 ```
 
-    Preview streaming is text-only; media replies fall back to normal delivery.
+    プレビュー配信はテキストのみが対象で、メディア返信は通常の配信にフォールバックします。
 
-    Note: preview streaming is separate from block streaming. When block streaming is explicitly
-    enabled for Discord, OpenClaw skips the preview stream to avoid double streaming.
+    注: preview streaming と block streaming は別機能です。Discord で block streaming が明示的に有効になっている場合、OpenClaw は二重配信を避けるため preview stream をスキップします。
 
   </Accordion>
 
-  <Accordion title="History, context, and thread behavior">
-    Guild history context:
+  <Accordion title="履歴、コンテキスト、スレッド挙動">
+    ギルド履歴コンテキスト:
 
-    - `channels.discord.historyLimit` default `20`
-    - fallback: `messages.groupChat.historyLimit`
-    - `0` disables
+    - `channels.discord.historyLimit` のデフォルトは `20`
+    - フォールバックは `messages.groupChat.historyLimit`
+    - `0` を指定すると無効になります
 
-    DM history controls:
+    DM 履歴の制御:
 
     - `channels.discord.dmHistoryLimit`
     - `channels.discord.dms["<user_id>"].historyLimit`
 
-    Thread behavior:
+    スレッド挙動:
 
-    - Discord threads are routed as channel sessions
-    - parent thread metadata can be used for parent-session linkage
-    - thread config inherits parent channel config unless a thread-specific entry exists
+    - Discord スレッドはチャンネルセッションとしてルーティングされます
+    - 親スレッドのメタデータは、親セッションとの関連付けに利用できます
+    - スレッド固有の設定がない場合、スレッド設定は親チャンネル設定を継承します
 
-    Channel topics are injected as **untrusted** context (not as system prompt).
+    チャンネルトピックは **信頼されない** コンテキストとして注入されます。システムプロンプトとしては扱われません。
 
   </Accordion>
 
-  <Accordion title="Thread-bound sessions for subagents">
-    Discord can bind a thread to a session target so follow-up messages in that thread keep routing to the same session (including subagent sessions).
+  <Accordion title="サブエージェント向けスレッド固定セッション">
+    Discord では、スレッドを特定のセッションターゲットに固定できます。これにより、そのスレッドでの後続メッセージは同じセッション（サブエージェントセッションを含む）へ継続してルーティングされます。
 
-    Commands:
+    コマンド:
 
-    - `/focus <target>` bind current/new thread to a subagent/session target
-    - `/unfocus` remove current thread binding
-    - `/agents` show active runs and binding state
-    - `/session idle <duration|off>` inspect/update inactivity auto-unfocus for focused bindings
-    - `/session max-age <duration|off>` inspect/update hard max age for focused bindings
+    - `/focus <target>` 現在または新規スレッドをサブエージェント / セッションターゲットへ固定する
+    - `/unfocus` 現在のスレッド固定を解除する
+    - `/agents` アクティブな実行と binding 状態を表示する
+    - `/session idle <duration|off>` 固定中セッションの無操作による自動 unfocus 設定を確認 / 更新する
+    - `/session max-age <duration|off>` 固定中セッションの最大寿命を確認 / 更新する
 
-    Config:
+    設定:
 
 ```json5
 {
@@ -673,26 +674,26 @@ Default slash command settings:
 }
 ```
 
-    Notes:
+    注意:
 
-    - `session.threadBindings.*` sets global defaults.
-    - `channels.discord.threadBindings.*` overrides Discord behavior.
-    - `spawnSubagentSessions` must be true to auto-create/bind threads for `sessions_spawn({ thread: true })`.
-    - `spawnAcpSessions` must be true to auto-create/bind threads for ACP (`/acp spawn ... --thread ...` or `sessions_spawn({ runtime: "acp", thread: true })`).
-    - If thread bindings are disabled for an account, `/focus` and related thread binding operations are unavailable.
+    - `session.threadBindings.*` はグローバルデフォルトを設定します
+    - `channels.discord.threadBindings.*` は Discord 用の挙動を上書きします
+    - `sessions_spawn({ thread: true })` に対してスレッドを自動作成 / 固定するには `spawnSubagentSessions` を true にする必要があります
+    - ACP（`/acp spawn ... --thread ...` または `sessions_spawn({ runtime: "acp", thread: true })`）でスレッドを自動作成 / 固定するには `spawnAcpSessions` を true にする必要があります
+    - アカウントで thread binding が無効化されている場合、`/focus` および関連操作は利用できません
 
-    See [Sub-agents](/tools/subagents), [ACP Agents](/tools/acp-agents), and [Configuration Reference](/gateway/configuration-reference).
+    詳しくは [Sub-agents](/tools/subagents)、[ACP Agents](/tools/acp-agents)、[Configuration Reference](/gateway/configuration-reference) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Persistent ACP channel bindings">
-    For stable "always-on" ACP workspaces, configure top-level typed ACP bindings targeting Discord conversations.
+  <Accordion title="永続的な ACP チャンネル binding">
+    安定した「常時接続」型の ACP ワークスペースを実現するには、Discord 会話を対象にしたトップレベルの型付き ACP binding を設定します。
 
-    Config path:
+    設定パス:
 
-    - `bindings[]` with `type: "acp"` and `match.channel: "discord"`
+    - `bindings[]` に `type: "acp"` と `match.channel: "discord"` を指定します
 
-    Example:
+    例:
 
 ```json5
 {
@@ -740,51 +741,51 @@ Default slash command settings:
 }
 ```
 
-    Notes:
+    注意:
 
-    - Thread messages can inherit the parent channel ACP binding.
-    - In a bound channel or thread, `/new` and `/reset` reset the same ACP session in place.
-    - Temporary thread bindings still work and can override target resolution while active.
+    - スレッドメッセージは親チャンネルの ACP binding を継承できます
+    - binding 済みのチャンネルまたはスレッドでは、`/new` と `/reset` は同じ ACP セッションをその場でリセットします
+    - 一時的な thread binding も引き続き利用でき、アクティブな間はターゲット解決を上書きできます
 
-    See [ACP Agents](/tools/acp-agents) for binding behavior details.
+    binding の詳細は [ACP Agents](/tools/acp-agents) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Reaction notifications">
-    Per-guild reaction notification mode:
+  <Accordion title="リアクション通知">
+    ギルド単位のリアクション通知モード:
 
     - `off`
-    - `own` (default)
+    - `own`（デフォルト）
     - `all`
-    - `allowlist` (uses `guilds.<id>.users`)
+    - `allowlist`（`guilds.<id>.users` を使用）
 
-    Reaction events are turned into system events and attached to the routed Discord session.
+    リアクションイベントはシステムイベントへ変換され、ルーティング済みの Discord セッションに付与されます。
 
   </Accordion>
 
-  <Accordion title="Ack reactions">
-    `ackReaction` sends an acknowledgement emoji while OpenClaw is processing an inbound message.
+  <Accordion title="ack リアクション">
+    `ackReaction` は、OpenClaw が受信メッセージを処理中であることを示す絵文字リアクションを送ります。
 
-    Resolution order:
+    解決順序:
 
     - `channels.discord.accounts.<accountId>.ackReaction`
     - `channels.discord.ackReaction`
     - `messages.ackReaction`
-    - agent identity emoji fallback (`agents.list[].identity.emoji`, else "👀")
+    - エージェント identity の絵文字フォールバック（`agents.list[].identity.emoji`、未設定時は `"👀"`）
 
-    Notes:
+    注意:
 
-    - Discord accepts unicode emoji or custom emoji names.
-    - Use `""` to disable the reaction for a channel or account.
+    - Discord は Unicode 絵文字とカスタム絵文字名の両方を受け付けます
+    - チャンネルまたはアカウント単位で無効化するには `""` を使います
 
   </Accordion>
 
-  <Accordion title="Config writes">
-    Channel-initiated config writes are enabled by default.
+  <Accordion title="設定の書き込み">
+    チャンネル起点の設定書き込みは、デフォルトで有効です。
 
-    This affects `/config set|unset` flows (when command features are enabled).
+    これは `/config set|unset` のフローに影響します（コマンド機能が有効な場合）。
 
-    Disable:
+    無効化:
 
 ```json5
 {
@@ -798,8 +799,8 @@ Default slash command settings:
 
   </Accordion>
 
-  <Accordion title="Gateway proxy">
-    Route Discord gateway WebSocket traffic and startup REST lookups (application ID + allowlist resolution) through an HTTP(S) proxy with `channels.discord.proxy`.
+  <Accordion title="ゲートウェイプロキシ">
+    `channels.discord.proxy` を使うと、Discord ゲートウェイの WebSocket 通信と起動時の REST 参照（application ID と allowlist 解決）を HTTP(S) プロキシ経由にできます。
 
 ```json5
 {
@@ -811,7 +812,7 @@ Default slash command settings:
 }
 ```
 
-    Per-account override:
+    アカウント単位の上書き:
 
 ```json5
 {
@@ -829,8 +830,8 @@ Default slash command settings:
 
   </Accordion>
 
-  <Accordion title="PluralKit support">
-    Enable PluralKit resolution to map proxied messages to system member identity:
+  <Accordion title="PluralKit サポート">
+    PluralKit 解決を有効にすると、プロキシされたメッセージをシステムメンバーの identity にマッピングできます。
 
 ```json5
 {
@@ -845,19 +846,19 @@ Default slash command settings:
 }
 ```
 
-    Notes:
+    注意:
 
-    - allowlists can use `pk:<memberId>`
-    - member display names are matched by name/slug only when `channels.discord.dangerouslyAllowNameMatching: true`
-    - lookups use original message ID and are time-window constrained
-    - if lookup fails, proxied messages are treated as bot messages and dropped unless `allowBots=true`
+    - allowlist では `pk:<memberId>` を使用できます
+    - メンバー表示名の名前 / slug 一致は、`channels.discord.dangerouslyAllowNameMatching: true` のときだけ有効です
+    - 参照には元のメッセージ ID が使われ、時間窓の制約があります
+    - 解決に失敗した場合、プロキシメッセージは bot メッセージとして扱われ、`allowBots=true` でない限り破棄されます
 
   </Accordion>
 
-  <Accordion title="Presence configuration">
-    Presence updates are applied when you set a status or activity field, or when you enable auto presence.
+  <Accordion title="プレゼンス設定">
+    プレゼンス更新は、status または activity を設定したとき、あるいは auto presence を有効にしたときに適用されます。
 
-    Status only example:
+    status のみを設定する例:
 
 ```json5
 {
@@ -869,7 +870,7 @@ Default slash command settings:
 }
 ```
 
-    Activity example (custom status is the default activity type):
+    activity を設定する例（デフォルトの activity type は custom status）:
 
 ```json5
 {
@@ -882,7 +883,7 @@ Default slash command settings:
 }
 ```
 
-    Streaming example:
+    streaming の例:
 
 ```json5
 {
@@ -896,16 +897,16 @@ Default slash command settings:
 }
 ```
 
-    Activity type map:
+    activity type の対応:
 
     - 0: Playing
-    - 1: Streaming (requires `activityUrl`)
+    - 1: Streaming（`activityUrl` 必須）
     - 2: Listening
     - 3: Watching
-    - 4: Custom (uses the activity text as the status state; emoji is optional)
+    - 4: Custom（activity テキストを status state として使います。絵文字は任意です）
     - 5: Competing
 
-    Auto presence example (runtime health signal):
+    auto presence の例（ランタイム健全性シグナル）:
 
 ```json5
 {
@@ -922,54 +923,54 @@ Default slash command settings:
 }
 ```
 
-    Auto presence maps runtime availability to Discord status: healthy => online, degraded or unknown => idle, exhausted or unavailable => dnd. Optional text overrides:
+    auto presence は、ランタイム可用性を Discord status にマッピングします。healthy は online、degraded または unknown は idle、exhausted または unavailable は dnd になります。テキスト上書き:
 
     - `autoPresence.healthyText`
     - `autoPresence.degradedText`
-    - `autoPresence.exhaustedText` (supports `{reason}` placeholder)
+    - `autoPresence.exhaustedText`（`{reason}` プレースホルダー対応）
 
   </Accordion>
 
-  <Accordion title="Exec approvals in Discord">
-    Discord supports button-based exec approvals in DMs and can optionally post approval prompts in the originating channel.
+  <Accordion title="Discord 上での exec 承認">
+    Discord は、DM 内でのボタンベース exec 承認に対応しており、必要に応じて元のチャンネルに承認プロンプトを投稿することもできます。
 
-    Config path:
+    設定パス:
 
     - `channels.discord.execApprovals.enabled`
     - `channels.discord.execApprovals.approvers`
-    - `channels.discord.execApprovals.target` (`dm` | `channel` | `both`, default: `dm`)
-    - `agentFilter`, `sessionFilter`, `cleanupAfterResolve`
+    - `channels.discord.execApprovals.target`（`dm` | `channel` | `both`、デフォルト: `dm`）
+    - `agentFilter`、`sessionFilter`、`cleanupAfterResolve`
 
-    When `target` is `channel` or `both`, the approval prompt is visible in the channel. Only configured approvers can use the buttons; other users receive an ephemeral denial. Approval prompts include the command text, so only enable channel delivery in trusted channels. If the channel ID cannot be derived from the session key, OpenClaw falls back to DM delivery.
+    `target` が `channel` または `both` の場合、承認プロンプトはチャンネルにも表示されます。ボタンを使えるのは設定された承認者だけで、その他のユーザーには ephemeral の拒否が返されます。承認プロンプトにはコマンド本文が含まれるため、チャンネル配信は信頼できるチャンネルにだけ有効化してください。セッションキーからチャンネル ID を導出できない場合、OpenClaw は DM 配信へフォールバックします。
 
-    Gateway auth for this handler uses the same shared credential resolution contract as other Gateway clients:
+    このハンドラーのゲートウェイ認可には、他のゲートウェイクライアントと同じ共有認証情報解決契約が使われます。
 
-    - env-first local auth (`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` then `gateway.auth.*`)
-    - in local mode, `gateway.remote.*` can be used as fallback when `gateway.auth.*` is unset
-    - remote-mode support via `gateway.remote.*` when applicable
-    - URL overrides are override-safe: CLI overrides do not reuse implicit credentials, and env overrides use env credentials only
+    - env 優先のローカル認可（`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`、次に `gateway.auth.*`）
+    - ローカルモードでは、`gateway.auth.*` が未設定なら `gateway.remote.*` をフォールバックとして使用可能
+    - 必要に応じて `gateway.remote.*` によるリモートモードをサポート
+    - URL override は override-safe です。CLI override は暗黙の認証情報を再利用せず、env override は env の認証情報だけを使います
 
-    If approvals fail with unknown approval IDs, verify approver list and feature enablement.
+    承認時に unknown approval ID エラーが出る場合は、承認者一覧と機能の有効化状態を確認してください。
 
-    Related docs: [Exec approvals](/tools/exec-approvals)
+    関連ドキュメント: [Exec approvals](/tools/exec-approvals)
 
   </Accordion>
 </AccordionGroup>
 
-## Tools and action gates
+## ツールとアクションゲート
 
-Discord message actions include messaging, channel admin, moderation, presence, and metadata actions.
+Discord の message action には、メッセージ送受信、チャンネル管理、モデレーション、プレゼンス、メタデータ関連のアクションが含まれます。
 
-Core examples:
+代表例:
 
-- messaging: `sendMessage`, `readMessages`, `editMessage`, `deleteMessage`, `threadReply`
-- reactions: `react`, `reactions`, `emojiList`
-- moderation: `timeout`, `kick`, `ban`
+- messaging: `sendMessage`、`readMessages`、`editMessage`、`deleteMessage`、`threadReply`
+- reactions: `react`、`reactions`、`emojiList`
+- moderation: `timeout`、`kick`、`ban`
 - presence: `setPresence`
 
-Action gates live under `channels.discord.actions.*`.
+action gate は `channels.discord.actions.*` 配下にあります。
 
-Default gate behavior:
+デフォルトの gate 挙動:
 
 | Action group                                                                                                                                                             | Default  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
@@ -978,15 +979,15 @@ Default gate behavior:
 | moderation                                                                                                                                                               | disabled |
 | presence                                                                                                                                                                 | disabled |
 
-## Components v2 UI
+## コンポーネント v2 UI
 
-OpenClaw uses Discord components v2 for exec approvals and cross-context markers. Discord message actions can also accept `components` for custom UI (advanced; requires Carbon component instances), while legacy `embeds` remain available but are not recommended.
+OpenClaw は、exec 承認と cross-context marker に Discord components v2 を使用します。Discord の message action では、カスタム UI 用の `components` も受け付けられます（高度な用途。Carbon component instance が必要です）。従来の `embeds` も引き続き利用できますが、推奨はされません。
 
-- `channels.discord.ui.components.accentColor` sets the accent color used by Discord component containers (hex).
-- Set per account with `channels.discord.accounts.<id>.ui.components.accentColor`.
-- `embeds` are ignored when components v2 are present.
+- `channels.discord.ui.components.accentColor` は、Discord component container で使用するアクセントカラー（16 進数）を設定します
+- アカウント単位では `channels.discord.accounts.<id>.ui.components.accentColor` で設定します
+- components v2 が存在する場合、`embeds` は無視されます
 
-Example:
+例:
 
 ```json5
 {
@@ -1002,19 +1003,19 @@ Example:
 }
 ```
 
-## Voice channels
+## 音声チャンネル
 
-OpenClaw can join Discord voice channels for realtime, continuous conversations. This is separate from voice message attachments.
+OpenClaw は Discord の音声チャンネルに参加し、リアルタイムで継続的な会話を行えます。これは音声メッセージ添付とは別機能です。
 
-Requirements:
+要件:
 
-- Enable native commands (`commands.native` or `channels.discord.commands.native`).
-- Configure `channels.discord.voice`.
-- The bot needs Connect + Speak permissions in the target voice channel.
+- ネイティブコマンド（`commands.native` または `channels.discord.commands.native`）を有効にする
+- `channels.discord.voice` を設定する
+- ボットに対象音声チャンネルでの Connect と Speak 権限を付与する
 
-Use the Discord-only native command `/vc join|leave|status` to control sessions. The command uses the account default agent and follows the same allowlist and group policy rules as other Discord commands.
+セッション制御には Discord 専用のネイティブコマンド `/vc join|leave|status` を使います。このコマンドはアカウントのデフォルトエージェントを使い、他の Discord コマンドと同じ allowlist と group policy ルールに従います。
 
-Auto-join example:
+自動参加の例:
 
 ```json5
 {
@@ -1040,51 +1041,51 @@ Auto-join example:
 }
 ```
 
-Notes:
+注意:
 
-- `voice.tts` overrides `messages.tts` for voice playback only.
-- Voice transcript turns derive owner status from Discord `allowFrom` (or `dm.allowFrom`); non-owner speakers cannot access owner-only tools (for example `gateway` and `cron`).
-- Voice is enabled by default; set `channels.discord.voice.enabled=false` to disable it.
-- `voice.daveEncryption` and `voice.decryptionFailureTolerance` pass through to `@discordjs/voice` join options.
-- `@discordjs/voice` defaults are `daveEncryption=true` and `decryptionFailureTolerance=24` if unset.
-- OpenClaw also watches receive decrypt failures and auto-recovers by leaving/rejoining the voice channel after repeated failures in a short window.
-- If receive logs repeatedly show `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`, this may be the upstream `@discordjs/voice` receive bug tracked in [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419).
+- `voice.tts` は音声再生に限って `messages.tts` を上書きします
+- 音声 transcript turn の owner 判定は Discord の `allowFrom`（または `dm.allowFrom`）から導かれます。owner でない発話者は、`gateway` や `cron` などの owner 限定ツールにアクセスできません
+- 音声機能はデフォルトで有効です。無効化するには `channels.discord.voice.enabled=false` を設定します
+- `voice.daveEncryption` と `voice.decryptionFailureTolerance` は `@discordjs/voice` の join option にそのまま渡されます
+- `@discordjs/voice` 側のデフォルトは、未設定時に `daveEncryption=true` および `decryptionFailureTolerance=24` です
+- OpenClaw は受信時の復号失敗も監視し、短時間に繰り返し失敗した場合は音声チャンネルから一度離脱して再参加することで自動回復を試みます
+- 受信ログに `DecryptionFailed(UnencryptedWhenPassthroughDisabled)` が繰り返し出る場合は、上流の `@discordjs/voice` 受信バグである [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419) に該当している可能性があります
 
-## Voice messages
+## 音声メッセージ
 
-Discord voice messages show a waveform preview and require OGG/Opus audio plus metadata. OpenClaw generates the waveform automatically, but it needs `ffmpeg` and `ffprobe` available on the gateway host to inspect and convert audio files.
+Discord の音声メッセージでは波形プレビューが表示され、OGG/Opus 音声とメタデータが必要です。OpenClaw は波形を自動生成しますが、音声ファイルを検査して変換するために、ゲートウェイホスト上で `ffmpeg` と `ffprobe` が利用可能である必要があります。
 
-Requirements and constraints:
+要件と制約:
 
-- Provide a **local file path** (URLs are rejected).
-- Omit text content (Discord does not allow text + voice message in the same payload).
-- Any audio format is accepted; OpenClaw converts to OGG/Opus when needed.
+- **ローカルファイルパス** を指定してください（URL は拒否されます）
+- テキスト本文は省略してください（Discord は同じペイロード内でテキストと音声メッセージを同時に送れません）
+- 音声形式は任意です。必要に応じて OpenClaw が OGG/Opus に変換します
 
-Example:
+例:
 
 ```bash
 message(action="send", channel="discord", target="channel:123", path="/path/to/audio.mp3", asVoice=true)
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
 <AccordionGroup>
-  <Accordion title="Used disallowed intents or bot sees no guild messages">
+  <Accordion title="許可されていない intent を使っている、またはボットがギルドメッセージを受信できない">
 
-    - enable Message Content Intent
-    - enable Server Members Intent when you depend on user/member resolution
-    - restart gateway after changing intents
+    - Message Content Intent を有効にする
+    - ユーザー / メンバー解決に依存する場合は Server Members Intent も有効にする
+    - intent を変更したあとはゲートウェイを再起動する
 
   </Accordion>
 
-  <Accordion title="Guild messages blocked unexpectedly">
+  <Accordion title="ギルドメッセージが予期せずブロックされる">
 
-    - verify `groupPolicy`
-    - verify guild allowlist under `channels.discord.guilds`
-    - if guild `channels` map exists, only listed channels are allowed
-    - verify `requireMention` behavior and mention patterns
+    - `groupPolicy` を確認する
+    - `channels.discord.guilds` 配下の guild allowlist を確認する
+    - guild の `channels` マップが存在する場合、列挙されたチャンネルだけが許可される
+    - `requireMention` の挙動と mention パターンを確認する
 
-    Useful checks:
+    便利な確認コマンド:
 
 ```bash
 openclaw doctor
@@ -1094,35 +1095,35 @@ openclaw logs --follow
 
   </Accordion>
 
-  <Accordion title="Require mention false but still blocked">
-    Common causes:
+  <Accordion title="requireMention=false なのにブロックされる">
+    よくある原因:
 
-    - `groupPolicy="allowlist"` without matching guild/channel allowlist
-    - `requireMention` configured in the wrong place (must be under `channels.discord.guilds` or channel entry)
-    - sender blocked by guild/channel `users` allowlist
+    - `groupPolicy="allowlist"` だが、一致する guild / channel allowlist がない
+    - `requireMention` の設定場所が誤っている（`channels.discord.guilds` または channel entry の下である必要があります）
+    - 送信者が guild / channel の `users` allowlist によってブロックされている
 
   </Accordion>
 
-  <Accordion title="Long-running handlers time out or duplicate replies">
+  <Accordion title="長時間実行されるハンドラーがタイムアウトする、または返信が重複する">
 
-    Typical logs:
+    典型的なログ:
 
     - `Listener DiscordMessageListener timed out after 30000ms for event MESSAGE_CREATE`
     - `Slow listener detected ...`
     - `discord inbound worker timed out after ...`
 
-    Listener budget knob:
+    listener budget の設定:
 
-    - single-account: `channels.discord.eventQueue.listenerTimeout`
-    - multi-account: `channels.discord.accounts.<accountId>.eventQueue.listenerTimeout`
+    - 単一アカウント: `channels.discord.eventQueue.listenerTimeout`
+    - マルチアカウント: `channels.discord.accounts.<accountId>.eventQueue.listenerTimeout`
 
-    Worker run timeout knob:
+    worker 実行タイムアウトの設定:
 
-    - single-account: `channels.discord.inboundWorker.runTimeoutMs`
-    - multi-account: `channels.discord.accounts.<accountId>.inboundWorker.runTimeoutMs`
-    - default: `1800000` (30 minutes); set `0` to disable
+    - 単一アカウント: `channels.discord.inboundWorker.runTimeoutMs`
+    - マルチアカウント: `channels.discord.accounts.<accountId>.inboundWorker.runTimeoutMs`
+    - デフォルト: `1800000`（30 分）。無効化するには `0` を指定します
 
-    Recommended baseline:
+    推奨ベースライン:
 
 ```json5
 {
@@ -1143,77 +1144,75 @@ openclaw logs --follow
 }
 ```
 
-    Use `eventQueue.listenerTimeout` for slow listener setup and `inboundWorker.runTimeoutMs`
-    only if you want a separate safety valve for queued agent turns.
+    遅い listener のための余裕を増やしたい場合は `eventQueue.listenerTimeout` を使います。キュー済みエージェントターンに別の安全弁が必要な場合にだけ `inboundWorker.runTimeoutMs` を調整してください。
 
   </Accordion>
 
-  <Accordion title="Permissions audit mismatches">
-    `channels status --probe` permission checks only work for numeric channel IDs.
+  <Accordion title="権限監査の不一致">
+    `channels status --probe` の権限チェックは、数値チャンネル ID に対してのみ完全に機能します。
 
-    If you use slug keys, runtime matching can still work, but probe cannot fully verify permissions.
-
-  </Accordion>
-
-  <Accordion title="DM and pairing issues">
-
-    - DM disabled: `channels.discord.dm.enabled=false`
-    - DM policy disabled: `channels.discord.dmPolicy="disabled"` (legacy: `channels.discord.dm.policy`)
-    - awaiting pairing approval in `pairing` mode
+    slug キーを使用していても、ランタイム上のマッチング自体は可能ですが、probe では権限を完全には検証できません。
 
   </Accordion>
 
-  <Accordion title="Bot to bot loops">
-    By default bot-authored messages are ignored.
+  <Accordion title="DM とペアリングの問題">
 
-    If you set `channels.discord.allowBots=true`, use strict mention and allowlist rules to avoid loop behavior.
-    Prefer `channels.discord.allowBots="mentions"` to only accept bot messages that mention the bot.
+    - DM が無効化されている: `channels.discord.dm.enabled=false`
+    - DM policy が無効化されている: `channels.discord.dmPolicy="disabled"`（旧設定: `channels.discord.dm.policy`）
+    - `pairing` モードでペアリング承認待ちになっている
 
   </Accordion>
 
-  <Accordion title="Voice STT drops with DecryptionFailed(...)">
+  <Accordion title="bot 同士のループ">
+    デフォルトでは、bot が投稿したメッセージは無視されます。
 
-    - keep OpenClaw current (`openclaw update`) so the Discord voice receive recovery logic is present
-    - confirm `channels.discord.voice.daveEncryption=true` (default)
-    - start from `channels.discord.voice.decryptionFailureTolerance=24` (upstream default) and tune only if needed
-    - watch logs for:
+    `channels.discord.allowBots=true` を使う場合は、ループを防ぐために厳格な mention ルールと allowlist を組み合わせてください。通常は、ボット自身への mention を含む bot メッセージだけを受け付ける `channels.discord.allowBots="mentions"` を推奨します。
+
+  </Accordion>
+
+  <Accordion title="音声 STT が DecryptionFailed(...) で落ちる">
+
+    - Discord 音声受信の回復ロジックが入っているよう、OpenClaw を最新に保つ（`openclaw update`）
+    - `channels.discord.voice.daveEncryption=true`（デフォルト）を確認する
+    - `channels.discord.voice.decryptionFailureTolerance=24`（上流デフォルト）から始め、必要な場合だけ調整する
+    - 次のログを確認する:
       - `discord voice: DAVE decrypt failures detected`
       - `discord voice: repeated decrypt failures; attempting rejoin`
-    - if failures continue after automatic rejoin, collect logs and compare against [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419)
+    - 自動再参加後も失敗が続く場合は、ログを収集して [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419) と比較する
 
   </Accordion>
 </AccordionGroup>
 
-## Configuration reference pointers
+## 設定リファレンスの参照先
 
-Primary reference:
+主な参照先:
 
 - [Configuration reference - Discord](/gateway/configuration-reference#discord)
 
-High-signal Discord fields:
+特に確認頻度の高い Discord フィールド:
 
-- startup/auth: `enabled`, `token`, `accounts.*`, `allowBots`
-- policy: `groupPolicy`, `dm.*`, `guilds.*`, `guilds.*.channels.*`
-- command: `commands.native`, `commands.useAccessGroups`, `configWrites`, `slashCommand.*`
-- event queue: `eventQueue.listenerTimeout` (listener budget), `eventQueue.maxQueueSize`, `eventQueue.maxConcurrency`
+- 起動 / 認可: `enabled`、`token`、`accounts.*`、`allowBots`
+- policy: `groupPolicy`、`dm.*`、`guilds.*`、`guilds.*.channels.*`
+- command: `commands.native`、`commands.useAccessGroups`、`configWrites`、`slashCommand.*`
+- event queue: `eventQueue.listenerTimeout`（listener budget）、`eventQueue.maxQueueSize`、`eventQueue.maxConcurrency`
 - inbound worker: `inboundWorker.runTimeoutMs`
-- reply/history: `replyToMode`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
-- delivery: `textChunkLimit`, `chunkMode`, `maxLinesPerMessage`
-- streaming: `streaming` (legacy alias: `streamMode`), `draftChunk`, `blockStreaming`, `blockStreamingCoalesce`
-- media/retry: `mediaMaxMb`, `retry`
-  - `mediaMaxMb` caps outbound Discord uploads (default: `8MB`)
+- reply / history: `replyToMode`、`historyLimit`、`dmHistoryLimit`、`dms.*.historyLimit`
+- delivery: `textChunkLimit`、`chunkMode`、`maxLinesPerMessage`
+- streaming: `streaming`（旧エイリアス: `streamMode`）、`draftChunk`、`blockStreaming`、`blockStreamingCoalesce`
+- media / retry: `mediaMaxMb`、`retry`
+  - `mediaMaxMb` は Discord への送信アップロード上限です（デフォルト: `8MB`）
 - actions: `actions.*`
-- presence: `activity`, `status`, `activityType`, `activityUrl`
+- presence: `activity`、`status`、`activityType`、`activityUrl`
 - UI: `ui.components.accentColor`
-- features: `threadBindings`, top-level `bindings[]` (`type: "acp"`), `pluralkit`, `execApprovals`, `intents`, `agentComponents`, `heartbeat`, `responsePrefix`
+- features: `threadBindings`、トップレベルの `bindings[]`（`type: "acp"`）、`pluralkit`、`execApprovals`、`intents`、`agentComponents`、`heartbeat`、`responsePrefix`
 
-## Safety and operations
+## セーフティと運用
 
-- Treat bot tokens as secrets (`DISCORD_BOT_TOKEN` preferred in supervised environments).
-- Grant least-privilege Discord permissions.
-- If command deploy/state is stale, restart gateway and re-check with `openclaw channels status --probe`.
+- ボットトークンは機密情報として扱ってください（監視付き環境では `DISCORD_BOT_TOKEN` を推奨します）
+- Discord 権限は最小権限で付与してください
+- コマンドの deploy 状態や反映状態が古い場合は、ゲートウェイを再起動し、`openclaw channels status --probe` で再確認してください
 
-## Related
+## 関連
 
 - [Pairing](/channels/pairing)
 - [Channel routing](/channels/channel-routing)

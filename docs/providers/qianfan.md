@@ -1,36 +1,37 @@
 ---
-summary: "Use Qianfan's unified API to access many models in OpenClaw"
+summary: "OpenClaw で Qianfan の統合 API を使って多数のモデルへアクセスする"
 read_when:
-  - You want a single API key for many LLMs
-  - You need Baidu Qianfan setup guidance
+  - 1 つの API キーで多数の LLM を使いたいとき
+  - Baidu Qianfan のセットアップ手順を確認したいとき
 title: "Qianfan"
+x-i18n:
+  source_hash: "2ca710b422f190b65d23db51a3219f0abd67074fb385251efeca6eae095d02e0"
 ---
 
 # Qianfan Provider Guide
 
-Qianfan is Baidu's MaaS platform, provides a **unified API** that routes requests to many models behind a single
-endpoint and API key. It is OpenAI-compatible, so most OpenAI SDKs work by switching the base URL.
+Qianfan は Baidu の MaaS プラットフォームです。単一の endpoint と API キーの背後で多数のモデルへリクエストをルーティングする**統合 API**を提供します。OpenAI 互換であるため、多くの OpenAI SDK は base URL を切り替えるだけで利用できます。
 
-## Prerequisites
+## 前提条件
 
-1. A Baidu Cloud account with Qianfan API access
-2. An API key from the Qianfan console
-3. OpenClaw installed on your system
+1. Qianfan API へアクセス可能な Baidu Cloud アカウント
+2. Qianfan Console で発行した API キー
+3. システムにインストール済みの OpenClaw
 
-## Getting Your API Key
+## API キーの取得
 
-1. Visit the [Qianfan Console](https://console.bce.baidu.com/qianfan/ais/console/apiKey)
-2. Create a new application or select an existing one
-3. Generate an API key (format: `bce-v3/ALTAK-...`)
-4. Copy the API key for use with OpenClaw
+1. [Qianfan Console](https://console.bce.baidu.com/qianfan/ais/console/apiKey) を開きます。
+2. 新しいアプリケーションを作成するか、既存のアプリケーションを選択します。
+3. API キーを生成します（形式: `bce-v3/ALTAK-...`）。
+4. OpenClaw で使うために API キーを控えます。
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice qianfan-api-key
 ```
 
-## Related Documentation
+## 関連ドキュメント
 
 - [OpenClaw Configuration](/gateway/configuration)
 - [Model Providers](/concepts/model-providers)

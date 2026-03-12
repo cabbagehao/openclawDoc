@@ -1,48 +1,51 @@
 ---
-summary: "Command queue design that serializes inbound auto-reply runs"
+summary: "受信メッセージによる自動応答をシリアル化するコマンドキューの設計"
 read_when:
-  - Changing auto-reply execution or concurrency
-title: "Command Queue"
+  - 自動応答の実行順序や同時実行数の設定を変更したい場合
+title: "コマンドキュー"
+x-i18n:
+  source_hash: "2104c24d200fb4f9620e52a19255cd614ababe19d78f3ee42936dc6d0499b73b"
 ---
 
-# Command Queue (2026-01-16)
+# コマンドキュー (2026-01-16)
 
-We serialize inbound auto-reply runs (all channels) through a tiny in-process queue to prevent multiple agent runs from colliding, while still allowing safe parallelism across sessions.
+OpenClaw は、すべてのチャネルからの自動応答リクエストを軽量なインプロセス（プロセス内）キューを通じてシリアル化（直列化）します。これにより、同じセッションに対して複数のエージェントが同時に実行されて競合するのを防ぎつつ、異なるセッション間では安全な並列実行を可能にしています。
 
-## Why
+## 目的
 
-- Auto-reply runs can be expensive (LLM calls) and can collide when multiple inbound messages arrive close together.
-- Serializing avoids competing for shared resources (session files, logs, CLI stdin) and reduces the chance of upstream rate limits.
+- エージェントの実行（LLM の呼び出し）はコストが高く、短時間に複数のメッセージが届いた場合にリソースが競合する可能性があります。
+- 実行を直列化することで、セッションファイル、ログ、CLI の標準入力などの共有リソースへの同時アクセスを避け、上位プロバイダーのレート制限にかかるリスクを低減します。
 
-## How it works
+## 仕組み
 
-- A lane-aware FIFO queue drains each lane with a configurable concurrency cap (default 1 for unconfigured lanes; main defaults to 4, subagent to 8).
-- `runEmbeddedPiAgent` enqueues by **session key** (lane `session:<key>`) to guarantee only one active run per session.
-- Each session run is then queued into a **global lane** (`main` by default) so overall parallelism is capped by `agents.defaults.maxConcurrent`.
-- When verbose logging is enabled, queued runs emit a short notice if they waited more than ~2s before starting.
-- Typing indicators still fire immediately on enqueue (when supported by the channel) so user experience is unchanged while we wait our turn.
+- 「レーン（Lane）」を認識する FIFO（先入れ先出し）キューが、各レーンごとに設定された同時実行上限に従ってリクエストを処理します。
+- レーンごとのデフォルト上限: 未設定のレーンは 1、メインレーン（`main`）は 4、サブエージェント（`subagent`）は 8 です。
+- `runEmbeddedPiAgent` は、まず **セッションキー** ごとのレーン（`session:<key>`）にエンキュー（待ち行列に追加）されます。これにより、1 つのセッションに対して一度に実行されるエージェントは必ず 1 つであることが保証されます。
+- 次に、各セッションの実行は **グローバルレーン**（デフォルトは `main`）にエンキューされます。システム全体の並列数は、構成設定の `agents.defaults.maxConcurrent` によって制限されます。
+- 詳細ログ（verbose）が有効な場合、キューでの待機時間が約 2 秒を超えた際に通知が出力されます。
+- タイピング中インジケーター（対応チャネルのみ）は、キューに入った直後に作動します。そのため、順番待ちの間もユーザーにはボットが反応しているように見え、UX は損なわれません。
 
-## Queue modes (per channel)
+## キューモード (チャネルごとの動作)
 
-Inbound messages can steer the current run, wait for a followup turn, or do both:
+受信メッセージが届いた際、現在実行中のターンに対して「割り込む（ステアリング）」か、「終わるのを待ってから次で処理する（フォローアップ）」か、あるいはその両方を行うかを選択できます。
 
-- `steer`: inject immediately into the current run (cancels pending tool calls after the next tool boundary). If not streaming, falls back to followup.
-- `followup`: enqueue for the next agent turn after the current run ends.
-- `collect`: coalesce all queued messages into a **single** followup turn (default). If messages target different channels/threads, they drain individually to preserve routing.
-- `steer-backlog` (aka `steer+backlog`): steer now **and** preserve the message for a followup turn.
-- `interrupt` (legacy): abort the active run for that session, then run the newest message.
-- `queue` (legacy alias): same as `steer`.
+- `steer`: 現在の実行に直ちに割り込みます（次のツール実行のタイミングで、残りのツール呼び出しをキャンセルします）。ストリーミングが利用できない場合は `followup` モードにフォールバックします。
+- `followup`: 現在の実行が終わった後、次のターンとしてキューに追加します。
+- `collect` (デフォルト): 現在の実行が終わるまで待機し、キューに溜まったすべてのメッセージを **1 つの** フォローアップターンに集約して処理します。宛先のチャネルやスレッドが異なる場合は、ルーティングを維持するために個別に処理されます。
+- `steer-backlog` (`steer+backlog`): 現在の実行に割り込むと同時に、そのメッセージを次回のフォローアップ用にも保持します。
+- `interrupt` (レガシー): 現在の実行を強制終了（abort）させ、最新のメッセージで新しく実行を開始します。
+- `queue` (レガシー別名): `steer` と同じ動作です。
 
-Steer-backlog means you can get a followup response after the steered run, so
-streaming surfaces can look like duplicates. Prefer `collect`/`steer` if you want
-one response per inbound message.
-Send `/queue collect` as a standalone command (per-session) or set `messages.queue.byChannel.discord: "collect"`.
+`steer-backlog` を使用すると、割り込んだターンとフォローアップのターンの両方で応答が生成されるため、ストリーミング対応の UI では重複したように見えることがあります。1 つのメッセージに対して 1 つの応答を確実に返したい場合は `collect` または `steer` を推奨します。
 
-Defaults (when unset in config):
+設定方法:
+- セッションごとに `/queue collect` コマンドを送信する。
+- 構成ファイルで `messages.queue.byChannel.discord: "collect"` のように指定する。
 
-- All surfaces → `collect`
+デフォルト設定（未設定時）:
+- すべてのチャネルで `collect`
 
-Configure globally or per channel via `messages.queue`:
+グローバルまたはチャネルごとの設定例 (`messages.queue`):
 
 ```json5
 {
@@ -58,32 +61,32 @@ Configure globally or per channel via `messages.queue`:
 }
 ```
 
-## Queue options
+## キューのオプション
 
-Options apply to `followup`, `collect`, and `steer-backlog` (and to `steer` when it falls back to followup):
+これらのオプションは `followup`, `collect`, `steer-backlog`（および `steer` がフォールバックした場合）に適用されます。
 
-- `debounceMs`: wait for quiet before starting a followup turn (prevents “continue, continue”).
-- `cap`: max queued messages per session.
-- `drop`: overflow policy (`old`, `new`, `summarize`).
+- `debounceMs`: フォローアップを開始する前に、追記が止まるまで待機する時間（「あ、あとこれも」といった連続投稿を 1 つにまとめるため）。
+- `cap`: 1 セッションあたりに蓄積できるキューの最大数。
+- `drop`: 上限を超えた場合の処理ポリシー (`old`: 古い順に捨てる, `new`: 新しいものを捨てる, `summarize`: 要約する)。
 
-Summarize keeps a short bullet list of dropped messages and injects it as a synthetic followup prompt.
-Defaults: `debounceMs: 1000`, `cap: 20`, `drop: summarize`.
+`summarize` を選択すると、破棄されたメッセージの短いリストを保持し、それを合成されたフォローアッププロンプトとしてエージェントに渡します。
+デフォルト値: `debounceMs: 1000`, `cap: 20`, `drop: summarize`。
 
-## Per-session overrides
+## セッションごとの上書き
 
-- Send `/queue <mode>` as a standalone command to store the mode for the current session.
-- Options can be combined: `/queue collect debounce:2s cap:25 drop:summarize`
-- `/queue default` or `/queue reset` clears the session override.
+- `/queue <mode>` コマンドを送信すると、現在のセッションの設定として保存されます。
+- オプションの組み合わせも可能です: `/queue collect debounce:2s cap:25 drop:summarize`
+- `/queue default` または `/queue reset` で上書き設定を解除できます。
 
-## Scope and guarantees
+## 適用範囲と保証
 
-- Applies to auto-reply agent runs across all inbound channels that use the gateway reply pipeline (WhatsApp web, Telegram, Slack, Discord, Signal, iMessage, webchat, etc.).
-- Default lane (`main`) is process-wide for inbound + main heartbeats; set `agents.defaults.maxConcurrent` to allow multiple sessions in parallel.
-- Additional lanes may exist (e.g. `cron`, `subagent`) so background jobs can run in parallel without blocking inbound replies.
-- Per-session lanes guarantee that only one agent run touches a given session at a time.
-- No external dependencies or background worker threads; pure TypeScript + promises.
+- ゲートウェイの返信パイプラインを使用するすべての受信チャネル（WhatsApp web, Telegram, Slack, Discord, Signal, iMessage, webchat など）の自動応答に適用されます。
+- デフォルトレーン (`main`) は、通常の応答とメインのハートビートで共有されます。複数のセッションを並列で動かしたい場合は `agents.defaults.maxConcurrent` を増やしてください。
+- `cron` や `subagent` といった追加のレーンがあり、インバウンドの応答を妨げることなくバックグラウンドジョブを並列実行できます。
+- セッションごとのレーンにより、特定のセッションに対して一度にアクセスするエージェント実行は常に 1 つに制限されることが保証されます。
+- 外部の依存関係やワーカースレッドは使用せず、純粋な TypeScript と Promise で実装されています。
 
-## Troubleshooting
+## トラブルシューティング
 
-- If commands seem stuck, enable verbose logs and look for “queued for …ms” lines to confirm the queue is draining.
-- If you need queue depth, enable verbose logs and watch for queue timing lines.
+- コマンドが止まっているように見える場合は、詳細ログを有効にして「queued for …ms」という行を確認し、キューが処理（排出）されているか確かめてください。
+- キューの深さを知りたい場合も、詳細ログでキューのタイミング情報を確認してください。

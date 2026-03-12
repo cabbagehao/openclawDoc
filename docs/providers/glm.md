@@ -1,23 +1,24 @@
 ---
-summary: "GLM model family overview + how to use it in OpenClaw"
+summary: "GLM モデル ファミリーの概要と OpenClaw での使い方"
 read_when:
-  - You want GLM models in OpenClaw
-  - You need the model naming convention and setup
+  - OpenClaw で GLM モデルを使いたいとき
+  - モデル命名規則やセットアップ方法を確認したいとき
 title: "GLM Models"
+x-i18n:
+  source_hash: "11d3a0189a0a8033dd4dd1c5a6d7d8de0cd0d1b629b677ed05a37562ca61d2f8"
 ---
 
 # GLM models
 
-GLM is a **model family** (not a company) available through the Z.AI platform. In OpenClaw, GLM
-models are accessed via the `zai` provider and model IDs like `zai/glm-5`.
+GLM は **モデル ファミリー** であり、企業名ではありません。Z.AI platform から提供されており、OpenClaw では `zai` provider と `zai/glm-5` のような model ID を通じて利用します。
 
-## CLI setup
+## CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice zai-api-key
 ```
 
-## Config snippet
+## 設定例
 
 ```json5
 {
@@ -26,8 +27,8 @@ openclaw onboard --auth-choice zai-api-key
 }
 ```
 
-## Notes
+## 補足
 
-- GLM versions and availability can change; check Z.AI's docs for the latest.
-- Example model IDs include `glm-5`, `glm-4.7`, and `glm-4.6`.
-- For provider details, see [/providers/zai](/providers/zai).
+- GLM のバージョンや利用可否は変わる可能性があります。最新情報は Z.AI のドキュメントを確認してください。
+- 例として、`glm-5`、`glm-4.7`、`glm-4.6` などの model ID があります。
+- provider の詳細は [/providers/zai](/providers/zai) を参照してください。

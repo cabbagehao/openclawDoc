@@ -1,62 +1,63 @@
 ---
-summary: "Strict config validation + doctor-only migrations"
+summary: "厳密な構成検証 + ドクターのみの移行"
 read_when:
-  - Designing or implementing config validation behavior
-  - Working on config migrations or doctor workflows
-  - Handling plugin config schemas or plugin load gating
-title: "Strict Config Validation"
+  - 構成検証動作の設計または実装
+  - 構成の移行またはドクター ワークフローに取り組む
+  - プラグイン構成スキーマまたはプラグインロードゲーティングの処理
+title: "厳密な構成検証"
+x-i18n:
+  source_hash: "ffce29de7d5a983cfa8e24ba7a23cef3f502d4b7188b55644a0e4c86e5f013a5"
 ---
 
-# Strict config validation (doctor-only migrations)
+# 厳密な構成検証 (医師のみの移行)
 
-## Goals
+## 目標
 
-- **Reject unknown config keys everywhere** (root + nested), except root `$schema` metadata.
-- **Reject plugin config without a schema**; don’t load that plugin.
-- **Remove legacy auto-migration on load**; migrations run via doctor only.
-- **Auto-run doctor (dry-run) on startup**; if invalid, block non-diagnostic commands.
+- **ルート `$schema` メタデータを除く** (ルート + ネストされた) あらゆる場所で不明な構成キーを拒否します。
+- **スキーマのないプラグイン構成を拒否**;そのプラグインをロードしないでください。
+- **読み込み時の従来の自動移行を削除**;移行は医師のみを介して実行されます。
+- **起動時の自動実行ドクター (ドライラン)**;無効な場合は、非診断コマンドをブロックします。
 
-## Non-goals
+## 非目標
 
-- Backward compatibility on load (legacy keys do not auto-migrate).
-- Silent drops of unrecognized keys.
+- ロード時の下位互換性 (レガシー キーは自動移行されません)。
+- 認識されないキーのサイレントドロップ。
 
-## Strict validation rules
+## 厳格な検証ルール
 
-- Config must match the schema exactly at every level.
-- Unknown keys are validation errors (no passthrough at root or nested), except root `$schema` when it is a string.
-- `plugins.entries.<id>.config` must be validated by the plugin’s schema.
-  - If a plugin lacks a schema, **reject plugin load** and surface a clear error.
-- Unknown `channels.<id>` keys are errors unless a plugin manifest declares the channel id.
-- Plugin manifests (`openclaw.plugin.json`) are required for all plugins.
+- 構成は、すべてのレベルでスキーマと正確に一致する必要があります。
+- 不明なキーは検証エラーです (ルートでパススルーがない、またはネストされている)。ただし、文字列の場合はルート `$schema` を除きます。
+- `plugins.entries.<id>.config` はプラグインのスキーマによって検証される必要があります。
+  - プラグインにスキーマがない場合、**プラグインのロードを拒否**し、明らかなエラーを表示します。
+- 不明な `channels.<id>` キーは、プラグイン マニフェストでチャネル ID が宣言されていない限り、エラーになります。
+- すべてのプラグインにプラグイン マニフェスト (`openclaw.plugin.json`) が必要です。
 
-## Plugin schema enforcement
+## プラグイン スキーマの適用- 各プラグインは、その構成用に厳密な JSON スキーマを提供します (マニフェスト内のインライン)
 
-- Each plugin provides a strict JSON Schema for its config (inline in the manifest).
-- Plugin load flow:
-  1. Resolve plugin manifest + schema (`openclaw.plugin.json`).
-  2. Validate config against the schema.
-  3. If missing schema or invalid config: block plugin load, record error.
-- Error message includes:
-  - Plugin id
-  - Reason (missing schema / invalid config)
-  - Path(s) that failed validation
-- Disabled plugins keep their config, but Doctor + logs surface a warning.
+- プラグインのロード フロー:
+  1. プラグイン マニフェスト + スキーマ (`openclaw.plugin.json`) を解決します。
+  2. スキーマに対して構成を検証します。
+  3. スキーマが見つからない場合、または構成が無効な場合: プラグインのロードをブロックし、エラーを記録します。
+- エラー メッセージには次のものが含まれます。
+  - プラグインID
+  - 理由 (スキーマの欠落 / 無効な構成)
+  - 検証に失敗したパス
+- プラグインを無効にしても設定は保持されますが、Doctor + のログには警告が表示されます。
 
-## Doctor flow
+## 医師の流れ
 
-- Doctor runs **every time** config is loaded (dry-run by default).
-- If config invalid:
-  - Print a summary + actionable errors.
-  - Instruct: `openclaw doctor --fix`.
+- Doctor は、構成がロードされる **毎回** 実行されます (デフォルトではドライラン)。
+- 設定が無効な場合:
+  - 概要と対処可能なエラーを出力します。
+  - 指示: `openclaw doctor --fix`。
 - `openclaw doctor --fix`:
-  - Applies migrations.
-  - Removes unknown keys.
-  - Writes updated config.
+  - 移行を適用します。
+  - 不明なキーを削除します。
+  - 更新された構成を書き込みます。
 
-## Command gating (when config is invalid)
+## コマンドゲーティング(config無効時)
 
-Allowed (diagnostic-only):
+許可 (診断のみ):
 
 - `openclaw doctor`
 - `openclaw logs`
@@ -65,29 +66,28 @@ Allowed (diagnostic-only):
 - `openclaw status`
 - `openclaw gateway status`
 
-Everything else must hard-fail with: “Config invalid. Run `openclaw doctor --fix`.”
+他のすべては「構成が無効です。`openclaw doctor --fix` を実行してください。」というメッセージでハードフェイルする必要があります。
 
-## Error UX format
+## UX フォーマットのエラー
 
-- Single summary header.
-- Grouped sections:
-  - Unknown keys (full paths)
-  - Legacy keys / migrations needed
-  - Plugin load failures (plugin id + reason + path)
+- 単一の概要ヘッダー。
+- グループ化されたセクション:
+  - 不明なキー (フルパス)
+  - レガシーキー/移行が必要
+  - プラグインの読み込みエラー (プラグイン ID + 理由 + パス)
 
-## Implementation touchpoints
+## 実装タッチポイント- `src/config/zod-schema.ts`: ルート パススルーを削除します。厳格なオブジェクトがどこにでもあります
 
-- `src/config/zod-schema.ts`: remove root passthrough; strict objects everywhere.
-- `src/config/zod-schema.providers.ts`: ensure strict channel schemas.
-- `src/config/validation.ts`: fail on unknown keys; do not apply legacy migrations.
-- `src/config/io.ts`: remove legacy auto-migrations; always run doctor dry-run.
-- `src/config/legacy*.ts`: move usage to doctor only.
-- `src/plugins/*`: add schema registry + gating.
-- CLI command gating in `src/cli`.
+- `src/config/zod-schema.providers.ts`: 厳密なチャネル スキーマを確保します。
+- `src/config/validation.ts`: 不明なキーで失敗します。レガシー移行を適用しないでください。
+- `src/config/io.ts`: 従来の自動移行を削除します。常にドクターのドライランを実行してください。
+- `src/config/legacy*.ts`: 使用方法を医師のみに変更します。
+- `src/plugins/*`: スキーマ レジストリ + ゲーティングを追加します。
+- `src/cli` での CLI コマンド ゲート。
 
-## Tests
+## テスト
 
-- Unknown key rejection (root + nested).
-- Plugin missing schema → plugin load blocked with clear error.
-- Invalid config → gateway startup blocked except diagnostic commands.
-- Doctor dry-run auto; `doctor --fix` writes corrected config.
+- 不明なキーの拒否 (ルート + ネスト)。
+- プラグインにスキーマがありません → プラグインのロードが明確なエラーでブロックされました。
+- 無効な設定 → 診断コマンドを除いてゲートウェイの起動がブロックされる。
+- ドクタードライランオート; `doctor --fix` は修正された構成を書き込みます。

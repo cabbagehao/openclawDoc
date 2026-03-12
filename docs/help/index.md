@@ -1,21 +1,21 @@
 ---
-summary: "Help hub: common fixes, install sanity, and where to look when something breaks"
+summary: "ヘルプハブ：よくある修正、インストールの健全性チェック、問題発生時の確認先"
 read_when:
-  - You’re new and want the “what do I click/run” guide
-  - Something broke and you want the fastest path to a fix
-title: "Help"
+  - 初めて使用する際に「何をクリック/実行すればよいか」のガイドが必要な場合
+  - 何かが壊れて最速の修正方法を知りたい場合
+title: "ヘルプ"
 ---
 
-# Help
+# ヘルプ
 
-If you want a quick “get unstuck” flow, start here:
+問題を素早く解決したい場合は、ここから始めてください：
 
-- **Troubleshooting:** [Start here](/help/troubleshooting)
-- **Install sanity (Node/npm/PATH):** [Install](/install#nodejs--npm-path-sanity)
-- **Gateway issues:** [Gateway troubleshooting](/gateway/troubleshooting)
-- **Logs:** [Logging](/logging) and [Gateway logging](/gateway/logging)
-- **Repairs:** [Doctor](/gateway/doctor)
+- **トラブルシューティング：** [こちらから開始](/help/troubleshooting)
+- **インストールの健全性チェック（Node/npm/PATH）：** [インストール](/install#nodejs--npm-path-sanity)
+- **ゲートウェイの問題：** [ゲートウェイのトラブルシューティング](/gateway/troubleshooting)
+- **ログ：** [ロギング](/logging)および[ゲートウェイのロギング](/gateway/logging)
+- **修復：** [Doctor](/gateway/doctor)
 
-If you’re looking for conceptual questions (not “something broke”):
+概念的な質問（「何かが壊れた」ではない）をお探しの場合：
 
-- [FAQ (concepts)](/help/faq)
+- [FAQ（概念）](/help/faq)

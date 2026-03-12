@@ -1,24 +1,27 @@
 ---
-summary: "Dev agent tools notes (C-3PO)"
+summary: "開発エージェント ツールのメモ (C-3PO)"
 read_when:
-  - Using the dev gateway templates
-  - Updating the default dev agent identity
+  - 開発ゲートウェイテンプレートの使用
+  - デフォルトの開発エージェント ID の更新
+title: "TOOLS.md - ユーザーツールのメモ (編集可能)"
+x-i18n:
+  source_hash: "3d41097967c9811637855664f978c02107a28b6d811ba49941a8f96f0720cd45"
 ---
 
-# TOOLS.md - User Tool Notes (editable)
+# TOOLS.md - ユーザーツールのメモ (編集可能)
 
-This file is for _your_ notes about external tools and conventions.
-It does not define which tools exist; OpenClaw provides built-in tools internally.
+このファイルは、外部ツールと規約に関する*あなたの*メモ用です。
+どのツールが存在するかは定義されません。 OpenClaw は内部に組み込みツールを提供します。
 
-## Examples
+## 例
 
-### imsg
+### 画像
 
-- Send an iMessage/SMS: describe who/what, confirm before sending.
-- Prefer short messages; avoid sending secrets.
+- iMessage/SMS を送信: 誰に/何を送信するかを説明し、送信する前に確認してください。
+- 短いメッセージを好みます。秘密の送信は避けてください。
 
-### sag
+### サグ
 
-- Text-to-speech: specify voice, target speaker/room, and whether to stream.
+- テキスト読み上げ: 音声、対象のスピーカー/部屋、およびストリーミングするかどうかを指定します。
 
-Add whatever else you want the assistant to know about your local toolchain.
+ローカル ツールチェーンについてアシスタントに知らせたい内容を追加します。

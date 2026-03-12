@@ -1,33 +1,34 @@
 ---
-summary: "macOS Skills settings UI and gateway-backed status"
+summary: "macOS スキル設定 UI とゲートウェイ支援ステータス"
 read_when:
-  - Updating the macOS Skills settings UI
-  - Changing skills gating or install behavior
-title: "Skills"
+  - macOS の Skills 設定 UI を更新するとき
+  - skills の gating や install 動作を変更するとき
+title: "スキル"
+x-i18n:
+  source_hash: "ecd5286bbe49eed89319686c4f7d6da55ef7b0d3952656ba98ef5e769f3fbf79"
 ---
 
-# Skills (macOS)
+# スキル (macOS)
 
-The macOS app surfaces OpenClaw skills via the gateway; it does not parse skills locally.
+macOS アプリは、OpenClaw のスキル情報をゲートウェイ経由で表示します。ローカルで `SKILL.md` を解析することはありません。
 
-## Data source
+## データ ソース
 
-- `skills.status` (gateway) returns all skills plus eligibility and missing requirements
-  (including allowlist blocks for bundled skills).
-- Requirements are derived from `metadata.openclaw.requires` in each `SKILL.md`.
+- `skills.status` (ゲートウェイ) は、すべてのスキルと、その利用可否、欠けている要件を返します。
+  バンドル済みスキルに対する allowlist block もここに含まれます。
+- 要件は、各 `SKILL.md` にある `metadata.openclaw.requires` から導出されます。
 
-## Install actions
+## インストール操作
 
-- `metadata.openclaw.install` defines install options (brew/node/go/uv).
-- The app calls `skills.install` to run installers on the gateway host.
-- The gateway surfaces only one preferred installer when multiple are provided
-  (brew when available, otherwise node manager from `skills.install`, default npm).
+- `metadata.openclaw.install` が install option (brew / node / go / uv) を定義します。
+- アプリは `skills.install` を呼び出して、ゲートウェイ ホスト上で installer を実行します。
+- 複数の installer が指定されている場合でも、ゲートウェイが返すのは優先度の高い 1 件だけです。brew が使えるなら brew、そうでなければ `skills.install` の node manager、それもなければ既定の npm を使います。
 
-## Env/API keys
+## 環境変数 / API キー
 
-- The app stores keys in `~/.openclaw/openclaw.json` under `skills.entries.<skillKey>`.
-- `skills.update` patches `enabled`, `apiKey`, and `env`.
+- アプリはキーを `~/.openclaw/openclaw.json` の `skills.entries.<skillKey>` 配下に保存します。
+- `skills.update` は `enabled`、`apiKey`、`env` を更新します。
 
-## Remote mode
+## リモート モード
 
-- Install + config updates happen on the gateway host (not the local Mac).
+- install と設定更新は、ローカル Mac ではなくゲートウェイ ホスト側で実行されます。

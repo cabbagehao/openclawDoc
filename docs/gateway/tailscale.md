@@ -1,49 +1,39 @@
 ---
-summary: "Integrated Tailscale Serve/Funnel for the Gateway dashboard"
+summary: "ゲートウェイダッシュボードのための Tailscale Serve/Funnel の統合"
 read_when:
-  - Exposing the Gateway Control UI outside localhost
-  - Automating tailnet or public dashboard access
+  - ゲートウェイのControl UIをローカルホスト以外から公開する場合
+  - テールネットやパブリックなダッシュボードアクセスを自動化する場合
 title: "Tailscale"
 ---
 
-# Tailscale (Gateway dashboard)
+# Tailscale (ゲートウェイダッシュボード)
 
-OpenClaw can auto-configure Tailscale **Serve** (tailnet) or **Funnel** (public) for the
-Gateway dashboard and WebSocket port. This keeps the Gateway bound to loopback while
-Tailscale provides HTTPS, routing, and (for Serve) identity headers.
+OpenClawは、ゲートウェイダッシュボードおよびWebSocketポート向けに、Tailscale **Serve** (テールネット内公開) または **Funnel** (インターネット公開) を自動設定できます。これにより、ゲートウェイをループバック（`127.0.0.1`）にバインドしたまま、Tailscaleを介してHTTPS、ルーティング、および（Serveの場合は）IDヘッダーを利用できます。
 
-## Modes
+## モード
 
-- `serve`: Tailnet-only Serve via `tailscale serve`. The gateway stays on `127.0.0.1`.
-- `funnel`: Public HTTPS via `tailscale funnel`. OpenClaw requires a shared password.
-- `off`: Default (no Tailscale automation).
+- `serve`: `tailscale serve` を使用したテールネット限定の公開です。ゲートウェイは `127.0.0.1` で待機し続けます。
+- `funnel`: `tailscale funnel` を使用したパブリックなHTTPS公開です。OpenClawでは共有パスワードの設定が必須となります。
+- `off`: デフォルト（Tailscaleの自動設定を行いません）。
 
-## Auth
+## 認証
 
-Set `gateway.auth.mode` to control the handshake:
+`gateway.auth.mode` を設定して、ハンドシェイクを制御します。
 
-- `token` (default when `OPENCLAW_GATEWAY_TOKEN` is set)
-- `password` (shared secret via `OPENCLAW_GATEWAY_PASSWORD` or config)
+- `token` (デフォルト：`OPENCLAW_GATEWAY_TOKEN` が設定されている場合)
+- `password` (共有シークレット：`OPENCLAW_GATEWAY_PASSWORD` または設定ファイルで指定)
 
-When `tailscale.mode = "serve"` and `gateway.auth.allowTailscale` is `true`,
-Control UI/WebSocket auth can use Tailscale identity headers
-(`tailscale-user-login`) without supplying a token/password. OpenClaw verifies
-the identity by resolving the `x-forwarded-for` address via the local Tailscale
-daemon (`tailscale whois`) and matching it to the header before accepting it.
-OpenClaw only treats a request as Serve when it arrives from loopback with
-Tailscale’s `x-forwarded-for`, `x-forwarded-proto`, and `x-forwarded-host`
-headers.
-HTTP API endpoints (for example `/v1/*`, `/tools/invoke`, and `/api/channels/*`)
-still require token/password auth.
-This tokenless flow assumes the gateway host is trusted. If untrusted local code
-may run on the same host, disable `gateway.auth.allowTailscale` and require
-token/password auth instead.
-To require explicit credentials, set `gateway.auth.allowTailscale: false` or
-force `gateway.auth.mode: "password"`.
+`tailscale.mode = "serve"` かつ `gateway.auth.allowTailscale` が `true` の場合、Control UIおよびWebSocketの認証にTailscale IDヘッダー（`tailscale-user-login`）を使用でき、トークンやパスワードの入力なしでログインが可能になります。OpenClawは、ローカルのTailscaleデーモン（`tailscale whois`）を介して `x-forwarded-for` アドレスを解決し、ヘッダーと照合することで、そのIDを検証します。OpenClawは、Tailscaleによって注入された `x-forwarded-for`、`x-forwarded-proto`、および `x-forwarded-host` ヘッダーを伴うループバックからのリクエストのみをServe経由として扱います。
 
-## Config examples
+HTTP APIエンドポイント（例：`/v1/*`、`/tools/invoke`、`/api/channels/*`）は、引き続きトークンまたはパスワードによる認証が必要です。
 
-### Tailnet-only (Serve)
+このトークンレスの認証フローは、ゲートウェイホストが信頼されていることを前提としています。もし同一ホスト上で信頼できないローカルコードが実行される可能性がある場合は、`gateway.auth.allowTailscale` を `false` に設定し、トークンまたはパスワード認証を必須にしてください。
+
+明示的な認証情報を常に要求する場合は、`gateway.auth.allowTailscale: false` を設定するか、`gateway.auth.mode: "password"` を強制してください。
+
+## 設定例
+
+### テールネット限定 (Serve)
 
 ```json5
 {
@@ -54,11 +44,11 @@ force `gateway.auth.mode: "password"`.
 }
 ```
 
-Open: `https://<magicdns>/` (or your configured `gateway.controlUi.basePath`)
+アクセス先：`https://<magicdns>/` （または設定された `gateway.controlUi.basePath`）
 
-### Tailnet-only (bind to Tailnet IP)
+### テールネット限定 (テールネットIPへのバインド)
 
-Use this when you want the Gateway to listen directly on the Tailnet IP (no Serve/Funnel).
+ServeやFunnelを使用せず、ゲートウェイをテールネットIPで直接待機させたい場合に使用します。
 
 ```json5
 {
@@ -69,64 +59,60 @@ Use this when you want the Gateway to listen directly on the Tailnet IP (no Serv
 }
 ```
 
-Connect from another Tailnet device:
+別のテールネットデバイスからの接続：
 
 - Control UI: `http://<tailscale-ip>:18789/`
 - WebSocket: `ws://<tailscale-ip>:18789`
 
-Note: loopback (`http://127.0.0.1:18789`) will **not** work in this mode.
+注：このモードでは、ループバック経由（`http://127.0.0.1:18789`）のアクセスは**機能しません**。
 
-### Public internet (Funnel + shared password)
+### インターネット公開 (Funnel + 共有パスワード)
 
 ```json5
 {
   gateway: {
     bind: "loopback",
     tailscale: { mode: "funnel" },
-    auth: { mode: "password", password: "replace-me" },
+    auth: { mode: "password", password: "ここをパスワードに変更" },
   },
 }
 ```
 
-Prefer `OPENCLAW_GATEWAY_PASSWORD` over committing a password to disk.
+パスワードを直接ファイルに書き込むよりも、`OPENCLAW_GATEWAY_PASSWORD` 環境変数を使用することを推奨します。
 
-## CLI examples
+## CLI の例
 
 ```bash
 openclaw gateway --tailscale serve
 openclaw gateway --tailscale funnel --auth password
 ```
 
-## Notes
+## 注意事項
 
-- Tailscale Serve/Funnel requires the `tailscale` CLI to be installed and logged in.
-- `tailscale.mode: "funnel"` refuses to start unless auth mode is `password` to avoid public exposure.
-- Set `gateway.tailscale.resetOnExit` if you want OpenClaw to undo `tailscale serve`
-  or `tailscale funnel` configuration on shutdown.
-- `gateway.bind: "tailnet"` is a direct Tailnet bind (no HTTPS, no Serve/Funnel).
-- `gateway.bind: "auto"` prefers loopback; use `tailnet` if you want Tailnet-only.
-- Serve/Funnel only expose the **Gateway control UI + WS**. Nodes connect over
-  the same Gateway WS endpoint, so Serve can work for node access.
+- Tailscale Serve/Funnelを使用するには、`tailscale` CLIがインストールされ、ログイン済みである必要があります。
+- 公開状態になるのを防ぐため、`tailscale.mode: "funnel"` は認証モードが `password` でない限り起動しません。
+- シャットダウン時にOpenClawが `tailscale serve` または `tailscale funnel` の設定を解除するようにしたい場合は、`gateway.tailscale.resetOnExit` を設定してください。
+- `gateway.bind: "tailnet"` は直接的なテールネットバインドであり、HTTPSやServe/Funnelは提供されません。
+- `gateway.bind: "auto"` はループバックを優先します。テールネット限定にしたい場合は `tailnet` を明示してください。
+- Serve/Funnelは、**ゲートウェイのControl UIおよびWebSocket**のみを公開します。ノードは同じゲートウェイWebSocketエンドポイントを介して接続するため、Serveはノードアクセスにも利用可能です。
 
-## Browser control (remote Gateway + local browser)
+## ブラウザ制御 (リモートゲートウェイ + ローカルブラウザ)
 
-If you run the Gateway on one machine but want to drive a browser on another machine,
-run a **node host** on the browser machine and keep both on the same tailnet.
-The Gateway will proxy browser actions to the node; no separate control server or Serve URL needed.
+あるマシンでゲートウェイを実行し、別のマシンのブラウザを操作したい場合は、ブラウザが動作しているマシンで**ノードホスト**を実行し、両方を同じテールネット（Tailscale）に参加させてください。ゲートウェイはブラウザ操作をノードへプロキシします。個別の制御サーバーやServe用のURLは不要です。
 
-Avoid Funnel for browser control; treat node pairing like operator access.
+ブラウザ制御にFunnelを使用することは避け、ノードのペアリングはオペレーター権限へのアクセスと同様に慎重に扱ってください。
 
-## Tailscale prerequisites + limits
+## 前提条件と制限
 
-- Serve requires HTTPS enabled for your tailnet; the CLI prompts if it is missing.
-- Serve injects Tailscale identity headers; Funnel does not.
-- Funnel requires Tailscale v1.38.3+, MagicDNS, HTTPS enabled, and a funnel node attribute.
-- Funnel only supports ports `443`, `8443`, and `10000` over TLS.
-- Funnel on macOS requires the open-source Tailscale app variant.
+- Serveを利用するには、テールネットでHTTPSが有効である必要があります。無効な場合、CLIからプロンプトが表示されます。
+- ServeはTailscaleのIDヘッダーを注入しますが、Funnelは注入しません。
+- Funnelを利用するには、Tailscale v1.38.3以降、MagicDNS、有効なHTTPS、およびFunnelノード属性が必要です。
+- FunnelはTLS経由で `443`, `8443`, `10000` ポートのみをサポートします。
+- macOSでのFunnel利用には、オープンソース版のTailscaleアプリが必要です。
 
-## Learn more
+## 詳細情報
 
-- Tailscale Serve overview: [https://tailscale.com/kb/1312/serve](https://tailscale.com/kb/1312/serve)
-- `tailscale serve` command: [https://tailscale.com/kb/1242/tailscale-serve](https://tailscale.com/kb/1242/tailscale-serve)
-- Tailscale Funnel overview: [https://tailscale.com/kb/1223/tailscale-funnel](https://tailscale.com/kb/1223/tailscale-funnel)
-- `tailscale funnel` command: [https://tailscale.com/kb/1311/tailscale-funnel](https://tailscale.com/kb/1311/tailscale-funnel)
+- Tailscale Serve 概要: [https://tailscale.com/kb/1312/serve](https://tailscale.com/kb/1312/serve)
+- `tailscale serve` コマンド: [https://tailscale.com/kb/1242/tailscale-serve](https://tailscale.com/kb/1242/tailscale-serve)
+- Tailscale Funnel 概要: [https://tailscale.com/kb/1223/tailscale-funnel](https://tailscale.com/kb/1223/tailscale-funnel)
+- `tailscale funnel` コマンド: [https://tailscale.com/kb/1311/tailscale-funnel](https://tailscale.com/kb/1311/tailscale-funnel)

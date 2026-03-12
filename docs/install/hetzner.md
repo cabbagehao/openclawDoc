@@ -1,93 +1,91 @@
 ---
-summary: "Run OpenClaw Gateway 24/7 on a cheap Hetzner VPS (Docker) with durable state and baked-in binaries"
+summary: "耐久性のある状態とビルド時に組み込んだバイナリを備え、安価な Hetzner VPS 上で OpenClaw ゲートウェイを 24 時間 365 日動かす"
 read_when:
-  - You want OpenClaw running 24/7 on a cloud VPS (not your laptop)
-  - You want a production-grade, always-on Gateway on your own VPS
-  - You want full control over persistence, binaries, and restart behavior
-  - You are running OpenClaw in Docker on Hetzner or a similar provider
+  - OpenClaw をノート PC ではなくクラウド VPS 上で常時稼働させたい
+  - 自前の VPS 上で本番向けの常時稼働ゲートウェイを構築したい
+  - 永続化、バイナリ、再起動挙動を完全に制御したい
+  - Hetzner または類似プロバイダー上で Docker 版 OpenClaw を運用している
 title: "Hetzner"
+x-i18n:
+  source_hash: "97339c7ddb8b9007fa51bb5c31b1fe5d2b1e190239216df3bd83ed8859f5dae1"
 ---
 
-# OpenClaw on Hetzner (Docker, Production VPS Guide)
+# Hetzner 上の OpenClaw (Docker、本番 VPS ガイド)
 
-## Goal
+## 目標
 
-Run a persistent OpenClaw Gateway on a Hetzner VPS using Docker, with durable state, baked-in binaries, and safe restart behavior.
+Hetzner の VPS 上で Docker を使って、状態が永続化され、必要なバイナリをビルド時に組み込み、安全に再起動できる OpenClaw ゲートウェイを常時稼働させます。
 
-If you want “OpenClaw 24/7 for ~$5”, this is the simplest reliable setup.
-Hetzner pricing changes; pick the smallest Debian/Ubuntu VPS and scale up if you hit OOMs.
+「月額およそ 5 ドルで OpenClaw を 24 時間 365 日動かしたい」場合、この構成が最もシンプルで信頼しやすい選択です。Hetzner の料金は変わることがあるため、まずは最小の Debian / Ubuntu VPS を選び、OOM が出たらスケールアップしてください。
 
-Security model reminder:
+セキュリティモデルに関する前提:
 
-- Company-shared agents are fine when everyone is in the same trust boundary and the runtime is business-only.
-- Keep strict separation: dedicated VPS/runtime + dedicated accounts; no personal Apple/Google/browser/password-manager profiles on that host.
-- If users are adversarial to each other, split by gateway/host/OS user.
+- 全員が同じ信頼境界に属し、ランタイムが業務専用なら、社内共有エージェント構成でも問題ありません
+- 専用 VPS / 専用ランタイム / 専用アカウントを保ち、そのホストに個人用の Apple、Google、ブラウザ、パスワードマネージャープロファイルを置かないでください
+- 利用者同士を相互に信頼できない場合は、ゲートウェイ、ホスト、OS ユーザー単位で分離してください
 
-See [Security](/gateway/security) and [VPS hosting](/vps).
+[Security](/gateway/security) と [VPS hosting](/vps) も参照してください。
 
-## What are we doing (simple terms)?
+## 何をするのか (簡単に)
 
-- Rent a small Linux server (Hetzner VPS)
-- Install Docker (isolated app runtime)
-- Start the OpenClaw Gateway in Docker
-- Persist `~/.openclaw` + `~/.openclaw/workspace` on the host (survives restarts/rebuilds)
-- Access the Control UI from your laptop via an SSH tunnel
+- Hetzner で小さな Linux サーバーを借りる
+- Docker を入れて、アプリ実行環境を分離する
+- Docker 内で OpenClaw ゲートウェイを起動する
+- `~/.openclaw` と `~/.openclaw/workspace` をホスト側に永続化する
+- ノート PC から SSH トンネル経由で Control UI へアクセスする
 
-The Gateway can be accessed via:
+ゲートウェイへの到達方法は次の 2 通りです。
 
-- SSH port forwarding from your laptop
-- Direct port exposure if you manage firewalling and tokens yourself
+- ノート PC からの SSH ポートフォワーディング
+- ファイアウォールとトークン管理を自前で行う前提での直接ポート公開
 
-This guide assumes Ubuntu or Debian on Hetzner.  
-If you are on another Linux VPS, map packages accordingly.
-For the generic Docker flow, see [Docker](/install/docker).
-
----
-
-## Quick path (experienced operators)
-
-1. Provision Hetzner VPS
-2. Install Docker
-3. Clone OpenClaw repository
-4. Create persistent host directories
-5. Configure `.env` and `docker-compose.yml`
-6. Bake required binaries into the image
-7. `docker compose up -d`
-8. Verify persistence and Gateway access
+このガイドでは、Hetzner 上の Ubuntu または Debian を前提にしています。別の Linux VPS を使う場合は、パッケージ名などを適宜読み替えてください。汎用的な Docker フローについては [Docker](/install/docker) を参照してください。
 
 ---
 
-## What you need
+## クイックパス (慣れている運用者向け)
 
-- Hetzner VPS with root access
-- SSH access from your laptop
-- Basic comfort with SSH + copy/paste
-- ~20 minutes
-- Docker and Docker Compose
-- Model auth credentials
-- Optional provider credentials
+1. Hetzner VPS を用意する
+2. Docker をインストールする
+3. OpenClaw リポジトリを clone する
+4. 永続化用のホストディレクトリを作る
+5. `.env` と `docker-compose.yml` を設定する
+6. 必要なバイナリをイメージへ組み込む
+7. `docker compose up -d` を実行する
+8. 永続化とゲートウェイ到達性を確認する
+
+---
+
+## 必要なもの
+
+- root アクセス可能な Hetzner VPS
+- ノート PC からの SSH アクセス
+- SSH とコピー/ペースト操作の基本知識
+- 20 分程度の作業時間
+- Docker と Docker Compose
+- モデル用の認証情報
+- 任意のプロバイダー認証情報
   - WhatsApp QR
-  - Telegram bot token
+  - Telegram ボットトークン
   - Gmail OAuth
 
 ---
 
-## 1) Provision the VPS
+## 1) VPS を用意する
 
-Create an Ubuntu or Debian VPS in Hetzner.
+Hetzner で Ubuntu または Debian の VPS を作成します。
 
-Connect as root:
+root で接続します。
 
 ```bash
 ssh root@YOUR_VPS_IP
 ```
 
-This guide assumes the VPS is stateful.
-Do not treat it as disposable infrastructure.
+このガイドは、VPS を stateful に運用する前提です。使い捨てインフラとして扱わないでください。
 
 ---
 
-## 2) Install Docker (on the VPS)
+## 2) Docker をインストールする (VPS 上)
 
 ```bash
 apt-get update
@@ -95,7 +93,7 @@ apt-get install -y git curl ca-certificates
 curl -fsSL https://get.docker.com | sh
 ```
 
-Verify:
+確認:
 
 ```bash
 docker --version
@@ -104,21 +102,20 @@ docker compose version
 
 ---
 
-## 3) Clone the OpenClaw repository
+## 3) OpenClaw リポジトリを clone する
 
 ```bash
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 ```
 
-This guide assumes you will build a custom image to guarantee binary persistence.
+このガイドでは、バイナリの永続性を確保するためにカスタムイメージをビルドする前提です。
 
 ---
 
-## 4) Create persistent host directories
+## 4) 永続化用のホストディレクトリを作成する
 
-Docker containers are ephemeral.
-All long-lived state must live on the host.
+Docker コンテナは一時的です。長期間残る状態はすべてホスト側に置く必要があります。
 
 ```bash
 mkdir -p /root/.openclaw/workspace
@@ -129,9 +126,9 @@ chown -R 1000:1000 /root/.openclaw
 
 ---
 
-## 5) Configure environment variables
+## 5) 環境変数を設定する
 
-Create `.env` in the repository root.
+リポジトリルートに `.env` を作成します。
 
 ```bash
 OPENCLAW_IMAGE=openclaw:latest
@@ -146,19 +143,19 @@ GOG_KEYRING_PASSWORD=change-me-now
 XDG_CONFIG_HOME=/home/node/.openclaw
 ```
 
-Generate strong secrets:
+十分に強い秘密値は次で生成してください。
 
 ```bash
 openssl rand -hex 32
 ```
 
-**Do not commit this file.**
+**このファイルはコミットしないでください。**
 
 ---
 
-## 6) Docker Compose configuration
+## 6) Docker Compose を設定する
 
-Create or update `docker-compose.yml`.
+`docker-compose.yml` を作成または更新します。
 
 ```yaml
 services:
@@ -198,33 +195,31 @@ services:
       ]
 ```
 
-`--allow-unconfigured` is only for bootstrap convenience, it is not a replacement for a proper gateway configuration. Still set auth (`gateway.auth.token` or password) and use safe bind settings for your deployment.
+`--allow-unconfigured` は初回ブートストラップを簡単にするためだけの指定であり、適切なゲートウェイ設定の代わりにはなりません。`gateway.auth.token` またはパスワードによる認証は必ず設定し、デプロイ先に適した安全な bind 設定を使ってください。
 
 ---
 
-## 7) Bake required binaries into the image (critical)
+## 7) 必要なバイナリをイメージに組み込む (重要)
 
-Installing binaries inside a running container is a trap.
-Anything installed at runtime will be lost on restart.
+実行中コンテナの中でバイナリを追加インストールするのは避けてください。ランタイム中に入れたものは、コンテナ再起動で失われます。
 
-All external binaries required by skills must be installed at image build time.
+skills が必要とする外部バイナリは、すべてイメージビルド時にインストールしておく必要があります。
 
-The examples below show three common binaries only:
+以下は、よく使う 3 つのバイナリだけを例示しています。
 
-- `gog` for Gmail access
-- `goplaces` for Google Places
-- `wacli` for WhatsApp
+- Gmail アクセス用の `gog`
+- Google Places 用の `goplaces`
+- WhatsApp 用の `wacli`
 
-These are examples, not a complete list.
-You may install as many binaries as needed using the same pattern.
+これはあくまで例であり、完全な一覧ではありません。同じパターンで必要な数だけ追加できます。
 
-If you add new skills later that depend on additional binaries, you must:
+後から追加した skill が別のバイナリに依存する場合は、次の対応が必要です。
 
-1. Update the Dockerfile
-2. Rebuild the image
-3. Restart the containers
+1. Dockerfile を更新する
+2. イメージを再ビルドする
+3. コンテナを再起動する
 
-**Example Dockerfile**
+**Dockerfile の例**
 
 ```dockerfile
 FROM node:22-bookworm
@@ -265,14 +260,14 @@ CMD ["node","dist/index.js"]
 
 ---
 
-## 8) Build and launch
+## 8) ビルドして起動する
 
 ```bash
 docker compose build
 docker compose up -d openclaw-gateway
 ```
 
-Verify binaries:
+バイナリ確認:
 
 ```bash
 docker compose exec openclaw-gateway which gog
@@ -280,7 +275,7 @@ docker compose exec openclaw-gateway which goplaces
 docker compose exec openclaw-gateway which wacli
 ```
 
-Expected output:
+期待される出力:
 
 ```
 /usr/local/bin/gog
@@ -290,36 +285,35 @@ Expected output:
 
 ---
 
-## 9) Verify Gateway
+## 9) ゲートウェイを確認する
 
 ```bash
 docker compose logs -f openclaw-gateway
 ```
 
-Success:
+成功時の目安:
 
 ```
 [gateway] listening on ws://0.0.0.0:18789
 ```
 
-From your laptop:
+ノート PC 側では次を実行します。
 
 ```bash
 ssh -N -L 18789:127.0.0.1:18789 root@YOUR_VPS_IP
 ```
 
-Open:
+開く URL:
 
 `http://127.0.0.1:18789/`
 
-Paste your gateway token.
+ゲートウェイトークンを貼り付けて接続してください。
 
 ---
 
-## What persists where (source of truth)
+## 何がどこに残るか (source of truth)
 
-OpenClaw runs in Docker, but Docker is not the source of truth.
-All long-lived state must survive restarts, rebuilds, and reboots.
+OpenClaw 自体は Docker で動きますが、Docker 自体は source of truth ではありません。長期間残る状態は、再起動、再ビルド、再起動後も維持できる必要があります。
 
 | Component           | Location                          | Persistence mechanism  | Notes                            |
 | ------------------- | --------------------------------- | ---------------------- | -------------------------------- |
@@ -338,19 +332,19 @@ All long-lived state must survive restarts, rebuilds, and reboots.
 
 ## Infrastructure as Code (Terraform)
 
-For teams preferring infrastructure-as-code workflows, a community-maintained Terraform setup provides:
+インフラをコードで管理したいチーム向けに、コミュニティメンテナンスの Terraform 構成もあります。内容は次のとおりです。
 
-- Modular Terraform configuration with remote state management
-- Automated provisioning via cloud-init
-- Deployment scripts (bootstrap, deploy, backup/restore)
-- Security hardening (firewall, UFW, SSH-only access)
-- SSH tunnel configuration for gateway access
+- リモートステート管理を含むモジュール化 Terraform 構成
+- cloud-init による自動プロビジョニング
+- デプロイスクリプト (bootstrap、deploy、backup / restore)
+- セキュリティ強化 (firewall、UFW、SSH のみのアクセス)
+- ゲートウェイアクセス用 SSH トンネル設定
 
-**Repositories:**
+**リポジトリ:**
 
 - Infrastructure: [openclaw-terraform-hetzner](https://github.com/andreesg/openclaw-terraform-hetzner)
 - Docker config: [openclaw-docker-config](https://github.com/andreesg/openclaw-docker-config)
 
-This approach complements the Docker setup above with reproducible deployments, version-controlled infrastructure, and automated disaster recovery.
+この方式は、上記の Docker セットアップに対して、再現可能なデプロイ、バージョン管理されたインフラ、自動ディザスタリカバリを補完します。
 
-> **Note:** Community-maintained. For issues or contributions, see the repository links above.
+> **Note:** コミュニティメンテナンスです。問題報告やコントリビュート先は上記リポジトリを参照してください。

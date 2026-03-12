@@ -1,89 +1,82 @@
 ---
-summary: "Proposal: long-term command authorization model for ACP-bound conversations"
+summary: "提案: ACP 紐付けされた会話における長期的なコマンド認可モデル"
 read_when:
-  - Designing native command auth behavior in Telegram/Discord ACP-bound channels/topics
-title: "ACP Bound Command Authorization (Proposal)"
+  - Telegram/Discord の ACP 紐付けされたチャネル/トピックにおける、ネイティブコマンドの認可挙動を設計する場合
+title: "ACP 紐付けコマンドの認可 (提案)"
+x-i18n:
+  source_hash: "f2850f20c62ea72b276d1e85c9fe166f09d3cf08c3ce827bc592912854231106"
 ---
 
-# ACP Bound Command Authorization (Proposal)
+# ACP 紐付けコマンドの認可 (提案)
 
-Status: Proposed, **not implemented yet**.
+ステータス: 提案中（**未実装**）
 
-This document describes a long-term authorization model for native commands in
-ACP-bound conversations. It is an experiments proposal and does not replace
-current production behavior.
+本ドキュメントでは、ACP 紐付け（ACP-bound）された会話におけるネイティブコマンドの長期的な認可モデルについて説明します。これは実験的な提案であり、現在の製品の挙動を即座に置き換えるものではありません。
 
-For implemented behavior, read source and tests in:
+既に実装されている挙動については、以下のソースコードおよびテストを参照してください:
 
 - `src/telegram/bot-native-commands.ts`
 - `src/discord/monitor/native-command.ts`
 - `src/auto-reply/reply/commands-core.ts`
 
-## Problem
+## 課題
 
-Today we have command-specific checks (for example `/new` and `/reset`) that
-need to work inside ACP-bound channels/topics even when allowlists are empty.
-This solves immediate UX pain, but command-name-based exceptions do not scale.
+現在、`/new` や `/reset` などの特定のコマンドについては、許可リスト（allowlist）が空であっても ACP 紐付けされたチャネル/トピック内で動作させるための、個別の例外チェック処理が存在します。これにより差し当たりの利便性は確保されていますが、コマンド名に基づいた個別の例外処理を増やすやり方は、将来的な拡張性に欠けます。
 
-## Long-term shape
+## 長期的な目指すべき姿
 
-Move command authorization from ad-hoc handler logic to command metadata plus a
-shared policy evaluator.
+コマンド認可の仕組みを、アドホック（場当たり的）なハンドラー内のロジックから、コマンドごとのメタデータと共有のポリシー評価エンジンを用いる形へ移行します。
 
-### 1) Add auth policy metadata to command definitions
+### 1) コマンド定義に認可ポリシーのメタデータを追加する
 
-Each command definition should declare an auth policy. Example shape:
+各コマンドの定義において、認可ポリシーを宣言できるようにします。形式のイメージ:
 
 ```ts
 type CommandAuthPolicy =
-  | { mode: "owner_or_allowlist" } // default, current strict behavior
-  | { mode: "bound_acp_or_owner_or_allowlist" } // allow in explicitly bound ACP conversations
-  | { mode: "owner_only" };
+  | { mode: "owner_or_allowlist" } // デフォルト。現在の厳格な挙動
+  | { mode: "bound_acp_or_owner_or_allowlist" } // 明示的に ACP 紐付けされた会話内であれば許可
+  | { mode: "owner_only" }; // オーナー（所有者）のみに限定
 ```
 
-`/new` and `/reset` would use `bound_acp_or_owner_or_allowlist`.
-Most other commands would remain `owner_or_allowlist`.
+`/new` や `/reset` は `bound_acp_or_owner_or_allowlist` を使用することになります。
+他のほとんどのコマンドは `owner_or_allowlist` のまま維持されます。
 
-### 2) Share one evaluator across channels
+### 2) チャネル間で単一の評価エンジンを共有する
 
-Introduce one helper that evaluates command auth using:
+以下の情報を元にコマンド認可を判定する、共通のヘルパー関数を導入します:
 
-- command policy metadata
-- sender authorization state
-- resolved conversation binding state
+- コマンドのポリシーメタデータ
+- 送信者の認可ステータス
+- 解決された会話のバインディング（紐付け）状態
 
-Both Telegram and Discord native handlers should call the same helper to avoid
-behavior drift.
+Telegram と Discord の両方のネイティブハンドラーからこの共通ヘルパーを呼び出すことで、チャネル間での挙動の乖離を防ぎます。
 
-### 3) Use binding-match as the bypass boundary
+### 3) バインディングの一致（Binding-match）をバイパスの境界とする
 
-When policy allows bound ACP bypass, authorize only if a configured binding
-match was resolved for the current conversation (not just because current
-session key looks ACP-like).
+ポリシーによって ACP 紐付け時のバイパスが許可されている場合、現在の会話に対して**構成済みのバインディング（紐付け設定）が一致した**場合にのみ認可を与えます。単に現在のセッションキーが ACP 風であるという理由だけでは認可しません。
 
-This keeps the boundary explicit and minimizes accidental widening.
+これにより、認可の境界を明示的に保ち、意図しない権限拡大のリスクを最小限に抑えます。
 
-## Why this is better
+## なぜこの方式が優れているのか
 
-- Scales to future commands without adding more command-name conditionals.
-- Keeps behavior consistent across channels.
-- Preserves current security model by requiring explicit binding match.
-- Keeps allowlists optional hardening instead of a universal requirement.
+- コマンド名ごとの条件分岐を増やすことなく、将来のコマンド追加に対応できる。
+- チャネル間で一貫した挙動を維持できる。
+- 明示的なバインディングの一致を要求することで、現在のセキュリティモデルを維持できる。
+- 許可リストを「必須の要件」ではなく、必要に応じて設定する「オプションの強化策」として維持できる。
 
-## Rollout plan (future)
+## 今後の導入計画
 
-1. Add command auth policy field to command registry types and command data.
-2. Implement shared evaluator and migrate Telegram + Discord native handlers.
-3. Move `/new` and `/reset` to metadata-driven policy.
-4. Add tests per policy mode and channel surface.
+1. コマンドレジストリの型とデータに認可ポリシーフィールドを追加する。
+2. 共有の評価エンジンを実装し、Telegram および Discord のネイティブハンドラーを移行する。
+3. `/new` および `/reset` をメタデータ主導のポリシーに移行する。
+4. ポリシーモードおよびチャネルの種類ごとにテストを追加する。
 
-## Non-goals
+## 非目標
 
-- This proposal does not change ACP session lifecycle behavior.
-- This proposal does not require allowlists for all ACP-bound commands.
-- This proposal does not change existing route binding semantics.
+- 本提案は、ACP セッションのライフサイクル管理を変更するものではない。
+- 本提案は、すべての ACP 紐付けコマンドに許可リストを必須とするものではない。
+- 本提案は、既存のルートバインディングのセマンティクスを変更するものではない。
 
-## Note
+## 補足事項
 
-This proposal is intentionally additive and does not delete or replace existing
-experiments documents.
+- 本提案は意図的に追加的なものとして作成されており、既存の実験的ドキュメントを削除したり置き換えたりするものではありません。

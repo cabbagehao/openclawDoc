@@ -1,31 +1,32 @@
 ---
-summary: "Logging overview: file logs, console output, CLI tailing, and the Control UI"
+summary: "ログの概要: ファイルログ、コンソール出力、CLI での tail、Control UI"
 read_when:
-  - You need a beginner-friendly overview of logging
-  - You want to configure log levels or formats
-  - You are troubleshooting and need to find logs quickly
+  - ロギングの全体像を手早く把握したいとき
+  - ログレベルや出力形式を設定したいとき
+  - トラブルシューティングのためにログを素早く見つけたいとき
 title: "Logging"
+x-i18n:
+  source_hash: "11907b8364e374c6eb1f157f380c2c14aced3053ef28c0f90e732ab475c21f93"
 ---
 
 # Logging
 
-OpenClaw logs in two places:
+OpenClaw のログは 2 か所に出力されます。
 
-- **File logs** (JSON lines) written by the Gateway.
-- **Console output** shown in terminals and the Control UI.
+- **ファイルログ**: ゲートウェイが書き込む JSON Lines 形式のログ
+- **コンソール出力**: ターミナルと Control UI に表示されるログ
 
-This page explains where logs live, how to read them, and how to configure log
-levels and formats.
+このページでは、ログの保存場所、読み取り方法、ログレベルや出力形式の設定方法を説明します。
 
-## Where logs live
+## ログの保存場所
 
-By default, the Gateway writes a rolling log file under:
+デフォルトでは、ゲートウェイは次の場所に日次ローテーション形式のログファイルを書き込みます。
 
 `/tmp/openclaw/openclaw-YYYY-MM-DD.log`
 
-The date uses the gateway host's local timezone.
+日付は、ゲートウェイホストのローカルタイムゾーンに基づきます。
 
-You can override this in `~/.openclaw/openclaw.json`:
+`~/.openclaw/openclaw.json` で保存先を上書きできます。
 
 ```json
 {
@@ -35,70 +36,68 @@ You can override this in `~/.openclaw/openclaw.json`:
 }
 ```
 
-## How to read logs
+## ログの読み方
 
-### CLI: live tail (recommended)
+### CLI: ライブ tail（推奨）
 
-Use the CLI to tail the gateway log file via RPC:
+CLI から RPC 経由でゲートウェイのログファイルを tail できます。
 
 ```bash
 openclaw logs --follow
 ```
 
-Output modes:
+出力モード:
 
-- **TTY sessions**: pretty, colorized, structured log lines.
-- **Non-TTY sessions**: plain text.
-- `--json`: line-delimited JSON (one log event per line).
-- `--plain`: force plain text in TTY sessions.
-- `--no-color`: disable ANSI colors.
+- **TTY セッション**: 色付きで読みやすく整形された構造化ログ
+- **非 TTY セッション**: プレーンテキスト
+- `--json`: 1 行 1 イベントの line-delimited JSON
+- `--plain`: TTY セッションでもプレーンテキストを強制する
+- `--no-color`: ANSI カラーを無効にする
 
-In JSON mode, the CLI emits `type`-tagged objects:
+JSON モードでは、CLI は `type` 付きのオブジェクトを出力します。
 
-- `meta`: stream metadata (file, cursor, size)
-- `log`: parsed log entry
-- `notice`: truncation / rotation hints
-- `raw`: unparsed log line
+- `meta`: ストリームのメタデータ（ファイル、cursor、size）
+- `log`: パース済みログエントリ
+- `notice`: truncation や rotation に関する通知
+- `raw`: パースできなかった生ログ行
 
-If the Gateway is unreachable, the CLI prints a short hint to run:
+ゲートウェイに到達できない場合、CLI は次を実行するよう短いヒントを表示します。
 
 ```bash
 openclaw doctor
 ```
 
-### Control UI (web)
+### Control UI（Web）
 
-The Control UI’s **Logs** tab tails the same file using `logs.tail`.
-See [/web/control-ui](/web/control-ui) for how to open it.
+Control UI の **Logs** タブは、`logs.tail` を使って同じログファイルを tail します。開き方は [/web/control-ui](/web/control-ui) を参照してください。
 
-### Channel-only logs
+### チャンネル関連ログだけを見る
 
-To filter channel activity (WhatsApp/Telegram/etc), use:
+チャンネルアクティビティ（WhatsApp / Telegram など）だけを絞り込む場合は、次を使います。
 
 ```bash
 openclaw channels logs --channel whatsapp
 ```
 
-## Log formats
+## ログ形式
 
-### File logs (JSONL)
+### ファイルログ（JSONL）
 
-Each line in the log file is a JSON object. The CLI and Control UI parse these
-entries to render structured output (time, level, subsystem, message).
+ログファイルの各行は JSON オブジェクトです。CLI と Control UI はこれらをパースして、時刻、レベル、サブシステム、メッセージなどを含む構造化表示を行います。
 
-### Console output
+### コンソール出力
 
-Console logs are **TTY-aware** and formatted for readability:
+コンソールログは **TTY 対応**で、人間が読みやすいように整形されます。
 
-- Subsystem prefixes (e.g. `gateway/channels/whatsapp`)
-- Level coloring (info/warn/error)
-- Optional compact or JSON mode
+- サブシステム接頭辞（例: `gateway/channels/whatsapp`）
+- レベルごとの色分け（info / warn / error）
+- compact モードや JSON モードへの切り替え
 
-Console formatting is controlled by `logging.consoleStyle`.
+コンソール出力の形式は `logging.consoleStyle` で制御します。
 
-## Configuring logging
+## ロギング設定
 
-All logging configuration lives under `logging` in `~/.openclaw/openclaw.json`.
+ロギング設定はすべて `~/.openclaw/openclaw.json` の `logging` 配下にあります。
 
 ```json
 {
@@ -113,80 +112,76 @@ All logging configuration lives under `logging` in `~/.openclaw/openclaw.json`.
 }
 ```
 
-### Log levels
+### ログレベル
 
-- `logging.level`: **file logs** (JSONL) level.
-- `logging.consoleLevel`: **console** verbosity level.
+- `logging.level`: **ファイルログ**（JSONL）のレベル
+- `logging.consoleLevel`: **コンソール出力**の詳細度
 
-You can override both via the **`OPENCLAW_LOG_LEVEL`** environment variable (e.g. `OPENCLAW_LOG_LEVEL=debug`). The env var takes precedence over the config file, so you can raise verbosity for a single run without editing `openclaw.json`. You can also pass the global CLI option **`--log-level <level>`** (for example, `openclaw --log-level debug gateway run`), which overrides the environment variable for that command.
+両方とも環境変数 **`OPENCLAW_LOG_LEVEL`** で上書きできます（例: `OPENCLAW_LOG_LEVEL=debug`）。環境変数は設定ファイルより優先されるため、`openclaw.json` を編集せずに単発実行だけ詳細度を上げられます。さらに、グローバル CLI オプション **`--log-level <level>`**（例: `openclaw --log-level debug gateway run`）を指定すると、そのコマンドでは環境変数よりもこちらが優先されます。
 
-`--verbose` only affects console output; it does not change file log levels.
+`--verbose` が影響するのはコンソール出力だけで、ファイルログのレベルは変わりません。
 
-### Console styles
+### コンソールスタイル
 
 `logging.consoleStyle`:
 
-- `pretty`: human-friendly, colored, with timestamps.
-- `compact`: tighter output (best for long sessions).
-- `json`: JSON per line (for log processors).
+- `pretty`: 人が読みやすい色付き表示。タイムスタンプあり
+- `compact`: より詰まった表示。長時間セッション向け
+- `json`: 1 行ごとの JSON。ログ処理系向け
 
-### Redaction
+### マスキング
 
-Tool summaries can redact sensitive tokens before they hit the console:
+ツール要約では、機密トークンをコンソールに出す前にマスキングできます。
 
-- `logging.redactSensitive`: `off` | `tools` (default: `tools`)
-- `logging.redactPatterns`: list of regex strings to override the default set
+- `logging.redactSensitive`: `off` | `tools`（デフォルト: `tools`）
+- `logging.redactPatterns`: 既定パターンを上書きする正規表現文字列の一覧
 
-Redaction affects **console output only** and does not alter file logs.
+マスキングが適用されるのは **コンソール出力だけ** で、ファイルログは変更されません。
 
-## Diagnostics + OpenTelemetry
+## Diagnostics と OpenTelemetry
 
-Diagnostics are structured, machine-readable events for model runs **and**
-message-flow telemetry (webhooks, queueing, session state). They do **not**
-replace logs; they exist to feed metrics, traces, and other exporters.
+diagnostics は、モデル実行やメッセージフローテレメトリ（webhook、queueing、session state）についての、構造化された機械可読イベントです。これは通常のログを置き換えるものではなく、メトリクス、トレース、その他の exporter にデータを供給するための仕組みです。
 
-Diagnostics events are emitted in-process, but exporters only attach when
-diagnostics + the exporter plugin are enabled.
+diagnostics event 自体はプロセス内で発行されますが、exporter が実際に接続されるのは diagnostics と exporter plugin の両方が有効な場合だけです。
 
-### OpenTelemetry vs OTLP
+### OpenTelemetry と OTLP の違い
 
-- **OpenTelemetry (OTel)**: the data model + SDKs for traces, metrics, and logs.
-- **OTLP**: the wire protocol used to export OTel data to a collector/backend.
-- OpenClaw exports via **OTLP/HTTP (protobuf)** today.
+- **OpenTelemetry（OTel）**: trace、metric、log のためのデータモデルと SDK 群
+- **OTLP**: OTel データを collector / backend に送るための wire protocol
+- OpenClaw は現時点では **OTLP/HTTP（protobuf）** で export する
 
-### Signals exported
+### エクスポートされる signal
 
-- **Metrics**: counters + histograms (token usage, message flow, queueing).
-- **Traces**: spans for model usage + webhook/message processing.
-- **Logs**: exported over OTLP when `diagnostics.otel.logs` is enabled. Log
-  volume can be high; keep `logging.level` and exporter filters in mind.
+- **Metrics**: counter と histogram（トークン使用量、メッセージフロー、queueing）
+- **Traces**: モデル利用や webhook / message 処理の span
+- **Logs**: `diagnostics.otel.logs` を有効にすると OTLP 経由でエクスポートされる。ログ量は多くなりやすいため、`logging.level` と exporter 側の filter を考慮してください
 
-### Diagnostic event catalog
+### Diagnostics event カタログ
 
-Model usage:
+モデル使用:
 
-- `model.usage`: tokens, cost, duration, context, provider/model/channel, session ids.
+- `model.usage`: token 数、コスト、duration、context、provider / model / channel、session ID
 
-Message flow:
+メッセージフロー:
 
-- `webhook.received`: webhook ingress per channel.
-- `webhook.processed`: webhook handled + duration.
-- `webhook.error`: webhook handler errors.
-- `message.queued`: message enqueued for processing.
-- `message.processed`: outcome + duration + optional error.
+- `webhook.received`: チャンネルごとの webhook 受信
+- `webhook.processed`: webhook 処理結果と所要時間
+- `webhook.error`: webhook handler エラー
+- `message.queued`: 処理待ちキューへの登録
+- `message.processed`: 処理結果、所要時間、任意のエラー
 
-Queue + session:
+キューとセッション:
 
-- `queue.lane.enqueue`: command queue lane enqueue + depth.
-- `queue.lane.dequeue`: command queue lane dequeue + wait time.
-- `session.state`: session state transition + reason.
-- `session.stuck`: session stuck warning + age.
-- `run.attempt`: run retry/attempt metadata.
-- `diagnostic.heartbeat`: aggregate counters (webhooks/queue/session).
+- `queue.lane.enqueue`: コマンドキューレーンへの enqueue と depth
+- `queue.lane.dequeue`: コマンドキューレーンからの dequeue と待機時間
+- `session.state`: session state の遷移と理由
+- `session.stuck`: stuck session の警告と経過時間
+- `run.attempt`: run の retry / attempt メタデータ
+- `diagnostic.heartbeat`: webhook / queue / session の集約カウンタ
 
-### Enable diagnostics (no exporter)
+### diagnostics を有効にする（exporter なし）
 
-Use this if you want diagnostics events available to plugins or custom sinks:
+plugin や custom sink から diagnostics event を利用したいだけの場合は、次の設定で十分です。
 
 ```json
 {
@@ -196,10 +191,9 @@ Use this if you want diagnostics events available to plugins or custom sinks:
 }
 ```
 
-### Diagnostics flags (targeted logs)
+### diagnostics flags（対象を絞ったログ）
 
-Use flags to turn on extra, targeted debug logs without raising `logging.level`.
-Flags are case-insensitive and support wildcards (e.g. `telegram.*` or `*`).
+`logging.level` を上げずに、対象を絞った追加のデバッグログを有効化するには flags を使います。flags は大文字小文字を区別せず、ワイルドカード（例: `telegram.*`、`*`）にも対応します。
 
 ```json
 {
@@ -209,22 +203,21 @@ Flags are case-insensitive and support wildcards (e.g. `telegram.*` or `*`).
 }
 ```
 
-Env override (one-off):
+環境変数による一時上書き:
 
 ```
 OPENCLAW_DIAGNOSTICS=telegram.http,telegram.payload
 ```
 
-Notes:
+注:
 
-- Flag logs go to the standard log file (same as `logging.file`).
-- Output is still redacted according to `logging.redactSensitive`.
-- Full guide: [/diagnostics/flags](/diagnostics/flags).
+- flag ログは通常のログファイル（`logging.file`）へ出力されます
+- 出力のマスキングは `logging.redactSensitive` に従います
+- 詳細ガイドは [/diagnostics/flags](/diagnostics/flags) を参照してください
 
-### Export to OpenTelemetry
+### OpenTelemetry へエクスポートする
 
-Diagnostics can be exported via the `diagnostics-otel` plugin (OTLP/HTTP). This
-works with any OpenTelemetry collector/backend that accepts OTLP/HTTP.
+diagnostics は `diagnostics-otel` plugin（OTLP/HTTP）経由で export できます。OTLP/HTTP を受け付ける任意の OpenTelemetry collector / backend と組み合わせて利用できます。
 
 ```json
 {
@@ -253,100 +246,81 @@ works with any OpenTelemetry collector/backend that accepts OTLP/HTTP.
 }
 ```
 
-Notes:
+注:
 
-- You can also enable the plugin with `openclaw plugins enable diagnostics-otel`.
-- `protocol` currently supports `http/protobuf` only. `grpc` is ignored.
-- Metrics include token usage, cost, context size, run duration, and message-flow
-  counters/histograms (webhooks, queueing, session state, queue depth/wait).
-- Traces/metrics can be toggled with `traces` / `metrics` (default: on). Traces
-  include model usage spans plus webhook/message processing spans when enabled.
-- Set `headers` when your collector requires auth.
-- Environment variables supported: `OTEL_EXPORTER_OTLP_ENDPOINT`,
-  `OTEL_SERVICE_NAME`, `OTEL_EXPORTER_OTLP_PROTOCOL`.
+- `openclaw plugins enable diagnostics-otel` でも plugin を有効化できます
+- `protocol` が現在サポートするのは `http/protobuf` のみで、`grpc` は無視されます
+- metrics には、トークン使用量、コスト、コンテキストサイズ、実行時間、メッセージフロー関連の counter / histogram（webhook、queueing、session state、queue depth / wait）が含まれます
+- traces / metrics は `traces` / `metrics` で切り替えられます（デフォルトは on）。traces には、モデル利用 span と、必要に応じて webhook / message 処理 span が含まれます
+- collector 側で認証が必要な場合は `headers` を設定してください
+- サポートする環境変数は `OTEL_EXPORTER_OTLP_ENDPOINT`、`OTEL_SERVICE_NAME`、`OTEL_EXPORTER_OTLP_PROTOCOL` です
 
-### Exported metrics (names + types)
+### エクスポートされる metrics（名前と型）
 
-Model usage:
+モデル使用:
 
-- `openclaw.tokens` (counter, attrs: `openclaw.token`, `openclaw.channel`,
-  `openclaw.provider`, `openclaw.model`)
-- `openclaw.cost.usd` (counter, attrs: `openclaw.channel`, `openclaw.provider`,
-  `openclaw.model`)
-- `openclaw.run.duration_ms` (histogram, attrs: `openclaw.channel`,
-  `openclaw.provider`, `openclaw.model`)
-- `openclaw.context.tokens` (histogram, attrs: `openclaw.context`,
-  `openclaw.channel`, `openclaw.provider`, `openclaw.model`)
+- `openclaw.tokens`（counter、attrs: `openclaw.token`、`openclaw.channel`、`openclaw.provider`、`openclaw.model`）
+- `openclaw.cost.usd`（counter、attrs: `openclaw.channel`、`openclaw.provider`、`openclaw.model`）
+- `openclaw.run.duration_ms`（histogram、attrs: `openclaw.channel`、`openclaw.provider`、`openclaw.model`）
+- `openclaw.context.tokens`（histogram、attrs: `openclaw.context`、`openclaw.channel`、`openclaw.provider`、`openclaw.model`）
 
-Message flow:
+メッセージフロー:
 
-- `openclaw.webhook.received` (counter, attrs: `openclaw.channel`,
-  `openclaw.webhook`)
-- `openclaw.webhook.error` (counter, attrs: `openclaw.channel`,
-  `openclaw.webhook`)
-- `openclaw.webhook.duration_ms` (histogram, attrs: `openclaw.channel`,
-  `openclaw.webhook`)
-- `openclaw.message.queued` (counter, attrs: `openclaw.channel`,
-  `openclaw.source`)
-- `openclaw.message.processed` (counter, attrs: `openclaw.channel`,
-  `openclaw.outcome`)
-- `openclaw.message.duration_ms` (histogram, attrs: `openclaw.channel`,
-  `openclaw.outcome`)
+- `openclaw.webhook.received`（counter、attrs: `openclaw.channel`、`openclaw.webhook`）
+- `openclaw.webhook.error`（counter、attrs: `openclaw.channel`、`openclaw.webhook`）
+- `openclaw.webhook.duration_ms`（histogram、attrs: `openclaw.channel`、`openclaw.webhook`）
+- `openclaw.message.queued`（counter、attrs: `openclaw.channel`、`openclaw.source`）
+- `openclaw.message.processed`（counter、attrs: `openclaw.channel`、`openclaw.outcome`）
+- `openclaw.message.duration_ms`（histogram、attrs: `openclaw.channel`、`openclaw.outcome`）
 
-Queues + sessions:
+キューとセッション:
 
-- `openclaw.queue.lane.enqueue` (counter, attrs: `openclaw.lane`)
-- `openclaw.queue.lane.dequeue` (counter, attrs: `openclaw.lane`)
-- `openclaw.queue.depth` (histogram, attrs: `openclaw.lane` or
-  `openclaw.channel=heartbeat`)
-- `openclaw.queue.wait_ms` (histogram, attrs: `openclaw.lane`)
-- `openclaw.session.state` (counter, attrs: `openclaw.state`, `openclaw.reason`)
-- `openclaw.session.stuck` (counter, attrs: `openclaw.state`)
-- `openclaw.session.stuck_age_ms` (histogram, attrs: `openclaw.state`)
-- `openclaw.run.attempt` (counter, attrs: `openclaw.attempt`)
+- `openclaw.queue.lane.enqueue`（counter、attrs: `openclaw.lane`）
+- `openclaw.queue.lane.dequeue`（counter、attrs: `openclaw.lane`）
+- `openclaw.queue.depth`（histogram、attrs: `openclaw.lane` または `openclaw.channel=heartbeat`）
+- `openclaw.queue.wait_ms`（histogram、attrs: `openclaw.lane`）
+- `openclaw.session.state`（counter、attrs: `openclaw.state`、`openclaw.reason`）
+- `openclaw.session.stuck`（counter、attrs: `openclaw.state`）
+- `openclaw.session.stuck_age_ms`（histogram、attrs: `openclaw.state`）
+- `openclaw.run.attempt`（counter、attrs: `openclaw.attempt`）
 
-### Exported spans (names + key attributes)
+### エクスポートされる span（名前と主要属性）
 
 - `openclaw.model.usage`
-  - `openclaw.channel`, `openclaw.provider`, `openclaw.model`
-  - `openclaw.sessionKey`, `openclaw.sessionId`
-  - `openclaw.tokens.*` (input/output/cache_read/cache_write/total)
+  - `openclaw.channel`、`openclaw.provider`、`openclaw.model`
+  - `openclaw.sessionKey`、`openclaw.sessionId`
+  - `openclaw.tokens.*`（input / output / cache_read / cache_write / total）
 - `openclaw.webhook.processed`
-  - `openclaw.channel`, `openclaw.webhook`, `openclaw.chatId`
+  - `openclaw.channel`、`openclaw.webhook`、`openclaw.chatId`
 - `openclaw.webhook.error`
-  - `openclaw.channel`, `openclaw.webhook`, `openclaw.chatId`,
-    `openclaw.error`
+  - `openclaw.channel`、`openclaw.webhook`、`openclaw.chatId`、`openclaw.error`
 - `openclaw.message.processed`
-  - `openclaw.channel`, `openclaw.outcome`, `openclaw.chatId`,
-    `openclaw.messageId`, `openclaw.sessionKey`, `openclaw.sessionId`,
-    `openclaw.reason`
+  - `openclaw.channel`、`openclaw.outcome`、`openclaw.chatId`
+  - `openclaw.messageId`、`openclaw.sessionKey`、`openclaw.sessionId`、`openclaw.reason`
 - `openclaw.session.stuck`
-  - `openclaw.state`, `openclaw.ageMs`, `openclaw.queueDepth`,
-    `openclaw.sessionKey`, `openclaw.sessionId`
+  - `openclaw.state`、`openclaw.ageMs`、`openclaw.queueDepth`
+  - `openclaw.sessionKey`、`openclaw.sessionId`
 
-### Sampling + flushing
+### サンプリングと flush
 
-- Trace sampling: `diagnostics.otel.sampleRate` (0.0–1.0, root spans only).
-- Metric export interval: `diagnostics.otel.flushIntervalMs` (min 1000ms).
+- trace sampling: `diagnostics.otel.sampleRate`（0.0〜1.0、root span のみ）
+- metrics export 間隔: `diagnostics.otel.flushIntervalMs`（最小 1000ms）
 
-### Protocol notes
+### protocol に関する注記
 
-- OTLP/HTTP endpoints can be set via `diagnostics.otel.endpoint` or
-  `OTEL_EXPORTER_OTLP_ENDPOINT`.
-- If the endpoint already contains `/v1/traces` or `/v1/metrics`, it is used as-is.
-- If the endpoint already contains `/v1/logs`, it is used as-is for logs.
-- `diagnostics.otel.logs` enables OTLP log export for the main logger output.
+- OTLP/HTTP endpoint は `diagnostics.otel.endpoint` または `OTEL_EXPORTER_OTLP_ENDPOINT` で設定できます
+- endpoint にすでに `/v1/traces` または `/v1/metrics` が含まれている場合は、そのまま利用されます
+- endpoint にすでに `/v1/logs` が含まれている場合は、ログ用にもそのまま利用されます
+- `diagnostics.otel.logs` を有効にすると、メイン logger 出力を OTLP logs として export します
 
-### Log export behavior
+### ログエクスポートの挙動
 
-- OTLP logs use the same structured records written to `logging.file`.
-- Respect `logging.level` (file log level). Console redaction does **not** apply
-  to OTLP logs.
-- High-volume installs should prefer OTLP collector sampling/filtering.
+- OTLP logs では、`logging.file` に書き込まれるのと同じ構造化レコードを使います
+- `logging.level`（ファイルログレベル）に従います。コンソール向けのマスキングは **OTLP logs には適用されません**
+- 高トラフィック環境では、OTLP collector 側での sampling / filtering を優先してください
 
-## Troubleshooting tips
+## トラブルシューティングのヒント
 
-- **Gateway not reachable?** Run `openclaw doctor` first.
-- **Logs empty?** Check that the Gateway is running and writing to the file path
-  in `logging.file`.
-- **Need more detail?** Set `logging.level` to `debug` or `trace` and retry.
+- **ゲートウェイに接続できない場合**: まず `openclaw doctor` を実行してください
+- **ログが空の場合**: ゲートウェイが起動しており、`logging.file` で指定されたパスへ書き込んでいるか確認してください
+- **さらに詳細が必要な場合**: `logging.level` を `debug` または `trace` に上げて再試行してください

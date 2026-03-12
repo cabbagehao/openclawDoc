@@ -1,45 +1,47 @@
 ---
-summary: "Per-agent sandbox + tool restrictions, precedence, and examples"
-title: Multi-Agent Sandbox & Tools
+summary: "エージェントごとのサンドボックス + ツールの制限、優先順位、および例"
+title: "マルチエージェントサンドボックスとツール"
 read_when: "You want per-agent sandboxing or per-agent tool allow/deny policies in a multi-agent gateway."
 status: active
+x-i18n:
+  source_hash: "3e4de14530209ddb899d2366a40981b9063a081cf515cfd770f1d2144359acb9"
 ---
 
-# Multi-Agent Sandbox & Tools Configuration
+# マルチエージェントサンドボックスとツールの構成
 
-## Overview
+## 概要
 
-Each agent in a multi-agent setup can now have its own:
+マルチエージェント設定内の各エージェントは、独自のものを持つことができるようになりました。
 
-- **Sandbox configuration** (`agents.list[].sandbox` overrides `agents.defaults.sandbox`)
-- **Tool restrictions** (`tools.allow` / `tools.deny`, plus `agents.list[].tools`)
+- **サンドボックス構成** (`agents.list[].sandbox` は `agents.defaults.sandbox` をオーバーライドします)
+- **ツールの制限** (`tools.allow` / `tools.deny`、および `agents.list[].tools`)
 
-This allows you to run multiple agents with different security profiles:
+これにより、異なるセキュリティ プロファイルを使用して複数のエージェントを実行できるようになります。
 
-- Personal assistant with full access
-- Family/work agents with restricted tools
-- Public-facing agents in sandboxes
+- フルアクセスが可能なパーソナルアシスタント
+- 制限されたツールを使用する家族/職場エージェント
+- サンドボックス内の一般向けエージェント
 
-`setupCommand` belongs under `sandbox.docker` (global or per-agent) and runs once
-when the container is created.
+`setupCommand` は `sandbox.docker` (グローバルまたはエージェントごと) に属し、1 回実行されます
+コンテナが作成されたとき。
 
-Auth is per-agent: each agent reads from its own `agentDir` auth store at:
+認証はエージェントごとに行われます。各エージェントは、次の場所にある独自の `agentDir` 認証ストアから読み取ります。
 
 ```
 ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
 ```
 
-Credentials are **not** shared between agents. Never reuse `agentDir` across agents.
-If you want to share creds, copy `auth-profiles.json` into the other agent's `agentDir`.
+資格情報はエージェント間で共有されません\*\*。エージェント間で `agentDir` を再利用しないでください。
+認証情報を共有したい場合は、`auth-profiles.json` を他のエージェントの `agentDir` にコピーします。
 
-For how sandboxing behaves at runtime, see [Sandboxing](/gateway/sandboxing).
-For debugging “why is this blocked?”, see [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) and `openclaw sandbox explain`.
+実行時のサンドボックスの動作については、[サンドボックス](/gateway/sandboxing) を参照してください。
+「なぜこれがブロックされるのか?」のデバッグについては、[サンドボックス vs ツール ポリシー vs 昇格](/gateway/sandbox-vs-tool-policy-vs-elevated) および `openclaw sandbox explain` を参照してください。
 
 ---
 
-## Configuration Examples
+## 構成例
 
-### Example 1: Personal + Restricted Family Agent
+### 例 1: 個人 + 制限付き家族代理人
 
 ```json
 {
@@ -83,16 +85,16 @@ For debugging “why is this blocked?”, see [Sandbox vs Tool Policy vs Elevate
 }
 ```
 
-**Result:**
+**結果:**
 
-- `main` agent: Runs on host, full tool access
-- `family` agent: Runs in Docker (one container per agent), only `read` tool
+- `main` エージェント: ホスト上で実行、完全なツール アクセス
+- `family` エージェント: Docker で実行 (エージェントごとに 1 つのコンテナー)、`read` ツールのみ
 
 ---
 
-### Example 2: Work Agent with Shared Sandbox
+### 例 2: 共有サンドボックスを使用した作業エージェント
 
-```json
+````json
 {
   "agents": {
     "list": [
@@ -117,11 +119,9 @@ For debugging “why is this blocked?”, see [Sandbox vs Tool Policy vs Elevate
     ]
   }
 }
-```
+```---
 
----
-
-### Example 2b: Global coding profile + messaging-only agent
+### 例 2b: グローバルコーディングプロファイル + メッセージング専用エージェント
 
 ```json
 {
@@ -135,16 +135,16 @@ For debugging “why is this blocked?”, see [Sandbox vs Tool Policy vs Elevate
     ]
   }
 }
-```
+````
 
-**Result:**
+**結果:**
 
-- default agents get coding tools
-- `support` agent is messaging-only (+ Slack tool)
+- デフォルトのエージェントはコーディングツールを入手します
+- `support` エージェントはメッセージング専用です (+ Slack ツール)
 
 ---
 
-### Example 3: Different Sandbox Modes per Agent
+### 例 3: エージェントごとに異なるサンドボックス モード
 
 ```json
 {
@@ -182,13 +182,13 @@ For debugging “why is this blocked?”, see [Sandbox vs Tool Policy vs Elevate
 
 ---
 
-## Configuration Precedence
+## 構成の優先順位
 
-When both global (`agents.defaults.*`) and agent-specific (`agents.list[].*`) configs exist:
+グローバル (`agents.defaults.*`) 構成とエージェント固有 (`agents.list[].*`) 構成の両方が存在する場合:
 
-### Sandbox Config
+### サンドボックス構成
 
-Agent-specific settings override global:
+エージェント固有の設定はグローバルをオーバーライドします。
 
 ```
 agents.list[].sandbox.mode > agents.defaults.sandbox.mode
@@ -200,58 +200,55 @@ agents.list[].sandbox.browser.* > agents.defaults.sandbox.browser.*
 agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
 ```
 
-**Notes:**
+**注:**
 
-- `agents.list[].sandbox.{docker,browser,prune}.*` overrides `agents.defaults.sandbox.{docker,browser,prune}.*` for that agent (ignored when sandbox scope resolves to `"shared"`).
+- `agents.list[].sandbox.{docker,browser,prune}.*` は、そのエージェントの `agents.defaults.sandbox.{docker,browser,prune}.*` をオーバーライドします (サンドボックス スコープが `"shared"` に解決される場合は無視されます)。
 
-### Tool Restrictions
+### ツールの制限事項
 
-The filtering order is:
+フィルタリングの順序は次のとおりです。
 
-1. **Tool profile** (`tools.profile` or `agents.list[].tools.profile`)
-2. **Provider tool profile** (`tools.byProvider[provider].profile` or `agents.list[].tools.byProvider[provider].profile`)
-3. **Global tool policy** (`tools.allow` / `tools.deny`)
-4. **Provider tool policy** (`tools.byProvider[provider].allow/deny`)
-5. **Agent-specific tool policy** (`agents.list[].tools.allow/deny`)
-6. **Agent provider policy** (`agents.list[].tools.byProvider[provider].allow/deny`)
-7. **Sandbox tool policy** (`tools.sandbox.tools` or `agents.list[].tools.sandbox.tools`)
-8. **Subagent tool policy** (`tools.subagents.tools`, if applicable)
+1. **ツール プロファイル** (`tools.profile` または `agents.list[].tools.profile`)
+2. **プロバイダー ツール プロファイル** (`tools.byProvider[provider].profile` または `agents.list[].tools.byProvider[provider].profile`)
+3. **グローバル ツール ポリシー** (`tools.allow` / `tools.deny`)
+4. **プロバイダー ツール ポリシー** (`tools.byProvider[provider].allow/deny`)
+5. **エージェント固有のツール ポリシー** (`agents.list[].tools.allow/deny`)
+6. **エージェント プロバイダー ポリシー** (`agents.list[].tools.byProvider[provider].allow/deny`)
+7. **サンドボックス ツール ポリシー** (`tools.sandbox.tools` または `agents.list[].tools.sandbox.tools`)
+8. **サブエージェント ツール ポリシー** (`tools.subagents.tools`、該当する場合)各レベルではツールをさらに制限できますが、以前のレベルで拒否されたツールを許可し直すことはできません。
+   `agents.list[].tools.sandbox.tools` が設定されている場合、そのエージェントの `tools.sandbox.tools` が置き換えられます。
+   `agents.list[].tools.profile` が設定されている場合、そのエージェントの `tools.profile` がオーバーライドされます。
+   プロバイダー ツール キーは、`provider` (例: `google-antigravity`) または `provider/model` (例: `openai/gpt-5.2`) のいずれかを受け入れます。
 
-Each level can further restrict tools, but cannot grant back denied tools from earlier levels.
-If `agents.list[].tools.sandbox.tools` is set, it replaces `tools.sandbox.tools` for that agent.
-If `agents.list[].tools.profile` is set, it overrides `tools.profile` for that agent.
-Provider tool keys accept either `provider` (e.g. `google-antigravity`) or `provider/model` (e.g. `openai/gpt-5.2`).
+### ツールグループ (略記)
 
-### Tool groups (shorthands)
+ツール ポリシー (グローバル、エージェント、サンドボックス) は、複数の具体的なツールに拡張される `group:*` エントリをサポートします。
 
-Tool policies (global, agent, sandbox) support `group:*` entries that expand to multiple concrete tools:
-
-- `group:runtime`: `exec`, `bash`, `process`
-- `group:fs`: `read`, `write`, `edit`, `apply_patch`
-- `group:sessions`: `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
-- `group:memory`: `memory_search`, `memory_get`
-- `group:ui`: `browser`, `canvas`
-- `group:automation`: `cron`, `gateway`
+- `group:runtime`: `exec`、`bash`、`process`
+- `group:fs`: `read`、`write`、`edit`、`apply_patch`
+- `group:sessions`: `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`session_status`
+- `group:memory`: `memory_search`、`memory_get`
+- `group:ui`: `browser`、`canvas`
+- `group:automation`: `cron`、`gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
-- `group:openclaw`: all built-in OpenClaw tools (excludes provider plugins)
+- `group:openclaw`: すべての組み込み OpenClaw ツール (プロバイダー プラグインを除く)
 
-### Elevated Mode
+### 昇格モード
 
-`tools.elevated` is the global baseline (sender-based allowlist). `agents.list[].tools.elevated` can further restrict elevated for specific agents (both must allow).
+`tools.elevated` はグローバル ベースライン (送信者ベースの許可リスト) です。 `agents.list[].tools.elevated` は、特定のエージェントの昇格をさらに制限できます (両方が許可する必要があります)。
 
-Mitigation patterns:
+軽減パターン:- 信頼できないエージェントに対して `exec` を拒否する (`agents.list[].tools.deny: ["exec"]`)
 
-- Deny `exec` for untrusted agents (`agents.list[].tools.deny: ["exec"]`)
-- Avoid allowlisting senders that route to restricted agents
-- Disable elevated globally (`tools.elevated.enabled: false`) if you only want sandboxed execution
-- Disable elevated per agent (`agents.list[].tools.elevated.enabled: false`) for sensitive profiles
+- 制限されたエージェントにルーティングする送信者を許可リストに登録しないようにします
+- サンドボックス実行のみが必要な場合は、昇格をグローバルに無効にします (`tools.elevated.enabled: false`)。
+- 機密プロファイルのエージェントごとの昇格を無効にする (`agents.list[].tools.elevated.enabled: false`)
 
 ---
 
-## Migration from Single Agent
+## 単一エージェントからの移行
 
-**Before (single agent):**
+**前 (単一エージェント):**
 
 ```json
 {
@@ -274,7 +271,7 @@ Mitigation patterns:
 }
 ```
 
-**After (multi-agent with different profiles):**
+**後 (異なるプロファイルを持つマルチエージェント):**
 
 ```json
 {
@@ -291,13 +288,13 @@ Mitigation patterns:
 }
 ```
 
-Legacy `agent.*` configs are migrated by `openclaw doctor`; prefer `agents.defaults` + `agents.list` going forward.
+レガシー `agent.*` 構成は `openclaw doctor` によって移行されます。今後は `agents.defaults` + `agents.list` を優先します。
 
 ---
 
-## Tool Restriction Examples
+## ツール制限の例
 
-### Read-only Agent
+### 読み取り専用エージェント
 
 ```json
 {
@@ -308,7 +305,7 @@ Legacy `agent.*` configs are migrated by `openclaw doctor`; prefer `agents.defau
 }
 ```
 
-### Safe Execution Agent (no file modifications)
+### 安全な実行エージェント (ファイルの変更なし)
 
 ```json
 {
@@ -319,7 +316,7 @@ Legacy `agent.*` configs are migrated by `openclaw doctor`; prefer `agents.defau
 }
 ```
 
-### Communication-only Agent
+### 通信専用エージェント
 
 ```json
 {
@@ -333,65 +330,63 @@ Legacy `agent.*` configs are migrated by `openclaw doctor`; prefer `agents.defau
 
 ---
 
-## Common Pitfall: "non-main"
+## よくある落とし穴: 「非メイン」
 
-`agents.defaults.sandbox.mode: "non-main"` is based on `session.mainKey` (default `"main"`),
-not the agent id. Group/channel sessions always get their own keys, so they
-are treated as non-main and will be sandboxed. If you want an agent to never
-sandbox, set `agents.list[].sandbox.mode: "off"`.
+`agents.defaults.sandbox.mode: "non-main"` は `session.mainKey` (デフォルトは `"main"`) に基づいています。
+エージェントIDではありません。グループ/チャネル セッションは常に独自のキーを取得するため、
+は非メインとして扱われ、サンドボックス化されます。エージェントに絶対にさせたくない場合
+サンドボックス、`agents.list[].sandbox.mode: "off"` を設定します。
 
 ---
 
-## Testing
+## テスト
 
-After configuring multi-agent sandbox and tools:
+マルチエージェント サンドボックスとツールを構成した後:
 
-1. **Check agent resolution:**
+1. **エージェントの解決策を確認します:**
 
    ```exec
    openclaw agents list --bindings
    ```
 
-2. **Verify sandbox containers:**
+2. **サンドボックス コンテナを確認します:**
 
    ```exec
    docker ps --filter "name=openclaw-sbx-"
    ```
 
-3. **Test tool restrictions:**
-   - Send a message requiring restricted tools
-   - Verify the agent cannot use denied tools
+3. **テストツールの制限:**
+   - 制限されたツールを必要とするメッセージを送信する
+   - エージェントが拒否されたツールを使用できないことを確認する
 
-4. **Monitor logs:**
+4. **ログの監視:**
 
    ```exec
    tail -f "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/logs/gateway.log" | grep -E "routing|sandbox|tools"
    ```
 
----
+---## トラブルシューティング
 
-## Troubleshooting
+### `mode: "all"` にもかかわらず、エージェントはサンドボックス化されていません
 
-### Agent not sandboxed despite `mode: "all"`
+- それをオーバーライドするグローバル `agents.defaults.sandbox.mode` があるかどうかを確認します。
+- エージェント固有の設定が優先されるため、`agents.list[].sandbox.mode: "all"` を設定します。
 
-- Check if there's a global `agents.defaults.sandbox.mode` that overrides it
-- Agent-specific config takes precedence, so set `agents.list[].sandbox.mode: "all"`
+### 拒否リストにもかかわらずツールは引き続き利用可能
 
-### Tools still available despite deny list
+- ツールのフィルタリング順序を確認します: グローバル → エージェント → サンドボックス → サブエージェント
+- 各レベルはさらに制限することのみが可能であり、元に戻すことはできません
+- ログで確認: `[tools] filtering tools for agent:${agentId}`
 
-- Check tool filtering order: global → agent → sandbox → subagent
-- Each level can only further restrict, not grant back
-- Verify with logs: `[tools] filtering tools for agent:${agentId}`
+### コンテナがエージェントごとに分離されていない
 
-### Container not isolated per agent
-
-- Set `scope: "agent"` in agent-specific sandbox config
-- Default is `"session"` which creates one container per session
+- エージェント固有のサンドボックス構成で `scope: "agent"` を設定します
+- デフォルトは `"session"` で、セッションごとに 1 つのコンテナを作成します。
 
 ---
 
-## See Also
+## 関連項目
 
-- [Multi-Agent Routing](/concepts/multi-agent)
-- [Sandbox Configuration](/gateway/configuration#agentsdefaults-sandbox)
-- [Session Management](/concepts/session)
+- [マルチエージェントルーティング](/concepts/multi-agent)
+- [サンドボックス構成](/gateway/configuration#agentsdefaults-sandbox)
+- [セッション管理](/concepts/session)

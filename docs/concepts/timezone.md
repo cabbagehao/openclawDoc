@@ -1,26 +1,28 @@
 ---
-summary: "Timezone handling for agents, envelopes, and prompts"
+summary: "エージェント、エンベロープ、プロンプトのタイムゾーン処理"
 read_when:
-  - You need to understand how timestamps are normalized for the model
-  - Configuring the user timezone for system prompts
-title: "Timezones"
+  - タイムスタンプがモデルに対してどのように正規化されるかを理解する必要があります
+  - システムプロンプトのユーザータイムゾーンの構成
+title: "タイムゾーン"
+x-i18n:
+  source_hash: "9ee809c96897db1126c7efcaa5bf48a63cdcb2092abd4b3205af224ebd882766"
 ---
 
-# Timezones
+# タイムゾーン
 
-OpenClaw standardizes timestamps so the model sees a **single reference time**.
+OpenClaw はタイムスタンプを標準化するため、モデルは **単一の参照時刻**を認識します。
 
-## Message envelopes (local by default)
+## メッセージ エンベロープ (デフォルトではローカル)
 
-Inbound messages are wrapped in an envelope like:
+受信メッセージは次のようなエンベロープで包まれます。
 
 ```
 [Provider ... 2026-01-05 16:26 PST] message text
 ```
 
-The timestamp in the envelope is **host-local by default**, with minutes precision.
+エンベロープ内のタイムスタンプは**デフォルトではホストローカル**であり、精度は分です。
 
-You can override this with:
+これを次のようにオーバーライドできます。
 
 ```json5
 {
@@ -34,46 +36,46 @@ You can override this with:
 }
 ```
 
-- `envelopeTimezone: "utc"` uses UTC.
-- `envelopeTimezone: "user"` uses `agents.defaults.userTimezone` (falls back to host timezone).
-- Use an explicit IANA timezone (e.g., `"Europe/Vienna"`) for a fixed offset.
-- `envelopeTimestamp: "off"` removes absolute timestamps from envelope headers.
-- `envelopeElapsed: "off"` removes elapsed time suffixes (the `+2m` style).
+- `envelopeTimezone: "utc"` は UTC を使用します。
+- `envelopeTimezone: "user"` は `agents.defaults.userTimezone` を使用します (ホストのタイムゾーンにフォールバックします)。
+- 固定オフセットには明示的な IANA タイムゾーン (例: `"Europe/Vienna"`) を使用します。
+- `envelopeTimestamp: "off"` は、エンベロープ ヘッダーから絶対タイムスタンプを削除します。
+- `envelopeElapsed: "off"` は、経過時間のサフィックス (`+2m` スタイル) を削除します。
 
-### Examples
+### 例
 
-**Local (default):**
+**ローカル (デフォルト):**
 
 ```
 [Signal Alice +1555 2026-01-18 00:19 PST] hello
 ```
 
-**Fixed timezone:**
+**固定タイムゾーン:**
 
 ```
 [Signal Alice +1555 2026-01-18 06:19 GMT+1] hello
 ```
 
-**Elapsed time:**
+**経過時間:**
 
 ```
 [Signal Alice +1555 +2m 2026-01-18T05:19Z] follow-up
 ```
 
-## Tool payloads (raw provider data + normalized fields)
+## ツール ペイロード (生のプロバイダー データ + 正規化されたフィールド)
 
-Tool calls (`channels.discord.readMessages`, `channels.slack.readMessages`, etc.) return **raw provider timestamps**.
-We also attach normalized fields for consistency:
+ツール呼び出し (`channels.discord.readMessages`、`channels.slack.readMessages` など) は **生のプロバイダー タイムスタンプ**を返します。
+一貫性を保つために正規化されたフィールドも追加します。
 
-- `timestampMs` (UTC epoch milliseconds)
-- `timestampUtc` (ISO 8601 UTC string)
+- `timestampMs` (UTC エポック ミリ秒)
+- `timestampUtc` (ISO 8601 UTC 文字列)
 
-Raw provider fields are preserved.
+生のプロバイダーフィールドは保持されます。
 
-## User timezone for the system prompt
+## システムプロンプトのユーザータイムゾーン
 
-Set `agents.defaults.userTimezone` to tell the model the user's local time zone. If it is
-unset, OpenClaw resolves the **host timezone at runtime** (no config write).
+`agents.defaults.userTimezone` を設定して、ユーザーのローカル タイム ゾーンをモデルに伝えます。もしそうなら
+設定を解除すると、OpenClaw は **実行時にホストのタイムゾーン**を解決します (構成の書き込みは行われません)。
 
 ```json5
 {
@@ -81,11 +83,10 @@ unset, OpenClaw resolves the **host timezone at runtime** (no config write).
 }
 ```
 
-The system prompt includes:
+システム プロンプトには次のものが含まれます。- ローカル時間とタイムゾーンを含む `Current Date & Time` セクション
 
-- `Current Date & Time` section with local time and timezone
-- `Time format: 12-hour` or `24-hour`
+- `Time format: 12-hour` または `24-hour`
 
-You can control the prompt format with `agents.defaults.timeFormat` (`auto` | `12` | `24`).
+プロンプトの形式は、`agents.defaults.timeFormat` (`auto` | `12` | `24`) で制御できます。
 
-See [Date & Time](/date-time) for the full behavior and examples.
+完全な動作と例については、[日付と時刻](/date-time) を参照してください。

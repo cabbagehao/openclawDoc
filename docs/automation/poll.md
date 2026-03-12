@@ -1,19 +1,26 @@
 ---
-summary: "Poll sending via gateway + CLI"
+summary: "ゲートウェイ + CLI 経由の投票送信"
 read_when:
-  - Adding or modifying poll support
-  - Debugging poll sends from the CLI or gateway
-title: "Polls"
+  - 投票サポートの追加または変更時
+  - CLI やゲートウェイからの投票送信をデバッグする場合
+title: "投票"
+x-i18n:
+  source_path: "automation/poll.md"
+  source_hash: "b2dfc8c649d24cfd3b2bf1c7af52709a34db87109b842cfdeda74ff74063ff3e"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:51:25.864Z"
 ---
 
-# Polls
+# 投票
 
-## Supported channels
+## 対応チャンネル
 
 - Telegram
-- WhatsApp (web channel)
+- WhatsApp（Web チャンネル）
 - Discord
-- MS Teams (Adaptive Cards)
+- MS Teams（Adaptive Cards）
 
 ## CLI
 
@@ -42,45 +49,44 @@ openclaw message poll --channel msteams --target conversation:19:abc@thread.tacv
   --poll-question "Lunch?" --poll-option "Pizza" --poll-option "Sushi"
 ```
 
-Options:
+オプション:
 
-- `--channel`: `whatsapp` (default), `telegram`, `discord`, or `msteams`
-- `--poll-multi`: allow selecting multiple options
-- `--poll-duration-hours`: Discord-only (defaults to 24 when omitted)
-- `--poll-duration-seconds`: Telegram-only (5-600 seconds)
-- `--poll-anonymous` / `--poll-public`: Telegram-only poll visibility
+- `--channel`: `whatsapp`（デフォルト）、`telegram`、`discord`、または `msteams`
+- `--poll-multi`: 複数選択を許可
+- `--poll-duration-hours`: Discord 専用（省略時のデフォルトは 24）
+- `--poll-duration-seconds`: Telegram 専用（5〜600 秒）
+- `--poll-anonymous` / `--poll-public`: Telegram 専用の投票公開設定
 
-## Gateway RPC
+## ゲートウェイ RPC
 
-Method: `poll`
+メソッド: `poll`
 
-Params:
+パラメータ:
 
-- `to` (string, required)
-- `question` (string, required)
-- `options` (string[], required)
-- `maxSelections` (number, optional)
-- `durationHours` (number, optional)
-- `durationSeconds` (number, optional, Telegram-only)
-- `isAnonymous` (boolean, optional, Telegram-only)
-- `channel` (string, optional, default: `whatsapp`)
-- `idempotencyKey` (string, required)
+- `to`（string、必須）
+- `question`（string、必須）
+- `options`（string[]、必須）
+- `maxSelections`（number、任意）
+- `durationHours`（number、任意）
+- `durationSeconds`（number、任意、Telegram 専用）
+- `isAnonymous`（boolean、任意、Telegram 専用）
+- `channel`（string、任意、デフォルト: `whatsapp`）
+- `idempotencyKey`（string、必須）
 
-## Channel differences
+## チャンネルごとの違い
 
-- Telegram: 2-10 options. Supports forum topics via `threadId` or `:topic:` targets. Uses `durationSeconds` instead of `durationHours`, limited to 5-600 seconds. Supports anonymous and public polls.
-- WhatsApp: 2-12 options, `maxSelections` must be within option count, ignores `durationHours`.
-- Discord: 2-10 options, `durationHours` clamped to 1-768 hours (default 24). `maxSelections > 1` enables multi-select; Discord does not support a strict selection count.
-- MS Teams: Adaptive Card polls (OpenClaw-managed). No native poll API; `durationHours` is ignored.
+- Telegram: 選択肢は 2〜10 個。`threadId` または `:topic:` ターゲットによるフォーラムトピックに対応。`durationHours` の代わりに `durationSeconds` を使用し、5〜600 秒に制限される。匿名投票と公開投票に対応。
+- WhatsApp: 選択肢は 2〜12 個。`maxSelections` は選択肢の数以内である必要がある。`durationHours` は無視される。
+- Discord: 選択肢は 2〜10 個。`durationHours` は 1〜768 時間にクランプされる（デフォルト 24）。`maxSelections > 1` で複数選択が有効になる。Discord は厳密な選択数の制限に対応していない。
+- MS Teams: Adaptive Card による投票（OpenClaw 管理）。ネイティブの投票 API はなく、`durationHours` は無視される。
 
-## Agent tool (Message)
+## エージェントツール（Message）
 
-Use the `message` tool with `poll` action (`to`, `pollQuestion`, `pollOption`, optional `pollMulti`, `pollDurationHours`, `channel`).
+`message` ツールの `poll` アクションを使用する（`to`、`pollQuestion`、`pollOption`、任意で `pollMulti`、`pollDurationHours`、`channel`）。
 
-For Telegram, the tool also accepts `pollDurationSeconds`, `pollAnonymous`, and `pollPublic`.
+Telegram の場合、ツールは `pollDurationSeconds`、`pollAnonymous`、`pollPublic` も受け付ける。
 
-Use `action: "poll"` for poll creation. Poll fields passed with `action: "send"` are rejected.
+投票作成には `action: "poll"` を使用する。`action: "send"` で投票フィールドを渡すと拒否される。
 
-Note: Discord has no “pick exactly N” mode; `pollMulti` maps to multi-select.
-Teams polls are rendered as Adaptive Cards and require the gateway to stay online
-to record votes in `~/.openclaw/msteams-polls.json`.
+注意: Discord には「ちょうど N 個を選択」するモードがなく、`pollMulti` は複数選択にマッピングされる。
+Teams の投票は Adaptive Cards としてレンダリングされ、投票を `~/.openclaw/msteams-polls.json` に記録するため、ゲートウェイがオンラインである必要があります。

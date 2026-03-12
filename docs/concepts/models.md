@@ -1,81 +1,74 @@
 ---
-summary: "Models CLI: list, set, aliases, fallbacks, scan, status"
+summary: "モデル関連の CLI: 一覧表示、モデル設定、エイリアス、フォールバック、スキャン、ステータス確認"
 read_when:
-  - Adding or modifying models CLI (models list/set/scan/aliases/fallbacks)
-  - Changing model fallback behavior or selection UX
-  - Updating model scan probes (tools/images)
-title: "Models CLI"
+  - モデル操作用の CLI（models list/set/scan/aliases/fallbacks）を追加・変更する場合
+  - モデルのフォールバック動作や選択 UI を変更する場合
+  - モデルのスキャン（ツールや画像の対応状況チェック）を更新する場合
+title: "モデル CLI"
+x-i18n:
+  source_hash: "f1cd7e092e0f722bb0109873d52dbdaba87bfd74a2b4199371f43488c9dce2e4"
 ---
 
-# Models CLI
+# モデル CLI
 
-See [/concepts/model-failover](/concepts/model-failover) for auth profile
-rotation, cooldowns, and how that interacts with fallbacks.
-Quick provider overview + examples: [/concepts/model-providers](/concepts/model-providers).
+認証プロファイルの切り替え、クールダウン、およびフォールバックとの連携については、[モデルフェイルオーバー](/concepts/model-failover) を参照してください。
+プロバイダーの概要と構成例については、[モデルプロバイダー](/concepts/model-providers) を参照してください。
 
-## How model selection works
+## モデル選択の仕組み
 
-OpenClaw selects models in this order:
+OpenClaw は以下の順序でモデルを選択します:
 
-1. **Primary** model (`agents.defaults.model.primary` or `agents.defaults.model`).
-2. **Fallbacks** in `agents.defaults.model.fallbacks` (in order).
-3. **Provider auth failover** happens inside a provider before moving to the
-   next model.
+1. **メインモデル** (`agents.defaults.model.primary` または `agents.defaults.model`)。
+2. `agents.defaults.model.fallbacks` に指定された **フォールバックモデル** (記述順)。
+3. 次のモデルへ移行する前に、現在のプロバイダー内で **認証プロファイルの切り替え** を試みます。
 
-Related:
+関連事項:
+- `agents.defaults.models` は、OpenClaw が使用できるモデルの許可リスト（カタログ）およびエイリアスの定義です。
+- `agents.defaults.imageModel` は、メインモデルが画像入力を受け付けない場合に **のみ** 使用されます。
+- `agents.list[].model` を設定することで、エージェントごとにデフォルト設定を上書きできます（[マルチエージェント](/concepts/multi-agent) を参照）。
 
-- `agents.defaults.models` is the allowlist/catalog of models OpenClaw can use (plus aliases).
-- `agents.defaults.imageModel` is used **only when** the primary model can’t accept images.
-- Per-agent defaults can override `agents.defaults.model` via `agents.list[].model` plus bindings (see [/concepts/multi-agent](/concepts/multi-agent)).
+## モデル運用の指針
 
-## Quick model policy
+- メインモデルには、現在利用可能な最新世代の最も強力なモデルを設定してください。
+- フォールバックモデルは、コストや遅延を抑えたいタスクや、重要度の低いチャット用に使用します。
+- ツールを使用するエージェントや、信頼できない入力を扱う場合は、古いモデルや能力の低いモデルの使用を避けてください。
 
-- Set your primary to the strongest latest-generation model available to you.
-- Use fallbacks for cost/latency-sensitive tasks and lower-stakes chat.
-- For tool-enabled agents or untrusted inputs, avoid older/weaker model tiers.
+## セットアップウィザード (推奨)
 
-## Setup wizard (recommended)
-
-If you don’t want to hand-edit config, run the onboarding wizard:
+構成ファイルを直接編集したくない場合は、オンボーディングウィザードを実行してください:
 
 ```bash
 openclaw onboard
 ```
 
-It can set up model + auth for common providers, including **OpenAI Code (Codex)
-subscription** (OAuth) and **Anthropic** (API key or `claude setup-token`).
+このウィザードでは、**OpenAI Code (Codex) サブスクリプション** (OAuth) や **Anthropic** (API キーまたは `claude setup-token`) を含む、主要なプロバイダーのモデルと認証設定をガイドに沿って行えます。
 
-## Config keys (overview)
+## 設定項目 (概要)
 
-- `agents.defaults.model.primary` and `agents.defaults.model.fallbacks`
-- `agents.defaults.imageModel.primary` and `agents.defaults.imageModel.fallbacks`
-- `agents.defaults.models` (allowlist + aliases + provider params)
-- `models.providers` (custom providers written into `models.json`)
+- `agents.defaults.model.primary` および `agents.defaults.model.fallbacks`
+- `agents.defaults.imageModel.primary` および `agents.defaults.imageModel.fallbacks`
+- `agents.defaults.models` (許可リスト + エイリアス + プロバイダー用パラメータ)
+- `models.providers` (`models.json` に書き込まれるカスタムプロバイダー設定)
 
-Model refs are normalized to lowercase. Provider aliases like `z.ai/*` normalize
-to `zai/*`.
+モデルの指定は小文字に正規化されます。`z.ai/*` などのプロバイダー別名は `zai/*` に正規化されます。
 
-Provider configuration examples (including OpenCode Zen) live in
-[/gateway/configuration](/gateway/configuration#opencode-zen-multi-model-proxy).
+OpenCode Zen を含むプロバイダーの構成例は、[ゲートウェイ構成](/gateway/configuration#opencode-zen-multi-model-proxy) を参照してください。
 
-## “Model is not allowed” (and why replies stop)
+## 「Model is not allowed」エラーについて
 
-If `agents.defaults.models` is set, it becomes the **allowlist** for `/model` and for
-session overrides. When a user selects a model that isn’t in that allowlist,
-OpenClaw returns:
+`agents.defaults.models` が設定されている場合、それが `/model` コマンドやセッション上書きで使用できる **許可リスト** となります。このリストに含まれていないモデルをユーザーが選択した場合、OpenClaw は以下のエラーを返します:
 
 ```
 Model "provider/model" is not allowed. Use /model to list available models.
 ```
 
-This happens **before** a normal reply is generated, so the message can feel
-like it “didn’t respond.” The fix is to either:
+このチェックは返信が生成される **前** に行われるため、メッセージが無視されたように感じることがあります。以下のいずれかの方法で解決してください:
 
-- Add the model to `agents.defaults.models`, or
-- Clear the allowlist (remove `agents.defaults.models`), or
-- Pick a model from `/model list`.
+- そのモデルを `agents.defaults.models` に追加する。
+- 許可リストをクリア（`agents.defaults.models` を削除）する。
+- `/model list` で表示されるモデルから選択する。
 
-Example allowlist config:
+許可リストの構成例:
 
 ```json5
 {
@@ -89,9 +82,9 @@ Example allowlist config:
 }
 ```
 
-## Switching models in chat (`/model`)
+## チャット内でのモデル切り替え (`/model`)
 
-You can switch models for the current session without restarting:
+ゲートウェイを再起動することなく、現在のセッションで使用するモデルを切り替えられます:
 
 ```
 /model
@@ -101,19 +94,18 @@ You can switch models for the current session without restarting:
 /model status
 ```
 
-Notes:
+補足事項:
+- `/model` (および `/model list`) は、モデルファミリーと利用可能なプロバイダーを番号付きで表示するコンパクトなピッカーです。
+- Discord では、プロバイダーとモデルを選択して送信する、インタラクティブな選択メニューが開きます。
+- `/model <番号>` で、そのピッカーからモデルを選択できます。
+- `/model status` では、詳細な情報（認証の候補、構成済みの場合はプロバイダーの `baseUrl` や API モード）を表示します。
+- モデルの指定は、**最初**に出現する `/` で分割して解析されます。`/model <ref>` と入力する際は `provider/model` の形式にしてください。
+- モデル ID 自体に `/` が含まれる場合（OpenRouter 形式など）は、プロバイダーのプレフィックスを含める必要があります（例: `/model openrouter/moonshotai/kimi-k2`）。
+- プロバイダーを省略した場合、OpenClaw は入力をエイリアス、あるいは **デフォルトプロバイダー** のモデルとして扱います（モデル ID 内に `/` が含まれない場合にのみ機能します）。
 
-- `/model` (and `/model list`) is a compact, numbered picker (model family + available providers).
-- On Discord, `/model` and `/models` open an interactive picker with provider and model dropdowns plus a Submit step.
-- `/model <#>` selects from that picker.
-- `/model status` is the detailed view (auth candidates and, when configured, provider endpoint `baseUrl` + `api` mode).
-- Model refs are parsed by splitting on the **first** `/`. Use `provider/model` when typing `/model <ref>`.
-- If the model ID itself contains `/` (OpenRouter-style), you must include the provider prefix (example: `/model openrouter/moonshotai/kimi-k2`).
-- If you omit the provider, OpenClaw treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
+詳細な仕様: [スラッシュコマンド](/tools/slash-commands)
 
-Full command behavior/config: [Slash commands](/tools/slash-commands).
-
-## CLI commands
+## CLI コマンド一覧
 
 ```bash
 openclaw models list
@@ -136,86 +128,61 @@ openclaw models image-fallbacks remove <provider/model>
 openclaw models image-fallbacks clear
 ```
 
-`openclaw models` (no subcommand) is a shortcut for `models status`.
+サブコマンドなしの `openclaw models` は、`models status` の短縮形です。
 
 ### `models list`
 
-Shows configured models by default. Useful flags:
-
-- `--all`: full catalog
-- `--local`: local providers only
-- `--provider <name>`: filter by provider
-- `--plain`: one model per line
-- `--json`: machine‑readable output
+デフォルトで構成されているモデルを表示します。便利なフラグ:
+- `--all`: すべてのカタログを表示
+- `--local`: ローカルプロバイダーのみを表示
+- `--provider <name>`: 指定したプロバイダーでフィルタリング
+- `--plain`: 1 行に 1 モデルの形式で出力
+- `--json`: 機械可読な JSON 形式で出力
 
 ### `models status`
 
-Shows the resolved primary model, fallbacks, image model, and an auth overview
-of configured providers. It also surfaces OAuth expiry status for profiles found
-in the auth store (warns within 24h by default). `--plain` prints only the
-resolved primary model.
-OAuth status is always shown (and included in `--json` output). If a configured
-provider has no credentials, `models status` prints a **Missing auth** section.
-JSON includes `auth.oauth` (warn window + profiles) and `auth.providers`
-(effective auth per provider).
-Use `--check` for automation (exit `1` when missing/expired, `2` when expiring).
+解決済みのメインモデル、フォールバックモデル、画像モデル、および構成済みプロバイダーの認証状況の概要を表示します。また、認証ストア内の OAuth プロファイルの有効期限も表示されます（デフォルトでは 24 時間以内に切れる場合に警告します）。
+認証情報がないプロバイダーがある場合は、**Missing auth** セクションが表示されます。
+JSON 出力には `auth.oauth`（警告期間とプロファイル）および `auth.providers`（実際に有効な認証方法）が含まれます。
+オートメーション用途には `--check` を使用してください（認証欠落/期限切れ時は `1`、期限間近は `2` で終了します）。
 
-Auth choice is provider/account dependent. For always-on gateway hosts, API keys are usually the most predictable; subscription token flows are also supported.
-
-Example (Anthropic setup-token):
-
+例 (Anthropic setup-token):
 ```bash
 claude setup-token
 openclaw models status
 ```
 
-## Scanning (OpenRouter free models)
+## モデルスキャン (OpenRouter 無料モデル)
 
-`openclaw models scan` inspects OpenRouter’s **free model catalog** and can
-optionally probe models for tool and image support.
+`openclaw models scan` は、OpenRouter の **無料モデルカタログ** をスキャンし、必要に応じてツール使用や画像のサポート状況を調査（プローブ）します。
 
-Key flags:
+主なフラグ:
+- `--no-probe`: 実際の調査を行わずメタデータのみを取得
+- `--min-params <b>`: 最小パラメータ数（10億単位）でフィルタリング
+- `--max-age-days <days>`: 更新が古いモデルを除外
+- `--provider <name>`: プロバイダー名のプレフィックスでフィルタリング
+- `--max-candidates <n>`: フォールバックリストに含める最大数
+- `--set-default`: 最初の候補を `agents.defaults.model.primary` に設定
+- `--set-image`: 最初の画像対応候補を `agents.defaults.imageModel.primary` に設定
 
-- `--no-probe`: skip live probes (metadata only)
-- `--min-params <b>`: minimum parameter size (billions)
-- `--max-age-days <days>`: skip older models
-- `--provider <name>`: provider prefix filter
-- `--max-candidates <n>`: fallback list size
-- `--set-default`: set `agents.defaults.model.primary` to the first selection
-- `--set-image`: set `agents.defaults.imageModel.primary` to the first image selection
+調査には OpenRouter の API キーが必要です。キーがない場合は `--no-probe` を使用してください。
 
-Probing requires an OpenRouter API key (from auth profiles or
-`OPENROUTER_API_KEY`). Without a key, use `--no-probe` to list candidates only.
+スキャン結果は以下の優先度でランク付けされます:
+1. 画像サポート
+2. ツール実行の遅延
+3. コンテキストサイズ
+4. パラメータ数
 
-Scan results are ranked by:
+TTY 端末で実行した場合は、インタラクティブにフォールバックモデルを選択できます。非対話モードの場合は `--yes` を指定してデフォルト設定を受け入れてください。
 
-1. Image support
-2. Tool latency
-3. Context size
-4. Parameter count
+## モデルレジストリ (`models.json`)
 
-Input
+`models.providers` で設定されたカスタムプロバイダー情報は、各エージェントディレクトリ内の `models.json` (デフォルトは `~/.openclaw/agents/<agentId>/models.json`) に書き込まれます。`models.mode` が `replace` に設定されていない限り、このファイルは実行時にマージされます。
 
-- OpenRouter `/models` list (filter `:free`)
-- Requires OpenRouter API key from auth profiles or `OPENROUTER_API_KEY` (see [/environment](/help/environment))
-- Optional filters: `--max-age-days`, `--min-params`, `--provider`, `--max-candidates`
-- Probe controls: `--timeout`, `--concurrency`
+プロバイダー ID が一致する場合のマージ優先順位:
+- エージェントディレクトリの `models.json` に既にある空でない `baseUrl` が最優先されます。
+- `apiKey` は、そのプロバイダーが SecretRef で管理されていない場合にのみ、エージェントディレクトリの `models.json` の値が優先されます。
+- SecretRef 管理下のプロバイダーの `apiKey` は、解決後のシークレットではなく、ソースマーカー（環境変数参照なら変数名、その他なら `secretref-managed`）として保存されます。
+- 他のフィールドは構成ファイルや正規化されたカタログデータから更新されます。
 
-When run in a TTY, you can select fallbacks interactively. In non‑interactive
-mode, pass `--yes` to accept defaults.
-
-## Models registry (`models.json`)
-
-Custom providers in `models.providers` are written into `models.json` under the
-agent directory (default `~/.openclaw/agents/<agentId>/models.json`). This file
-is merged by default unless `models.mode` is set to `replace`.
-
-Merge mode precedence for matching provider IDs:
-
-- Non-empty `baseUrl` already present in the agent `models.json` wins.
-- Non-empty `apiKey` in the agent `models.json` wins only when that provider is not SecretRef-managed in current config/auth-profile context.
-- SecretRef-managed provider `apiKey` values are refreshed from source markers (`ENV_VAR_NAME` for env refs, `secretref-managed` for file/exec refs) instead of persisting resolved secrets.
-- Empty or missing agent `apiKey`/`baseUrl` fall back to config `models.providers`.
-- Other provider fields are refreshed from config and normalized catalog data.
-
-This marker-based persistence applies whenever OpenClaw regenerates `models.json`, including command-driven paths like `openclaw agent`.
+このマーカーベースの保存処理は、`openclaw agent` コマンドなどの実行時に `models.json` が再生成される際にも適用されます。

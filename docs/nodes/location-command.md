@@ -1,51 +1,53 @@
 ---
-summary: "Location command for nodes (location.get), permission modes, and Android foreground behavior"
+summary: "ノード向け location command（location.get）、権限モード、Android の foreground 挙動"
 read_when:
-  - Adding location node support or permissions UI
-  - Designing Android location permissions or foreground behavior
+  - location node サポートや権限 UI を追加するとき
+  - Android の位置情報権限や foreground 挙動を設計するとき
 title: "Location Command"
+x-i18n:
+  source_hash: "5c691cfe147b0b9b16b3a4984d544c168a46b37f91d55b82b2507407d2011529"
 ---
 
 # Location command (nodes)
 
 ## TL;DR
 
-- `location.get` is a node command (via `node.invoke`).
-- Off by default.
-- Android app settings use a selector: Off / While Using.
-- Separate toggle: Precise Location.
+- `location.get` は node command（`node.invoke` 経由）
+- デフォルトでは off
+- Android アプリ設定は selector 方式: Off / While Using
+- 別 toggle として Precise Location がある
 
-## Why a selector (not just a switch)
+## なぜ selector なのか（単なる switch ではない）
 
-OS permissions are multi-level. We can expose a selector in-app, but the OS still decides the actual grant.
+OS の権限モデルは多段階です。アプリ内では selector を提示できますが、実際にどの権限が付与されるかは OS 側が最終的に決定します。
 
-- iOS/macOS may expose **While Using** or **Always** in system prompts/Settings.
-- Android app currently supports foreground location only.
-- Precise location is a separate grant (iOS 14+ “Precise”, Android “fine” vs “coarse”).
+- iOS / macOS では system prompt や Settings に **While Using** または **Always** が出ることがある
+- Android アプリは現時点では foreground location のみをサポートする
+- precise location は独立した権限である（iOS 14+ の “Precise”、Android の “fine” / “coarse”）
 
-Selector in UI drives our requested mode; actual grant lives in OS settings.
+UI の selector は要求モードを決めるものであり、実際の grant 状態は OS Settings にあります。
 
-## Settings model
+## 設定モデル
 
-Per node device:
+node device ごとの設定:
 
 - `location.enabledMode`: `off | whileUsing`
 - `location.preciseEnabled`: bool
 
-UI behavior:
+UI 挙動:
 
-- Selecting `whileUsing` requests foreground permission.
-- If OS denies requested level, revert to the highest granted level and show status.
+- `whileUsing` を選ぶと foreground permission を要求する
+- OS が要求レベルを拒否した場合は、実際に許可された最上位レベルへ戻し、状態を表示する
 
-## Permissions mapping (node.permissions)
+## 権限マッピング（node.permissions）
 
-Optional. macOS node reports `location` via the permissions map; iOS/Android may omit it.
+任意です。macOS node は permissions map で `location` を返しますが、iOS / Android では省略される場合があります。
 
-## Command: `location.get`
+## コマンド: `location.get`
 
-Called via `node.invoke`.
+`node.invoke` 経由で呼び出します。
 
-Params (suggested):
+パラメータ（推奨）:
 
 ```json
 {
@@ -55,7 +57,7 @@ Params (suggested):
 }
 ```
 
-Response payload:
+応答ペイロード:
 
 ```json
 {
@@ -71,28 +73,28 @@ Response payload:
 }
 ```
 
-Errors (stable codes):
+エラー（安定コード）:
 
-- `LOCATION_DISABLED`: selector is off.
-- `LOCATION_PERMISSION_REQUIRED`: permission missing for requested mode.
-- `LOCATION_BACKGROUND_UNAVAILABLE`: app is backgrounded but only While Using allowed.
-- `LOCATION_TIMEOUT`: no fix in time.
-- `LOCATION_UNAVAILABLE`: system failure / no providers.
+- `LOCATION_DISABLED`: selector が off
+- `LOCATION_PERMISSION_REQUIRED`: 要求モードに必要な権限がない
+- `LOCATION_BACKGROUND_UNAVAILABLE`: アプリが background だが、While Using しか許可されていない
+- `LOCATION_TIMEOUT`: 規定時間内に位置 fix が得られない
+- `LOCATION_UNAVAILABLE`: system failure または provider 不在
 
-## Background behavior
+## バックグラウンド挙動
 
-- Android app denies `location.get` while backgrounded.
-- Keep OpenClaw open when requesting location on Android.
-- Other node platforms may differ.
+- Android アプリは background 中の `location.get` を拒否する
+- Android で位置情報を取得する際は OpenClaw を foreground のままにする
+- 他の node platform では挙動が異なる可能性がある
 
-## Model/tooling integration
+## モデル / ツール統合
 
-- Tool surface: `nodes` tool adds `location_get` action (node required).
-- CLI: `openclaw nodes location get --node <id>`.
-- Agent guidelines: only call when user enabled location and understands the scope.
+- tool surface: `nodes` tool に `location_get` action を追加する（node 必須）
+- CLI: `openclaw nodes location get --node <id>`
+- agent guideline: ユーザーが location を有効化し、共有範囲を理解している場合にのみ呼び出す
 
-## UX copy (suggested)
+## UX 文言案
 
-- Off: “Location sharing is disabled.”
-- While Using: “Only when OpenClaw is open.”
-- Precise: “Use precise GPS location. Toggle off to share approximate location.”
+- Off: 「位置情報の共有は無効です。」
+- While Using: 「OpenClaw を開いている間だけ共有します。」
+- Precise: 「高精度な GPS 位置を使用します。おおよその位置だけを共有したい場合はオフにしてください。」

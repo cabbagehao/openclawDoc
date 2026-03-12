@@ -1,92 +1,99 @@
 ---
-summary: "Hooks: event-driven automation for commands and lifecycle events"
+summary: "hooks: コマンドとライフサイクルイベントのためのイベント駆動型自動化"
 read_when:
-  - You want event-driven automation for /new, /reset, /stop, and agent lifecycle events
-  - You want to build, install, or debug hooks
-title: "Hooks"
+  - /new、/reset、/stop、およびエージェントのライフサイクルイベントに対してイベント駆動型の自動化を行いたい場合
+  - hooks を構築、インストール、またはデバッグしたい場合
+title: "hooks"
+x-i18n:
+  source_path: "automation/hooks.md"
+  source_hash: "fc1370a05127d778eb685f687ee9a52062aa6f5c895e80152b9de41c3a02c592"
+  provider: "openai"
+  model: "gpt-5"
+  workflow: 1
+  generated_at: "2026-03-10T05:55:41.000Z"
 ---
 
-# Hooks
+# hooks
 
-Hooks provide an extensible event-driven system for automating actions in response to agent commands and events. Hooks are automatically discovered from directories and can be managed via CLI commands, similar to how skills work in OpenClaw.
+hooks は、エージェントのコマンドやイベントに応じたアクションの自動化を可能にする、拡張可能なイベント駆動システムです。hooks はディレクトリから自動検出され、OpenClaw の skills と同様に CLI コマンドで管理できます。
 
-## Getting Oriented
+## 全体像
 
-Hooks are small scripts that run when something happens. There are two kinds:
+hooks は、何かが起きたときに実行される小さなスクリプトです。種類は 2 つあります。
 
-- **Hooks** (this page): run inside the Gateway when agent events fire, like `/new`, `/reset`, `/stop`, or lifecycle events.
-- **Webhooks**: external HTTP webhooks that let other systems trigger work in OpenClaw. See [Webhook Hooks](/automation/webhook) or use `openclaw webhooks` for Gmail helper commands.
+- **hooks**（このページ）: `/new`、`/reset`、`/stop`、またはライフサイクルイベントのようなエージェントイベント発火時に、ゲートウェイ内で実行されます。
+- **webhook**: 他のシステムから OpenClaw の処理をトリガーできる外部 HTTP webhook です。[webhook](/automation/webhook) を参照するか、Gmail 用ヘルパーコマンドとして `openclaw webhooks` を使ってください。
 
-Hooks can also be bundled inside plugins; see [Plugins](/tools/plugin#plugin-hooks).
+hooks はプラグイン内に同梱することもできます。[Plugins](/tools/plugin#plugin-hooks) を参照してください。
 
-Common uses:
+よくある用途:
 
-- Save a memory snapshot when you reset a session
-- Keep an audit trail of commands for troubleshooting or compliance
-- Trigger follow-up automation when a session starts or ends
-- Write files into the agent workspace or call external APIs when events fire
+- セッションをリセットしたときにメモリのスナップショットを保存する
+- トラブルシューティングやコンプライアンスのためにコマンドの監査ログを残す
+- セッション開始時または終了時に後続の自動化を起動する
+- イベント発火時にエージェントのワークスペースへファイルを書き込んだり、外部 API を呼び出したりする
 
-If you can write a small TypeScript function, you can write a hook. Hooks are discovered automatically, and you enable or disable them via the CLI.
+小さな TypeScript 関数を書けるなら、hook も書けます。hooks は自動検出され、有効化や無効化は CLI で行います。
 
-## Overview
+## 概要
 
-The hooks system allows you to:
+hooks システムでは次のことができます。
 
-- Save session context to memory when `/new` is issued
-- Log all commands for auditing
-- Trigger custom automations on agent lifecycle events
-- Extend OpenClaw's behavior without modifying core code
+- `/new` 発行時にセッションコンテキストをメモリへ保存する
+- すべてのコマンドを監査用に記録する
+- エージェントのライフサイクルイベントで独自の自動化を起動する
+- コアコードを変更せずに OpenClaw の挙動を拡張する
 
-## Getting Started
+## はじめる
 
-### Bundled Hooks
+### 同梱 hooks
 
-OpenClaw ships with four bundled hooks that are automatically discovered:
+OpenClaw には、自動的に検出される 4 つの同梱 hook があります。
 
-- **💾 session-memory**: Saves session context to your agent workspace (default `~/.openclaw/workspace/memory/`) when you issue `/new`
-- **📎 bootstrap-extra-files**: Injects additional workspace bootstrap files from configured glob/path patterns during `agent:bootstrap`
-- **📝 command-logger**: Logs all command events to `~/.openclaw/logs/commands.log`
-- **🚀 boot-md**: Runs `BOOT.md` when the gateway starts (requires internal hooks enabled)
+- **💾 session-memory**: `/new` を実行したときに、セッションコンテキストをエージェントのワークスペース（デフォルトは `~/.openclaw/workspace/memory/`）へ保存します
+- **📎 bootstrap-extra-files**: `agent:bootstrap` 中に、設定済みの glob/path パターンから追加のワークスペース bootstrap ファイルを注入します
+- **📝 command-logger**: すべてのコマンドイベントを `~/.openclaw/logs/commands.log` に記録します
+- **🚀 boot-md**: ゲートウェイ起動時に `BOOT.md` を実行します（internal hooks を有効化している必要があります）
 
-List available hooks:
+利用可能な hooks を一覧表示:
 
 ```bash
 openclaw hooks list
 ```
 
-Enable a hook:
+hook を有効化:
 
 ```bash
 openclaw hooks enable session-memory
 ```
 
-Check hook status:
+hook の状態を確認:
 
 ```bash
 openclaw hooks check
 ```
 
-Get detailed information:
+詳細情報を表示:
 
 ```bash
 openclaw hooks info session-memory
 ```
 
-### Onboarding
+### オンボーディング
 
-During onboarding (`openclaw onboard`), you'll be prompted to enable recommended hooks. The wizard automatically discovers eligible hooks and presents them for selection.
+オンボーディング（`openclaw onboard`）では、推奨 hooks を有効化するかどうかを確認されます。ウィザードは対象となる hooks を自動検出し、選択できるように表示します。
 
-## Hook Discovery
+## Hook の検出
 
-Hooks are automatically discovered from three directories (in order of precedence):
+hooks は 3 つのディレクトリから自動検出されます（優先順位順）。
 
-1. **Workspace hooks**: `<workspace>/hooks/` (per-agent, highest precedence)
-2. **Managed hooks**: `~/.openclaw/hooks/` (user-installed, shared across workspaces)
-3. **Bundled hooks**: `<openclaw>/dist/hooks/bundled/` (shipped with OpenClaw)
+1. **Workspace hooks**: `<workspace>/hooks/`（エージェント単位、最優先）
+2. **Managed hooks**: `~/.openclaw/hooks/`（ユーザーがインストールし、複数ワークスペースで共有）
+3. **Bundled hooks**: `<openclaw>/dist/hooks/bundled/`（OpenClaw に同梱）
 
-Managed hook directories can be either a **single hook** or a **hook pack** (package directory).
+Managed hook ディレクトリは、**単一 hook** にも **hook pack**（パッケージディレクトリ）にもできます。
 
-Each hook is a directory containing:
+各 hook は次のようなディレクトリで構成されます。
 
 ```
 my-hook/
@@ -94,23 +101,20 @@ my-hook/
 └── handler.ts       # Handler implementation
 ```
 
-## Hook Packs (npm/archives)
+## Hook Packs（npm / archives）
 
-Hook packs are standard npm packages that export one or more hooks via `openclaw.hooks` in
-`package.json`. Install them with:
+hook pack は標準的な npm パッケージで、`package.json` の `openclaw.hooks` を通じて 1 つ以上の hook を公開します。インストールは次のコマンドで行います。
 
 ```bash
 openclaw hooks install <path-or-spec>
 ```
 
-Npm specs are registry-only (package name + optional exact version or dist-tag).
-Git/URL/file specs and semver ranges are rejected.
+npm spec は registry のみ対応です（パッケージ名 + 任意の厳密なバージョンまたは dist-tag）。
+Git / URL / file の spec や semver range は拒否されます。
 
-Bare specs and `@latest` stay on the stable track. If npm resolves either of
-those to a prerelease, OpenClaw stops and asks you to opt in explicitly with a
-prerelease tag such as `@beta`/`@rc` or an exact prerelease version.
+素の spec と `@latest` は stable トラックのまま扱われます。npm がそれらを prerelease に解決した場合、OpenClaw は停止し、`@beta` / `@rc` のような prerelease tag や厳密な prerelease version で明示的に opt in するよう求めます。
 
-Example `package.json`:
+`package.json` の例:
 
 ```json
 {
@@ -122,20 +126,18 @@ Example `package.json`:
 }
 ```
 
-Each entry points to a hook directory containing `HOOK.md` and `handler.ts` (or `index.ts`).
-Hook packs can ship dependencies; they will be installed under `~/.openclaw/hooks/<id>`.
-Each `openclaw.hooks` entry must stay inside the package directory after symlink
-resolution; entries that escape are rejected.
+各エントリは `HOOK.md` と `handler.ts`（または `index.ts`）を含む hook ディレクトリを指します。
+hook pack は依存関係を同梱でき、それらは `~/.openclaw/hooks/<id>` 配下にインストールされます。
+各 `openclaw.hooks` エントリは、symlink 解決後もパッケージディレクトリの内側に留まっている必要があります。外へ逃げるエントリは拒否されます。
 
-Security note: `openclaw hooks install` installs dependencies with `npm install --ignore-scripts`
-(no lifecycle scripts). Keep hook pack dependency trees "pure JS/TS" and avoid packages that rely
-on `postinstall` builds.
+セキュリティ上の注意: `openclaw hooks install` は依存関係を `npm install --ignore-scripts` でインストールします
+（ライフサイクルスクリプトは実行されません）。hook pack の依存ツリーは "pure JS / TS" に保ち、`postinstall` ビルドに依存するパッケージは避けてください。
 
-## Hook Structure
+## Hook の構造
 
-### HOOK.md Format
+### `HOOK.md` の形式
 
-The `HOOK.md` file contains metadata in YAML frontmatter plus Markdown documentation:
+`HOOK.md` ファイルには、YAML frontmatter による metadata と Markdown ドキュメントが含まれます。
 
 ```markdown
 ---
@@ -165,26 +167,26 @@ Detailed documentation goes here...
 No configuration needed.
 ```
 
-### Metadata Fields
+### Metadata フィールド
 
-The `metadata.openclaw` object supports:
+`metadata.openclaw` オブジェクトでは次をサポートします。
 
-- **`emoji`**: Display emoji for CLI (e.g., `"💾"`)
-- **`events`**: Array of events to listen for (e.g., `["command:new", "command:reset"]`)
-- **`export`**: Named export to use (defaults to `"default"`)
-- **`homepage`**: Documentation URL
-- **`requires`**: Optional requirements
-  - **`bins`**: Required binaries on PATH (e.g., `["git", "node"]`)
-  - **`anyBins`**: At least one of these binaries must be present
-  - **`env`**: Required environment variables
-  - **`config`**: Required config paths (e.g., `["workspace.dir"]`)
-  - **`os`**: Required platforms (e.g., `["darwin", "linux"]`)
-- **`always`**: Bypass eligibility checks (boolean)
-- **`install`**: Installation methods (for bundled hooks: `[{"id":"bundled","kind":"bundled"}]`)
+- **`emoji`**: CLI に表示する emoji（例: `"💾"`）
+- **`events`**: リッスンするイベントの配列（例: `["command:new", "command:reset"]`）
+- **`export`**: 使用する名前付き export（デフォルトは `"default"`）
+- **`homepage`**: ドキュメント URL
+- **`requires`**: 任意の要件
+  - **`bins`**: PATH 上に必要なバイナリ（例: `["git", "node"]`）
+  - **`anyBins`**: これらのバイナリのうち少なくとも 1 つが必要
+  - **`env`**: 必要な環境変数
+  - **`config`**: 必要な config パス（例: `["workspace.dir"]`）
+  - **`os`**: 必要なプラットフォーム（例: `["darwin", "linux"]`）
+- **`always`**: eligibility チェックをバイパスする（boolean）
+- **`install`**: インストール方法（同梱 hook の場合: `[{"id":"bundled","kind":"bundled"}]`）
 
-### Handler Implementation
+### Handler 実装
 
-The `handler.ts` file exports a `HookHandler` function:
+`handler.ts` ファイルは `HookHandler` 関数を export します。
 
 ```typescript
 const myHandler = async (event) => {
@@ -206,9 +208,9 @@ const myHandler = async (event) => {
 export default myHandler;
 ```
 
-#### Event Context
+#### イベントコンテキスト
 
-Each event includes:
+各イベントには次の情報が含まれます。
 
 ```typescript
 {
@@ -237,48 +239,48 @@ Each event includes:
 }
 ```
 
-## Event Types
+## イベントの種類
 
-### Command Events
+### Command イベント
 
-Triggered when agent commands are issued:
+エージェントコマンドが発行されたときにトリガーされます。
 
-- **`command`**: All command events (general listener)
-- **`command:new`**: When `/new` command is issued
-- **`command:reset`**: When `/reset` command is issued
-- **`command:stop`**: When `/stop` command is issued
+- **`command`**: すべてのコマンドイベント（一般リスナー）
+- **`command:new`**: `/new` コマンド発行時
+- **`command:reset`**: `/reset` コマンド発行時
+- **`command:stop`**: `/stop` コマンド発行時
 
-### Session Events
+### Session イベント
 
-- **`session:compact:before`**: Right before compaction summarizes history
-- **`session:compact:after`**: After compaction completes with summary metadata
+- **`session:compact:before`**: compaction による履歴要約の直前
+- **`session:compact:after`**: compaction 完了後、summary metadata とともに発火
 
-Internal hook payloads emit these as `type: "session"` with `action: "compact:before"` / `action: "compact:after"`; listeners subscribe with the combined keys above.
-Specific handler registration uses the literal key format `${type}:${action}`. For these events, register `session:compact:before` and `session:compact:after`.
+internal hook payload では、これらは `type: "session"` と `action: "compact:before"` / `action: "compact:after"` として送出されます。リスナー側では上記の結合キーを購読します。
+具体的な handler 登録では、`${type}:${action}` のリテラルキー形式を使います。これらのイベントでは `session:compact:before` と `session:compact:after` を登録してください。
 
-### Agent Events
+### Agent イベント
 
-- **`agent:bootstrap`**: Before workspace bootstrap files are injected (hooks may mutate `context.bootstrapFiles`)
+- **`agent:bootstrap`**: ワークスペース bootstrap ファイルが注入される前（hooks は `context.bootstrapFiles` を変更できます）
 
-### Gateway Events
+### ゲートウェイイベント
 
-Triggered when the gateway starts:
+ゲートウェイ起動時にトリガーされます。
 
-- **`gateway:startup`**: After channels start and hooks are loaded
+- **`gateway:startup`**: チャンネル起動後かつ hooks 読み込み後
 
-### Message Events
+### Message イベント
 
-Triggered when messages are received or sent:
+メッセージの受信または送信時にトリガーされます。
 
-- **`message`**: All message events (general listener)
-- **`message:received`**: When an inbound message is received from any channel. Fires early in processing before media understanding. Content may contain raw placeholders like `<media:audio>` for media attachments that haven't been processed yet.
-- **`message:transcribed`**: When a message has been fully processed, including audio transcription and link understanding. At this point, `transcript` contains the full transcript text for audio messages. Use this hook when you need access to transcribed audio content.
-- **`message:preprocessed`**: Fires for every message after all media + link understanding completes, giving hooks access to the fully enriched body (transcripts, image descriptions, link summaries) before the agent sees it.
-- **`message:sent`**: When an outbound message is successfully sent
+- **`message`**: すべてのメッセージイベント（一般リスナー）
+- **`message:received`**: 任意のチャンネルから受信メッセージを受け取ったとき。メディア理解より前の早い段階で発火します。内容には、未処理メディア添付を表す `<media:audio>` のような生のプレースホルダーが含まれる場合があります。
+- **`message:transcribed`**: 音声の文字起こしやリンク理解を含め、メッセージが完全に処理されたときに発火します。この時点では、音声メッセージの完全な文字起こしテキストが `transcript` に入っています。文字起こし済み音声の内容にアクセスしたい場合はこの hook を使います。
+- **`message:preprocessed`**: すべてのメディア理解とリンク理解が完了した後、各メッセージごとに発火します。これにより、エージェントが見る前の fully enriched body（transcript、画像説明、リンク要約など）へ hooks がアクセスできます。
+- **`message:sent`**: 送信メッセージが正常に送られたとき
 
-#### Message Event Context
+#### Message イベントのコンテキスト
 
-Message events include rich context about the message:
+message event には、メッセージに関する詳細なコンテキストが含まれます。
 
 ```typescript
 // message:received context
@@ -339,7 +341,7 @@ Message events include rich context about the message:
 }
 ```
 
-#### Example: Message Logger Hook
+#### 例: Message Logger Hook
 
 ```typescript
 const isMessageReceivedEvent = (event: { type: string; action: string }) =>
@@ -358,42 +360,42 @@ const handler = async (event) => {
 export default handler;
 ```
 
-### Tool Result Hooks (Plugin API)
+### Tool Result Hook（Plugin API）
 
-These hooks are not event-stream listeners; they let plugins synchronously adjust tool results before OpenClaw persists them.
+これらの hooks はイベントストリームのリスナーではありません。OpenClaw がツール結果を永続化する前に、プラグインが同期的に結果を調整できるようにするためのものです。
 
-- **`tool_result_persist`**: transform tool results before they are written to the session transcript. Must be synchronous; return the updated tool result payload or `undefined` to keep it as-is. See [Agent Loop](/concepts/agent-loop).
+- **`tool_result_persist`**: ツール結果をセッショントランスクリプトへ書き込む前に変換します。同期でなければなりません。更新済みのツール結果 payload を返すか、そのまま維持するには `undefined` を返してください。[Agent Loop](/concepts/agent-loop) を参照してください。
 
-### Plugin Hook Events
+### Plugin Hook イベント
 
-Compaction lifecycle hooks exposed through the plugin hook runner:
+plugin hook runner から公開される compaction ライフサイクル hook:
 
-- **`before_compaction`**: Runs before compaction with count/token metadata
-- **`after_compaction`**: Runs after compaction with compaction summary metadata
+- **`before_compaction`**: 件数/トークン metadata を伴って compaction 前に実行
+- **`after_compaction`**: compaction summary metadata を伴って compaction 後に実行
 
-### Future Events
+### 今後のイベント
 
-Planned event types:
+今後予定されているイベントの種類:
 
-- **`session:start`**: When a new session begins
-- **`session:end`**: When a session ends
-- **`agent:error`**: When an agent encounters an error
+- **`session:start`**: 新しいセッション開始時
+- **`session:end`**: セッション終了時
+- **`agent:error`**: エージェントでエラーが発生したとき
 
-## Creating Custom Hooks
+## カスタム hooks を作成する
 
-### 1. Choose Location
+### 1. 配置場所を選ぶ
 
-- **Workspace hooks** (`<workspace>/hooks/`): Per-agent, highest precedence
-- **Managed hooks** (`~/.openclaw/hooks/`): Shared across workspaces
+- **Workspace hooks**（`<workspace>/hooks/`）: エージェント単位、最優先
+- **Managed hooks**（`~/.openclaw/hooks/`）: ワークスペース間で共有
 
-### 2. Create Directory Structure
+### 2. ディレクトリ構造を作成する
 
 ```bash
 mkdir -p ~/.openclaw/hooks/my-hook
 cd ~/.openclaw/hooks/my-hook
 ```
 
-### 3. Create HOOK.md
+### 3. HOOK.md を作成する
 
 ```markdown
 ---
@@ -407,7 +409,7 @@ metadata: { "openclaw": { "emoji": "🎯", "events": ["command:new"] } }
 This hook does something useful when you issue `/new`.
 ```
 
-### 4. Create handler.ts
+### 4. handler.ts を作成する
 
 ```typescript
 const handler = async (event) => {
@@ -422,7 +424,7 @@ const handler = async (event) => {
 export default handler;
 ```
 
-### 5. Enable and Test
+### 5. 有効化してテストする
 
 ```bash
 # Verify hook is discovered
@@ -437,9 +439,9 @@ openclaw hooks enable my-hook
 # Send /new via your messaging channel
 ```
 
-## Configuration
+## 設定
 
-### New Config Format (Recommended)
+### 新しい設定形式（推奨）
 
 ```json
 {
@@ -455,9 +457,9 @@ openclaw hooks enable my-hook
 }
 ```
 
-### Per-Hook Configuration
+### hook ごとの設定
 
-Hooks can have custom configuration:
+hooks には独自の設定を持たせられます。
 
 ```json
 {
@@ -477,9 +479,9 @@ Hooks can have custom configuration:
 }
 ```
 
-### Extra Directories
+### 追加ディレクトリ
 
-Load hooks from additional directories:
+追加ディレクトリから hooks を読み込みます。
 
 ```json
 {
@@ -494,9 +496,9 @@ Load hooks from additional directories:
 }
 ```
 
-### Legacy Config Format (Still Supported)
+### 旧設定形式（引き続きサポート）
 
-The old config format still works for backwards compatibility:
+古い設定形式も後方互換性のために引き続き動作します。
 
 ```json
 {
@@ -515,13 +517,13 @@ The old config format still works for backwards compatibility:
 }
 ```
 
-Note: `module` must be a workspace-relative path. Absolute paths and traversal outside the workspace are rejected.
+注意: `module` はワークスペース相対パスである必要があります。絶対パスや、ワークスペース外への traversal は拒否されます。
 
-**Migration**: Use the new discovery-based system for new hooks. Legacy handlers are loaded after directory-based hooks.
+**移行**: 新しい hook には、新しい discovery ベースのシステムを使ってください。legacy handler はディレクトリベースの hook の後に読み込まれます。
 
-## CLI Commands
+## CLI コマンド
 
-### List Hooks
+### hooks を一覧表示する
 
 ```bash
 # List all hooks
@@ -537,7 +539,7 @@ openclaw hooks list --verbose
 openclaw hooks list --json
 ```
 
-### Hook Information
+### hook 情報
 
 ```bash
 # Show detailed info about a hook
@@ -547,7 +549,7 @@ openclaw hooks info session-memory
 openclaw hooks info session-memory --json
 ```
 
-### Check Eligibility
+### 適格性を確認する
 
 ```bash
 # Show eligibility summary
@@ -557,7 +559,7 @@ openclaw hooks check
 openclaw hooks check --json
 ```
 
-### Enable/Disable
+### 有効化/無効化
 
 ```bash
 # Enable a hook
@@ -567,26 +569,26 @@ openclaw hooks enable session-memory
 openclaw hooks disable command-logger
 ```
 
-## Bundled hook reference
+## 同梱 hook リファレンス
 
 ### session-memory
 
-Saves session context to memory when you issue `/new`.
+`/new` 実行時にセッションコンテキストをメモリへ保存します。
 
 **Events**: `command:new`
 
-**Requirements**: `workspace.dir` must be configured
+**Requirements**: `workspace.dir` の設定が必要
 
-**Output**: `<workspace>/memory/YYYY-MM-DD-slug.md` (defaults to `~/.openclaw/workspace`)
+**Output**: `<workspace>/memory/YYYY-MM-DD-slug.md`（デフォルトは `~/.openclaw/workspace`）
 
-**What it does**:
+**動作内容**:
 
-1. Uses the pre-reset session entry to locate the correct transcript
-2. Extracts the last 15 lines of conversation
-3. Uses LLM to generate a descriptive filename slug
-4. Saves session metadata to a dated memory file
+1. reset 前のセッションエントリを使って、正しい transcript を特定する
+2. 会話の最後の 15 行を抽出する
+3. LLM を使って説明的なファイル名 slug を生成する
+4. セッション metadata を日付付きのメモリファイルに保存する
 
-**Example output**:
+**出力例**:
 
 ```markdown
 # Session: 2026-01-16 14:30:00 UTC
@@ -596,13 +598,13 @@ Saves session context to memory when you issue `/new`.
 - **Source**: telegram
 ```
 
-**Filename examples**:
+**ファイル名の例**:
 
 - `2026-01-16-vendor-pitch.md`
 - `2026-01-16-api-design.md`
-- `2026-01-16-1430.md` (fallback timestamp if slug generation fails)
+- `2026-01-16-1430.md`（slug 生成に失敗した場合のフォールバック timestamp）
 
-**Enable**:
+**有効化**:
 
 ```bash
 openclaw hooks enable session-memory
@@ -610,15 +612,15 @@ openclaw hooks enable session-memory
 
 ### bootstrap-extra-files
 
-Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TOOLS.md`) during `agent:bootstrap`.
+`agent:bootstrap` 中に追加の bootstrap ファイル（たとえば monorepo ローカルの `AGENTS.md` / `TOOLS.md`）を注入します。
 
 **Events**: `agent:bootstrap`
 
-**Requirements**: `workspace.dir` must be configured
+**Requirements**: `workspace.dir` の設定が必要
 
-**Output**: No files written; bootstrap context is modified in-memory only.
+**出力**: ファイルは書き込まれません。bootstrap context はメモリ上でのみ変更されます。
 
-**Config**:
+**設定**:
 
 ```json
 {
@@ -636,14 +638,14 @@ Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TO
 }
 ```
 
-**Notes**:
+**補足**:
 
-- Paths are resolved relative to workspace.
-- Files must stay inside workspace (realpath-checked).
-- Only recognized bootstrap basenames are loaded.
-- Subagent allowlist is preserved (`AGENTS.md` and `TOOLS.md` only).
+- パスはワークスペース相対で解決されます。
+- ファイルはワークスペース内に留まる必要があります（realpath で検証されます）。
+- 読み込まれるのは認識済みの bootstrap basename のみです。
+- subagent allowlist は維持されます（`AGENTS.md` と `TOOLS.md` のみ）。
 
-**Enable**:
+**有効化**:
 
 ```bash
 openclaw hooks enable bootstrap-extra-files
@@ -651,28 +653,28 @@ openclaw hooks enable bootstrap-extra-files
 
 ### command-logger
 
-Logs all command events to a centralized audit file.
+すべての command event を集中管理された監査ファイルへ記録します。
 
 **Events**: `command`
 
-**Requirements**: None
+**Requirements**: なし
 
 **Output**: `~/.openclaw/logs/commands.log`
 
-**What it does**:
+**動作内容**:
 
-1. Captures event details (command action, timestamp, session key, sender ID, source)
-2. Appends to log file in JSONL format
-3. Runs silently in the background
+1. イベント詳細（command action、timestamp、session key、sender ID、source）を取得する
+2. JSONL 形式でログファイルへ追記する
+3. バックグラウンドで静かに実行する
 
-**Example log entries**:
+**ログエントリの例**:
 
 ```jsonl
 {"timestamp":"2026-01-16T14:30:00.000Z","action":"new","sessionKey":"agent:main:main","senderId":"+1234567890","source":"telegram"}
 {"timestamp":"2026-01-16T15:45:22.000Z","action":"stop","sessionKey":"agent:main:main","senderId":"user@example.com","source":"whatsapp"}
 ```
 
-**View logs**:
+**ログの確認**:
 
 ```bash
 # View recent commands
@@ -685,7 +687,7 @@ cat ~/.openclaw/logs/commands.log | jq .
 grep '"action":"new"' ~/.openclaw/logs/commands.log | jq .
 ```
 
-**Enable**:
+**有効化**:
 
 ```bash
 openclaw hooks enable command-logger
@@ -693,30 +695,30 @@ openclaw hooks enable command-logger
 
 ### boot-md
 
-Runs `BOOT.md` when the gateway starts (after channels start).
-Internal hooks must be enabled for this to run.
+ゲートウェイ起動時（チャンネル起動後）に `BOOT.md` を実行します。
+これを動かすには internal hooks を有効化しておく必要があります。
 
 **Events**: `gateway:startup`
 
-**Requirements**: `workspace.dir` must be configured
+**Requirements**: `workspace.dir` の設定が必要
 
-**What it does**:
+**動作内容**:
 
-1. Reads `BOOT.md` from your workspace
-2. Runs the instructions via the agent runner
-3. Sends any requested outbound messages via the message tool
+1. ワークスペースから `BOOT.md` を読み込む
+2. エージェントランナー経由でその指示を実行する
+3. 必要な送信メッセージを message ツール経由で送る
 
-**Enable**:
+**有効化**:
 
 ```bash
 openclaw hooks enable boot-md
 ```
 
-## Best Practices
+## ベストプラクティス
 
-### Keep Handlers Fast
+### Handler は高速に保つ
 
-Hooks run during command processing. Keep them lightweight:
+hooks はコマンド処理中に実行されます。できるだけ軽量に保ってください。
 
 ```typescript
 // ✓ Good - async work, returns immediately
@@ -731,9 +733,9 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### Handle Errors Gracefully
+### エラーは適切に処理する
 
-Always wrap risky operations:
+危険な操作は必ずラップしてください。
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -746,9 +748,9 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### Filter Events Early
+### イベントは早めに絞り込む
 
-Return early if the event isn't relevant:
+対象外のイベントなら早めに return します。
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -761,25 +763,25 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### Use Specific Event Keys
+### 具体的なイベントキーを使う
 
-Specify exact events in metadata when possible:
+可能であれば、metadata では対象イベントを具体的に指定してください。
 
 ```yaml
 metadata: { "openclaw": { "events": ["command:new"] } } # Specific
 ```
 
-Rather than:
+次のような一般指定よりも:
 
 ```yaml
 metadata: { "openclaw": { "events": ["command"] } } # General - more overhead
 ```
 
-## Debugging
+## デバッグ
 
-### Enable Hook Logging
+### Hook ログを有効にする
 
-The gateway logs hook loading at startup:
+ゲートウェイは起動時に hook の読み込みをログ出力します。
 
 ```
 Registered hook: session-memory -> command:new
@@ -788,17 +790,17 @@ Registered hook: command-logger -> command
 Registered hook: boot-md -> gateway:startup
 ```
 
-### Check Discovery
+### 検出状態を確認する
 
-List all discovered hooks:
+検出された hooks をすべて一覧表示します。
 
 ```bash
 openclaw hooks list --verbose
 ```
 
-### Check Registration
+### 登録を確認する
 
-In your handler, log when it's called:
+handler 内で、呼び出されたときにログを出してください。
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -807,21 +809,21 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### Verify Eligibility
+### 適格性を検証する
 
-Check why a hook isn't eligible:
+hook が適格にならない理由を確認します。
 
 ```bash
 openclaw hooks info my-hook
 ```
 
-Look for missing requirements in the output.
+出力内の不足要件を確認してください。
 
-## Testing
+## テスト
 
-### Gateway Logs
+### ゲートウェイログ
 
-Monitor gateway logs to see hook execution:
+hook の実行を見るにはゲートウェイログを監視します。
 
 ```bash
 # macOS
@@ -831,9 +833,9 @@ Monitor gateway logs to see hook execution:
 tail -f ~/.openclaw/gateway.log
 ```
 
-### Test Hooks Directly
+### hooks を直接テストする
 
-Test your handlers in isolation:
+handler を分離してテストします。
 
 ```typescript
 import { test } from "vitest";
@@ -855,21 +857,21 @@ test("my handler works", async () => {
 });
 ```
 
-## Architecture
+## アーキテクチャ
 
-### Core Components
+### コアコンポーネント
 
-- **`src/hooks/types.ts`**: Type definitions
-- **`src/hooks/workspace.ts`**: Directory scanning and loading
-- **`src/hooks/frontmatter.ts`**: HOOK.md metadata parsing
-- **`src/hooks/config.ts`**: Eligibility checking
-- **`src/hooks/hooks-status.ts`**: Status reporting
-- **`src/hooks/loader.ts`**: Dynamic module loader
-- **`src/cli/hooks-cli.ts`**: CLI commands
-- **`src/gateway/server-startup.ts`**: Loads hooks at gateway start
-- **`src/auto-reply/reply/commands-core.ts`**: Triggers command events
+- **`src/hooks/types.ts`**: 型定義
+- **`src/hooks/workspace.ts`**: ディレクトリのスキャンと読み込み
+- **`src/hooks/frontmatter.ts`**: `HOOK.md` metadata の解析
+- **`src/hooks/config.ts`**: 適格性チェック
+- **`src/hooks/hooks-status.ts`**: 状態レポート
+- **`src/hooks/loader.ts`**: 動的モジュールローダー
+- **`src/cli/hooks-cli.ts`**: CLI コマンド
+- **`src/gateway/server-startup.ts`**: ゲートウェイ起動時に hooks を読み込む
+- **`src/auto-reply/reply/commands-core.ts`**: command event をトリガーする
 
-### Discovery Flow
+### 検出フロー
 
 ```
 Gateway startup
@@ -885,7 +887,7 @@ Load handlers from eligible hooks
 Register handlers for events
 ```
 
-### Event Flow
+### イベントフロー
 
 ```
 User sends /new
@@ -901,76 +903,76 @@ Command processing continues
 Session reset
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-### Hook Not Discovered
+### Hook が検出されない
 
-1. Check directory structure:
+1. ディレクトリ構造を確認します。
 
    ```bash
    ls -la ~/.openclaw/hooks/my-hook/
    # Should show: HOOK.md, handler.ts
    ```
 
-2. Verify HOOK.md format:
+2. HOOK.md の形式を確認します。
 
    ```bash
    cat ~/.openclaw/hooks/my-hook/HOOK.md
    # Should have YAML frontmatter with name and metadata
    ```
 
-3. List all discovered hooks:
+3. 検出された hooks をすべて一覧表示します。
 
    ```bash
    openclaw hooks list
    ```
 
-### Hook Not Eligible
+### Hook が適格ではない
 
-Check requirements:
+要件を確認します。
 
 ```bash
 openclaw hooks info my-hook
 ```
 
-Look for missing:
+不足している可能性があるもの:
 
-- Binaries (check PATH)
-- Environment variables
-- Config values
-- OS compatibility
+- バイナリ（PATH を確認）
+- 環境変数
+- config 値
+- OS 互換性
 
-### Hook Not Executing
+### Hook が実行されない
 
-1. Verify hook is enabled:
+1. hook が有効か確認します。
 
    ```bash
    openclaw hooks list
    # Should show ✓ next to enabled hooks
    ```
 
-2. Restart your gateway process so hooks reload.
+2. hooks が再読み込みされるようにゲートウェイプロセスを再起動します。
 
-3. Check gateway logs for errors:
+3. エラーがないかゲートウェイログを確認します。
 
    ```bash
    ./scripts/clawlog.sh | grep hook
    ```
 
-### Handler Errors
+### Handler エラー
 
-Check for TypeScript/import errors:
+TypeScript/import エラーを確認します。
 
 ```bash
 # Test import directly
 node -e "import('./path/to/handler.ts').then(console.log)"
 ```
 
-## Migration Guide
+## 移行ガイド
 
-### From Legacy Config to Discovery
+### Legacy Config から Discovery への移行
 
-**Before**:
+**移行前**:
 
 ```json
 {
@@ -988,16 +990,16 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 }
 ```
 
-**After**:
+**移行後**:
 
-1. Create hook directory:
+1. hook ディレクトリを作成します。
 
    ```bash
    mkdir -p ~/.openclaw/hooks/my-hook
    mv ./hooks/handlers/my-handler.ts ~/.openclaw/hooks/my-hook/handler.ts
    ```
 
-2. Create HOOK.md:
+2. HOOK.md を作成します。
 
    ```markdown
    ---
@@ -1011,7 +1013,7 @@ node -e "import('./path/to/handler.ts').then(console.log)"
    Does something useful.
    ```
 
-3. Update config:
+3. config を更新します。
 
    ```json
    {
@@ -1026,24 +1028,24 @@ node -e "import('./path/to/handler.ts').then(console.log)"
    }
    ```
 
-4. Verify and restart your gateway process:
+4. 確認してゲートウェイプロセスを再起動します。
 
    ```bash
    openclaw hooks list
    # Should show: 🎯 my-hook ✓
    ```
 
-**Benefits of migration**:
+**移行のメリット**:
 
-- Automatic discovery
-- CLI management
-- Eligibility checking
-- Better documentation
-- Consistent structure
+- 自動検出
+- CLI 管理
+- 適格性チェック
+- より良いドキュメント
+- 一貫した構造
 
-## See Also
+## 関連項目
 
-- [CLI Reference: hooks](/cli/hooks)
+- [CLI リファレンス: hooks](/cli/hooks)
 - [Bundled Hooks README](https://github.com/openclaw/openclaw/tree/main/src/hooks/bundled)
-- [Webhook Hooks](/automation/webhook)
+- [webhook](/automation/webhook)
 - [Configuration](/gateway/configuration#hooks)

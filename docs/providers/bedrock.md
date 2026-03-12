@@ -1,31 +1,29 @@
 ---
-summary: "Use Amazon Bedrock (Converse API) models with OpenClaw"
+summary: "OpenClaw で Amazon Bedrock（Converse API）モデルを使用する"
 read_when:
-  - You want to use Amazon Bedrock models with OpenClaw
-  - You need AWS credential/region setup for model calls
+  - OpenClaw で Amazon Bedrock モデルを使いたいとき
+  - モデル呼び出しに必要な AWS 認証情報やリージョン設定を確認したいとき
 title: "Amazon Bedrock"
+x-i18n:
+  source_hash: "73b0472f571ee6eb9c1b0d851ce94208914f2fa24eacc3b92a571aeb162dbca8"
 ---
 
 # Amazon Bedrock
 
-OpenClaw can use **Amazon Bedrock** models via pi‑ai’s **Bedrock Converse**
-streaming provider. Bedrock auth uses the **AWS SDK default credential chain**,
-not an API key.
+OpenClaw は、pi-ai の **Bedrock Converse** streaming provider を介して **Amazon Bedrock** モデルを利用できます。Bedrock 認証では API キーではなく、**AWS SDK の default credential chain** を使用します。
 
-## What pi‑ai supports
+## pi-ai がサポートする内容
 
 - Provider: `amazon-bedrock`
 - API: `bedrock-converse-stream`
-- Auth: AWS credentials (env vars, shared config, or instance role)
-- Region: `AWS_REGION` or `AWS_DEFAULT_REGION` (default: `us-east-1`)
+- Auth: AWS 認証情報（環境変数、shared config、instance role）
+- Region: `AWS_REGION` または `AWS_DEFAULT_REGION`（既定値: `us-east-1`）
 
-## Automatic model discovery
+## 自動モデル検出
 
-If AWS credentials are detected, OpenClaw can automatically discover Bedrock
-models that support **streaming** and **text output**. Discovery uses
-`bedrock:ListFoundationModels` and is cached (default: 1 hour).
+AWS 認証情報が検出されると、OpenClaw は **streaming** と **text output** をサポートする Bedrock モデルを自動検出できます。検出には `bedrock:ListFoundationModels` を使い、結果はキャッシュされます（既定値: 1 時間）。
 
-Config options live under `models.bedrockDiscovery`:
+設定項目は `models.bedrockDiscovery` 配下にあります。
 
 ```json5
 {
@@ -42,18 +40,17 @@ Config options live under `models.bedrockDiscovery`:
 }
 ```
 
-Notes:
+注意:
 
-- `enabled` defaults to `true` when AWS credentials are present.
-- `region` defaults to `AWS_REGION` or `AWS_DEFAULT_REGION`, then `us-east-1`.
-- `providerFilter` matches Bedrock provider names (for example `anthropic`).
-- `refreshInterval` is seconds; set to `0` to disable caching.
-- `defaultContextWindow` (default: `32000`) and `defaultMaxTokens` (default: `4096`)
-  are used for discovered models (override if you know your model limits).
+- AWS 認証情報が存在する場合、`enabled` の既定値は `true` です。
+- `region` は `AWS_REGION`、`AWS_DEFAULT_REGION`、それでもなければ `us-east-1` の順で決まります。
+- `providerFilter` は Bedrock の provider 名（例: `anthropic`）に一致します。
+- `refreshInterval` は秒単位です。キャッシュを無効化するには `0` にします。
+- `defaultContextWindow`（既定値: `32000`）と `defaultMaxTokens`（既定値: `4096`）は、検出されたモデルに適用されます。実際の制限が分かっている場合は上書きしてください。
 
-## Onboarding
+## オンボーディング
 
-1. Ensure AWS credentials are available on the **gateway host**:
+1. **ゲートウェイ ホスト** で AWS 認証情報が利用可能であることを確認します。
 
 ```bash
 export AWS_ACCESS_KEY_ID="AKIA..."
@@ -66,7 +63,7 @@ export AWS_PROFILE="your-profile"
 export AWS_BEARER_TOKEN_BEDROCK="..."
 ```
 
-2. Add a Bedrock provider and model to your config (no `apiKey` required):
+2. 設定へ Bedrock provider とモデルを追加します（`apiKey` は不要です）。
 
 ```json5
 {
@@ -98,15 +95,11 @@ export AWS_BEARER_TOKEN_BEDROCK="..."
 }
 ```
 
-## EC2 Instance Roles
+## EC2 Instance Role
 
-When running OpenClaw on an EC2 instance with an IAM role attached, the AWS SDK
-will automatically use the instance metadata service (IMDS) for authentication.
-However, OpenClaw's credential detection currently only checks for environment
-variables, not IMDS credentials.
+IAM role をアタッチした EC2 インスタンス上で OpenClaw を動かす場合、AWS SDK は自動的に instance metadata service（IMDS）を使って認証します。ただし、OpenClaw の credential detection は現状 IMDS ではなく環境変数を主に確認します。
 
-**Workaround:** Set `AWS_PROFILE=default` to signal that AWS credentials are
-available. The actual authentication still uses the instance role via IMDS.
+**回避策:** `AWS_PROFILE=default` を設定し、AWS 認証情報が利用可能であることを示してください。実際の認証は引き続き IMDS 経由の instance role が使われます。
 
 ```bash
 # Add to ~/.bashrc or your shell profile
@@ -114,15 +107,15 @@ export AWS_PROFILE=default
 export AWS_REGION=us-east-1
 ```
 
-**Required IAM permissions** for the EC2 instance role:
+**EC2 instance role に必要な IAM 権限**:
 
 - `bedrock:InvokeModel`
 - `bedrock:InvokeModelWithResponseStream`
-- `bedrock:ListFoundationModels` (for automatic discovery)
+- `bedrock:ListFoundationModels`（自動検出用）
 
-Or attach the managed policy `AmazonBedrockFullAccess`.
+または managed policy `AmazonBedrockFullAccess` をアタッチします。
 
-## Quick setup (AWS path)
+## クイックセットアップ（AWS path）
 
 ```bash
 # 1. Create IAM role and instance profile
@@ -162,15 +155,11 @@ source ~/.bashrc
 openclaw models list
 ```
 
-## Notes
+## 注意事項
 
-- Bedrock requires **model access** enabled in your AWS account/region.
-- Automatic discovery needs the `bedrock:ListFoundationModels` permission.
-- If you use profiles, set `AWS_PROFILE` on the gateway host.
-- OpenClaw surfaces the credential source in this order: `AWS_BEARER_TOKEN_BEDROCK`,
-  then `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`, then `AWS_PROFILE`, then the
-  default AWS SDK chain.
-- Reasoning support depends on the model; check the Bedrock model card for
-  current capabilities.
-- If you prefer a managed key flow, you can also place an OpenAI‑compatible
-  proxy in front of Bedrock and configure it as an OpenAI provider instead.
+- Bedrock を使うには、該当 AWS アカウント / リージョンで **model access** が有効になっている必要があります。
+- 自動検出には `bedrock:ListFoundationModels` 権限が必要です。
+- profile を使う場合は、ゲートウェイ ホストで `AWS_PROFILE` を設定してください。
+- OpenClaw は認証情報ソースを次の順で扱います。`AWS_BEARER_TOKEN_BEDROCK`、`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`、`AWS_PROFILE`、最後に default AWS SDK chain。
+- reasoning 対応はモデルごとに異なります。現在の機能は Bedrock の model card を確認してください。
+- managed key flow を好む場合は、Bedrock の前段に OpenAI 互換 proxy を置き、OpenAI provider として設定することもできます。

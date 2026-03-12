@@ -1,34 +1,36 @@
 ---
-summary: "How the macOS app reports gateway/Baileys health states"
+summary: "macOS アプリがゲートウェイ / Baileys の健全性状態をどのように表示するか"
 read_when:
-  - Debugging mac app health indicators
-title: "Health Checks"
+  - Mac アプリの健全性インジケーターのデバッグ
+title: "ヘルスチェック"
+x-i18n:
+  source_hash: "0560e96501ddf53a499f8960cfcf11c2622fcb9056bfd1bcc57876e955cab03d"
 ---
 
-# Health Checks on macOS
+# macOS におけるヘルスチェック
 
-How to see whether the linked channel is healthy from the menu bar app.
+メニューバー アプリから、リンク済みチャネルの健全性を確認する方法を説明します。
 
-## Menu bar
+## メニューバー
 
-- Status dot now reflects Baileys health:
-  - Green: linked + socket opened recently.
-  - Orange: connecting/retrying.
-  - Red: logged out or probe failed.
-- Secondary line reads "linked · auth 12m" or shows the failure reason.
-- "Run Health Check" menu item triggers an on-demand probe.
+- ステータス ドットが Baileys の健全性を反映します。
+  - 緑: リンク済みで、ソケットが直近で開かれています。
+  - オレンジ: 接続中または再試行中です。
+  - 赤: ログアウト済み、またはプローブに失敗しています。
+- 2 行目には `"linked · auth 12m"` のような状態、または失敗理由が表示されます。
+- `Run Health Check` メニュー項目で、その場でプローブを実行できます。
 
-## Settings
+## 設定画面
 
-- General tab gains a Health card showing: linked auth age, session-store path/count, last check time, last error/status code, and buttons for Run Health Check / Reveal Logs.
-- Uses a cached snapshot so the UI loads instantly and falls back gracefully when offline.
-- **Channels tab** surfaces channel status + controls for WhatsApp/Telegram (login QR, logout, probe, last disconnect/error).
+- **General** タブには Health カードが追加され、リンク済み認証の経過時間、session-store のパスと件数、最終チェック時刻、直近のエラーまたはステータス コード、`Run Health Check` / `Reveal Logs` ボタンが表示されます。
+- UI はキャッシュ済みスナップショットを使用するため、即座に表示され、オフライン時も穏当にフォールバックします。
+- **Channels** タブでは、WhatsApp / Telegram 向けにチャネル状態と操作を表示します。ログイン QR、ログアウト、プローブ、直近の切断やエラーを確認できます。
 
-## How the probe works
+## プローブの仕組み
 
-- App runs `openclaw health --json` via `ShellExecutor` every ~60s and on demand. The probe loads creds and reports status without sending messages.
-- Cache the last good snapshot and the last error separately to avoid flicker; show the timestamp of each.
+- アプリは `ShellExecutor` 経由で `openclaw health --json` をおよそ 60 秒ごと、またはオンデマンドで実行します。このプローブは認証情報を読み込みますが、メッセージは送信せず、状態だけを報告します。
+- 画面のちらつきを避けるため、最後に正常だったスナップショットと最後のエラーは別々にキャッシュされます。それぞれの時刻も表示されます。
 
-## When in doubt
+## 判断に迷う場合
 
-- You can still use the CLI flow in [Gateway health](/gateway/health) (`openclaw status`, `openclaw status --deep`, `openclaw health --json`) and tail `/tmp/openclaw/openclaw-*.log` for `web-heartbeat` / `web-reconnect`.
+- [Gateway health](/gateway/health) の CLI フローも引き続き使用できます。`openclaw status`、`openclaw status --deep`、`openclaw health --json` を実行し、あわせて `/tmp/openclaw/openclaw-*.log` を確認して `web-heartbeat` や `web-reconnect` を追跡してください。

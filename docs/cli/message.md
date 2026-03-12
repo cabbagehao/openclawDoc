@@ -1,260 +1,156 @@
 ---
-summary: "CLI reference for `openclaw message` (send + channel actions)"
+summary: "`openclaw message` の CLI リファレンス (送信およびチャネル操作)"
 read_when:
-  - Adding or modifying message CLI actions
-  - Changing outbound channel behavior
+  - CLI からのメッセージ送信やチャネル固有のアクションを追加・変更する場合
+  - アウトバウンド（送信）チャネルの動作を調整する場合
 title: "message"
+x-i18n:
+  source_hash: "41b8483f92051e5ac96eff1887fa03a1c1158876a54a2ae2fdbfb2322bdc98d8"
 ---
 
 # `openclaw message`
 
-Single outbound command for sending messages and channel actions
-(Discord/Google Chat/Slack/Mattermost (plugin)/Telegram/WhatsApp/Signal/iMessage/MS Teams).
+メッセージの送信およびチャネル固有のアクション（Discord, Google Chat, Slack, Mattermost, Telegram, WhatsApp, Signal, iMessage, MS Teams）を一括して管理するためのアウトバウンド用コマンドです。
 
-## Usage
+## 使用法
 
-```
+```bash
 openclaw message <subcommand> [flags]
 ```
 
-Channel selection:
+チャネルの選択:
 
-- `--channel` required if more than one channel is configured.
-- If exactly one channel is configured, it becomes the default.
-- Values: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams` (Mattermost requires plugin)
+- 2 つ以上のチャネルが構成されている場合は、`--channel` フラグが必須です。
+- チャネルが 1 つだけ構成されている場合、それがデフォルトの送信先となります。
+- 指定可能な値: `whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams` (Mattermost はプラグインが必要です)
 
-Target formats (`--target`):
+宛先（ターゲット）の形式 (`--target`):
 
-- WhatsApp: E.164 or group JID
-- Telegram: chat id or `@username`
-- Discord: `channel:<id>` or `user:<id>` (or `<@id>` mention; raw numeric ids are treated as channels)
-- Google Chat: `spaces/<spaceId>` or `users/<userId>`
-- Slack: `channel:<id>` or `user:<id>` (raw channel id is accepted)
-- Mattermost (plugin): `channel:<id>`, `user:<id>`, or `@username` (bare ids are treated as channels)
-- Signal: `+E.164`, `group:<id>`, `signal:+E.164`, `signal:group:<id>`, or `username:<name>`/`u:<name>`
-- iMessage: handle, `chat_id:<id>`, `chat_guid:<guid>`, or `chat_identifier:<id>`
-- MS Teams: conversation id (`19:...@thread.tacv2`) or `conversation:<id>` or `user:<aad-object-id>`
+- WhatsApp: E.164 形式の電話番号、またはグループ JID。
+- Telegram: チャット ID または `@username`。
+- Discord: `channel:<id>` または `user:<id>` (または `<@id>` 形式のメンション。数値のみの ID はチャネルとして扱われます)。
+- Google Chat: `spaces/<spaceId>` または `users/<userId>`。
+- Slack: `channel:<id>` または `user:<id>` (数値のみのチャネル ID も受け入れ可能です)。
+- Mattermost (プラグイン): `channel:<id>`, `user:<id>`, または `@username` (プレフィックスなしの ID はチャネルとして扱われます)。
+- Signal: `+E.164`, `group:<id>`, `signal:+E.164`, `signal:group:<id>`, または `username:<name>`。
+- iMessage: ハンドル, `chat_id:<id>`, `chat_guid:<guid>`, または `chat_identifier:<id>`。
+- MS Teams: 会話 ID (`19:...@thread.tacv2`), `conversation:<id>`, または `user:<aad-object-id>`。
 
-Name lookup:
+名前の解決:
 
-- For supported providers (Discord/Slack/etc), channel names like `Help` or `#help` are resolved via the directory cache.
-- On cache miss, OpenClaw will attempt a live directory lookup when the provider supports it.
+- 対応しているプロバイダー（Discord, Slack など）では、`Help` や `#help` といったチャネル名をキャッシュから解決します。
+- キャッシュに存在しない場合、プロバイダーが対応していればライブディレクトリ検索を試みます。
 
-## Common flags
+## よく使われるフラグ
 
 - `--channel <name>`
 - `--account <id>`
-- `--target <dest>` (target channel or user for send/poll/read/etc)
-- `--targets <name>` (repeat; broadcast only)
+- `--target <dest>` (送信/投票/既読などの対象となるチャネルやユーザー)
+- `--targets <name>` (複数指定可能。一斉配信（ブロードキャスト）用)
 - `--json`
 - `--dry-run`
 - `--verbose`
 
-## Actions
+## アクション一覧
 
-### Core
+### 基本機能
 
 - `send`
-  - Channels: WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (plugin)/Signal/iMessage/MS Teams
-  - Required: `--target`, plus `--message` or `--media`
-  - Optional: `--media`, `--reply-to`, `--thread-id`, `--gif-playback`
-  - Telegram only: `--buttons` (requires `channels.telegram.capabilities.inlineButtons` to allow it)
-  - Telegram only: `--thread-id` (forum topic id)
-  - Slack only: `--thread-id` (thread timestamp; `--reply-to` uses the same field)
-  - WhatsApp only: `--gif-playback`
+  - 対応チャネル: 全チャネル
+  - 必須項目: `--target`、および `--message` または `--media`
+  - オプション: `--media`, `--reply-to`, `--thread-id`, `--gif-playback`
+  - Telegram 専用: `--buttons` (`inlineButtons` 機能の許可が必要)
+  - Telegram 専用: `--thread-id` (フォーラムのトピック ID)
+  - Slack 専用: `--thread-id` (スレッドのタイムスタンプ。`--reply-to` も同じフィールドを使用します)
+  - WhatsApp 専用: `--gif-playback`
 
-- `poll`
-  - Channels: WhatsApp/Telegram/Discord/Matrix/MS Teams
-  - Required: `--target`, `--poll-question`, `--poll-option` (repeat)
-  - Optional: `--poll-multi`
-  - Discord only: `--poll-duration-hours`, `--silent`, `--message`
-  - Telegram only: `--poll-duration-seconds` (5-600), `--silent`, `--poll-anonymous` / `--poll-public`, `--thread-id`
+- `poll` (投票)
+  - 対応チャネル: WhatsApp, Telegram, Discord, Matrix, MS Teams
+  - 必須項目: `--target`, `--poll-question`, `--poll-option` (複数指定可)
+  - オプション: `--poll-multi` (複数回答)
+  - Discord 専用: `--poll-duration-hours`, `--silent`, `--message`
+  - Telegram 専用: `--poll-duration-seconds` (5-600秒), `--silent`, `--poll-anonymous` (匿名投票), `--poll-public` (公開投票), `--thread-id`
 
-- `react`
-  - Channels: Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
-  - Required: `--message-id`, `--target`
-  - Optional: `--emoji`, `--remove`, `--participant`, `--from-me`, `--target-author`, `--target-author-uuid`
-  - Note: `--remove` requires `--emoji` (omit `--emoji` to clear own reactions where supported; see /tools/reactions)
-  - WhatsApp only: `--participant`, `--from-me`
-  - Signal group reactions: `--target-author` or `--target-author-uuid` required
+- `react` (リアクション)
+  - 対応チャネル: Discord, Google Chat, Slack, Telegram, WhatsApp, Signal
+  - 必須項目: `--message-id`, `--target`
+  - オプション: `--emoji`, `--remove` (リアクション削除), `--target-author` (Signal グループ用)
+  - 補足: `--remove` を行うには `--emoji` の指定も必要です（[リアクション](/tools/reactions) を参照）。
 
-- `reactions`
-  - Channels: Discord/Google Chat/Slack
-  - Required: `--message-id`, `--target`
-  - Optional: `--limit`
+- `reactions` (リアクション一覧)
+  - 対応チャネル: Discord, Google Chat, Slack
+  - 必須項目: `--message-id`, `--target`
 
-- `read`
-  - Channels: Discord/Slack
-  - Required: `--target`
-  - Optional: `--limit`, `--before`, `--after`
-  - Discord only: `--around`
+- `read` (読み取り)
+  - 対応チャネル: Discord, Slack
+  - 必須項目: `--target`
+  - オプション: `--limit`, `--before`, `--after`, `--around` (Discord のみ)
 
-- `edit`
-  - Channels: Discord/Slack
-  - Required: `--message-id`, `--message`, `--target`
+- `edit` (編集) / `delete` (削除) / `pin` (ピン留め)
+  - 対応チャネル: Discord, Slack (削除は Telegram も対応)
+  - 必須項目: `--message-id`, `--target`
 
-- `delete`
-  - Channels: Discord/Slack/Telegram
-  - Required: `--message-id`, `--target`
+### スレッド (Threads)
 
-- `pin` / `unpin`
-  - Channels: Discord/Slack
-  - Required: `--message-id`, `--target`
+- `thread create`: Discord でスレッドを作成。
+- `thread list`: Discord のスレッド一覧を取得。
+- `thread reply`: 特定のスレッドに返信。
 
-- `pins` (list)
-  - Channels: Discord/Slack
-  - Required: `--target`
+### 絵文字とステッカー (Discord/Slack)
 
-- `permissions`
-  - Channels: Discord
-  - Required: `--target`
+- `emoji list` / `emoji upload`
+- `sticker send` / `sticker upload`
 
-- `search`
-  - Channels: Discord
-  - Required: `--guild-id`, `--query`
-  - Optional: `--channel-id`, `--channel-ids` (repeat), `--author-id`, `--author-ids` (repeat), `--limit`
+### メンバー管理とステータス (Discord/Slack)
 
-### Threads
+- `role info`, `role add`, `role remove` (Discord)
+- `member info` (Discord, Slack)
+- `voice status` (Discord)
 
-- `thread create`
-  - Channels: Discord
-  - Required: `--thread-name`, `--target` (channel id)
-  - Optional: `--message-id`, `--message`, `--auto-archive-min`
+### イベント (Events)
 
-- `thread list`
-  - Channels: Discord
-  - Required: `--guild-id`
-  - Optional: `--channel-id`, `--include-archived`, `--before`, `--limit`
+- `event list`, `event create` (Discord)
 
-- `thread reply`
-  - Channels: Discord
-  - Required: `--target` (thread id), `--message`
-  - Optional: `--media`, `--reply-to`
+### モデレーション (Discord)
 
-### Emojis
+- `timeout`, `kick`, `ban` (理由の指定や期間設定に対応)
 
-- `emoji list`
-  - Discord: `--guild-id`
-  - Slack: no extra flags
+### 一斉配信 (Broadcast)
 
-- `emoji upload`
-  - Channels: Discord
-  - Required: `--guild-id`, `--emoji-name`, `--media`
-  - Optional: `--role-ids` (repeat)
+- `broadcast`: 構成済みのすべてのチャネル（または `--channel all` で指定したすべて）にメッセージを送信します。
 
-### Stickers
+## 実行例
 
-- `sticker send`
-  - Channels: Discord
-  - Required: `--target`, `--sticker-id` (repeat)
-  - Optional: `--message`
-
-- `sticker upload`
-  - Channels: Discord
-  - Required: `--guild-id`, `--sticker-name`, `--sticker-desc`, `--sticker-tags`, `--media`
-
-### Roles / Channels / Members / Voice
-
-- `role info` (Discord): `--guild-id`
-- `role add` / `role remove` (Discord): `--guild-id`, `--user-id`, `--role-id`
-- `channel info` (Discord): `--target`
-- `channel list` (Discord): `--guild-id`
-- `member info` (Discord/Slack): `--user-id` (+ `--guild-id` for Discord)
-- `voice status` (Discord): `--guild-id`, `--user-id`
-
-### Events
-
-- `event list` (Discord): `--guild-id`
-- `event create` (Discord): `--guild-id`, `--event-name`, `--start-time`
-  - Optional: `--end-time`, `--desc`, `--channel-id`, `--location`, `--event-type`
-
-### Moderation (Discord)
-
-- `timeout`: `--guild-id`, `--user-id` (optional `--duration-min` or `--until`; omit both to clear timeout)
-- `kick`: `--guild-id`, `--user-id` (+ `--reason`)
-- `ban`: `--guild-id`, `--user-id` (+ `--delete-days`, `--reason`)
-  - `timeout` also supports `--reason`
-
-### Broadcast
-
-- `broadcast`
-  - Channels: any configured channel; use `--channel all` to target all providers
-  - Required: `--targets` (repeat)
-  - Optional: `--message`, `--media`, `--dry-run`
-
-## Examples
-
-Send a Discord reply:
-
-```
+Discord で返信する:
+```bash
 openclaw message send --channel discord \
-  --target channel:123 --message "hi" --reply-to 456
+  --target channel:123 --message "こんにちは" --reply-to 456
 ```
 
-Send a Discord message with components:
-
-```
+Discord でコンポーネント（ボタンなど）付きのメッセージを送信する:
+```bash
 openclaw message send --channel discord \
-  --target channel:123 --message "Choose:" \
-  --components '{"text":"Choose a path","blocks":[{"type":"actions","buttons":[{"label":"Approve","style":"success"},{"label":"Decline","style":"danger"}]}]}'
+  --target channel:123 --message "選択してください:" \
+  --components '{"text":"道を選んでください","blocks":[{"type":"actions","buttons":[{"label":"承認","style":"success"},{"label":"拒否","style":"danger"}]}]}'
 ```
 
-See [Discord components](/channels/discord#interactive-components) for the full schema.
-
-Create a Discord poll:
-
-```
+Discord で投票を作成する:
+```bash
 openclaw message poll --channel discord \
   --target channel:123 \
-  --poll-question "Snack?" \
-  --poll-option Pizza --poll-option Sushi \
+  --poll-question "おやつは何がいい？" \
+  --poll-option ピザ --poll-option 寿司 \
   --poll-multi --poll-duration-hours 48
 ```
 
-Create a Telegram poll (auto-close in 2 minutes):
-
-```
-openclaw message poll --channel telegram \
-  --target @mychat \
-  --poll-question "Lunch?" \
-  --poll-option Pizza --poll-option Sushi \
-  --poll-duration-seconds 120 --silent
-```
-
-Send a Teams proactive message:
-
-```
-openclaw message send --channel msteams \
-  --target conversation:19:abc@thread.tacv2 --message "hi"
-```
-
-Create a Teams poll:
-
-```
-openclaw message poll --channel msteams \
-  --target conversation:19:abc@thread.tacv2 \
-  --poll-question "Lunch?" \
-  --poll-option Pizza --poll-option Sushi
-```
-
-React in Slack:
-
-```
+Slack でリアクションを付ける:
+```bash
 openclaw message react --channel slack \
   --target C123 --message-id 456 --emoji "✅"
 ```
 
-React in a Signal group:
-
-```
-openclaw message react --channel signal \
-  --target signal:group:abc123 --message-id 1737630212345 \
-  --emoji "✅" --target-author-uuid 123e4567-e89b-12d3-a456-426614174000
-```
-
-Send Telegram inline buttons:
-
-```
-openclaw message send --channel telegram --target @mychat --message "Choose:" \
-  --buttons '[ [{"text":"Yes","callback_data":"cmd:yes"}], [{"text":"No","callback_data":"cmd:no"}] ]'
+Telegram でインラインボタンを送信する:
+```bash
+openclaw message send --channel telegram --target @mychat --message "選んでください:" \
+  --buttons '[ [{"text":"はい","callback_data":"cmd:yes"}], [{"text":"いいえ","callback_data":"cmd:no"}] ]'
 ```

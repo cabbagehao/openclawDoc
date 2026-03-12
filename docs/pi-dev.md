@@ -1,25 +1,32 @@
 ---
 title: "Pi Development Workflow"
-summary: "Developer workflow for Pi integration: build, test, and live validation"
+summary: "Pi 統合向け開発ワークフロー: build、test、live validation"
 read_when:
-  - Working on Pi integration code or tests
-  - Running Pi-specific lint, typecheck, and live test flows
+  - Pi 統合コードやテストを触るとき
+  - Pi 固有の lint、typecheck、live test フローを回すとき
+x-i18n:
+  source_path: "pi-dev.md"
+  source_hash: "497f962ca431f46046a5cb7267e73a6a92cc6c4c35608cdf77f1d7e128c8d01f"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:49:41.210Z"
 ---
 
 # Pi Development Workflow
 
-This guide summarizes a sane workflow for working on the pi integration in OpenClaw.
+このガイドは、OpenClaw における pi 統合の作業で使う、実用的な開発フローをまとめたものです。
 
-## Type Checking and Linting
+## 型チェックと lint
 
-- Type check and build: `pnpm build`
-- Lint: `pnpm lint`
-- Format check: `pnpm format`
-- Full gate before pushing: `pnpm lint && pnpm build && pnpm test`
+- 型チェックと build: `pnpm build`
+- lint: `pnpm lint`
+- format check: `pnpm format`
+- push 前のフルゲート: `pnpm lint && pnpm build && pnpm test`
 
-## Running Pi Tests
+## Pi テストの実行
 
-Run the Pi-focused test set directly with Vitest:
+Pi 向けテストセットは、Vitest で直接実行できます。
 
 ```bash
 pnpm test -- \
@@ -31,13 +38,13 @@ pnpm test -- \
   "src/agents/pi-extensions/**/*.test.ts"
 ```
 
-To include the live provider exercise:
+live provider 実行も含める場合:
 
 ```bash
 OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live.test.ts
 ```
 
-This covers the main Pi unit suites:
+これで主要な Pi unit suite をカバーできます。
 
 - `src/agents/pi-*.test.ts`
 - `src/agents/pi-embedded-*.test.ts`
@@ -46,35 +53,35 @@ This covers the main Pi unit suites:
 - `src/agents/pi-tool-definition-adapter.test.ts`
 - `src/agents/pi-extensions/*.test.ts`
 
-## Manual Testing
+## 手動テスト
 
-Recommended flow:
+推奨フロー:
 
-- Run the gateway in dev mode:
+- gateway を dev mode で起動する
   - `pnpm gateway:dev`
-- Trigger the agent directly:
+- agent を直接実行する
   - `pnpm openclaw agent --message "Hello" --thinking low`
-- Use the TUI for interactive debugging:
+- 対話デバッグには TUI を使う
   - `pnpm tui`
 
-For tool call behavior, prompt for a `read` or `exec` action so you can see tool streaming and payload handling.
+tool call の挙動を確認したい場合は、`read` や `exec` を使う prompt を投げると、tool streaming と payload 処理を確認しやすくなります。
 
-## Clean Slate Reset
+## クリーンスレートリセット
 
-State lives under the OpenClaw state directory. Default is `~/.openclaw`. If `OPENCLAW_STATE_DIR` is set, use that directory instead.
+状態は OpenClaw の state directory 配下に保存されます。デフォルトは `~/.openclaw` です。`OPENCLAW_STATE_DIR` が設定されている場合は、その directory を使います。
 
-To reset everything:
+すべてをリセットしたい場合:
 
-- `openclaw.json` for config
-- `credentials/` for auth profiles and tokens
-- `agents/<agentId>/sessions/` for agent session history
-- `agents/<agentId>/sessions.json` for the session index
-- `sessions/` if legacy paths exist
-- `workspace/` if you want a blank workspace
+- `openclaw.json`（設定）
+- `credentials/`（認証 profile と token）
+- `agents/<agentId>/sessions/`（agent session 履歴）
+- `agents/<agentId>/sessions.json`（session index）
+- `sessions/`（legacy path が残っている場合）
+- `workspace/`（完全に空の workspace が必要な場合）
 
-If you only want to reset sessions, delete `agents/<agentId>/sessions/` and `agents/<agentId>/sessions.json` for that agent. Keep `credentials/` if you do not want to reauthenticate.
+session だけをリセットしたい場合は、その agent の `agents/<agentId>/sessions/` と `agents/<agentId>/sessions.json` を削除します。再認証したくない場合は `credentials/` を残してください。
 
-## References
+## 参考資料
 
 - [https://docs.openclaw.ai/testing](https://docs.openclaw.ai/testing)
 - [https://docs.openclaw.ai/start/getting-started](https://docs.openclaw.ai/start/getting-started)

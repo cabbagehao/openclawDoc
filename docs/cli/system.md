@@ -1,60 +1,54 @@
 ---
-summary: "CLI reference for `openclaw system` (system events, heartbeat, presence)"
+summary: "`openclaw system` の CLI リファレンス (システムイベント、ハートビート、プレゼンス)"
 read_when:
-  - You want to enqueue a system event without creating a cron job
-  - You need to enable or disable heartbeats
-  - You want to inspect system presence entries
+  - Cron ジョブを作成せずにシステムイベントを投入したい場合
+  - ハートビート（生存確認と定期実行）を有効化・無効化したい場合
+  - システムのプレゼンス（ノードの接続状況など）情報を確認したい場合
 title: "system"
+x-i18n:
+  source_hash: "36ae5dbdec327f5a32f7ef44bdc1f161bad69868de62f5071bb4d25a71bfdfe9"
 ---
 
 # `openclaw system`
 
-System-level helpers for the Gateway: enqueue system events, control heartbeats,
-and view presence.
+ゲートウェイ用のシステムレベルヘルパーです。システムイベントの投入、ハートビートの制御、プレゼンス情報の表示を行います。
 
-## Common commands
+## よく使われるコマンド
 
 ```bash
-openclaw system event --text "Check for urgent follow-ups" --mode now
+openclaw system event --text "緊急のフォローアップをチェックしてください" --mode now
 openclaw system heartbeat enable
 openclaw system heartbeat last
 openclaw system presence
 ```
 
-## `system event`
+## `system event` (システムイベント)
 
-Enqueue a system event on the **main** session. The next heartbeat will inject
-it as a `System:` line in the prompt. Use `--mode now` to trigger the heartbeat
-immediately; `next-heartbeat` waits for the next scheduled tick.
+**メイン**セッションにシステムイベントを投入します。次回のハートビート実行時に、プロンプト内に `System:` 行として注入されます。`--mode now` を指定すると、即座にハートビートがトリガーされます。デフォルトの `next-heartbeat` は、次回のスケジュール実行を待ちます。
 
-Flags:
+フラグ:
+- `--text <テキスト>`: 必須。注入するイベント内容。
+- `--mode <mode>`: `now` (即時) または `next-heartbeat` (次回。デフォルト)。
+- `--json`: 機械可読な形式で出力。
 
-- `--text <text>`: required system event text.
-- `--mode <mode>`: `now` or `next-heartbeat` (default).
-- `--json`: machine-readable output.
+## `system heartbeat last|enable|disable` (ハートビート制御)
 
-## `system heartbeat last|enable|disable`
+ハートビート機能の操作:
+- `last`: 最後に実行されたハートビートイベントを表示します。
+- `enable`: ハートビートを再開します（無効化されていた場合に使用）。
+- `disable`: ハートビートを一時停止します。
 
-Heartbeat controls:
+フラグ:
+- `--json`: 機械可読な形式で出力。
 
-- `last`: show the last heartbeat event.
-- `enable`: turn heartbeats back on (use this if they were disabled).
-- `disable`: pause heartbeats.
+## `system presence` (プレゼンス情報)
 
-Flags:
+ゲートウェイが把握している現在のシステムプレゼンスエントリ（ノード、インスタンス、および同様のステータス情報）の一覧を表示します。
 
-- `--json`: machine-readable output.
+フラグ:
+- `--json`: 機械可読な形式で出力。
 
-## `system presence`
+## 補足事項
 
-List the current system presence entries the Gateway knows about (nodes,
-instances, and similar status lines).
-
-Flags:
-
-- `--json`: machine-readable output.
-
-## Notes
-
-- Requires a running Gateway reachable by your current config (local or remote).
-- System events are ephemeral and not persisted across restarts.
+- 実行には、現在の構成（ローカルまたはリモート）から到達可能な稼働中のゲートウェイが必要です。
+- システムイベントは一時的なものであり、再起動後は保持されません。

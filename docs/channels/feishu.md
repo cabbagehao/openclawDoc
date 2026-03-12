@@ -1,24 +1,24 @@
 ---
-summary: "Feishu bot overview, features, and configuration"
+summary: "Feishu ボットの概要、機能、設定"
 read_when:
-  - You want to connect a Feishu/Lark bot
-  - You are configuring the Feishu channel
+  - Feishu / Lark ボットを接続したい場合
+  - Feishu チャンネルを設定する場合
 title: Feishu
+x-i18n:
+  source_hash: "da86292f422fef1945309c89a6daa5768974284a936778f082c085d40acc0f52"
 ---
 
 # Feishu bot
 
-Feishu (Lark) is a team chat platform used by companies for messaging and collaboration. This plugin connects OpenClaw to a Feishu/Lark bot using the platform’s WebSocket event subscription so messages can be received without exposing a public webhook URL.
+Feishu (Lark) は、企業でのメッセージングやコラボレーションに使われるチームチャットプラットフォームです。このプラグインは、Feishu / Lark の WebSocket イベントサブスクリプションを使って OpenClaw をボットへ接続します。そのため、公開 webhook URL を外部へ公開せずにメッセージを受信できます。
 
 ---
 
 ## Bundled plugin
 
-Feishu ships bundled with current OpenClaw releases, so no separate plugin install
-is required.
+Feishu は現在の OpenClaw リリースに同梱されているため、通常は別途プラグインをインストールする必要はありません。
 
-If you are using an older build or a custom install that does not include bundled
-Feishu, install it manually:
+ただし、同梱版を含まない古いビルドやカスタムインストールを使っている場合は、手動でインストールしてください。
 
 ```bash
 openclaw plugins install @openclaw/feishu
@@ -28,38 +28,38 @@ openclaw plugins install @openclaw/feishu
 
 ## Quickstart
 
-There are two ways to add the Feishu channel:
+Feishu チャンネルの追加方法は 2 つあります。
 
 ### Method 1: onboarding wizard (recommended)
 
-If you just installed OpenClaw, run the wizard:
+OpenClaw をインストールした直後であれば、ウィザードを実行してください。
 
 ```bash
 openclaw onboard
 ```
 
-The wizard guides you through:
+ウィザードでは次を順に案内します。
 
-1. Creating a Feishu app and collecting credentials
-2. Configuring app credentials in OpenClaw
-3. Starting the gateway
+1. Feishu アプリを作成し、認証情報を取得する
+2. OpenClaw にアプリ認証情報を設定する
+3. ゲートウェイを起動する
 
-✅ **After configuration**, check gateway status:
+✅ **設定後** は、ゲートウェイの状態を確認してください。
 
 - `openclaw gateway status`
 - `openclaw logs --follow`
 
 ### Method 2: CLI setup
 
-If you already completed initial install, add the channel via CLI:
+初期セットアップがすでに完了している場合は、CLI からチャンネルを追加できます。
 
 ```bash
 openclaw channels add
 ```
 
-Choose **Feishu**, then enter the App ID and App Secret.
+**Feishu** を選択し、App ID と App Secret を入力します。
 
-✅ **After configuration**, manage the gateway:
+✅ **設定後** は、次のコマンドでゲートウェイを管理できます。
 
 - `openclaw gateway status`
 - `openclaw gateway restart`
@@ -71,32 +71,32 @@ Choose **Feishu**, then enter the App ID and App Secret.
 
 ### 1. Open Feishu Open Platform
 
-Visit [Feishu Open Platform](https://open.feishu.cn/app) and sign in.
+[Feishu Open Platform](https://open.feishu.cn/app) を開いてサインインします。
 
-Lark (global) tenants should use [https://open.larksuite.com/app](https://open.larksuite.com/app) and set `domain: "lark"` in the Feishu config.
+Lark (グローバル) テナントを使う場合は [https://open.larksuite.com/app](https://open.larksuite.com/app) を開き、Feishu の設定で `domain: "lark"` を指定してください。
 
 ### 2. Create an app
 
-1. Click **Create enterprise app**
-2. Fill in the app name + description
-3. Choose an app icon
+1. **Create enterprise app** をクリックします。
+2. アプリ名と説明を入力します。
+3. アプリアイコンを選択します。
 
 ![Create enterprise app](../images/feishu-step2-create-app.png)
 
 ### 3. Copy credentials
 
-From **Credentials & Basic Info**, copy:
+**Credentials & Basic Info** から次の値を控えます。
 
-- **App ID** (format: `cli_xxx`)
+- **App ID** (形式: `cli_xxx`)
 - **App Secret**
 
-❗ **Important:** keep the App Secret private.
+❗ **Important:** App Secret は秘密として扱ってください。
 
 ![Get credentials](../images/feishu-step3-credentials.png)
 
 ### 4. Configure permissions
 
-On **Permissions**, click **Batch import** and paste:
+**Permissions** で **Batch import** をクリックし、次の内容を貼り付けます。
 
 ```json
 {
@@ -130,34 +130,34 @@ On **Permissions**, click **Batch import** and paste:
 
 ### 5. Enable bot capability
 
-In **App Capability** > **Bot**:
+**App Capability** > **Bot** で次を設定します。
 
-1. Enable bot capability
-2. Set the bot name
+1. ボット機能を有効にする
+2. ボット名を設定する
 
 ![Enable bot capability](../images/feishu-step5-bot-capability.png)
 
 ### 6. Configure event subscription
 
-⚠️ **Important:** before setting event subscription, make sure:
+⚠️ **Important:** イベントサブスクリプションを設定する前に、次の 2 点を確認してください。
 
-1. You already ran `openclaw channels add` for Feishu
-2. The gateway is running (`openclaw gateway status`)
+1. Feishu に対して `openclaw channels add` をすでに実行済みであること
+2. ゲートウェイが起動していること (`openclaw gateway status`)
 
-In **Event Subscription**:
+**Event Subscription** では次を設定します。
 
-1. Choose **Use long connection to receive events** (WebSocket)
-2. Add the event: `im.message.receive_v1`
+1. **Use long connection to receive events** (WebSocket) を選択する
+2. `im.message.receive_v1` イベントを追加する
 
-⚠️ If the gateway is not running, the long-connection setup may fail to save.
+⚠️ ゲートウェイが起動していない場合、長時間接続の設定保存に失敗することがあります。
 
 ![Configure event subscription](../images/feishu-step6-event-subscription.png)
 
 ### 7. Publish the app
 
-1. Create a version in **Version Management & Release**
-2. Submit for review and publish
-3. Wait for admin approval (enterprise apps usually auto-approve)
+1. **Version Management & Release** でバージョンを作成します。
+2. レビューへ提出して公開します。
+3. 管理者承認を待ちます。enterprise app では自動承認されることが一般的です。
 
 ---
 
@@ -169,11 +169,11 @@ In **Event Subscription**:
 openclaw channels add
 ```
 
-Choose **Feishu** and paste your App ID + App Secret.
+**Feishu** を選択し、App ID と App Secret を貼り付けます。
 
 ### Configure via config file
 
-Edit `~/.openclaw/openclaw.json`:
+`~/.openclaw/openclaw.json` を編集します。
 
 ```json5
 {
@@ -193,16 +193,16 @@ Edit `~/.openclaw/openclaw.json`:
 }
 ```
 
-If you use `connectionMode: "webhook"`, set `verificationToken`. The Feishu webhook server binds to `127.0.0.1` by default; set `webhookHost` only if you intentionally need a different bind address.
+`connectionMode: "webhook"` を使う場合は `verificationToken` を設定してください。Feishu の webhook サーバーはデフォルトで `127.0.0.1` に bind されます。意図的に別の bind address が必要な場合にだけ `webhookHost` を設定してください。
 
 #### Verification Token (webhook mode)
 
-When using webhook mode, set `channels.feishu.verificationToken` in your config. To get the value:
+webhook モードを使う場合は、設定で `channels.feishu.verificationToken` を指定します。取得手順は次のとおりです。
 
-1. In Feishu Open Platform, open your app
-2. Go to **Development** → **Events & Callbacks** (开发配置 → 事件与回调)
-3. Open the **Encryption** tab (加密策略)
-4. Copy **Verification Token**
+1. Feishu Open Platform で対象アプリを開きます。
+2. **Development** → **Events & Callbacks** (开发配置 → 事件与回调) を開きます。
+3. **Encryption** タブ (加密策略) を開きます。
+4. **Verification Token** をコピーします。
 
 ![Verification Token location](../images/feishu-verification-token.png)
 
@@ -215,7 +215,7 @@ export FEISHU_APP_SECRET="xxx"
 
 ### Lark (global) domain
 
-If your tenant is on Lark (international), set the domain to `lark` (or a full domain string). You can set it at `channels.feishu.domain` or per account (`channels.feishu.accounts.<id>.domain`).
+テナントが Lark (国際版) にある場合は、domain を `lark` に設定してください。完全なドメイン文字列を指定することもできます。設定先は `channels.feishu.domain` またはアカウント単位の `channels.feishu.accounts.<id>.domain` です。
 
 ```json5
 {
@@ -235,12 +235,12 @@ If your tenant is on Lark (international), set the domain to `lark` (or a full d
 
 ### Quota optimization flags
 
-You can reduce Feishu API usage with two optional flags:
+Feishu API の利用量を減らしたい場合は、次の 2 つのオプションフラグを使えます。
 
-- `typingIndicator` (default `true`): when `false`, skip typing reaction calls.
-- `resolveSenderNames` (default `true`): when `false`, skip sender profile lookup calls.
+- `typingIndicator` (デフォルト `true`): `false` にすると、入力中リアクションの API 呼び出しを省略します。
+- `resolveSenderNames` (デフォルト `true`): `false` にすると、送信者プロフィール解決の API 呼び出しを省略します。
 
-Set them at top level or per account:
+これらはトップレベル、またはアカウント単位で設定できます。
 
 ```json5
 {
@@ -273,26 +273,26 @@ openclaw gateway
 
 ### 2. Send a test message
 
-In Feishu, find your bot and send a message.
+Feishu 上でボットを探し、テストメッセージを送信します。
 
 ### 3. Approve pairing
 
-By default, the bot replies with a pairing code. Approve it:
+デフォルトでは、ボットはペアリングコードを返します。次のコマンドで承認します。
 
 ```bash
 openclaw pairing approve feishu <CODE>
 ```
 
-After approval, you can chat normally.
+承認後は通常どおりチャットできます。
 
 ---
 
 ## Overview
 
-- **Feishu bot channel**: Feishu bot managed by the gateway
-- **Deterministic routing**: replies always return to Feishu
-- **Session isolation**: DMs share a main session; groups are isolated
-- **WebSocket connection**: long connection via Feishu SDK, no public URL needed
+- **Feishu bot channel**: ゲートウェイが管理する Feishu ボットチャンネルです。
+- **Deterministic routing**: 返信は常に Feishu へ戻ります。
+- **Session isolation**: DM は main session を共有し、グループは分離されます。
+- **WebSocket connection**: Feishu SDK を使う長時間接続で動作し、公開 URL は不要です。
 
 ---
 
@@ -300,28 +300,28 @@ After approval, you can chat normally.
 
 ### Direct messages
 
-- **Default**: `dmPolicy: "pairing"` (unknown users get a pairing code)
-- **Approve pairing**:
+- **デフォルト**: `dmPolicy: "pairing"`。未知のユーザーにはペアリングコードが返されます。
+- **ペアリング承認**:
 
   ```bash
   openclaw pairing list feishu
   openclaw pairing approve feishu <CODE>
   ```
 
-- **Allowlist mode**: set `channels.feishu.allowFrom` with allowed Open IDs
+- **allowlist モード**: `channels.feishu.allowFrom` に許可する Open ID を設定します。
 
 ### Group chats
 
-**1. Group policy** (`channels.feishu.groupPolicy`):
+**1. Group policy** (`channels.feishu.groupPolicy`)
 
-- `"open"` = allow everyone in groups (default)
-- `"allowlist"` = only allow `groupAllowFrom`
-- `"disabled"` = disable group messages
+- `"open"` = グループ内の全員を許可します (デフォルト)
+- `"allowlist"` = `groupAllowFrom` に含まれるものだけを許可します
+- `"disabled"` = グループメッセージを無効化します
 
-**2. Mention requirement** (`channels.feishu.groups.<chat_id>.requireMention`):
+**2. Mention requirement** (`channels.feishu.groups.<chat_id>.requireMention`)
 
-- `true` = require @mention (default)
-- `false` = respond without mentions
+- `true` = @mention 必須 (デフォルト)
+- `false` = メンションなしでも応答
 
 ---
 
@@ -370,7 +370,7 @@ After approval, you can chat normally.
 
 ### Restrict which senders can message in a group (sender allowlist)
 
-In addition to allowing the group itself, **all messages** in that group are gated by the sender open_id: only users listed in `groups.<chat_id>.allowFrom` have their messages processed; messages from other members are ignored (this is full sender-level gating, not only for control commands like /reset or /new).
+グループ自体を許可するだけでなく、そのグループ内の **すべてのメッセージ** を送信者の `open_id` で制限できます。`groups.<chat_id>.allowFrom` に含まれるユーザーのメッセージだけが処理され、それ以外のメンバーからのメッセージは無視されます。これは `/reset` や `/new` のような制御コマンドだけでなく、通常のメッセージにも適用されます。
 
 ```json5
 {
@@ -395,29 +395,29 @@ In addition to allowing the group itself, **all messages** in that group are gat
 
 ### Group IDs (chat_id)
 
-Group IDs look like `oc_xxx`.
+グループ ID は `oc_xxx` のような形式です。
 
 **Method 1 (recommended)**
 
-1. Start the gateway and @mention the bot in the group
-2. Run `openclaw logs --follow` and look for `chat_id`
+1. ゲートウェイを起動し、グループ内でボットを @mention します。
+2. `openclaw logs --follow` を実行し、`chat_id` を探します。
 
 **Method 2**
 
-Use the Feishu API debugger to list group chats.
+Feishu API debugger を使ってグループチャット一覧を確認します。
 
 ### User IDs (open_id)
 
-User IDs look like `ou_xxx`.
+ユーザー ID は `ou_xxx` のような形式です。
 
 **Method 1 (recommended)**
 
-1. Start the gateway and DM the bot
-2. Run `openclaw logs --follow` and look for `open_id`
+1. ゲートウェイを起動し、ボットへ DM を送ります。
+2. `openclaw logs --follow` を実行し、`open_id` を探します。
 
 **Method 2**
 
-Check pairing requests for user Open IDs:
+ペアリング要求一覧からユーザーの Open ID を確認します。
 
 ```bash
 openclaw pairing list feishu
@@ -429,21 +429,21 @@ openclaw pairing list feishu
 
 | Command   | Description       |
 | --------- | ----------------- |
-| `/status` | Show bot status   |
-| `/reset`  | Reset the session |
-| `/model`  | Show/switch model |
+| `/status` | ボットの状態を表示 |
+| `/reset`  | セッションをリセット |
+| `/model`  | モデルの表示 / 切り替え |
 
-> Note: Feishu does not support native command menus yet, so commands must be sent as text.
+> Note: Feishu は現時点でネイティブなコマンドメニューをサポートしていないため、コマンドはテキストとして送信する必要があります。
 
 ## Gateway management commands
 
 | Command                    | Description                   |
 | -------------------------- | ----------------------------- |
-| `openclaw gateway status`  | Show gateway status           |
-| `openclaw gateway install` | Install/start gateway service |
-| `openclaw gateway stop`    | Stop gateway service          |
-| `openclaw gateway restart` | Restart gateway service       |
-| `openclaw logs --follow`   | Tail gateway logs             |
+| `openclaw gateway status`  | ゲートウェイ状態を表示 |
+| `openclaw gateway install` | ゲートウェイサービスをインストール / 起動 |
+| `openclaw gateway stop`    | ゲートウェイサービスを停止 |
+| `openclaw gateway restart` | ゲートウェイサービスを再起動 |
+| `openclaw logs --follow`   | ゲートウェイログを追跡 |
 
 ---
 
@@ -451,31 +451,31 @@ openclaw pairing list feishu
 
 ### Bot does not respond in group chats
 
-1. Ensure the bot is added to the group
-2. Ensure you @mention the bot (default behavior)
-3. Check `groupPolicy` is not set to `"disabled"`
-4. Check logs: `openclaw logs --follow`
+1. ボットがグループへ追加されていることを確認します。
+2. デフォルト挙動では @mention が必要です。メンションしているか確認します。
+3. `groupPolicy` が `"disabled"` になっていないことを確認します。
+4. `openclaw logs --follow` でログを確認します。
 
 ### Bot does not receive messages
 
-1. Ensure the app is published and approved
-2. Ensure event subscription includes `im.message.receive_v1`
-3. Ensure **long connection** is enabled
-4. Ensure app permissions are complete
-5. Ensure the gateway is running: `openclaw gateway status`
-6. Check logs: `openclaw logs --follow`
+1. アプリが公開済みかつ承認済みであることを確認します。
+2. イベントサブスクリプションに `im.message.receive_v1` が含まれていることを確認します。
+3. **long connection** が有効であることを確認します。
+4. アプリ権限が不足していないことを確認します。
+5. ゲートウェイが起動していることを確認します: `openclaw gateway status`
+6. `openclaw logs --follow` でログを確認します。
 
 ### App Secret leak
 
-1. Reset the App Secret in Feishu Open Platform
-2. Update the App Secret in your config
-3. Restart the gateway
+1. Feishu Open Platform 上で App Secret をリセットします。
+2. 設定内の App Secret を更新します。
+3. ゲートウェイを再起動します。
 
 ### Message send failures
 
-1. Ensure the app has `im:message:send_as_bot` permission
-2. Ensure the app is published
-3. Check logs for detailed errors
+1. アプリに `im:message:send_as_bot` 権限があることを確認します。
+2. アプリが公開済みであることを確認します。
+3. ログで詳細エラーを確認します。
 
 ---
 
@@ -506,16 +506,16 @@ openclaw pairing list feishu
 }
 ```
 
-`defaultAccount` controls which Feishu account is used when outbound APIs do not specify an `accountId` explicitly.
+`defaultAccount` は、送信 API で `accountId` を明示しない場合に、どの Feishu アカウントを使うかを決めます。
 
 ### Message limits
 
-- `textChunkLimit`: outbound text chunk size (default: 2000 chars)
-- `mediaMaxMb`: media upload/download limit (default: 30MB)
+- `textChunkLimit`: 送信テキストのチャンクサイズ (デフォルト 2000 文字)
+- `mediaMaxMb`: メディアのアップロード / ダウンロード上限 (デフォルト 30 MB)
 
 ### Streaming
 
-Feishu supports streaming replies via interactive cards. When enabled, the bot updates a card as it generates text.
+Feishu は interactive card を使ったストリーミング返信に対応しています。有効にすると、ボットはテキスト生成中にカードを更新します。
 
 ```json5
 {
@@ -528,11 +528,11 @@ Feishu supports streaming replies via interactive cards. When enabled, the bot u
 }
 ```
 
-Set `streaming: false` to wait for the full reply before sending.
+送信前に完全な返信が揃うまで待たせたい場合は、`streaming: false` を設定してください。
 
 ### Multi-agent routing
 
-Use `bindings` to route Feishu DMs or groups to different agents.
+`bindings` を使うと、Feishu の DM やグループを別のエージェントへルーティングできます。
 
 ```json5
 {
@@ -577,45 +577,43 @@ Use `bindings` to route Feishu DMs or groups to different agents.
 }
 ```
 
-Routing fields:
+主なルーティングフィールド:
 
 - `match.channel`: `"feishu"`
-- `match.peer.kind`: `"direct"` or `"group"`
-- `match.peer.id`: user Open ID (`ou_xxx`) or group ID (`oc_xxx`)
+- `match.peer.kind`: `"direct"` または `"group"`
+- `match.peer.id`: ユーザー Open ID (`ou_xxx`) またはグループ ID (`oc_xxx`)
 
-See [Get group/user IDs](#get-groupuser-ids) for lookup tips.
+取得方法のヒントは [Get group/user IDs](#get-groupuser-ids) を参照してください。
 
 ---
 
 ## Configuration reference
 
-Full configuration: [Gateway configuration](/gateway/configuration)
-
-Key options:
+完全な設定一覧: [Gateway configuration](/gateway/configuration)
 
 | Setting                                           | Description                             | Default          |
 | ------------------------------------------------- | --------------------------------------- | ---------------- |
-| `channels.feishu.enabled`                         | Enable/disable channel                  | `true`           |
-| `channels.feishu.domain`                          | API domain (`feishu` or `lark`)         | `feishu`         |
-| `channels.feishu.connectionMode`                  | Event transport mode                    | `websocket`      |
-| `channels.feishu.defaultAccount`                  | Default account ID for outbound routing | `default`        |
-| `channels.feishu.verificationToken`               | Required for webhook mode               | -                |
-| `channels.feishu.webhookPath`                     | Webhook route path                      | `/feishu/events` |
-| `channels.feishu.webhookHost`                     | Webhook bind host                       | `127.0.0.1`      |
-| `channels.feishu.webhookPort`                     | Webhook bind port                       | `3000`           |
+| `channels.feishu.enabled`                         | チャンネルの有効 / 無効                  | `true`           |
+| `channels.feishu.domain`                          | API ドメイン (`feishu` または `lark`)    | `feishu`         |
+| `channels.feishu.connectionMode`                  | イベント転送モード                       | `websocket`      |
+| `channels.feishu.defaultAccount`                  | 送信ルーティング時のデフォルトアカウント | `default`        |
+| `channels.feishu.verificationToken`               | webhook モードで必須                     | -                |
+| `channels.feishu.webhookPath`                     | webhook のルートパス                     | `/feishu/events` |
+| `channels.feishu.webhookHost`                     | webhook の bind host                     | `127.0.0.1`      |
+| `channels.feishu.webhookPort`                     | webhook の bind port                     | `3000`           |
 | `channels.feishu.accounts.<id>.appId`             | App ID                                  | -                |
 | `channels.feishu.accounts.<id>.appSecret`         | App Secret                              | -                |
-| `channels.feishu.accounts.<id>.domain`            | Per-account API domain override         | `feishu`         |
-| `channels.feishu.dmPolicy`                        | DM policy                               | `pairing`        |
-| `channels.feishu.allowFrom`                       | DM allowlist (open_id list)             | -                |
-| `channels.feishu.groupPolicy`                     | Group policy                            | `open`           |
-| `channels.feishu.groupAllowFrom`                  | Group allowlist                         | -                |
-| `channels.feishu.groups.<chat_id>.requireMention` | Require @mention                        | `true`           |
-| `channels.feishu.groups.<chat_id>.enabled`        | Enable group                            | `true`           |
-| `channels.feishu.textChunkLimit`                  | Message chunk size                      | `2000`           |
-| `channels.feishu.mediaMaxMb`                      | Media size limit                        | `30`             |
-| `channels.feishu.streaming`                       | Enable streaming card output            | `true`           |
-| `channels.feishu.blockStreaming`                  | Enable block streaming                  | `true`           |
+| `channels.feishu.accounts.<id>.domain`            | アカウント単位の API ドメイン上書き      | `feishu`         |
+| `channels.feishu.dmPolicy`                        | DM ポリシー                              | `pairing`        |
+| `channels.feishu.allowFrom`                       | DM allowlist (`open_id` 一覧)            | -                |
+| `channels.feishu.groupPolicy`                     | グループポリシー                         | `open`           |
+| `channels.feishu.groupAllowFrom`                  | グループ allowlist                       | -                |
+| `channels.feishu.groups.<chat_id>.requireMention` | @mention 必須かどうか                    | `true`           |
+| `channels.feishu.groups.<chat_id>.enabled`        | グループを有効にするか                   | `true`           |
+| `channels.feishu.textChunkLimit`                  | メッセージのチャンクサイズ               | `2000`           |
+| `channels.feishu.mediaMaxMb`                      | メディアサイズ上限                       | `30`             |
+| `channels.feishu.streaming`                       | ストリーミングカード出力を有効化         | `true`           |
+| `channels.feishu.blockStreaming`                  | ブロックストリーミングを有効化           | `true`           |
 
 ---
 
@@ -623,10 +621,10 @@ Key options:
 
 | Value         | Behavior                                                        |
 | ------------- | --------------------------------------------------------------- |
-| `"pairing"`   | **Default.** Unknown users get a pairing code; must be approved |
-| `"allowlist"` | Only users in `allowFrom` can chat                              |
-| `"open"`      | Allow all users (requires `"*"` in allowFrom)                   |
-| `"disabled"`  | Disable DMs                                                     |
+| `"pairing"`   | **デフォルト。** 未知のユーザーにはペアリングコードが返り、承認が必要です |
+| `"allowlist"` | `allowFrom` に含まれるユーザーだけが利用できます               |
+| `"open"`      | すべてのユーザーを許可します (`allowFrom` に `"*"` が必要)     |
+| `"disabled"`  | DM を無効化します                                               |
 
 ---
 

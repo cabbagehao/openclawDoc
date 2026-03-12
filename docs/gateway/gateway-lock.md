@@ -1,34 +1,36 @@
 ---
-summary: "Gateway singleton guard using the WebSocket listener bind"
+summary: "WebSocket リスナーのバインドを利用したゲートウェイの多重起動防止（シングルトンガード）"
 read_when:
-  - Running or debugging the gateway process
-  - Investigating single-instance enforcement
-title: "Gateway Lock"
+  - ゲートウェイプロセスの実行やデバッグを行う場合
+  - 複数インスタンスの起動制限について調査する場合
+title: "ゲートウェイロック"
+x-i18n:
+  source_hash: "15fdfa066d1925da8b4632073a876709f77ca8d40e6828c174a30d953ba4f8e9"
 ---
 
-# Gateway lock
+# ゲートウェイロック
 
-Last updated: 2025-12-11
+最終更新日: 2025-12-11
 
-## Why
+## 目的
 
-- Ensure only one gateway instance runs per base port on the same host; additional gateways must use isolated profiles and unique ports.
-- Survive crashes/SIGKILL without leaving stale lock files.
-- Fail fast with a clear error when the control port is already occupied.
+- 同一ホスト上の同じベースポートにおいて、ゲートウェイのインスタンスが 1 つだけ実行されることを保証します。追加のゲートウェイを起動するには、分離されたプロファイルと一意のポート番号を使用する必要があります。
+- プロセスのクラッシュや `SIGKILL` が発生しても、古いロックファイルが残ることなく、正常に復旧できるようにします。
+- 制御用ポートが既に占有されている場合、明確なエラーを表示して即座に終了（Fail-fast）させます。
 
-## Mechanism
+## 仕組み
 
-- The gateway binds the WebSocket listener (default `ws://127.0.0.1:18789`) immediately on startup using an exclusive TCP listener.
-- If the bind fails with `EADDRINUSE`, startup throws `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`.
-- The OS releases the listener automatically on any process exit, including crashes and SIGKILL—no separate lock file or cleanup step is needed.
-- On shutdown the gateway closes the WebSocket server and underlying HTTP server to free the port promptly.
+- ゲートウェイは起動時に、排他的な TCP リスナーを使用して WebSocket 用ポート（デフォルト `ws://127.0.0.1:18789`）を即座にバインドします。
+- バインド時に `EADDRINUSE` エラーが発生した場合、`GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")` を投げて起動を中断します。
+- OS は、クラッシュや `SIGKILL` を含め、プロセスが終了すれば自動的にリスナーを解放します。そのため、個別のロックファイル管理やクリーンアップ処理は不要です。
+- 正常終了時には、ゲートウェイは WebSocket サーバーおよび背後の HTTP サーバーを閉じ、速やかにポートを開放します。
 
-## Error surface
+## エラーの種類
 
-- If another process holds the port, startup throws `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`.
-- Other bind failures surface as `GatewayLockError("failed to bind gateway socket on ws://127.0.0.1:<port>: …")`.
+- 他のプロセスが既にポートを使用している場合、起動時に `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")` が発生します。
+- その他のバインド失敗（権限不足など）は、`GatewayLockError("failed to bind gateway socket on ws://127.0.0.1:<port>: …")` として報告されます。
 
-## Operational notes
+## 運用上の注意
 
-- If the port is occupied by _another_ process, the error is the same; free the port or choose another with `openclaw gateway --port <port>`.
-- The macOS app still maintains its own lightweight PID guard before spawning the gateway; the runtime lock is enforced by the WebSocket bind.
+- ポートが「OpenClaw 以外の」プロセスによって占有されている場合も、同じエラーが発生します。ポートを解放するか、`openclaw gateway --port <port>` で別のポート番号を指定してください。
+- macOS アプリは、ゲートウェイプロセスを起動する前に独自の軽量な PID ガードを維持していますが、最終的なランタイムロックは WebSocket のバインドによって強制されます。

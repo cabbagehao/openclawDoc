@@ -1,44 +1,47 @@
 ---
-summary: "Monitor OAuth expiry for model providers"
+summary: "モデルプロバイダーの OAuth 有効期限を監視する"
 read_when:
-  - Setting up auth expiry monitoring or alerts
-  - Automating Claude Code / Codex OAuth refresh checks
-title: "Auth Monitoring"
+  - 認証の有効期限監視やアラートを設定する場合
+  - Claude Code / Codex の OAuth 更新チェックを自動化する場合
+title: "認証監視"
+x-i18n:
+  source_path: "automation/auth-monitoring.md"
+  source_hash: "eef179af9545ed7ab881f3ccbef998869437fb50cdb4088de8da7223b614fa2b"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:51:48.318Z"
 ---
 
-# Auth monitoring
+# 認証監視
 
-OpenClaw exposes OAuth expiry health via `openclaw models status`. Use that for
-automation and alerting; scripts are optional extras for phone workflows.
+OpenClaw は `openclaw models status` を通じて、OAuth の有効期限の状態を公開します。自動化やアラートにはこれを利用してください。スクリプトは、スマートフォン向けワークフローのための追加オプションにすぎません。
 
-## Preferred: CLI check (portable)
+## 推奨: CLI チェック（ポータブル）
 
 ```bash
 openclaw models status --check
 ```
 
-Exit codes:
+終了コード:
 
-- `0`: OK
-- `1`: expired or missing credentials
-- `2`: expiring soon (within 24h)
+- `0`: 正常
+- `1`: 認証情報が期限切れ、または存在しない
+- `2`: まもなく期限切れ（24 時間以内）
 
-This works in cron/systemd and requires no extra scripts.
+これは cron や systemd で動作し、追加のスクリプトは不要です。
 
-## Optional scripts (ops / phone workflows)
+## オプションのスクリプト（運用 / スマートフォン向けワークフロー）
 
-These live under `scripts/` and are **optional**. They assume SSH access to the
-gateway host and are tuned for systemd + Termux.
+これらは `scripts/` 配下にあり、**オプション**です。ゲートウェイホストへの SSH アクセスを前提としており、systemd + Termux 向けに調整されています。
 
-- `scripts/claude-auth-status.sh` now uses `openclaw models status --json` as the
-  source of truth (falling back to direct file reads if the CLI is unavailable),
-  so keep `openclaw` on `PATH` for timers.
-- `scripts/auth-monitor.sh`: cron/systemd timer target; sends alerts (ntfy or phone).
-- `scripts/systemd/openclaw-auth-monitor.{service,timer}`: systemd user timer.
-- `scripts/claude-auth-status.sh`: Claude Code + OpenClaw auth checker (full/json/simple).
-- `scripts/mobile-reauth.sh`: guided re‑auth flow over SSH.
-- `scripts/termux-quick-auth.sh`: one‑tap widget status + open auth URL.
-- `scripts/termux-auth-widget.sh`: full guided widget flow.
-- `scripts/termux-sync-widget.sh`: sync Claude Code creds → OpenClaw.
+- `scripts/claude-auth-status.sh` は現在、`openclaw models status --json` を正本の情報源として使います（CLI が利用できない場合は、直接ファイルを読み取る方式にフォールバックします）。そのため、タイマー環境でも `openclaw` が `PATH` 上にあるようにしてください。
+- `scripts/auth-monitor.sh`: cron/systemd タイマーの実行対象。アラートを送信します（ntfy またはスマートフォン）。
+- `scripts/systemd/openclaw-auth-monitor.{service,timer}`: systemd ユーザータイマー。
+- `scripts/claude-auth-status.sh`: Claude Code + OpenClaw の認証チェッカー（full/json/simple）。
+- `scripts/mobile-reauth.sh`: SSH 経由で実行するガイド付き再認証フロー。
+- `scripts/termux-quick-auth.sh`: ワンタップでウィジェットの状態を確認し、認証 URL を開きます。
+- `scripts/termux-auth-widget.sh`: 完全なガイド付きウィジェットフロー。
+- `scripts/termux-sync-widget.sh`: Claude Code の認証情報を OpenClaw に同期します。
 
-If you don’t need phone automation or systemd timers, skip these scripts.
+スマートフォン向けの自動化や systemd タイマーが不要であれば、これらのスクリプトは使わなくて構いません。

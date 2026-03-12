@@ -1,257 +1,255 @@
 ---
-summary: "Complete reference for CLI onboarding flow, auth/model setup, outputs, and internals"
+summary: "CLI オンボーディングフロー、認証/モデルのセットアップ、出力、および内部構造に関する完全なリファレンス"
 read_when:
-  - You need detailed behavior for openclaw onboard
-  - You are debugging onboarding results or integrating onboarding clients
-title: "CLI Onboarding Reference"
-sidebarTitle: "CLI reference"
+  - openclaw onboard の詳細な動作が必要な場合
+  - オンボーディング結果のデバッグやオンボーディングクライアントの統合を行う場合
+title: "CLI オンボーディングリファレンス"
+sidebarTitle: "CLI リファレンス"
 ---
 
-# CLI Onboarding Reference
+# CLI オンボーディングリファレンス (CLI Onboarding Reference)
 
-This page is the full reference for `openclaw onboard`.
-For the short guide, see [Onboarding Wizard (CLI)](/start/wizard).
+このページは `openclaw onboard` の完全なリファレンスです。
+簡単なガイドについては、[オンボーディングウィザード (CLI)](/start/wizard) を参照してください。
 
-## What the wizard does
+## ウィザードが行うこと
 
-Local mode (default) walks you through:
+ローカルモード（デフォルト）では、以下の手順を案内します：
 
-- Model and auth setup (OpenAI Code subscription OAuth, Anthropic API key or setup token, plus MiniMax, GLM, Moonshot, and AI Gateway options)
-- Workspace location and bootstrap files
-- Gateway settings (port, bind, auth, tailscale)
-- Channels and providers (Telegram, WhatsApp, Discord, Google Chat, Mattermost plugin, Signal)
-- Daemon install (LaunchAgent or systemd user unit)
-- Health check
-- Skills setup
+- モデルと認証のセットアップ（OpenAI Code サブスクリプション OAuth、Anthropic API キーまたはセットアップトークン、さらに MiniMax、GLM、Moonshot、および AI Gateway のオプション）
+- ワークスペースの場所とブートストラップファイル
+- Gateway 設定（ポート、バインド、認証、Tailscale）
+- チャンネルとプロバイダー（Telegram、WhatsApp、Discord、Google Chat、Mattermost プラグイン、Signal）
+- デーモンのインストール（LaunchAgent または systemd ユーザーユニット）
+- ヘルスチェック
+- Skills（スキル）のセットアップ
 
-Remote mode configures this machine to connect to a gateway elsewhere.
-It does not install or modify anything on the remote host.
+リモートモードは、他の場所にある Gateway に接続するようにこのマシンを構成します。
+リモートホストに何かをインストールしたり変更したりすることはありません。
 
-## Local flow details
+## ローカルフローの詳細
 
 <Steps>
-  <Step title="Existing config detection">
-    - If `~/.openclaw/openclaw.json` exists, choose Keep, Modify, or Reset.
-    - Re-running the wizard does not wipe anything unless you explicitly choose Reset (or pass `--reset`).
-    - CLI `--reset` defaults to `config+creds+sessions`; use `--reset-scope full` to also remove workspace.
-    - If config is invalid or contains legacy keys, the wizard stops and asks you to run `openclaw doctor` before continuing.
-    - Reset uses `trash` and offers scopes:
-      - Config only
-      - Config + credentials + sessions
-      - Full reset (also removes workspace)
+  <Step title="既存の設定の検出">
+    - `~/.openclaw/openclaw.json` が存在する場合、Keep（保持）、Modify（変更）、または Reset（リセット）を選択します。
+    - 明示的に Reset を選択する（または `--reset` を渡す）場合を除き、ウィザードを再実行しても何も消去されません。
+    - CLI の `--reset` はデフォルトで `config+creds+sessions` になります。ワークスペースも削除するには `--reset-scope full` を使用します。
+    - 設定が無効であるか、古い（レガシーな）キーが含まれている場合、ウィザードは停止し、続行する前に `openclaw doctor` を実行するように求めます。
+    - Reset は `trash` を使用し、以下のスコープを提供します：
+      - Config only (設定のみ)
+      - Config + credentials + sessions (設定 + 資格情報 + セッション)
+      - Full reset (完全なリセット。ワークスペースも削除します)
   </Step>
-  <Step title="Model and auth">
-    - Full option matrix is in [Auth and model options](#auth-and-model-options).
+  <Step title="モデルと認証">
+    - 完全なオプションマトリックスは [認証とモデルのオプション](#auth-and-model-options) にあります。
   </Step>
-  <Step title="Workspace">
-    - Default `~/.openclaw/workspace` (configurable).
-    - Seeds workspace files needed for first-run bootstrap ritual.
-    - Workspace layout: [Agent workspace](/concepts/agent-workspace).
+  <Step title="ワークスペース">
+    - デフォルトは `~/.openclaw/workspace` です（設定可能）。
+    - 初回実行のブートストラップ儀式に必要なワークスペースファイルをシードします。
+    - ワークスペースのレイアウト：[エージェントワークスペース](/concepts/agent-workspace)。
   </Step>
   <Step title="Gateway">
-    - Prompts for port, bind, auth mode, and tailscale exposure.
-    - Recommended: keep token auth enabled even for loopback so local WS clients must authenticate.
-    - In token mode, interactive onboarding offers:
-      - **Generate/store plaintext token** (default)
-      - **Use SecretRef** (opt-in)
-    - In password mode, interactive onboarding also supports plaintext or SecretRef storage.
-    - Non-interactive token SecretRef path: `--gateway-token-ref-env <ENV_VAR>`.
-      - Requires a non-empty env var in the onboarding process environment.
-      - Cannot be combined with `--gateway-token`.
-    - Disable auth only if you fully trust every local process.
-    - Non-loopback binds still require auth.
+    - ポート、バインド、認証モード、Tailscale への公開についてのプロンプトを表示します。
+    - 推奨：ループバックであってもトークン認証を有効にしたままにし、ローカルの WS クライアントが認証する必要があるようにします。
+    - トークンモードでは、対話型オンボーディングは以下を提供します：
+      - **平文トークンの生成/保存** (デフォルト)
+      - **SecretRef の使用** (オプトイン)
+    - パスワードモードでは、対話型オンボーディングは平文または SecretRef の保存もサポートします。
+    - 非対話型のトークン SecretRef パス：`--gateway-token-ref-env <ENV_VAR>`。
+      - オンボーディングプロセス環境で、空ではない環境変数が必要です。
+      - `--gateway-token` と組み合わせることはできません。
+    - すべてのローカルプロセスを完全に信頼している場合にのみ、認証を無効にしてください。
+    - 非ループバックバインドには依然として認証が必要です。
   </Step>
-  <Step title="Channels">
-    - [WhatsApp](/channels/whatsapp): optional QR login
-    - [Telegram](/channels/telegram): bot token
-    - [Discord](/channels/discord): bot token
-    - [Google Chat](/channels/googlechat): service account JSON + webhook audience
-    - [Mattermost](/channels/mattermost) plugin: bot token + base URL
-    - [Signal](/channels/signal): optional `signal-cli` install + account config
-    - [BlueBubbles](/channels/bluebubbles): recommended for iMessage; server URL + password + webhook
-    - [iMessage](/channels/imessage): legacy `imsg` CLI path + DB access
-    - DM security: default is pairing. First DM sends a code; approve via
-      `openclaw pairing approve <channel> <code>` or use allowlists.
+  <Step title="チャンネル">
+    - [WhatsApp](/channels/whatsapp): オプションの QR ログイン
+    - [Telegram](/channels/telegram): ボットトークン
+    - [Discord](/channels/discord): ボットトークン
+    - [Google Chat](/channels/googlechat): サービスアカウント JSON + Webhook オーディエンス
+    - [Mattermost](/channels/mattermost) プラグイン: ボットトークン + ベース URL
+    - [Signal](/channels/signal): オプションの `signal-cli` インストール + アカウント構成
+    - [BlueBubbles](/channels/bluebubbles): iMessage に推奨。サーバー URL + パスワード + Webhook
+    - [iMessage](/channels/imessage): レガシーな `imsg` CLI パス + DB アクセス
+    - DM セキュリティ: デフォルトはペアリング（pairing）です。最初の DM はコードを送信します。
+      `openclaw pairing approve <channel> <code>` で承認するか、許可リストを使用します。
   </Step>
-  <Step title="Daemon install">
+  <Step title="デーモンのインストール">
     - macOS: LaunchAgent
-      - Requires logged-in user session; for headless, use a custom LaunchDaemon (not shipped).
-    - Linux and Windows via WSL2: systemd user unit
-      - Wizard attempts `loginctl enable-linger <user>` so gateway stays up after logout.
-      - May prompt for sudo (writes `/var/lib/systemd/linger`); it tries without sudo first.
-    - Runtime selection: Node (recommended; required for WhatsApp and Telegram). Bun is not recommended.
+      - ログインしたユーザーセッションが必要です。ヘッドレスの場合は、カスタムの LaunchDaemon を使用してください（同梱されていません）。
+    - Linux および Windows (WSL2 経由): systemd ユーザーユニット
+      - ログアウト後も Gateway が稼働し続けるように、ウィザードは `loginctl enable-linger <user>` を試みます。
+      - sudo のプロンプトが表示される場合があります（`/var/lib/systemd/linger` に書き込みます）。最初は sudo なしで試行します。
+    - ランタイムの選択: Node（推奨。WhatsApp および Telegram に必要）。Bun は推奨されません。
   </Step>
-  <Step title="Health check">
-    - Starts gateway (if needed) and runs `openclaw health`.
-    - `openclaw status --deep` adds gateway health probes to status output.
+  <Step title="ヘルスチェック">
+    - （必要に応じて）Gateway を起動し、`openclaw health` を実行します。
+    - `openclaw status --deep` は、ステータス出力に Gateway のヘルスプローブを追加します。
   </Step>
-  <Step title="Skills">
-    - Reads available skills and checks requirements.
-    - Lets you choose node manager: npm or pnpm (bun not recommended).
-    - Installs optional dependencies (some use Homebrew on macOS).
+  <Step title="スキル (Skills)">
+    - 利用可能なスキルを読み取り、要件を確認します。
+    - ノードマネージャーを選択できます：npm または pnpm（bun は推奨されません）。
+    - オプションの依存関係をインストールします（macOS では一部 Homebrew を使用します）。
   </Step>
-  <Step title="Finish">
-    - Summary and next steps, including iOS, Android, and macOS app options.
+  <Step title="完了">
+    - iOS、Android、および macOS アプリのオプションを含む、概要と次のステップ。
   </Step>
 </Steps>
 
 <Note>
-If no GUI is detected, the wizard prints SSH port-forward instructions for the Control UI instead of opening a browser.
-If Control UI assets are missing, the wizard attempts to build them; fallback is `pnpm ui:build` (auto-installs UI deps).
+GUI が検出されない場合、ウィザードはブラウザを開く代わりに、Control UI 用の SSH ポートフォワードの指示を出力します。
+Control UI のアセットが見つからない場合、ウィザードはそれらのビルドを試みます。フォールバックは `pnpm ui:build` です（UI の依存関係を自動インストールします）。
 </Note>
 
-## Remote mode details
+## リモートモードの詳細
 
-Remote mode configures this machine to connect to a gateway elsewhere.
+リモートモードは、他の場所にある Gateway に接続するようにこのマシンを構成します。
 
 <Info>
-Remote mode does not install or modify anything on the remote host.
+リモートモードでは、リモートホストへのインストールや変更は行われません。
 </Info>
 
-What you set:
+設定する内容：
 
-- Remote gateway URL (`ws://...`)
-- Token if remote gateway auth is required (recommended)
+- リモート Gateway の URL (`ws://...`)
+- リモート Gateway 認証が必要な場合のトークン（推奨）
 
 <Note>
-- If gateway is loopback-only, use SSH tunneling or a tailnet.
-- Discovery hints:
+- Gateway がループバックのみの場合は、SSH トンネリングまたは Tailnet を使用してください。
+- 検出のヒント：
   - macOS: Bonjour (`dns-sd`)
   - Linux: Avahi (`avahi-browse`)
 </Note>
 
-## Auth and model options
+## 認証とモデルのオプション
 
 <AccordionGroup>
-  <Accordion title="Anthropic API key">
-    Uses `ANTHROPIC_API_KEY` if present or prompts for a key, then saves it for daemon use.
+  <Accordion title="Anthropic API キー">
+    `ANTHROPIC_API_KEY` が存在する場合はそれを使用するか、キーの入力を求め、デーモンで使用するために保存します。
   </Accordion>
   <Accordion title="Anthropic OAuth (Claude Code CLI)">
-    - macOS: checks Keychain item "Claude Code-credentials"
-    - Linux and Windows: reuses `~/.claude/.credentials.json` if present
+    - macOS: キーチェーンの項目 "Claude Code-credentials" をチェックします
+    - Linux および Windows: 存在する場合は `~/.claude/.credentials.json` を再利用します
 
-    On macOS, choose "Always Allow" so launchd starts do not block.
-
-  </Accordion>
-  <Accordion title="Anthropic token (setup-token paste)">
-    Run `claude setup-token` on any machine, then paste the token.
-    You can name it; blank uses default.
-  </Accordion>
-  <Accordion title="OpenAI Code subscription (Codex CLI reuse)">
-    If `~/.codex/auth.json` exists, the wizard can reuse it.
-  </Accordion>
-  <Accordion title="OpenAI Code subscription (OAuth)">
-    Browser flow; paste `code#state`.
-
-    Sets `agents.defaults.model` to `openai-codex/gpt-5.4` when model is unset or `openai/*`.
+    macOS では、launchd の起動がブロックされないように「常に許可 (Always Allow)」を選択してください。
 
   </Accordion>
-  <Accordion title="OpenAI API key">
-    Uses `OPENAI_API_KEY` if present or prompts for a key, then stores the credential in auth profiles.
+  <Accordion title="Anthropic トークン (setup-token の貼り付け)">
+    任意のマシンで `claude setup-token` を実行し、トークンを貼り付けます。
+    名前を付けることができます。空白の場合はデフォルトが使用されます。
+  </Accordion>
+  <Accordion title="OpenAI Code サブスクリプション (Codex CLI の再利用)">
+    `~/.codex/auth.json` が存在する場合、ウィザードはそれを再利用できます。
+  </Accordion>
+  <Accordion title="OpenAI Code サブスクリプション (OAuth)">
+    ブラウザのフロー。`code#state` を貼り付けます。
 
-    Sets `agents.defaults.model` to `openai/gpt-5.1-codex` when model is unset, `openai/*`, or `openai-codex/*`.
+    モデルが未設定、または `openai/*` の場合、`agents.defaults.model` を `openai-codex/gpt-5.4` に設定します。
 
   </Accordion>
-  <Accordion title="xAI (Grok) API key">
-    Prompts for `XAI_API_KEY` and configures xAI as a model provider.
+  <Accordion title="OpenAI API キー">
+    `OPENAI_API_KEY` が存在する場合はそれを使用するか、キーの入力を求め、認証プロファイルに資格情報を保存します。
+
+    モデルが未設定、`openai/*`、または `openai-codex/*` の場合、`agents.defaults.model` を `openai/gpt-5.1-codex` に設定します。
+
+  </Accordion>
+  <Accordion title="xAI (Grok) API キー">
+    `XAI_API_KEY` の入力を求め、モデルプロバイダーとして xAI を設定します。
   </Accordion>
   <Accordion title="OpenCode Zen">
-    Prompts for `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`).
-    Setup URL: [opencode.ai/auth](https://opencode.ai/auth).
+    `OPENCODE_API_KEY` (または `OPENCODE_ZEN_API_KEY`) の入力を求めます。
+    セットアップ URL: [opencode.ai/auth](https://opencode.ai/auth)。
   </Accordion>
-  <Accordion title="API key (generic)">
-    Stores the key for you.
+  <Accordion title="API キー (汎用)">
+    キーを保存します。
   </Accordion>
   <Accordion title="Vercel AI Gateway">
-    Prompts for `AI_GATEWAY_API_KEY`.
-    More detail: [Vercel AI Gateway](/providers/vercel-ai-gateway).
+    `AI_GATEWAY_API_KEY` の入力を求めます。
+    詳細: [Vercel AI Gateway](/providers/vercel-ai-gateway)。
   </Accordion>
   <Accordion title="Cloudflare AI Gateway">
-    Prompts for account ID, gateway ID, and `CLOUDFLARE_AI_GATEWAY_API_KEY`.
-    More detail: [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway).
+    アカウント ID、ゲートウェイ ID、および `CLOUDFLARE_AI_GATEWAY_API_KEY` の入力を求めます。
+    詳細: [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)。
   </Accordion>
   <Accordion title="MiniMax M2.5">
-    Config is auto-written.
-    More detail: [MiniMax](/providers/minimax).
+    設定は自動的に書き込まれます。
+    詳細: [MiniMax](/providers/minimax)。
   </Accordion>
-  <Accordion title="Synthetic (Anthropic-compatible)">
-    Prompts for `SYNTHETIC_API_KEY`.
-    More detail: [Synthetic](/providers/synthetic).
+  <Accordion title="Synthetic (Anthropic 互換)">
+    `SYNTHETIC_API_KEY` の入力を求めます。
+    詳細: [Synthetic](/providers/synthetic)。
   </Accordion>
-  <Accordion title="Moonshot and Kimi Coding">
-    Moonshot (Kimi K2) and Kimi Coding configs are auto-written.
-    More detail: [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot).
+  <Accordion title="Moonshot と Kimi Coding">
+    Moonshot (Kimi K2) および Kimi Coding の設定は自動的に書き込まれます。
+    詳細: [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)。
   </Accordion>
-  <Accordion title="Custom provider">
-    Works with OpenAI-compatible and Anthropic-compatible endpoints.
+  <Accordion title="カスタムプロバイダー">
+    OpenAI 互換および Anthropic 互換のエンドポイントで機能します。
 
-    Interactive onboarding supports the same API key storage choices as other provider API key flows:
-    - **Paste API key now** (plaintext)
-    - **Use secret reference** (env ref or configured provider ref, with preflight validation)
+    対話型オンボーディングは、他のプロバイダーの API キーフローと同じ API キー保存の選択肢をサポートしています：
+    - **今すぐ API キーを貼り付ける** (平文)
+    - **シークレット参照を使用する** (環境変数参照または設定済みプロバイダー参照。事前検証付き)
 
-    Non-interactive flags:
+    非対話型フラグ：
     - `--auth-choice custom-api-key`
     - `--custom-base-url`
     - `--custom-model-id`
-    - `--custom-api-key` (optional; falls back to `CUSTOM_API_KEY`)
-    - `--custom-provider-id` (optional)
-    - `--custom-compatibility <openai|anthropic>` (optional; default `openai`)
+    - `--custom-api-key` (オプション。フォールバックは `CUSTOM_API_KEY`)
+    - `--custom-provider-id` (オプション)
+    - `--custom-compatibility <openai|anthropic>` (オプション。デフォルトは `openai`)
 
   </Accordion>
-  <Accordion title="Skip">
-    Leaves auth unconfigured.
+  <Accordion title="スキップ">
+    認証を未設定のままにします。
   </Accordion>
 </AccordionGroup>
 
-Model behavior:
+モデルの動作：
 
-- Pick default model from detected options, or enter provider and model manually.
-- Wizard runs a model check and warns if the configured model is unknown or missing auth.
+- 検出されたオプションからデフォルトモデルを選択するか、プロバイダーとモデルを手動で入力します。
+- ウィザードはモデルチェックを実行し、構成されたモデルが不明な場合や認証がない場合は警告を出します。
 
-Credential and profile paths:
+資格情報とプロファイルのパス：
 
-- OAuth credentials: `~/.openclaw/credentials/oauth.json`
-- Auth profiles (API keys + OAuth): `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
+- OAuth 資格情報：`~/.openclaw/credentials/oauth.json`
+- 認証プロファイル（API キー + OAuth）：`~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 
-Credential storage mode:
+資格情報ストレージモード：
 
-- Default onboarding behavior persists API keys as plaintext values in auth profiles.
-- `--secret-input-mode ref` enables reference mode instead of plaintext key storage.
-  In interactive onboarding, you can choose either:
-  - environment variable ref (for example `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`)
-  - configured provider ref (`file` or `exec`) with provider alias + id
-- Interactive reference mode runs a fast preflight validation before saving.
-  - Env refs: validates variable name + non-empty value in the current onboarding environment.
-  - Provider refs: validates provider config and resolves the requested id.
-  - If preflight fails, onboarding shows the error and lets you retry.
-- In non-interactive mode, `--secret-input-mode ref` is env-backed only.
-  - Set the provider env var in the onboarding process environment.
-  - Inline key flags (for example `--openai-api-key`) require that env var to be set; otherwise onboarding fails fast.
-  - For custom providers, non-interactive `ref` mode stores `models.providers.<id>.apiKey` as `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`.
-  - In that custom-provider case, `--custom-api-key` requires `CUSTOM_API_KEY` to be set; otherwise onboarding fails fast.
-- Gateway auth credentials support plaintext and SecretRef choices in interactive onboarding:
-  - Token mode: **Generate/store plaintext token** (default) or **Use SecretRef**.
-  - Password mode: plaintext or SecretRef.
-- Non-interactive token SecretRef path: `--gateway-token-ref-env <ENV_VAR>`.
-- Existing plaintext setups continue to work unchanged.
+- デフォルトのオンボーディング動作では、API キーを平文の値として認証プロファイルに保存します。
+- `--secret-input-mode ref` は、平文のキー保存の代わりに参照（リファレンス）モードを有効にします。
+  対話型オンボーディングでは、以下のいずれかを選択できます：
+  - 環境変数参照（例：`keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`）
+  - 設定済みプロバイダー参照（`file` または `exec`。プロバイダーエイリアス + id を使用）
+- 対話型の参照モードでは、保存する前に高速な事前検証（プリフライトバリデーション）を実行します。
+  - 環境変数参照：現在のオンボーディング環境において、変数名と空ではない値を検証します。
+  - プロバイダー参照：プロバイダー設定を検証し、要求された ID を解決します。
+  - 事前検証に失敗した場合、オンボーディングはエラーを表示し、再試行できるようにします。
+- 非対話型モードでは、`--secret-input-mode ref` は環境変数ベースのみです。
+  - オンボーディングプロセス環境でプロバイダーの環境変数を設定してください。
+  - インラインのキーフラグ（例：`--openai-api-key`）は、その環境変数が設定されている必要があります。そうでない場合、オンボーディングは即座にエラーになります。
+  - カスタムプロバイダーの場合、非対話型の `ref` モードでは `models.providers.<id>.apiKey` が `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }` として保存されます。
+  - そのカスタムプロバイダーのケースでは、`--custom-api-key` は `CUSTOM_API_KEY` が設定されている必要があります。そうでない場合、オンボーディングは即座にエラーになります。
+- Gateway 認証資格情報は、対話型オンボーディングで平文と SecretRef の選択肢をサポートしています：
+  - トークンモード：**平文トークンの生成/保存** (デフォルト) または **SecretRef の使用**。
+  - パスワードモード：平文 または SecretRef。
+- 非対話型のトークン SecretRef パス：`--gateway-token-ref-env <ENV_VAR>`。
+- 既存の平文のセットアップは、変更なしで引き続き機能します。
 
 <Note>
-Headless and server tip: complete OAuth on a machine with a browser, then copy
-`~/.openclaw/credentials/oauth.json` (or `$OPENCLAW_STATE_DIR/credentials/oauth.json`)
-to the gateway host.
+ヘッドレスおよびサーバーでのヒント：ブラウザがあるマシンで OAuth を完了し、その後 `~/.openclaw/credentials/oauth.json` (または `$OPENCLAW_STATE_DIR/credentials/oauth.json`) を Gateway ホストにコピーしてください。
 </Note>
 
-## Outputs and internals
+## 出力と内部構造
 
-Typical fields in `~/.openclaw/openclaw.json`:
+`~/.openclaw/openclaw.json` 内の典型的なフィールド：
 
 - `agents.defaults.workspace`
-- `agents.defaults.model` / `models.providers` (if Minimax chosen)
-- `tools.profile` (local onboarding defaults to `"coding"` when unset; existing explicit values are preserved)
-- `gateway.*` (mode, bind, auth, tailscale)
-- `session.dmScope` (local onboarding defaults this to `per-channel-peer` when unset; existing explicit values are preserved)
+- `agents.defaults.model` / `models.providers` (Minimax が選択された場合)
+- `tools.profile` (ローカルオンボーディングでは、未設定の場合にデフォルトで `"coding"` になります。既存の明示的な値は保持されます)
+- `gateway.*` (モード、バインド、認証、tailscale)
+- `session.dmScope` (ローカルオンボーディングでは、未設定の場合にデフォルトで `per-channel-peer` になります。既存の明示的な値は保持されます)
 - `channels.telegram.botToken`, `channels.discord.token`, `channels.signal.*`, `channels.imessage.*`
-- Channel allowlists (Slack, Discord, Matrix, Microsoft Teams) when you opt in during prompts (names resolve to IDs when possible)
+- プロンプト中にオプトインした場合のチャンネル許可リスト (Slack、Discord、Matrix、Microsoft Teams)（可能な場合、名前は ID に解決されます）
 - `skills.install.nodeManager`
 - `wizard.lastRunAt`
 - `wizard.lastRunVersion`
@@ -259,36 +257,35 @@ Typical fields in `~/.openclaw/openclaw.json`:
 - `wizard.lastRunCommand`
 - `wizard.lastRunMode`
 
-`openclaw agents add` writes `agents.list[]` and optional `bindings`.
+`openclaw agents add` は `agents.list[]` とオプションの `bindings` を書き込みます。
 
-WhatsApp credentials go under `~/.openclaw/credentials/whatsapp/<accountId>/`.
-Sessions are stored under `~/.openclaw/agents/<agentId>/sessions/`.
+WhatsApp 資格情報は `~/.openclaw/credentials/whatsapp/<accountId>/` の下に配置されます。
+セッションは `~/.openclaw/agents/<agentId>/sessions/` の下に保存されます。
 
 <Note>
-Some channels are delivered as plugins. When selected during onboarding, the wizard
-prompts to install the plugin (npm or local path) before channel configuration.
+一部のチャンネルはプラグインとして提供されます。オンボーディング中に選択された場合、ウィザードはチャンネル設定の前にプラグイン（npm またはローカルパス）をインストールするように求めます。
 </Note>
 
-Gateway wizard RPC:
+Gateway ウィザード RPC:
 
 - `wizard.start`
 - `wizard.next`
 - `wizard.cancel`
 - `wizard.status`
 
-Clients (macOS app and Control UI) can render steps without re-implementing onboarding logic.
+クライアント（macOS アプリと Control UI）は、オンボーディングロジックを再実装することなくステップをレンダリングできます。
 
-Signal setup behavior:
+Signal セットアップの動作：
 
-- Downloads the appropriate release asset
-- Stores it under `~/.openclaw/tools/signal-cli/<version>/`
-- Writes `channels.signal.cliPath` in config
-- JVM builds require Java 21
-- Native builds are used when available
-- Windows uses WSL2 and follows Linux signal-cli flow inside WSL
+- 適切なリリースアセットをダウンロードします
+- それを `~/.openclaw/tools/signal-cli/<version>/` の下に保存します
+- 設定ファイルに `channels.signal.cliPath` を書き込みます
+- JVM ビルドには Java 21 が必要です
+- ネイティブビルドが利用可能な場合はそれが使用されます
+- Windows では WSL2 を使用し、WSL 内の Linux 向け signal-cli フローに従います
 
-## Related docs
+## 関連ドキュメント
 
-- Onboarding hub: [Onboarding Wizard (CLI)](/start/wizard)
-- Automation and scripts: [CLI Automation](/start/wizard-cli-automation)
-- Command reference: [`openclaw onboard`](/cli/onboard)
+- オンボーディングハブ: [オンボーディングウィザード (CLI)](/start/wizard)
+- 自動化とスクリプト: [CLI 自動化](/start/wizard-cli-automation)
+- コマンドリファレンス: [`openclaw onboard`](/cli/onboard)

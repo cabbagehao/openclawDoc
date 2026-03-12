@@ -1,86 +1,79 @@
 ---
-summary: "How OpenClaw sandboxing works: modes, scopes, workspace access, and images"
-title: Sandboxing
-read_when: "You want a dedicated explanation of sandboxing or need to tune agents.defaults.sandbox."
+summary: "OpenClaw サンドボックスの仕組み: 動作モード、スコープ、ワークスペースへのアクセス、および Docker イメージ"
+title: "サンドボックス"
+read_when:
+  - サンドボックスの詳細な解説を読みたい場合
+  - "`agents.defaults.sandbox` の設定を調整する必要がある場合"
 status: active
+x-i18n:
+  source_hash: "0d7bb6c468517fec90b277065201f2d2e322a14b036b57a2b175abdf74a66668"
 ---
 
-# Sandboxing
+# サンドボックス (Sandboxing)
 
-OpenClaw can run **tools inside Docker containers** to reduce blast radius.
-This is **optional** and controlled by configuration (`agents.defaults.sandbox` or
-`agents.list[].sandbox`). If sandboxing is off, tools run on the host.
-The Gateway stays on the host; tool execution runs in an isolated sandbox
-when enabled.
+OpenClaw は、**Docker コンテナ内でツールを実行** することで、不測の事態による影響範囲（Blast radius）を最小限に抑えることができます。これは **オプション機能** であり、構成設定（`agents.defaults.sandbox` または `agents.list[].sandbox`）で制御します。サンドボックスをオフにすると、ツールはホスト上で直接実行されます。ゲートウェイプロセス自体は常にホスト上で動作し、ツールの実行時のみ分離されたサンドボックス環境が使用されます。
 
-This is not a perfect security boundary, but it materially limits filesystem
-and process access when the model does something dumb.
+これは完全なセキュリティ境界を提供するものではありませんが、モデルが予期しない挙動（誤ったファイル操作やコマンド実行など）をした際に、ファイルシステムやプロセスへのアクセスを実質的に制限できます。
 
-## What gets sandboxed
+## サンドボックスの対象となるもの
 
-- Tool execution (`exec`, `read`, `write`, `edit`, `apply_patch`, `process`, etc.).
-- Optional sandboxed browser (`agents.defaults.sandbox.browser`).
-  - By default, the sandbox browser auto-starts (ensures CDP is reachable) when the browser tool needs it.
-    Configure via `agents.defaults.sandbox.browser.autoStart` and `agents.defaults.sandbox.browser.autoStartTimeoutMs`.
-  - By default, sandbox browser containers use a dedicated Docker network (`openclaw-sandbox-browser`) instead of the global `bridge` network.
-    Configure with `agents.defaults.sandbox.browser.network`.
-  - Optional `agents.defaults.sandbox.browser.cdpSourceRange` restricts container-edge CDP ingress with a CIDR allowlist (for example `172.21.0.1/32`).
-  - noVNC observer access is password-protected by default; OpenClaw emits a short-lived token URL that serves a local bootstrap page and opens noVNC with password in URL fragment (not query/header logs).
-  - `agents.defaults.sandbox.browser.allowHostControl` lets sandboxed sessions target the host browser explicitly.
-  - Optional allowlists gate `target: "custom"`: `allowedControlUrls`, `allowedControlHosts`, `allowedControlPorts`.
+- ツール実行（`exec`, `read`, `write`, `edit`, `apply_patch`, `process` など）。
+- オプションのサンドボックス化されたブラウザ (`agents.defaults.sandbox.browser`)。
+  - デフォルトでは、ブラウザツールが必要になった際に、サンドボックス内のブラウザが自動起動（CDP エンドポイントの疎通確認を含む）します。起動挙動は `autoStart` や `autoStartTimeoutMs` で調整可能です。
+  - サンドボックスブラウザのコンテナは、デフォルトで専用の Docker ネットワーク (`openclaw-sandbox-browser`) を使用し、グローバルな `bridge` ネットワークからは分離されます。
+  - `cdpSourceRange` 設定により、コンテナへの CDP 接続（Ingress）を特定の CIDR 範囲（例: `172.21.0.1/32`）に制限できます。
+  - noVNC による画面監視は、デフォルトでパスワード保護されます。OpenClaw は短命なトークンを含む URL を発行し、URL フラグメントにパスワードを埋め込んで noVNC を開きます（クエリパラメータやヘッダーログにパスワードが残らないように配慮されています）。
+  - `allowHostControl` を有効にすると、サンドボックス内のセッションから明示的にホスト側のブラウザを操作できるようになります。
+  - `allowedControlUrls`, `allowedControlHosts`, `allowedControlPorts` などの許可リストにより、`target: "custom"` 指定時の接続先を制限できます。
 
-Not sandboxed:
+サンドボックスの対象 **外** となるもの:
 
-- The Gateway process itself.
-- Any tool explicitly allowed to run on the host (e.g. `tools.elevated`).
-  - **Elevated exec runs on the host and bypasses sandboxing.**
-  - If sandboxing is off, `tools.elevated` does not change execution (already on host). See [Elevated Mode](/tools/elevated).
+- ゲートウェイプロセス自体。
+- ホスト上での実行が明示的に許可されたツール（例: `tools.elevated`）。
+  - **昇格（Elevated）された exec 実行はホスト上で行われ、サンドボックスをバイパスします。**
+  - サンドボックス機能自体がオフの場合、`tools.elevated` による挙動の変化はありません（常にホスト上で実行されるため）。詳細は [昇格（Elevated）モード](/tools/elevated) を参照してください。
 
-## Modes
+## 動作モード
 
-`agents.defaults.sandbox.mode` controls **when** sandboxing is used:
+`agents.defaults.sandbox.mode` により、サンドボックスを **いつ** 使用するかを制御します:
 
-- `"off"`: no sandboxing.
-- `"non-main"`: sandbox only **non-main** sessions (default if you want normal chats on host).
-- `"all"`: every session runs in a sandbox.
-  Note: `"non-main"` is based on `session.mainKey` (default `"main"`), not agent id.
-  Group/channel sessions use their own keys, so they count as non-main and will be sandboxed.
+- `"off"`: サンドボックスを使用しません。
+- `"non-main"`: **メイン（main）以外のセッションのみ** をサンドボックス化します。ホスト上のファイルを自由に扱いたい通常のチャットはメインセッションで行い、それ以外を制限したい場合のデフォルト設定です。
+- `"all"`: すべてのセッションをサンドボックス内で実行します。
 
-## Scope
+注意: `"non-main"` の判定はエージェント ID ではなく、`session.mainKey`（デフォルトは `"main"`）に基づきます。グループチャットや各種チャネルのセッションは独自のキーを持つため、これらは「非メイン」として扱われ、サンドボックス化されます。
 
-`agents.defaults.sandbox.scope` controls **how many containers** are created:
+## スコープ (Scope)
 
-- `"session"` (default): one container per session.
-- `"agent"`: one container per agent.
-- `"shared"`: one container shared by all sandboxed sessions.
+`agents.defaults.sandbox.scope` により、**いくつのコンテナ** を作成するかを制御します:
 
-## Workspace access
+- `"session"` (デフォルト): セッション（会話単位）ごとに 1 つのコンテナを作成します。
+- `"agent"`: エージェントごとに 1 つのコンテナを作成します。
+- `"shared"`: すべてのサンドボックスセッションで単一のコンテナを共有します。
 
-`agents.defaults.sandbox.workspaceAccess` controls **what the sandbox can see**:
+## ワークスペースへのアクセス
 
-- `"none"` (default): tools see a sandbox workspace under `~/.openclaw/sandboxes`.
-- `"ro"`: mounts the agent workspace read-only at `/agent` (disables `write`/`edit`/`apply_patch`).
-- `"rw"`: mounts the agent workspace read/write at `/workspace`.
+`agents.defaults.sandbox.workspaceAccess` により、**サンドボックスから何が見えるか** を制御します:
 
-Inbound media is copied into the active sandbox workspace (`media/inbound/*`).
-Skills note: the `read` tool is sandbox-rooted. With `workspaceAccess: "none"`,
-OpenClaw mirrors eligible skills into the sandbox workspace (`.../skills`) so
-they can be read. With `"rw"`, workspace skills are readable from
-`/workspace/skills`.
+- `"none"` (デフォルト): ツールからは `~/.openclaw/sandboxes` 配下の専用領域のみが見えます。
+- `"ro"`: エージェントのワークスペースを `/agent` に読み取り専用（read-only）でマウントします。`write`, `edit`, `apply_patch` などの書き込み系ツールは無効化されます。
+- `"rw"`: エージェントのワークスペースを `/workspace` に読み書き可能（read/write）でマウントします。
 
-## Custom bind mounts
+受信したメディアファイルは、アクティブなサンドボックスワークスペース内 (`media/inbound/*`) にコピーされます。
+スキルに関する補足: `read` ツールはサンドボックス内のルートを基準に動作します。`workspaceAccess: "none"` の場合、OpenClaw は対象となるスキルの実行ファイルをサンドボックス内の `.../skills` へミラーリングし、読み取れるようにします。`"rw"` の場合は、`/workspace/skills` から直接読み取り可能です。
 
-`agents.defaults.sandbox.docker.binds` mounts additional host directories into the container.
-Format: `host:container:mode` (e.g., `"/home/user/source:/source:rw"`).
+## カスタムバインドマウント
 
-Global and per-agent binds are **merged** (not replaced). Under `scope: "shared"`, per-agent binds are ignored.
+`agents.defaults.sandbox.docker.binds` を使用して、ホスト上の任意のディレクトリをコンテナ内にマウントできます。
+形式: `ホスト側パス:コンテナ内パス:モード` (例: `"/home/user/source:/source:rw"`)。
 
-`agents.defaults.sandbox.browser.binds` mounts additional host directories into the **sandbox browser** container only.
+グローバル設定とエージェントごとの設定は **マージ** されます。ただし、`scope: "shared"` の場合はエージェントごとの設定は無視されます。
 
-- When set (including `[]`), it replaces `agents.defaults.sandbox.docker.binds` for the browser container.
-- When omitted, the browser container falls back to `agents.defaults.sandbox.docker.binds` (backwards compatible).
+`agents.defaults.sandbox.browser.binds` は、**サンドボックスブラウザ** コンテナ専用のマウント設定です。
+- これが設定されている場合（空配列 `[]` を含む）、ブラウザコンテナにおいては `docker.binds` の設定を完全に置き換えます。
+- 設定されていない（省略された）場合は、通常の `docker.binds` の設定が使用されます（後方互換性のため）。
 
-Example (read-only source + an extra data directory):
+設定例 (読み取り専用のソースと追加のデータディレクトリをマウント):
 
 ```json5
 {
@@ -106,137 +99,91 @@ Example (read-only source + an extra data directory):
 }
 ```
 
-Security notes:
+セキュリティ上の注意:
+- バインドマウントはサンドボックスのファイルシステム制限を回避します。指定したモード（`:ro` または `:rw`）でホストのパスがそのまま公開されます。
+- OpenClaw は危険なパスのマウントをブロックします（例: `docker.sock`, `/etc`, `/proc`, `/sys`, `/dev` およびこれらを露出させる親ディレクトリ）。
+- 機密情報（シークレット、SSH キー、サービス認証情報など）をマウントする場合は、絶対に必要な場合を除き `:ro` (読み取り専用) にしてください。
+- ワークスペースへの読み取りアクセスのみが必要な場合は `workspaceAccess: "ro"` と組み合わせてください。バインドモードはそれとは独立して機能します。
+- バインドマウントとツールポリシー、および昇格実行の相互作用については、[サンドボックス vs ツールポリシー vs 昇格](/gateway/sandbox-vs-tool-policy-vs-elevated) を参照してください。
 
-- Binds bypass the sandbox filesystem: they expose host paths with whatever mode you set (`:ro` or `:rw`).
-- OpenClaw blocks dangerous bind sources (for example: `docker.sock`, `/etc`, `/proc`, `/sys`, `/dev`, and parent mounts that would expose them).
-- Sensitive mounts (secrets, SSH keys, service credentials) should be `:ro` unless absolutely required.
-- Combine with `workspaceAccess: "ro"` if you only need read access to the workspace; bind modes stay independent.
-- See [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) for how binds interact with tool policy and elevated exec.
+## イメージの作成とセットアップ
 
-## Images + setup
+デフォルトイメージ: `openclaw-sandbox:bookworm-slim`
 
-Default image: `openclaw-sandbox:bookworm-slim`
-
-Build it once:
+以下のスクリプトでイメージをビルドします（初回のみ）:
 
 ```bash
 scripts/sandbox-setup.sh
 ```
 
-Note: the default image does **not** include Node. If a skill needs Node (or
-other runtimes), either bake a custom image or install via
-`sandbox.docker.setupCommand` (requires network egress + writable root +
-root user).
+補足: デフォルトイメージには **Node.js は含まれていません**。スキルが Node.js（または他のランタイム）を必要とする場合は、カスタムイメージを作成するか、`sandbox.docker.setupCommand` を使用してインストールしてください（ネットワークアクセス、書き込み可能なルート権限、root ユーザー設定が必要です）。
 
-If you want a more functional sandbox image with common tooling (for example
-`curl`, `jq`, `nodejs`, `python3`, `git`), build:
+一般的なツール（`curl`, `jq`, `nodejs`, `python3`, `git` など）を含んだより多機能なイメージを使用したい場合は、以下をビルドしてください:
 
 ```bash
 scripts/sandbox-common-setup.sh
 ```
 
-Then set `agents.defaults.sandbox.docker.image` to
-`openclaw-sandbox-common:bookworm-slim`.
+その後、`agents.defaults.sandbox.docker.image` に `openclaw-sandbox-common:bookworm-slim` を指定します。
 
-Sandboxed browser image:
+サンドボックスブラウザ用のイメージ:
 
 ```bash
 scripts/sandbox-browser-setup.sh
 ```
 
-By default, sandbox containers run with **no network**.
-Override with `agents.defaults.sandbox.docker.network`.
+デフォルトでは、サンドボックスコンテナは **ネットワークなし (no network)** で実行されます。変更するには `agents.defaults.sandbox.docker.network` を上書きしてください。
 
-The bundled sandbox browser image also applies conservative Chromium startup defaults
-for containerized workloads. Current container defaults include:
-
+同梱のサンドボックスブラウザイメージには、コンテナ環境に適した保守的な Chromium 起動設定が適用されています。現在のデフォルト設定には以下が含まれます:
 - `--remote-debugging-address=127.0.0.1`
-- `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
+- `--remote-debugging-port=<OPENCLAW_BROWSER_CDP_PORT から派生>`
 - `--user-data-dir=${HOME}/.chrome`
-- `--no-first-run`
-- `--no-default-browser-check`
-- `--disable-3d-apis`
-- `--disable-gpu`
-- `--disable-dev-shm-usage`
-- `--disable-background-networking`
-- `--disable-extensions`
-- `--disable-features=TranslateUI`
-- `--disable-breakpad`
-- `--disable-crash-reporter`
-- `--disable-software-rasterizer`
-- `--no-zygote`
-- `--metrics-recording-only`
-- `--renderer-process-limit=2`
-- `--no-sandbox` and `--disable-setuid-sandbox` when `noSandbox` is enabled.
-- The three graphics hardening flags (`--disable-3d-apis`,
-  `--disable-software-rasterizer`, `--disable-gpu`) are optional and are useful
-  when containers lack GPU support. Set `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0`
-  if your workload requires WebGL or other 3D/browser features.
-- `--disable-extensions` is enabled by default and can be disabled with
-  `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` for extension-reliant flows.
-- `--renderer-process-limit=2` is controlled by
-  `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>`, where `0` keeps Chromium's default.
+- `--no-first-run`, `--no-default-browser-check`
+- グラフィックス制限: `--disable-3d-apis`, `--disable-gpu`, `--disable-software-rasterizer`（コンテナに GPU がない場合に有用。WebGL 等が必要な場合は `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` で無効化可能）
+- リソース制限: `--renderer-process-limit=2`（`OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT` で調整可能）
+- `--disable-extensions`（拡張機能が必要な場合は `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` で無効化可能）
+- その他、バックグラウンド通信やクラッシュレポートの無効化など。
 
-If you need a different runtime profile, use a custom browser image and provide
-your own entrypoint. For local (non-container) Chromium profiles, use
-`browser.extraArgs` to append additional startup flags.
+異なるプロンプトプロファイルが必要な場合は、カスタムブラウザイメージを使用して独自のエントリポイントを指定してください。ローカル（非コンテナ）の Chromium プロファイルを使用する場合は、`browser.extraArgs` を使用して起動フラグを追加できます。
 
-Security defaults:
+セキュリティ上の制約:
+- `network: "host"` はブロックされます。
+- `network: "container:<id>"` は、ネームスペース共有によるバイパスのリスクがあるため、デフォルトでブロックされます。
+- 緊急の上書き設定: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`。
 
-- `network: "host"` is blocked.
-- `network: "container:<id>"` is blocked by default (namespace join bypass risk).
-- Break-glass override: `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`.
+Docker によるインストールおよびコンテナ化されたゲートウェイの詳細は、[Docker での利用](/install/docker) を参照してください。
 
-Docker installs and the containerized gateway live here:
-[Docker](/install/docker)
+## setupCommand (コンテナの初回セットアップ)
 
-For Docker gateway deployments, `docker-setup.sh` can bootstrap sandbox config.
-Set `OPENCLAW_SANDBOX=1` (or `true`/`yes`/`on`) to enable that path. You can
-override socket location with `OPENCLAW_DOCKER_SOCKET`. Full setup and env
-reference: [Docker](/install/docker#enable-agent-sandbox-for-docker-gateway-opt-in).
+`setupCommand` は、サンドボックスコンテナが作成された直後に **一度だけ** 実行されます（実行のたびに走るわけではありません）。コンテナ内で `sh -lc` を介して実行されます。
 
-## setupCommand (one-time container setup)
+設定パス:
+- グローバル: `agents.defaults.sandbox.docker.setupCommand`
+- エージェント別: `agents.list[].sandbox.docker.setupCommand`
 
-`setupCommand` runs **once** after the sandbox container is created (not on every run).
-It executes inside the container via `sh -lc`.
+よくある落とし穴:
+- デフォルトの `docker.network` は `"none"`（外部通信なし）のため、パッケージのインストールなどは失敗します。
+- `readOnlyRoot: true` の場合、書き込みができません。`false` に設定するか、あらかじめ必要なものを含めたカスタムイメージを作成してください。
+- パッケージインストールには root 権限が必要です（`user` 設定を省略するか `"0:0"` に設定）。
+- サンドボックス内での実行はホストの `process.env` を **継承しません**。スキルの API キーなどが必要な場合は、`agents.defaults.sandbox.docker.env` を使用するか、イメージ内に含めてください。
 
-Paths:
+## ツールポリシーとエスケープハッチ
 
-- Global: `agents.defaults.sandbox.docker.setupCommand`
-- Per-agent: `agents.list[].sandbox.docker.setupCommand`
+ツールの許可 / 拒否ポリシーは、サンドボックスのルールよりも先に適用されます。グローバル設定やエージェント設定で拒否されているツールは、サンドボックス化しても利用できるようにはなりません。
 
-Common pitfalls:
+`tools.elevated` は、ホスト上で直接 `exec` を実行するための明示的なエスケープハッチです。`/exec` 指示は認可された送信者にのみ適用され、セッションごとに保持されます。`exec` ツールを完全に禁止したい場合は、ツールポリシーの `deny` を使用してください（詳細は [サンドボックス vs ツールポリシー vs 昇格](/gateway/sandbox-vs-tool-policy-vs-elevated) を参照）。
 
-- Default `docker.network` is `"none"` (no egress), so package installs will fail.
-- `docker.network: "container:<id>"` requires `dangerouslyAllowContainerNamespaceJoin: true` and is break-glass only.
-- `readOnlyRoot: true` prevents writes; set `readOnlyRoot: false` or bake a custom image.
-- `user` must be root for package installs (omit `user` or set `user: "0:0"`).
-- Sandbox exec does **not** inherit host `process.env`. Use
-  `agents.defaults.sandbox.docker.env` (or a custom image) for skill API keys.
+デバッグ方法:
+- `openclaw sandbox explain` を使用して、現在のサンドボックスモード、適用されているツールポリシー、および修正すべき構成キーを確認してください。
+- 「なぜこれがブロックされているのか？」という疑問には、[サンドボックス vs ツールポリシー vs 昇格](/gateway/sandbox-vs-tool-policy-vs-elevated) の考え方が役立ちます。
 
-## Tool policy + escape hatches
+## マルチエージェントによる上書き
 
-Tool allow/deny policies still apply before sandbox rules. If a tool is denied
-globally or per-agent, sandboxing doesn’t bring it back.
+各エージェントは、サンドボックス設定およびツール設定を個別に上書きできます。
+設定箇所: `agents.list[].sandbox`, `agents.list[].tools` (およびサンドボックス内ツールポリシー用の `agents.list[].tools.sandbox.tools`)。
+優先順位の詳細は [マルチエージェントにおけるサンドボックスとツール](/tools/multi-agent-sandbox-tools) を参照してください。
 
-`tools.elevated` is an explicit escape hatch that runs `exec` on the host.
-`/exec` directives only apply for authorized senders and persist per session; to hard-disable
-`exec`, use tool policy deny (see [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)).
-
-Debugging:
-
-- Use `openclaw sandbox explain` to inspect effective sandbox mode, tool policy, and fix-it config keys.
-- See [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) for the “why is this blocked?” mental model.
-  Keep it locked down.
-
-## Multi-agent overrides
-
-Each agent can override sandbox + tools:
-`agents.list[].sandbox` and `agents.list[].tools` (plus `agents.list[].tools.sandbox.tools` for sandbox tool policy).
-See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for precedence.
-
-## Minimal enable example
+## 最小限の有効化設定例
 
 ```json5
 {
@@ -252,8 +199,8 @@ See [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) for preceden
 }
 ```
 
-## Related docs
+## 関連ドキュメント
 
-- [Sandbox Configuration](/gateway/configuration#agentsdefaults-sandbox)
-- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools)
-- [Security](/gateway/security)
+- [サンドボックス構成リファレンス](/gateway/configuration#agentsdefaults-sandbox)
+- [マルチエージェントにおけるサンドボックスとツール](/tools/multi-agent-sandbox-tools)
+- [セキュリティ](/gateway/security)

@@ -27,7 +27,7 @@ async function main() {
   }
 
   if (!langId) {
-    throw new Error("Missing required argument: --lang <e.g., ja-JP>");
+    throw new Error("Missing required argument: --lang <e.g., ko-KR>");
   }
 
   const resolvedDocsRoot = path.resolve(docsRoot);
@@ -35,12 +35,12 @@ async function main() {
   
   const allFiles = await walk(resolvedDocsRoot);
   
-  const english = allFiles
+  const sourceDocs = allFiles
     .filter((file) => {
       const rel = path.relative(resolvedDocsRoot, file).replace(/\\/g, "/");
       const parts = rel.split("/");
       const top = parts[0];
-      // Skip if it is any locale directory, .i18n directory, or asset directories
+      // Skip locale directories, translation assets, and static asset directories.
       return !isLocaleDir(top) && !parts.includes(".i18n") && top !== "images" && top !== "assets";
     })
     .map((file) => path.relative(resolvedDocsRoot, file).replace(/\\/g, "/"))
@@ -59,12 +59,12 @@ async function main() {
     .filter((file) => !file.split("/").includes(".i18n"))
     .sort();
 
-  const missing = english.filter((file) => !target.includes(file));
-  const extra = target.filter((file) => !english.includes(file));
+  const missing = sourceDocs.filter((file) => !target.includes(file));
+  const extra = target.filter((file) => !sourceDocs.includes(file));
 
   const result = {
     language: langId,
-    englishCount: english.length,
+    sourceCount: sourceDocs.length,
     targetCount: target.length,
     missingCount: missing.length,
     extraCount: extra.length,

@@ -1,38 +1,26 @@
 ---
-summary: "Stable, beta, and dev channels: semantics, switching, and tagging"
+summary: "stable / beta / dev 各チャネルの意味、切り替え方法、タグ運用"
 read_when:
-  - You want to switch between stable/beta/dev
-  - You are tagging or publishing prereleases
-title: "Development Channels"
+  - stable / beta / dev を切り替えたい
+  - プレリリースのタグ付けや公開ルールを確認したい
+title: "開発チャネル"
 ---
 
-# Development channels
+# 開発チャネル
 
-Last updated: 2026-01-21
+最終更新: 2026-01-21
 
-OpenClaw ships three update channels:
+OpenClaw には、3 つの更新チャネルがあります。
 
-- **stable**: npm dist-tag `latest`.
-- **beta**: npm dist-tag `beta` (builds under test).
-- **dev**: moving head of `main` (git). npm dist-tag: `dev` (when published).
+- **stable**: npm dist-tag は `latest`
+- **beta**: npm dist-tag は `beta`（検証中のビルド）
+- **dev**: `main` ブランチの最新 head（git）。npm dist-tag は `dev`（公開されている場合）
 
-We ship builds to **beta**, test them, then **promote a vetted build to `latest`**
-without changing the version number — dist-tags are the source of truth for npm installs.
+OpenClaw では、まず **beta** にビルドを出し、検証が終わったものを **同じバージョン番号のまま `latest` に昇格** させます。npm install において正本になるのはバージョン番号ではなく dist-tag です。
 
-## Switching channels
+## チャネルの切り替え
 
-Git checkout:
-
-```bash
-openclaw update --channel stable
-openclaw update --channel beta
-openclaw update --channel dev
-```
-
-- `stable`/`beta` check out the latest matching tag (often the same tag).
-- `dev` switches to `main` and rebases on the upstream.
-
-npm/pnpm global install:
+Git checkout 版:
 
 ```bash
 openclaw update --channel stable
@@ -40,38 +28,47 @@ openclaw update --channel beta
 openclaw update --channel dev
 ```
 
-This updates via the corresponding npm dist-tag (`latest`, `beta`, `dev`).
+- `stable` / `beta` は、条件に合う最新タグを checkout します（同じタグを指すこともよくあります）
+- `dev` は `main` に切り替え、upstream に対して rebase します
 
-When you **explicitly** switch channels with `--channel`, OpenClaw also aligns
-the install method:
+npm / pnpm のグローバルインストール版:
 
-- `dev` ensures a git checkout (default `~/openclaw`, override with `OPENCLAW_GIT_DIR`),
-  updates it, and installs the global CLI from that checkout.
-- `stable`/`beta` installs from npm using the matching dist-tag.
+```bash
+openclaw update --channel stable
+openclaw update --channel beta
+openclaw update --channel dev
+```
 
-Tip: if you want stable + dev in parallel, keep two clones and point your gateway at the stable one.
+この場合は、対応する npm dist-tag（`latest`、`beta`、`dev`）を使って更新されます。
 
-## Plugins and channels
+`--channel` で **明示的に** チャネルを切り替えると、OpenClaw はインストール方式も自動で揃えます。
 
-When you switch channels with `openclaw update`, OpenClaw also syncs plugin sources:
+- `dev` は git checkout を確実に用意し（既定は `~/openclaw`、`OPENCLAW_GIT_DIR` で変更可能）、それを更新したうえで、その checkout からグローバル CLI を再インストールします
+- `stable` / `beta` は、対応する dist-tag を使って npm からインストールします
 
-- `dev` prefers bundled plugins from the git checkout.
-- `stable` and `beta` restore npm-installed plugin packages.
+補足: stable と dev を並行運用したい場合は clone を 2 つ用意し、ゲートウェイは stable 側を向けると扱いやすくなります。
 
-## Tagging best practices
+## プラグインとチャネル
 
-- Tag releases you want git checkouts to land on (`vYYYY.M.D` for stable, `vYYYY.M.D-beta.N` for beta).
-- `vYYYY.M.D.beta.N` is also recognized for compatibility, but prefer `-beta.N`.
-- Legacy `vYYYY.M.D-<patch>` tags are still recognized as stable (non-beta).
-- Keep tags immutable: never move or reuse a tag.
-- npm dist-tags remain the source of truth for npm installs:
+`openclaw update` でチャネルを切り替えると、プラグインの取得元も同期されます。
+
+- `dev` は git checkout に同梱されたプラグインを優先します
+- `stable` と `beta` は npm でインストールしたプラグインパッケージへ戻します
+
+## タグ運用のベストプラクティス
+
+- Git checkout が着地すべきリリースにはタグを打ちます（stable は `vYYYY.M.D`、beta は `vYYYY.M.D-beta.N`）
+- 互換性のため `vYYYY.M.D.beta.N` も認識されますが、推奨は `-beta.N` です
+- 旧形式の `vYYYY.M.D-<patch>` タグも、引き続き stable（非 beta）として扱われます
+- タグは不変に保ち、移動や再利用はしないでください
+- npm install における正本は dist-tag のままです:
   - `latest` → stable
-  - `beta` → candidate build
-  - `dev` → main snapshot (optional)
+  - `beta` → 候補ビルド
+  - `dev` → `main` のスナップショット（任意）
 
-## macOS app availability
+## macOS アプリの提供状況
 
-Beta and dev builds may **not** include a macOS app release. That’s OK:
+beta や dev のビルドには、macOS アプリのリリースが **含まれない** 場合があります。これは問題ありません。
 
-- The git tag and npm dist-tag can still be published.
-- Call out “no macOS build for this beta” in release notes or changelog.
+- Git tag と npm dist-tag はそのまま公開できます
+- リリースノートや changelog に「この beta には macOS ビルドがない」ことを明記してください

@@ -1,46 +1,46 @@
 ---
-summary: "Mattermost bot setup and OpenClaw config"
+summary: "Mattermost ボットのセットアップと OpenClaw 構成"
 read_when:
-  - Setting up Mattermost
-  - Debugging Mattermost routing
+  - Mattermost のセットアップ
+  - Mattermost ルーティングのデバッグ
 title: "Mattermost"
+x-i18n:
+  source_hash: "c1d43218b97fdaa30e8739287056151feeb88aace9b1787769a890f9cc5eca59"
 ---
 
-# Mattermost (plugin)
+# Mattermost (プラグイン)
 
-Status: supported via plugin (bot token + WebSocket events). Channels, groups, and DMs are supported.
-Mattermost is a self-hostable team messaging platform; see the official site at
-[mattermost.com](https://mattermost.com) for product details and downloads.
+ステータス: プラグイン経由でサポートされています（ボットトークン + WebSocket イベント）。チャネル、グループ、DM がサポートされています。
+Mattermost は、自己ホスト可能なチームメッセージングプラットフォームです。製品の詳細やダウンロードについては、公式サイト [mattermost.com](https://mattermost.com) をご覧ください。
 
-## Plugin required
+## プラグインが必要
 
-Mattermost ships as a plugin and is not bundled with the core install.
+Mattermost はプラグインとして提供されており、コアインストールには同梱されていません。
 
-Install via CLI (npm registry):
+CLI (npm レジストリ) 経由でインストールします:
 
 ```bash
 openclaw plugins install @openclaw/mattermost
 ```
 
-Local checkout (when running from a git repo):
+ローカルチェックアウト (git リポジトリから実行する場合):
 
 ```bash
 openclaw plugins install ./extensions/mattermost
 ```
 
-If you choose Mattermost during configure/onboarding and a git checkout is detected,
-OpenClaw will offer the local install path automatically.
+構成/オンボーディング中に Mattermost を選択し、git チェックアウトが検出された場合、OpenClaw は自動的にローカルインストールパスを提案します。
 
-Details: [Plugins](/tools/plugin)
+詳細: [プラグイン](/tools/plugin)
 
-## Quick setup
+## クイックセットアップ
 
-1. Install the Mattermost plugin.
-2. Create a Mattermost bot account and copy the **bot token**.
-3. Copy the Mattermost **base URL** (e.g., `https://chat.example.com`).
-4. Configure OpenClaw and start the gateway.
+1. Mattermost プラグインをインストールします。
+2. Mattermost ボットアカウントを作成し、**ボットトークン**をコピーします。
+3. Mattermost の**ベース URL**（例: `https://chat.example.com`）をコピーします。
+4. OpenClaw を設定し、ゲートウェイを起動します。
 
-Minimal config:
+最小限の構成:
 
 ```json5
 {
@@ -55,10 +55,9 @@ Minimal config:
 }
 ```
 
-## Native slash commands
+## ネイティブのスラッシュコマンド
 
-Native slash commands are opt-in. When enabled, OpenClaw registers `oc_*` slash commands via
-the Mattermost API and receives callback POSTs on the gateway HTTP server.
+ネイティブのスラッシュコマンドはオプトイン方式です。有効にすると、OpenClaw は Mattermost API を介して `oc_*` スラッシュコマンドを登録し、ゲートウェイの HTTP サーバーでコールバック POST を受信します。
 
 ```json5
 {
@@ -68,7 +67,7 @@ the Mattermost API and receives callback POSTs on the gateway HTTP server.
         native: true,
         nativeSkills: true,
         callbackPath: "/api/channels/mattermost/command",
-        // Use when Mattermost cannot reach the gateway directly (reverse proxy/public URL).
+        // Mattermost がゲートウェイに直接到達できない場合（リバースプロキシ/公開 URL など）に使用します。
         callbackUrl: "https://gateway.example.com/api/channels/mattermost/command",
       },
     },
@@ -76,42 +75,40 @@ the Mattermost API and receives callback POSTs on the gateway HTTP server.
 }
 ```
 
-Notes:
+注:
 
-- `native: "auto"` defaults to disabled for Mattermost. Set `native: true` to enable.
-- If `callbackUrl` is omitted, OpenClaw derives one from gateway host/port + `callbackPath`.
-- For multi-account setups, `commands` can be set at the top level or under
-  `channels.mattermost.accounts.<id>.commands` (account values override top-level fields).
-- Command callbacks are validated with per-command tokens and fail closed when token checks fail.
-- Reachability requirement: the callback endpoint must be reachable from the Mattermost server.
-  - Do not set `callbackUrl` to `localhost` unless Mattermost runs on the same host/network namespace as OpenClaw.
-  - Do not set `callbackUrl` to your Mattermost base URL unless that URL reverse-proxies `/api/channels/mattermost/command` to OpenClaw.
-  - A quick check is `curl https://<gateway-host>/api/channels/mattermost/command`; a GET should return `405 Method Not Allowed` from OpenClaw, not `404`.
-- Mattermost egress allowlist requirement:
-  - If your callback targets private/tailnet/internal addresses, set Mattermost
-    `ServiceSettings.AllowedUntrustedInternalConnections` to include the callback host/domain.
-  - Use host/domain entries, not full URLs.
-    - Good: `gateway.tailnet-name.ts.net`
-    - Bad: `https://gateway.tailnet-name.ts.net`
+- `native: "auto"` の場合、Mattermost ではデフォルトで無効になります。有効にするには `native: true` を設定してください。
+- `callbackUrl` が省略された場合、OpenClaw はゲートウェイのホスト/ポート + `callbackPath` から自動的に導出します。
+- マルチアカウント設定の場合、`commands` はトップレベル、または `channels.mattermost.accounts.<id>.commands` 配下で設定可能です（アカウントごとの値が最上位フィールドを上書きします）。
+- コマンドコールバックはコマンドごとのトークンで検証され、チェックに失敗した場合は安全のために実行を拒否（フェールクローズ）します。
+- 到達可能性の要件: コールバックエンドポイントは Mattermost サーバーから到達可能である必要があります。
+  - Mattermost が OpenClaw と同じホスト/ネットワーク名前空間で実行されていない限り、`callbackUrl` を `localhost` に設定しないでください。
+  - URL が OpenClaw への `/api/channels/mattermost/command` をリバースプロキシしている場合を除き、`callbackUrl` を Mattermost のベース URL と同じに設定しないでください。
+  - 簡単な確認方法として、`curl https://<gateway-host>/api/channels/mattermost/command` を実行してください。OpenClaw から `404` ではなく `405 Method Not Allowed` が返ってくれば正常です。
+- Mattermost の送信（Egress）許可リストの要件:
+  - コールバック先がプライベート/Tailscale/内部アドレスの場合は、Mattermost の `ServiceSettings.AllowedUntrustedInternalConnections` にコールバックホスト/ドメインを追加してください。
+  - 完全な URL ではなく、ホスト/ドメインのみを指定します。
+    - 良い例: `gateway.tailnet-name.ts.net`
+    - 悪い例: `https://gateway.tailnet-name.ts.net`
 
-## Environment variables (default account)
+## 環境変数 (デフォルトアカウント)
 
-Set these on the gateway host if you prefer env vars:
+環境変数を使用したい場合は、ゲートウェイホストで以下を設定します:
 
 - `MATTERMOST_BOT_TOKEN=...`
 - `MATTERMOST_URL=https://chat.example.com`
 
-Env vars apply only to the **default** account (`default`). Other accounts must use config values.
+環境変数は**デフォルト**アカウント (`default`) にのみ適用されます。その他のアカウントは構成ファイルの値を使用する必要があります。
 
-## Chat modes
+## チャットモード
 
-Mattermost responds to DMs automatically. Channel behavior is controlled by `chatmode`:
+Mattermost は DM に自動的に応答します。チャネルでの動作は `chatmode` で制御されます:
 
-- `oncall` (default): respond only when @mentioned in channels.
-- `onmessage`: respond to every channel message.
-- `onchar`: respond when a message starts with a trigger prefix.
+- `oncall` (デフォルト): チャネルで @メンションされた場合にのみ応答します。
+- `onmessage`: すべてのチャネルメッセージに応答します。
+- `onchar`: メッセージが特定のトリガープレフィックスで始まる場合に応答します。
 
-Config example:
+構成例:
 
 ```json5
 {
@@ -124,63 +121,62 @@ Config example:
 }
 ```
 
-Notes:
+注:
 
-- `onchar` still responds to explicit @mentions.
-- `channels.mattermost.requireMention` is honored for legacy configs but `chatmode` is preferred.
+- `onchar` モードでも、明示的な @メンションには引き続き応答します。
+- レガシーな構成では `channels.mattermost.requireMention` も尊重されますが、`chatmode` の使用を推奨します。
 
-## Access control (DMs)
+## アクセス制御 (DM)
 
-- Default: `channels.mattermost.dmPolicy = "pairing"` (unknown senders get a pairing code).
-- Approve via:
+- デフォルト: `channels.mattermost.dmPolicy = "pairing"`（未知の送信者にはペアリングコードが送信されます）。
+- 承認方法:
   - `openclaw pairing list mattermost`
   - `openclaw pairing approve mattermost <CODE>`
-- Public DMs: `channels.mattermost.dmPolicy="open"` plus `channels.mattermost.allowFrom=["*"]`.
+- パブリック DM: `channels.mattermost.dmPolicy="open"` かつ `channels.mattermost.allowFrom=["*"]`。
 
-## Channels (groups)
+## チャネル (グループ)
 
-- Default: `channels.mattermost.groupPolicy = "allowlist"` (mention-gated).
-- Allowlist senders with `channels.mattermost.groupAllowFrom` (user IDs recommended).
-- `@username` matching is mutable and only enabled when `channels.mattermost.dangerouslyAllowNameMatching: true`.
-- Open channels: `channels.mattermost.groupPolicy="open"` (mention-gated).
-- Runtime note: if `channels.mattermost` is completely missing, runtime falls back to `groupPolicy="allowlist"` for group checks (even if `channels.defaults.groupPolicy` is set).
+- デフォルト: `channels.mattermost.groupPolicy = "allowlist"`（メンション制限あり）。
+- `channels.mattermost.groupAllowFrom` で送信者を許可リストに登録します（ユーザー ID を推奨）。
+- `@username` による照合は変更可能であり、`channels.mattermost.dangerouslyAllowNameMatching: true` が設定されている場合にのみ有効になります。
+- オープンチャネル: `channels.mattermost.groupPolicy="open"`（メンション制限あり）。
+- ランタイムに関する注意: `channels.mattermost` セクションが完全に欠落している場合、ランタイムはグループチェックのために `groupPolicy="allowlist"` にフォールバックします（`channels.defaults.groupPolicy` が設定されている場合でも）。
 
-## Targets for outbound delivery
+## アウトバウンド配信のターゲット
 
-Use these target formats with `openclaw message send` or cron/webhooks:
+`openclaw message send` や Cron/Webhook で使用できるターゲット形式は以下の通りです:
 
-- `channel:<id>` for a channel
-- `user:<id>` for a DM
-- `@username` for a DM (resolved via the Mattermost API)
+- チャネルの場合: `channel:<id>`
+- DM の場合: `user:<id>`
+- DM の場合: `@username` (Mattermost API 経由で解決)
 
-Bare IDs are treated as channels.
+プレフィックスのない ID はチャネルとして扱われます。
 
-## Reactions (message tool)
+## リアクション (メッセージツール)
 
-- Use `message action=react` with `channel=mattermost`.
-- `messageId` is the Mattermost post id.
-- `emoji` accepts names like `thumbsup` or `:+1:` (colons are optional).
-- Set `remove=true` (boolean) to remove a reaction.
-- Reaction add/remove events are forwarded as system events to the routed agent session.
+- `channel=mattermost` で `message action=react` を使用します。
+- `messageId` は Mattermost の投稿 ID です。
+- `emoji` は `thumbsup` や `:+1:` のような名前を受け入れます（コロンは任意）。
+- リアクションを削除するには `remove=true` (boolean) を設定します。
+- リアクションの追加/削除イベントは、ルーティングされたエージェントセッションにシステムイベントとして転送されます。
 
-Examples:
+例:
 
 ```
 message action=react channel=mattermost target=channel:<channelId> messageId=<postId> emoji=thumbsup
 message action=react channel=mattermost target=channel:<channelId> messageId=<postId> emoji=thumbsup remove=true
 ```
 
-Config:
+構成:
 
-- `channels.mattermost.actions.reactions`: enable/disable reaction actions (default true).
-- Per-account override: `channels.mattermost.accounts.<id>.actions.reactions`.
+- `channels.mattermost.actions.reactions`: リアクション操作を有効/無効にします（デフォルト: true）。
+- アカウントごとのオーバーライド: `channels.mattermost.accounts.<id>.actions.reactions`。
 
-## Interactive buttons (message tool)
+## インタラクティブボタン (メッセージツール)
 
-Send messages with clickable buttons. When a user clicks a button, the agent receives the
-selection and can respond.
+クリック可能なボタン付きのメッセージを送信できます。ユーザーがボタンをクリックすると、エージェントはその選択内容を受け取って応答できます。
 
-Enable buttons by adding `inlineButtons` to the channel capabilities:
+チャネル機能に `inlineButtons` を追加してボタンを有効にします:
 
 ```json5
 {
@@ -192,75 +188,64 @@ Enable buttons by adding `inlineButtons` to the channel capabilities:
 }
 ```
 
-Use `message action=send` with a `buttons` parameter. Buttons are a 2D array (rows of buttons):
+`buttons` パラメータを指定して `message action=send` を使用します。ボタンは 2 次元配列（ボタンの行）です:
 
 ```
-message action=send channel=mattermost target=channel:<channelId> buttons=[[{"text":"Yes","callback_data":"yes"},{"text":"No","callback_data":"no"}]]
+message action=send channel=mattermost target=channel:<channelId> buttons=[[{"text":"はい","callback_data":"yes"},{"text":"いいえ","callback_data":"no"}]]
 ```
 
-Button fields:
+ボタンのフィールド:
 
-- `text` (required): display label.
-- `callback_data` (required): value sent back on click (used as the action ID).
-- `style` (optional): `"default"`, `"primary"`, or `"danger"`.
+- `text` (必須): 表示ラベル。
+- `callback_data` (必須): クリック時に返される値（アクション ID として使用）。
+- `style` (任意): `"default"`, `"primary"`, または `"danger"`。
 
-When a user clicks a button:
+ユーザーがボタンをクリックすると:
 
-1. All buttons are replaced with a confirmation line (e.g., "✓ **Yes** selected by @user").
-2. The agent receives the selection as an inbound message and responds.
+1. すべてのボタンが確認メッセージに置き換わります（例: 「✓ **はい** が @user によって選択されました」）。
+2. エージェントは選択内容をインバウンドメッセージとして受け取り、応答します。
 
-Notes:
+注:
 
-- Button callbacks use HMAC-SHA256 verification (automatic, no config needed).
-- Mattermost strips callback data from its API responses (security feature), so all buttons
-  are removed on click — partial removal is not possible.
-- Action IDs containing hyphens or underscores are sanitized automatically
-  (Mattermost routing limitation).
+- ボタンのコールバックは HMAC-SHA256 検証を使用します（自動で行われ、設定は不要です）。
+- Mattermost は API レスポンスからコールバックデータを削除するため（セキュリティ機能）、クリック時にはすべてのボタンが削除されます。部分的な削除はできません。
+- ハイフンやアンダースコアを含むアクション ID は自動的にサニタイズされます（Mattermost のルーティング制限のため）。
 
-Config:
+構成:
 
-- `channels.mattermost.capabilities`: array of capability strings. Add `"inlineButtons"` to
-  enable the buttons tool description in the agent system prompt.
-- `channels.mattermost.interactions.callbackBaseUrl`: optional external base URL for button
-  callbacks (for example `https://gateway.example.com`). Use this when Mattermost cannot
-  reach the gateway at its bind host directly.
-- In multi-account setups, you can also set the same field under
-  `channels.mattermost.accounts.<id>.interactions.callbackBaseUrl`.
-- If `interactions.callbackBaseUrl` is omitted, OpenClaw derives the callback URL from
-  `gateway.customBindHost` + `gateway.port`, then falls back to `http://localhost:<port>`.
-- Reachability rule: the button callback URL must be reachable from the Mattermost server.
-  `localhost` only works when Mattermost and OpenClaw run on the same host/network namespace.
-- If your callback target is private/tailnet/internal, add its host/domain to Mattermost
-  `ServiceSettings.AllowedUntrustedInternalConnections`.
+- `channels.mattermost.capabilities`: 機能文字列の配列。エージェントのシステムプロンプトでボタンツールの説明を有効にするには、`"inlineButtons"` を追加してください。
+- `channels.mattermost.interactions.callbackBaseUrl`: ボタンコールバック用のオプションの外部ベース URL（例: `https://gateway.example.com`）。Mattermost がゲートウェイのバインドアドレスに直接到達できない場合に使用します。
+- マルチアカウント設定では、`channels.mattermost.accounts.<id>.interactions.callbackBaseUrl` 配下でも同じフィールドを設定できます。
+- `interactions.callbackBaseUrl` が省略された場合、OpenClaw は `gateway.customBindHost` + `gateway.port` から導出し、さらに `http://localhost:<port>` にフォールバックします。
+- 到達可能性ルール: ボタンのコールバック URL は Mattermost サーバーから到達可能である必要があります。`localhost` は、Mattermost と OpenClaw が同じホスト/ネットワーク名前空間で実行されている場合にのみ機能します。
+- コールバック先がプライベート/Tailscale/内部アドレスの場合は、Mattermost の `ServiceSettings.AllowedUntrustedInternalConnections` にそのホスト/ドメインを追加してください。
 
-### Direct API integration (external scripts)
+### 直接 API 連携 (外部スクリプト)
 
-External scripts and webhooks can post buttons directly via the Mattermost REST API
-instead of going through the agent's `message` tool. Use `buildButtonAttachments()` from
-the extension when possible; if posting raw JSON, follow these rules:
+外部スクリプトや Webhook は、エージェントの `message` ツールを通さずに、Mattermost REST API 経由で直接ボタンを投稿できます。可能な限り拡張機能の `buildButtonAttachments()` を使用してください。生の JSON を投稿する場合は、以下のルールに従ってください:
 
-**Payload structure:**
+**ペイロード構造:**
 
 ```json5
 {
   channel_id: "<channelId>",
-  message: "Choose an option:",
+  message: "オプションを選択してください:",
   props: {
     attachments: [
       {
         actions: [
           {
-            id: "mybutton01", // alphanumeric only — see below
-            type: "button", // required, or clicks are silently ignored
-            name: "Approve", // display label
-            style: "primary", // optional: "default", "primary", "danger"
+            id: "mybutton01", // 英数字のみ — 下記参照
+            type: "button", // 必須。ないとクリックが無視されます
+            name: "承認", // 表示ラベル
+            style: "primary", // 任意: "default", "primary", "danger"
             integration: {
               url: "https://gateway.example.com/mattermost/interactions/default",
               context: {
-                action_id: "mybutton01", // must match button id (for name lookup)
+                action_id: "mybutton01", // ボタン ID と一致させる必要があります（名前引き引き用）
                 action: "approve",
-                // ... any custom fields ...
-                _token: "<hmac>", // see HMAC section below
+                // ... その他のカスタムフィールド ...
+                _token: "<hmac>", // 下記の HMAC セクション参照
               },
             },
           },
@@ -271,31 +256,27 @@ the extension when possible; if posting raw JSON, follow these rules:
 }
 ```
 
-**Critical rules:**
+**重要なルール:**
 
-1. Attachments go in `props.attachments`, not top-level `attachments` (silently ignored).
-2. Every action needs `type: "button"` — without it, clicks are swallowed silently.
-3. Every action needs an `id` field — Mattermost ignores actions without IDs.
-4. Action `id` must be **alphanumeric only** (`[a-zA-Z0-9]`). Hyphens and underscores break
-   Mattermost's server-side action routing (returns 404). Strip them before use.
-5. `context.action_id` must match the button's `id` so the confirmation message shows the
-   button name (e.g., "Approve") instead of a raw ID.
-6. `context.action_id` is required — the interaction handler returns 400 without it.
+1. アタッチメントは、トップレベルの `attachments` ではなく `props.attachments` に入れる必要があります（トップレベルは無視されます）。
+2. すべてのアクションに `type: "button"` が必要です。これがないとクリックが通知されません。
+3. すべてのアクションに `id` フィールドが必要です。Mattermost は ID のないアクションを無視します。
+4. アクションの `id` は**英数字のみ** (`[a-zA-Z0-9]`) である必要があります。ハイフンやアンダースコアは Mattermost のサーバー側アクションルーティングを破壊します（404 が返ります）。使用前に除去してください。
+5. `context.action_id` はボタンの `id` と一致させる必要があります。これにより、確認メッセージに生の ID ではなくボタン名（例: 「承認」）が表示されます。
+6. `context.action_id` は必須です。これがないとインタラクションハンドラーは 400 を返します。
 
-**HMAC token generation:**
+**HMAC トークンの生成:**
 
-The gateway verifies button clicks with HMAC-SHA256. External scripts must generate tokens
-that match the gateway's verification logic:
+ゲートウェイは HMAC-SHA256 でボタンのクリックを検証します。外部スクリプトは、ゲートウェイの検証ロジックに一致するトークンを生成する必要があります:
 
-1. Derive the secret from the bot token:
+1. ボットトークンからシークレットを導出します:
    `HMAC-SHA256(key="openclaw-mattermost-interactions", data=botToken)`
-2. Build the context object with all fields **except** `_token`.
-3. Serialize with **sorted keys** and **no spaces** (the gateway uses `JSON.stringify`
-   with sorted keys, which produces compact output).
-4. Sign: `HMAC-SHA256(key=secret, data=serializedContext)`
-5. Add the resulting hex digest as `_token` in the context.
+2. `_token` を**除く**すべてのフィールドを含むコンテキストオブジェクトを構築します。
+3. **キーをソート**し、**スペースなし**でシリアル化します（ゲートウェイはソートされたキーで `JSON.stringify` を行い、コンパクトな出力を生成します）。
+4. 署名します: `HMAC-SHA256(key=secret, data=serializedContext)`
+5. 生成された 16 進ダイジェストを `_token` としてコンテキストに追加します。
 
-Python example:
+Python の例:
 
 ```python
 import hmac, hashlib, json
@@ -312,51 +293,45 @@ token = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 context = {**ctx, "_token": token}
 ```
 
-Common HMAC pitfalls:
+HMAC のよくある落とし穴:
 
-- Python's `json.dumps` adds spaces by default (`{"key": "val"}`). Use
-  `separators=(",", ":")` to match JavaScript's compact output (`{"key":"val"}`).
-- Always sign **all** context fields (minus `_token`). The gateway strips `_token` then
-  signs everything remaining. Signing a subset causes silent verification failure.
-- Use `sort_keys=True` — the gateway sorts keys before signing, and Mattermost may
-  reorder context fields when storing the payload.
-- Derive the secret from the bot token (deterministic), not random bytes. The secret
-  must be the same across the process that creates buttons and the gateway that verifies.
+- Python の `json.dumps` はデフォルトでスペースを追加します (`{"key": "val"}`)。JavaScript のコンパクトな出力 (`{"key":"val"}`) に合わせるため、`separators=(",", ":")` を使用してください。
+- 常に**すべて**のコンテキストフィールド（`_token` 以外）を署名対象にしてください。ゲートウェイは `_token` を除去した後、残ったすべてを署名します。一部のフィールドのみを署名すると検証に失敗します。
+- `sort_keys=True` を使用してください。ゲートウェイは署名前にキーをソートします。また、Mattermost はペイロード保存時にコンテキストフィールドの順序を変更することがあります。
+- シークレットはランダムなバイトではなく、ボットトークンから（決定論的に）導出してください。ボタンを作成するプロセスと検証するゲートウェイで同じシークレットを使用する必要があります。
 
-## Directory adapter
+## ディレクトリアダプター
 
-The Mattermost plugin includes a directory adapter that resolves channel and user names
-via the Mattermost API. This enables `#channel-name` and `@username` targets in
-`openclaw message send` and cron/webhook deliveries.
+Mattermost プラグインには、Mattermost API 経由でチャネル名やユーザー名を解決するディレクトリアダプターが含まれています。これにより、`openclaw message send` や Cron/Webhook 配信において `#channel-name` や `@username` をターゲットとして指定できるようになります。
 
-No configuration is needed — the adapter uses the bot token from the account config.
+設定は不要です。アダプターはアカウント構成のボットトークンを自動的に使用します。
 
-## Multi-account
+## マルチアカウント
 
-Mattermost supports multiple accounts under `channels.mattermost.accounts`:
+Mattermost は `channels.mattermost.accounts` 配下で複数のアカウントをサポートしています:
 
 ```json5
 {
   channels: {
     mattermost: {
       accounts: {
-        default: { name: "Primary", botToken: "mm-token", baseUrl: "https://chat.example.com" },
-        alerts: { name: "Alerts", botToken: "mm-token-2", baseUrl: "https://alerts.example.com" },
+        default: { name: "メイン", botToken: "mm-token", baseUrl: "https://chat.example.com" },
+        alerts: { name: "アラート", botToken: "mm-token-2", baseUrl: "https://alerts.example.com" },
       },
     },
   },
 }
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-- No replies in channels: ensure the bot is in the channel and mention it (oncall), use a trigger prefix (onchar), or set `chatmode: "onmessage"`.
-- Auth errors: check the bot token, base URL, and whether the account is enabled.
-- Multi-account issues: env vars only apply to the `default` account.
-- Buttons appear as white boxes: the agent may be sending malformed button data. Check that each button has both `text` and `callback_data` fields.
-- Buttons render but clicks do nothing: verify `AllowedUntrustedInternalConnections` in Mattermost server config includes `127.0.0.1 localhost`, and that `EnablePostActionIntegration` is `true` in ServiceSettings.
-- Buttons return 404 on click: the button `id` likely contains hyphens or underscores. Mattermost's action router breaks on non-alphanumeric IDs. Use `[a-zA-Z0-9]` only.
-- Gateway logs `invalid _token`: HMAC mismatch. Check that you sign all context fields (not a subset), use sorted keys, and use compact JSON (no spaces). See the HMAC section above.
-- Gateway logs `missing _token in context`: the `_token` field is not in the button's context. Ensure it is included when building the integration payload.
-- Confirmation shows raw ID instead of button name: `context.action_id` does not match the button's `id`. Set both to the same sanitized value.
-- Agent doesn't know about buttons: add `capabilities: ["inlineButtons"]` to the Mattermost channel config.
+- チャネルで返信がない: ボットがチャネルに参加していることを確認し、メンションするか（oncall モード）、プレフィックスを使用するか（onchar モード）、または `chatmode: "onmessage"` を設定してください。
+- 認証エラー: ボットトークン、ベース URL、およびアカウントが有効になっているかを確認してください。
+- マルチアカウントの問題: 環境変数は `default` アカウントにのみ適用されます。
+- ボタンが白い箱として表示される: エージェントが不正な形式のボタンデータを送信している可能性があります。各ボタンに `text` と `callback_data` フィールドの両方が含まれているか確認してください。
+- ボタンは表示されるがクリックしても何も起きない: Mattermost サーバー設定の `AllowedUntrustedInternalConnections` に `127.0.0.1 localhost` が含まれているか、また `ServiceSettings.EnablePostActionIntegration` が `true` になっているかを確認してください。
+- ボタンをクリックすると 404 が返る: ボタンの `id` にハイフンやアンダースコアが含まれている可能性があります。Mattermost のアクションルーターは英数字以外の ID で動作しません。`[a-zA-Z0-9]` のみを使用してください。
+- ゲートウェイログに `invalid _token` と出る: HMAC が一致していません。すべてのコンテキストフィールドを署名しているか（一部ではない）、キーをソートしているか、コンパクトな JSON（スペースなし）を使用しているかを確認してください。上記の HMAC セクションを参照してください。
+- ゲートウェイログに `missing _token in context` と出る: ボタンのコンテキストに `_token` フィールドが含まれていません。連携ペイロード構築時に必ず含めるようにしてください。
+- 確認メッセージにボタン名ではなく生の ID が表示される: `context.action_id` がボタンの `id` と一致していません。両方に同じサニタイズ後の値を設定してください。
+- エージェントがボタンについて知らない: Mattermost チャネル構成に `capabilities: ["inlineButtons"]` を追加してください。

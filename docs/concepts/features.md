@@ -1,53 +1,53 @@
 ---
-summary: "OpenClaw capabilities across channels, routing, media, and UX."
+summary: "チャネル、ルーティング、メディア、UX にわたる OpenClaw の主要機能一覧"
 read_when:
-  - You want a full list of what OpenClaw supports
-title: "Features"
+  - OpenClaw がサポートしている機能の全体像を把握したい場合
+title: "機能一覧"
+x-i18n:
+  source_hash: "709ea22218ffb9c5435af0ecfef105cb6350754ede0f99094abe18afb8e4e119"
 ---
 
-## Highlights
+# 機能一覧
+
+## ハイライト
 
 <Columns>
-  <Card title="Channels" icon="message-square">
-    WhatsApp, Telegram, Discord, and iMessage with a single Gateway.
+  <Card title="チャネル" icon="message-square">
+    WhatsApp, Telegram, Discord, iMessage を 1 つのゲートウェイで統合管理。
   </Card>
-  <Card title="Plugins" icon="plug">
-    Add Mattermost and more with extensions.
+  <Card title="プラグイン" icon="plug">
+    拡張機能を使用して Mattermost などのチャネルを自由に追加。
   </Card>
-  <Card title="Routing" icon="route">
-    Multi-agent routing with isolated sessions.
+  <Card title="ルーティング" icon="route">
+    分離されたセッションによる高度なマルチエージェントルーティング。
   </Card>
-  <Card title="Media" icon="image">
-    Images, audio, and documents in and out.
+  <Card title="メディア" icon="image">
+    画像、音声、ドキュメントの送受信と解析に対応。
   </Card>
-  <Card title="Apps and UI" icon="monitor">
-    Web Control UI and macOS companion app.
+  <Card title="アプリと UI" icon="monitor">
+    ウェブベースのコントロール UI と macOS 用コンパニオンアプリ。
   </Card>
-  <Card title="Mobile nodes" icon="smartphone">
-    iOS and Android nodes with pairing, voice/chat, and rich device commands.
+  <Card title="モバイルノード" icon="smartphone">
+    iOS/Android ノードとのペアリング、音声/チャット、豊富なデバイスコマンド。
   </Card>
 </Columns>
 
-## Full list
+## 全機能リスト
 
-- WhatsApp integration via WhatsApp Web (Baileys)
-- Telegram bot support (grammY)
-- Discord bot support (channels.discord.js)
-- Mattermost bot support (plugin)
-- iMessage integration via local imsg CLI (macOS)
-- Agent bridge for Pi in RPC mode with tool streaming
-- Streaming and chunking for long responses
-- Multi-agent routing for isolated sessions per workspace or sender
-- Subscription auth for Anthropic and OpenAI via OAuth
-- Sessions: direct chats collapse into shared `main`; groups are isolated
-- Group chat support with mention based activation
-- Media support for images, audio, and documents
-- Optional voice note transcription hook
-- WebChat and macOS menu bar app
-- iOS node with pairing, Canvas, camera, screen recording, location, and voice features
-- Android node with pairing, Connect tab, chat sessions, voice tab, Canvas/camera, plus device, notifications, contacts/calendar, motion, photos, and SMS commands
+- **チャネル連携**: WhatsApp Web (Baileys), Telegram (grammY), Discord (discord.js), iMessage (imsg CLI) を標準サポート。
+- **拡張性**: プラグインによるチャネル追加（Mattermost 等）。
+- **エージェントブリッジ**: RPC モードによる Pi (pi-mono) 連携とツールストリーミング。
+- **ストリーミング**: 長い応答をリアルタイムで送信するストリーミングとチャンク化。
+- **マルチエージェント**: ワークスペースや送信者ごとに分離されたセッションルーティング。
+- **サブスクリプション認証**: OAuth 経由の Anthropic および OpenAI 認証。
+- **セッション管理**: ダイレクトチャットは `main` セッションへ集約、グループチャットは個別に分離。
+- **グループチャット**: メンション（言及）ベースの応答トリガー。
+- **メディア対応**: 画像、音声、ドキュメントの双方向サポート。
+- **音声メモ**: オプションの音声メッセージ書き起こしフック。
+- **ユーザーインターフェース**: WebChat および macOS メニューバーアプリ。
+- **iOS ノード**: ペアリング、Canvas、カメラ、画面収録、位置情報、音声通信。
+- **Android ノード**: ペアリング、接続タブ、チャットセッション、音声タブ、Canvas/カメラ、およびデバイス制御（通知、連絡先、カレンダー、センサー、写真、SMS）。
 
 <Note>
-Legacy Claude, Codex, Gemini, and Opencode paths have been removed. Pi is the only
-coding agent path.
+レガシーな Claude, Codex, Gemini, Opencode パスは削除されました。現在は Pi が唯一のコーディングエージェントパスです。
 </Note>

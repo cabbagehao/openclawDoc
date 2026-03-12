@@ -1,127 +1,126 @@
 ---
-summary: "Troubleshoot WSL2 Gateway + Windows Chrome remote CDP and extension-relay setups in layers"
+summary: "WSL2 ゲートウェイ + Windows Chrome リモート CDP およびレイヤー内の拡張リレー設定のトラブルシューティング"
 read_when:
-  - Running OpenClaw Gateway in WSL2 while Chrome lives on Windows
-  - Seeing overlapping browser/control-ui errors across WSL2 and Windows
-  - Deciding between raw remote CDP and the Chrome extension relay in split-host setups
-title: "WSL2 + Windows + remote Chrome CDP troubleshooting"
+  - Chrome が Windows 上で動作している間に WSL2 で OpenClaw Gateway を実行する
+  - WSL2 と Windows 間でブラウザ/コントロール UI エラーが重複して表示される
+  - 分割ホスト設定で生のリモート CDP と Chrome 拡張機能リレーのどちらを使用するかを決定する
+title: "WSL2 + Windows + リモート Chrome CDP のトラブルシューティング"
+x-i18n:
+  source_hash: "c41349ed0c61ff7f8d828fd98cbfbcbceb8e7867e7a94ead07d6b2962d82ec59"
 ---
 
-# WSL2 + Windows + remote Chrome CDP troubleshooting
+# WSL2 + Windows + リモート Chrome CDP のトラブルシューティング
 
-This guide covers the common split-host setup where:
+このガイドでは、次のような一般的な分割ホスト設定について説明します。
 
-- OpenClaw Gateway runs inside WSL2
-- Chrome runs on Windows
-- browser control must cross the WSL2/Windows boundary
+- OpenClaw ゲートウェイは WSL2 内で実行されます
+- Chrome は Windows 上で動作します
+- ブラウザ制御は WSL2/Windows の境界を越える必要があります
 
-It also covers the layered failure pattern from [issue #39369](https://github.com/openclaw/openclaw/issues/39369): several independent problems can show up at once, which makes the wrong layer look broken first.
+また、[問題 #39369](https://github.com/openclaw/openclaw/issues/39369) の階層化された障害パターンについても説明しています。複数の独立した問題が一度に発生する可能性があり、間違ったレイヤーが最初に壊れているように見えます。
 
-## Choose the right browser mode first
+## 最初に適切なブラウザ モードを選択してください
 
-You have two valid patterns:
+有効なパターンは 2 つあります。
 
-### Option 1: Raw remote CDP
+### オプション 1: 未加工のリモート CDP
 
-Use a remote browser profile that points from WSL2 to a Windows Chrome CDP endpoint.
+WSL2 から Windows Chrome CDP エンドポイントを指すリモート ブラウザー プロファイルを使用します。
 
-Choose this when:
+次の場合にこれを選択します。
 
-- you only need browser control
-- you are comfortable exposing Chrome remote debugging to WSL2
-- you do not need the Chrome extension relay
+- ブラウザ制御のみが必要です
+- Chrome リモート デバッグを WSL2 に公開することに慣れている
+- Chrome 拡張機能リレーは必要ありません
 
-### Option 2: Chrome extension relay
+### オプション 2: Chrome 拡張機能リレー
 
-Use the built-in `chrome` profile plus the OpenClaw Chrome extension.
+組み込みの `chrome` プロファイルと OpenClaw Chrome 拡張機能を使用します。
 
-Choose this when:
+次の場合にこれを選択します。
 
-- you want to attach to an existing Windows Chrome tab with the toolbar button
-- you want extension-based control instead of raw `--remote-debugging-port`
-- the relay itself must be reachable across the WSL2/Windows boundary
+- ツールバー ボタンを使用して既存の Windows Chrome タブに接続したい場合
+- 生の `--remote-debugging-port` ではなく、拡張機能ベースの制御が必要な場合
+- リレー自体は WSL2/Windows の境界を越えて到達可能である必要があります
 
-If you use the extension relay across namespaces, `browser.relayBindHost` is the important setting introduced in [Browser](/tools/browser) and [Chrome extension](/tools/chrome-extension).
+名前空間間で拡張機能リレーを使用する場合、`browser.relayBindHost` は、[ブラウザ](/tools/browser) および [Chrome 拡張機能](/tools/chrome-extension) で導入された重要な設定です。
 
-## Working architecture
+## 実用的なアーキテクチャ
 
-Reference shape:
+参考形状：- WSL2 は `127.0.0.1:18789` でゲートウェイを実行します
 
-- WSL2 runs the Gateway on `127.0.0.1:18789`
-- Windows opens the Control UI in a normal browser at `http://127.0.0.1:18789/`
-- Windows Chrome exposes a CDP endpoint on port `9222`
-- WSL2 can reach that Windows CDP endpoint
-- OpenClaw points a browser profile at the address that is reachable from WSL2
+- Windows は、`http://127.0.0.1:18789/` で通常のブラウザーでコントロール UI を開きます。
+- Windows Chrome はポート `9222` で CDP エンドポイントを公開します
+- WSL2 は Windows CDP エンドポイントに到達できます
+- OpenClaw は、WSL2 から到達可能なアドレスでブラウザー プロファイルをポイントします。
 
-## Why this setup is confusing
+## この設定がわかりにくい理由
 
-Several failures can overlap:
+いくつかの障害が重なる可能性があります。
 
-- WSL2 cannot reach the Windows CDP endpoint
-- the Control UI is opened from a non-secure origin
-- `gateway.controlUi.allowedOrigins` does not match the page origin
-- token or pairing is missing
-- the browser profile points at the wrong address
-- the extension relay is still loopback-only when you actually need cross-namespace access
+- WSL2 が Windows CDP エンドポイントに到達できない
+- コントロール UI が安全でないオリジンから開かれている
+- `gateway.controlUi.allowedOrigins` はページの原点と一致しません
+- トークンまたはペアリングがありません
+- ブラウザのプロファイルが間違ったアドレスを指している
+- 実際にクロスネームスペースアクセスが必要な場合、拡張リレーは依然としてループバックのみです
 
-Because of that, fixing one layer can still leave a different error visible.
+そのため、1 つのレイヤーを修正しても、別のエラーが表示されたままになる可能性があります。
 
-## Critical rule for the Control UI
+## コントロール UI の重要なルール
 
-When the UI is opened from Windows, use Windows localhost unless you have a deliberate HTTPS setup.
+UI が Windows から開かれる場合は、意図的な HTTPS セットアップがない限り、Windows localhost を使用します。
 
-Use:
+使用:
 
 `http://127.0.0.1:18789/`
 
-Do not default to a LAN IP for the Control UI. Plain HTTP on a LAN or tailnet address can trigger insecure-origin/device-auth behavior that is unrelated to CDP itself. See [Control UI](/web/control-ui).
+コントロール UI の LAN IP をデフォルトにしないでください。 LAN またはテールネット アドレス上のプレーン HTTP は、CDP 自体とは関係のない、安全でない発信元/デバイス認証の動作を引き起こす可能性があります。 [コントロール UI](/web/control-ui) を参照してください。
 
-## Validate in layers
+## レイヤー内で検証する
 
-Work top to bottom. Do not skip ahead.
+上から下へ作業します。スキップしないでください。
 
-### Layer 1: Verify Chrome is serving CDP on Windows
+### レイヤ 1: Chrome が Windows 上で CDP を提供していることを確認する
 
-Start Chrome on Windows with remote debugging enabled:
+リモート デバッグを有効にして Windows 上で Chrome を起動します。
 
 ```powershell
 chrome.exe --remote-debugging-port=9222
 ```
 
-From Windows, verify Chrome itself first:
+Windows からは、まず Chrome 自体を確認します。
 
-```powershell
+````powershell
 curl http://127.0.0.1:9222/json/version
 curl http://127.0.0.1:9222/json/list
-```
+```Windows でこれが失敗した場合、OpenClaw はまだ問題ではありません。
 
-If this fails on Windows, OpenClaw is not the problem yet.
+### レイヤ 2: WSL2 が Windows エンドポイントに到達できることを確認する
 
-### Layer 2: Verify WSL2 can reach that Windows endpoint
-
-From WSL2, test the exact address you plan to use in `cdpUrl`:
+WSL2 から、`cdpUrl` で使用する予定の正確なアドレスをテストします。
 
 ```bash
 curl http://WINDOWS_HOST_OR_IP:9222/json/version
 curl http://WINDOWS_HOST_OR_IP:9222/json/list
-```
+````
 
-Good result:
+良い結果:
 
-- `/json/version` returns JSON with Browser / Protocol-Version metadata
-- `/json/list` returns JSON (empty array is fine if no pages are open)
+- `/json/version` は、ブラウザー/プロトコル バージョンのメタデータを含む JSON を返します
+- `/json/list` は JSON を返します (ページが開いていない場合は空の配列でも問題ありません)
 
-If this fails:
+これが失敗した場合:
 
-- Windows is not exposing the port to WSL2 yet
-- the address is wrong for the WSL2 side
-- firewall / port forwarding / local proxying is still missing
+- Windows はまだポートを WSL2 に公開していません
+- WSL2側のアドレスが間違っています
+- ファイアウォール/ポート転送/ローカルプロキシがまだありません
 
-Fix that before touching OpenClaw config.
+OpenClaw 設定に触れる前に修正してください。
 
-### Layer 3: Configure the correct browser profile
+### レイヤ 3: 正しいブラウザ プロファイルを構成する
 
-For raw remote CDP, point OpenClaw at the address that is reachable from WSL2:
+未加工のリモート CDP の場合、WSL2 から到達可能なアドレスを OpenClaw に指定します。
 
 ```json5
 {
@@ -139,17 +138,17 @@ For raw remote CDP, point OpenClaw at the address that is reachable from WSL2:
 }
 ```
 
-Notes:
+注:
 
-- use the WSL2-reachable address, not whatever only works on Windows
-- keep `attachOnly: true` for externally managed browsers
-- test the same URL with `curl` before expecting OpenClaw to succeed
+- Windows でのみ動作するものではなく、WSL2 で到達可能なアドレスを使用してください
+- 外部管理ブラウザの場合は `attachOnly: true` を保持します
+- OpenClaw が成功することを期待する前に、同じ URL を `curl` でテストします。
 
-### Layer 4: If you use the Chrome extension relay instead
+### レイヤ 4: 代わりに Chrome 拡張機能リレーを使用する場合
 
-If the browser machine and the Gateway are separated by a namespace boundary, the relay may need a non-loopback bind address.
+ブラウザ マシンとゲートウェイが名前空間の境界によって分離されている場合、リレーには非ループバック バインド アドレスが必要になる場合があります。
 
-Example:
+例:
 
 ```json5
 {
@@ -161,82 +160,79 @@ Example:
 }
 ```
 
-Use this only when needed:
+これは必要な場合にのみ使用してください。
 
-- default behavior is safer because the relay stays loopback-only
-- `0.0.0.0` expands exposure surface
-- keep Gateway auth, node pairing, and the surrounding network private
+- リレーはループバックのみであるため、デフォルトの動作の方が安全です
+- `0.0.0.0` は露出面を拡大します
+- ゲートウェイ認証、ノードペアリング、周囲のネットワークをプライベートに保ちます拡張リレーが必要ない場合は、上記の未加工のリモート CDP プロファイルを優先してください。
 
-If you do not need the extension relay, prefer the raw remote CDP profile above.
+### レイヤ 5: コントロール UI レイヤを個別に確認する
 
-### Layer 5: Verify the Control UI layer separately
-
-Open the UI from Windows:
+Windows から UI を開きます。
 
 `http://127.0.0.1:18789/`
 
-Then verify:
+次に、次のことを確認します。
 
-- the page origin matches what `gateway.controlUi.allowedOrigins` expects
-- token auth or pairing is configured correctly
-- you are not debugging a Control UI auth problem as if it were a browser problem
+- ページのオリジンが `gateway.controlUi.allowedOrigins` が期待するものと一致します
+- トークン認証またはペアリングが正しく構成されている
+- コントロール UI 認証の問題をブラウザーの問題であるかのようにデバッグしていない
 
-Helpful page:
+役立つページ:
 
-- [Control UI](/web/control-ui)
+- [コントロールUI](/web/control-ui)
 
-### Layer 6: Verify end-to-end browser control
+### レイヤ 6: エンドツーエンドのブラウザ制御を検証する
 
-From WSL2:
+WSL2から:
 
 ```bash
 openclaw browser open https://example.com --browser-profile remote
 openclaw browser tabs --browser-profile remote
 ```
 
-For the extension relay:
+延長リレーの場合：
 
 ```bash
 openclaw browser tabs --browser-profile chrome
 ```
 
-Good result:
+良い結果:
 
-- the tab opens in Windows Chrome
-- `openclaw browser tabs` returns the target
-- later actions (`snapshot`, `screenshot`, `navigate`) work from the same profile
+- Windows Chromeでタブが開きます
+- `openclaw browser tabs` はターゲットを返します
+- 後のアクション (`snapshot`、`screenshot`、`navigate`) は同じプロファイルから機能します
 
-## Common misleading errors
+## よくある誤解を招くエラー
 
-Treat each message as a layer-specific clue:
+各メッセージをレイヤー固有の手掛かりとして扱います。
 
 - `control-ui-insecure-auth`
-  - UI origin / secure-context problem, not a CDP transport problem
+  - CDP トランスポートの問題ではなく、UI オリジン / セキュア コンテキストの問題
 - `token_missing`
-  - auth configuration problem
+  - 認証設定の問題
 - `pairing required`
-  - device approval problem
+  - デバイス承認の問題
 - `Remote CDP for profile "remote" is not reachable`
-  - WSL2 cannot reach the configured `cdpUrl`
+  - WSL2 は構成された `cdpUrl` に到達できません
 - `gateway timeout after 1500ms`
-  - often still CDP reachability or a slow/unreachable remote endpoint
+  - 多くの場合、まだ CDP に到達可能であるか、リモート エンドポイントが遅い/到達不能である
 - `Chrome extension relay is running, but no tab is connected`
-  - extension relay profile selected, but no attached tab exists yet
+  - 拡張リレー プロファイルが選択されましたが、添付されたタブはまだ存在しません
 
-## Fast triage checklist
+## 迅速なトリアージ チェックリスト1. Windows: `curl http://127.0.0.1:9222/json/version` は機能しますか?
 
-1. Windows: does `curl http://127.0.0.1:9222/json/version` work?
-2. WSL2: does `curl http://WINDOWS_HOST_OR_IP:9222/json/version` work?
-3. OpenClaw config: does `browser.profiles.<name>.cdpUrl` use that exact WSL2-reachable address?
-4. Control UI: are you opening `http://127.0.0.1:18789/` instead of a LAN IP?
-5. Extension relay only: do you actually need `browser.relayBindHost`, and if so is it set explicitly?
+2. WSL2: `curl http://WINDOWS_HOST_OR_IP:9222/json/version` は機能しますか?
+3. OpenClaw 構成: `browser.profiles.<name>.cdpUrl` は、WSL2 で到達可能なその正確なアドレスを使用しますか?
+4. コントロール UI: LAN IP の代わりに `http://127.0.0.1:18789/` を開いていませんか?
+5. 拡張リレーのみ: `browser.relayBindHost` は実際に必要ですか? 必要な場合は明示的に設定されますか?
 
-## Practical takeaway
+## 実践的なポイント
 
-The setup is usually viable. The hard part is that browser transport, Control UI origin security, token/pairing, and extension-relay topology can each fail independently while looking similar from the user side.
+通常、セットアップは実行可能です。難しいのは、ブラウザー トランスポート、コントロール UI オリジン セキュリティ、トークン/ペアリング、および拡張リレー トポロジが、ユーザー側からは同じように見えても、それぞれ独立して失敗する可能性があることです。
 
-When in doubt:
+疑問がある場合:
 
-- verify the Windows Chrome endpoint locally first
-- verify the same endpoint from WSL2 second
-- only then debug OpenClaw config or Control UI auth
+- 最初に Windows Chrome エンドポイントをローカルで確認します
+- WSL2 から同じエンドポイントを 2 番目に検証します。
+- その後のみ、OpenClaw 構成またはコントロール UI 認証をデバッグします

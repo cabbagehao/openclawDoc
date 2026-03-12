@@ -1,65 +1,57 @@
 ---
-summary: "PeekabooBridge integration for macOS UI automation"
+summary: "macOS UI 自動化のための PeekabooBridge 統合"
 read_when:
-  - Hosting PeekabooBridge in OpenClaw.app
-  - Integrating Peekaboo via Swift Package Manager
-  - Changing PeekabooBridge protocol/paths
+  - OpenClaw.app で PeekabooBridge をホストするとき
+  - Swift Package Manager 経由で Peekaboo を統合するとき
+  - PeekabooBridge のプロトコルやパスを変更するとき
 title: "Peekaboo Bridge"
+x-i18n:
+  source_hash: "b5b9ddb9a7c59e153a1d5d23c33616bb1542b5c7dadedc3af340aeee9ba03487"
 ---
 
-# Peekaboo Bridge (macOS UI automation)
+# Peekaboo Bridge（macOS UI automation）
 
-OpenClaw can host **PeekabooBridge** as a local, permission‑aware UI automation
-broker. This lets the `peekaboo` CLI drive UI automation while reusing the
-macOS app’s TCC permissions.
+OpenClaw は、ローカルで動作する権限認識型の UI 自動化 broker として **PeekabooBridge** をホストできます。これにより、`peekaboo` CLI は macOS アプリ側の TCC 権限を再利用しながら UI 自動化を実行できます。
 
-## What this is (and isn’t)
+## これは何で、何ではないか
 
-- **Host**: OpenClaw.app can act as a PeekabooBridge host.
-- **Client**: use the `peekaboo` CLI (no separate `openclaw ui ...` surface).
-- **UI**: visual overlays stay in Peekaboo.app; OpenClaw is a thin broker host.
+- **Host**: OpenClaw.app は PeekabooBridge のホストになれます。
+- **Client**: 利用するのは `peekaboo` CLI であり、別個の `openclaw ui ...` インターフェースはありません。
+- **UI**: 可視オーバーレイは Peekaboo.app 側に残り、OpenClaw は薄い broker host として振る舞います。
 
-## Enable the bridge
+## ブリッジを有効にする
 
-In the macOS app:
+macOS アプリで次を有効にします。
 
 - Settings → **Enable Peekaboo Bridge**
 
-When enabled, OpenClaw starts a local UNIX socket server. If disabled, the host
-is stopped and `peekaboo` will fall back to other available hosts.
+有効にすると、OpenClaw はローカルの UNIX ソケット サーバーを起動します。無効にするとホストは停止し、`peekaboo` は利用可能な別ホストへフォールバックします。
 
-## Client discovery order
+## クライアントの検出順序
 
-Peekaboo clients typically try hosts in this order:
+Peekaboo クライアントは通常、次の順序でホストを探します。
 
-1. Peekaboo.app (full UX)
-2. Claude.app (if installed)
-3. OpenClaw.app (thin broker)
+1. Peekaboo.app（完全な UX を提供）
+2. Claude.app（インストールされている場合）
+3. OpenClaw.app（薄い broker）
 
-Use `peekaboo bridge status --verbose` to see which host is active and which
-socket path is in use. You can override with:
+どのホストがアクティブで、どのソケット パスが使われているかは `peekaboo bridge status --verbose` で確認できます。必要に応じて、次の環境変数で上書きできます。
 
 ```bash
 export PEEKABOO_BRIDGE_SOCKET=/path/to/bridge.sock
 ```
 
-## Security & permissions
+## セキュリティと権限
 
-- The bridge validates **caller code signatures**; an allowlist of TeamIDs is
-  enforced (Peekaboo host TeamID + OpenClaw app TeamID).
-- Requests time out after ~10 seconds.
-- If required permissions are missing, the bridge returns a clear error message
-  rather than launching System Settings.
+- ブリッジは **呼び出し元のコード署名** を検証します。許可される Team ID の allowlist を強制し、Peekaboo host の Team ID と OpenClaw app の Team ID を受け付けます。
+- リクエストはおよそ 10 秒でタイムアウトします。
+- 必要な権限が不足している場合、System Settings を勝手に開くのではなく、明確なエラー メッセージを返します。
 
-## Snapshot behavior (automation)
+## スナップショットの挙動（自動化）
 
-Snapshots are stored in memory and expire automatically after a short window.
-If you need longer retention, re‑capture from the client.
+スナップショットはメモリ上に保持され、短時間で自動的に失効します。より長く保持したい場合は、クライアント側で再取得してください。
 
-## Troubleshooting
+## トラブルシューティング
 
-- If `peekaboo` reports “bridge client is not authorized”, ensure the client is
-  properly signed or run the host with `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1`
-  in **debug** mode only.
-- If no hosts are found, open one of the host apps (Peekaboo.app or OpenClaw.app)
-  and confirm permissions are granted.
+- `peekaboo` が `bridge client is not authorized` と報告する場合は、クライアントが正しく署名されているか確認してください。`PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1` を使うのは **debug** モード限定にしてください。
+- ホストが見つからない場合は、Peekaboo.app または OpenClaw.app を起動し、必要な権限が付与済みか確認してください。

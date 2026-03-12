@@ -1,40 +1,42 @@
 ---
-summary: "CLI reference for `openclaw devices` (device pairing + token rotation/revocation)"
+summary: "`openclaw devices` の CLI リファレンス (デバイスのペアリング、トークンの更新と取り消し)"
 read_when:
-  - You are approving device pairing requests
-  - You need to rotate or revoke device tokens
+  - デバイスのペアリング要求を承認したい場合
+  - デバイストークンの更新（ローテーション）や取り消しを行いたい場合
 title: "devices"
+x-i18n:
+  source_hash: "efcc88d20e64556eb06158a8fd5e5c785e9c31421c2a89353d136a6578dc1d1d"
 ---
 
 # `openclaw devices`
 
-Manage device pairing requests and device-scoped tokens.
+デバイスのペアリング要求と、デバイススコープのトークンを管理します。
 
-## Commands
+## コマンド一覧
 
 ### `openclaw devices list`
 
-List pending pairing requests and paired devices.
+保留中のペアリング要求と、ペアリング済みのデバイスを一覧表示します。
 
-```
+```bash
 openclaw devices list
 openclaw devices list --json
 ```
 
 ### `openclaw devices remove <deviceId>`
 
-Remove one paired device entry.
+ペアリング済みデバイスのエントリを 1 つ削除します。
 
-```
+```bash
 openclaw devices remove <deviceId>
 openclaw devices remove <deviceId> --json
 ```
 
 ### `openclaw devices clear --yes [--pending]`
 
-Clear paired devices in bulk.
+ペアリング済みデバイスを一括で削除します。
 
-```
+```bash
 openclaw devices clear --yes
 openclaw devices clear --yes --pending
 openclaw devices clear --yes --pending --json
@@ -42,10 +44,9 @@ openclaw devices clear --yes --pending --json
 
 ### `openclaw devices approve [requestId] [--latest]`
 
-Approve a pending device pairing request. If `requestId` is omitted, OpenClaw
-automatically approves the most recent pending request.
+保留中のデバイスペアリング要求を承認します。`requestId` を省略した場合、OpenClaw は最新の要求を自動的に承認します。
 
-```
+```bash
 openclaw devices approve
 openclaw devices approve <requestId>
 openclaw devices approve --latest
@@ -53,42 +54,41 @@ openclaw devices approve --latest
 
 ### `openclaw devices reject <requestId>`
 
-Reject a pending device pairing request.
+保留中のデバイスペアリング要求を拒否します。
 
-```
+```bash
 openclaw devices reject <requestId>
 ```
 
 ### `openclaw devices rotate --device <id> --role <role> [--scope <scope...>]`
 
-Rotate a device token for a specific role (optionally updating scopes).
+特定のロールのデバイストークンを更新（ローテーション）します。オプションでスコープの更新も可能です。
 
-```
+```bash
 openclaw devices rotate --device <deviceId> --role operator --scope operator.read --scope operator.write
 ```
 
 ### `openclaw devices revoke --device <id> --role <role>`
 
-Revoke a device token for a specific role.
+特定のロールのデバイストークンを取り消します。
 
-```
+```bash
 openclaw devices revoke --device <deviceId> --role node
 ```
 
-## Common options
+## よく使われるオプション
 
-- `--url <url>`: Gateway WebSocket URL (defaults to `gateway.remote.url` when configured).
-- `--token <token>`: Gateway token (if required).
-- `--password <password>`: Gateway password (password auth).
-- `--timeout <ms>`: RPC timeout.
-- `--json`: JSON output (recommended for scripting).
+- `--url <url>`: ゲートウェイの WebSocket URL (構成済みであれば `gateway.remote.url` がデフォルトとなります)。
+- `--token <token>`: ゲートウェイの認証トークン (必要な場合)。
+- `--password <password>`: ゲートウェイの認証パスワード。
+- `--timeout <ms>`: RPC タイムアウト。
+- `--json`: JSON 形式で出力（スクリプトでの利用を推奨）。
 
-Note: when you set `--url`, the CLI does not fall back to config or environment credentials.
-Pass `--token` or `--password` explicitly. Missing explicit credentials is an error.
+注意: `--url` を明示的に指定した場合、CLI は構成ファイルや環境変数の認証情報を自動的に使用することはありません。`--token` または `--password` を明示的に渡してください。認証情報が不足している場合はエラーになります。
 
-## Notes
+## 補足事項
 
-- Token rotation returns a new token (sensitive). Treat it like a secret.
-- These commands require `operator.pairing` (or `operator.admin`) scope.
-- `devices clear` is intentionally gated by `--yes`.
-- If pairing scope is unavailable on local loopback (and no explicit `--url` is passed), list/approve can use a local pairing fallback.
+- トークンの更新（rotate）を行うと、新しいトークンが発行されます。これは機密情報として慎重に扱ってください。
+- これらのコマンドの実行には `operator.pairing` (または `operator.admin`) スコープの権限が必要です。
+- `devices clear` コマンドは安全のため `--yes` フラグを必須としています。
+- ローカルループバック環境でペアリングスコープが利用できず、かつ明示的な `--url` が指定されていない場合、list および approve コマンドはローカル環境用のペアリングフォールバックを使用することがあります。

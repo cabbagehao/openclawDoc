@@ -1,48 +1,48 @@
 ---
-summary: "Plan: one clean plugin SDK + runtime for all messaging connectors"
+summary: "計画: すべてのメッセージング コネクタ用の 1 つのクリーンなプラグイン SDK + ランタイム"
 read_when:
-  - Defining or refactoring the plugin architecture
-  - Migrating channel connectors to the plugin SDK/runtime
-title: "Plugin SDK Refactor"
+  - プラグイン アーキテクチャの定義またはリファクタリング
+  - チャネル コネクタをプラグイン SDK/ランタイムに移行する
+title: "プラグイン SDK リファクタリング"
+x-i18n:
+  source_hash: "b9247cf0c555170862b2ed97ffba0f787fe15d176893bfe8f4bd38f4e94a87c9"
 ---
 
-# Plugin SDK + Runtime Refactor Plan
+# プラグイン SDK + ランタイム リファクタリング プラン
 
-Goal: every messaging connector is a plugin (bundled or external) using one stable API.
-No plugin imports from `src/**` directly. All dependencies go through the SDK or runtime.
+目標: すべてのメッセージング コネクタは、1 つの安定した API を使用するプラグイン (バンドルまたは外部) です。
+`src/**` から直接インポートするプラグインはありません。すべての依存関係は SDK またはランタイムを経由します。
 
-## Why now
+## なぜ今なのか
 
-- Current connectors mix patterns: direct core imports, dist-only bridges, and custom helpers.
-- This makes upgrades brittle and blocks a clean external plugin surface.
+- 現在のコネクタには、直接コア インポート、dist 専用ブリッジ、カスタム ヘルパーなどのパターンが混在しています。
+- これにより、アップグレードが脆弱になり、きれいな外部プラグインの表面がブロックされます。
 
-## Target architecture (two layers)
+## ターゲット アーキテクチャ (2 層)
 
-### 1) Plugin SDK (compile-time, stable, publishable)
+### 1) プラグイン SDK (コンパイル時、安定、公開可能)
 
-Scope: types, helpers, and config utilities. No runtime state, no side effects.
+範囲: タイプ、ヘルパー、構成ユーティリティ。実行時の状態や副作用はありません。
 
-Contents (examples):
+内容（例）：
 
-- Types: `ChannelPlugin`, adapters, `ChannelMeta`, `ChannelCapabilities`, `ChannelDirectoryEntry`.
-- Config helpers: `buildChannelConfigSchema`, `setAccountEnabledInConfigSection`, `deleteAccountFromConfigSection`,
-  `applyAccountNameToChannelSection`.
-- Pairing helpers: `PAIRING_APPROVED_MESSAGE`, `formatPairingApproveHint`.
-- Onboarding helpers: `promptChannelAccessConfig`, `addWildcardAllowFrom`, onboarding types.
-- Tool param helpers: `createActionGate`, `readStringParam`, `readNumberParam`, `readReactionParams`, `jsonResult`.
-- Docs link helper: `formatDocsLink`.
+- タイプ: `ChannelPlugin`、アダプター、`ChannelMeta`、`ChannelCapabilities`、`ChannelDirectoryEntry`。
+- 構成ヘルパー: `buildChannelConfigSchema`、`setAccountEnabledInConfigSection`、`deleteAccountFromConfigSection`、
+  `applyAccountNameToChannelSection`。
+- ペアリング ヘルパー: `PAIRING_APPROVED_MESSAGE`、`formatPairingApproveHint`。
+- オンボーディング ヘルパー: `promptChannelAccessConfig`、`addWildcardAllowFrom`、オンボーディング タイプ。
+- ツールパラメータヘルパー: `createActionGate`、`readStringParam`、`readNumberParam`、`readReactionParams`、`jsonResult`。
+- ドキュメント リンク ヘルパー: `formatDocsLink`。
 
-Delivery:
+配送:
 
-- Publish as `openclaw/plugin-sdk` (or export from core under `openclaw/plugin-sdk`).
-- Semver with explicit stability guarantees.
+- `openclaw/plugin-sdk` として公開します (または `openclaw/plugin-sdk` の下のコアからエクスポートします)。
+- 明示的な安定性を保証する Semver。
 
-### 2) Plugin Runtime (execution surface, injected)
+### 2) プラグイン ランタイム (実行サーフェス、注入)
 
-Scope: everything that touches core runtime behavior.
-Accessed via `OpenClawPluginApi.runtime` so plugins never import `src/**`.
-
-Proposed surface (minimal but complete):
+範囲: コアのランタイム動作に関わるすべて。
+`OpenClawPluginApi.runtime` 経由でアクセスされるため、プラグインは `src/**` をインポートしません。提案されたサーフェス (最小限だが完全):
 
 ```ts
 export type PluginRuntime = {
@@ -144,71 +144,70 @@ export type PluginRuntime = {
 };
 ```
 
-Notes:
+注:
 
-- Runtime is the only way to access core behavior.
-- SDK is intentionally small and stable.
-- Each runtime method maps to an existing core implementation (no duplication).
+- ランタイムは、コア動作にアクセスする唯一の方法です。
+- SDK は意図的に小さく安定しています。
+- 各ランタイム メソッドは既存のコア実装にマップされます (重複なし)。
 
-## Migration plan (phased, safe)
+## 移行計画 (段階的、安全)
 
-### Phase 0: scaffolding
+### フェーズ 0: 足場
 
-- Introduce `openclaw/plugin-sdk`.
-- Add `api.runtime` to `OpenClawPluginApi` with the surface above.
-- Maintain existing imports during a transition window (deprecation warnings).
+- `openclaw/plugin-sdk` を導入します。
+- 上のサーフェスを使用して `api.runtime` を `OpenClawPluginApi` に追加します。
+- 移行期間中に既存のインポートを維持します (非推奨の警告)。
 
-### Phase 1: bridge cleanup (low risk)
+### フェーズ 1: 橋の清掃 (低リスク)
 
-- Replace per-extension `core-bridge.ts` with `api.runtime`.
-- Migrate BlueBubbles, Zalo, Zalo Personal first (already close).
-- Remove duplicated bridge code.
+- 拡張子ごとの `core-bridge.ts` を `api.runtime` に置き換えます。
+- BlueBubbles、Zalo、Zalo Personal を最初に移行します (すでに終了しています)。
+- 重複したブリッジコードを削除します。
 
-### Phase 2: light direct-import plugins
+### フェーズ 2: ライトの直接インポート プラグイン
 
-- Migrate Matrix to SDK + runtime.
-- Validate onboarding, directory, group mention logic.
+- Matrix を SDK + ランタイムに移行します。
+- オンボーディング、ディレクトリ、グループメンションロジックを検証します。
 
-### Phase 3: heavy direct-import plugins
+### フェーズ 3: 大量の直接インポート プラグイン
 
-- Migrate MS Teams (largest set of runtime helpers).
-- Ensure reply/typing semantics match current behavior.
+- MS Teams (ランタイム ヘルパーの最大のセット) を移行します。
+- 返信/入力セマンティクスが現在の動作と一致していることを確認します。
 
-### Phase 4: iMessage pluginization
+### フェーズ 4: iMessage プラグイン化
 
-- Move iMessage into `extensions/imessage`.
-- Replace direct core calls with `api.runtime`.
-- Keep config keys, CLI behavior, and docs intact.
+- iMessage を `extensions/imessage` に移動します。
+- 直接のコア呼び出しを `api.runtime` に置き換えます。
+- 設定キー、CLI 動作、およびドキュメントをそのままの状態に保ちます。
 
-### Phase 5: enforcement
+### フェーズ 5: 施行
 
-- Add lint rule / CI check: no `extensions/**` imports from `src/**`.
-- Add plugin SDK/version compatibility checks (runtime + SDK semver).
+- lint ルール/CI チェックを追加: `extensions/**` は `src/**` からインポートされません。
+- プラグイン SDK/バージョン互換性チェックを追加 (ランタイム + SDK サーバー)。
 
-## Compatibility and versioning
+## 互換性とバージョン管理- SDK: semver、公開され、文書化された変更
 
-- SDK: semver, published, documented changes.
-- Runtime: versioned per core release. Add `api.runtime.version`.
-- Plugins declare a required runtime range (e.g., `openclawRuntime: ">=2026.2.0"`).
+- ランタイム: コア リリースごとにバージョン管理されます。 `api.runtime.version` を追加します。
+- プラグインは必要なランタイム範囲を宣言します (例: `openclawRuntime: ">=2026.2.0"`)。
 
-## Testing strategy
+## テスト戦略
 
-- Adapter-level unit tests (runtime functions exercised with real core implementation).
-- Golden tests per plugin: ensure no behavior drift (routing, pairing, allowlist, mention gating).
-- A single end-to-end plugin sample used in CI (install + run + smoke).
+- アダプターレベルの単体テスト (実際のコア実装で実行されるランタイム機能)。
+- プラグインごとのゴールデン テスト: 動作のドリフトがないことを確認します (ルーティング、ペアリング、ホワイトリスト、メンション ゲート)。
+- CI で使用される単一のエンドツーエンドのプラグイン サンプル (インストール + 実行 + スモーク)。
 
-## Open questions
+## 未解決の質問
 
-- Where to host SDK types: separate package or core export?
-- Runtime type distribution: in SDK (types only) or in core?
-- How to expose docs links for bundled vs external plugins?
-- Do we allow limited direct core imports for in-repo plugins during transition?
+- SDK タイプをどこでホストするか: 個別のパッケージまたはコアのエクスポート?
+- ランタイム型の配布: SDK (型のみ) またはコアで?
+- バンドルされたプラグインと外部プラグインのドキュメント リンクを公開するにはどうすればよいですか?
+- 移行中にリポジトリ内プラグインの限定的な直接コア インポートを許可しますか?
 
-## Success criteria
+## 成功基準
 
-- All channel connectors are plugins using SDK + runtime.
-- No `extensions/**` imports from `src/**`.
-- New connector templates depend only on SDK + runtime.
-- External plugins can be developed and updated without core source access.
+- すべてのチャネル コネクタは SDK + ランタイムを使用したプラグインです。
+- `extensions/**` は `src/**` からインポートされません。
+- 新しいコネクタ テンプレートは、SDK + ランタイムにのみ依存します。
+- 外部プラグインは、コア ソースにアクセスせずに開発および更新できます。
 
-Related docs: [Plugins](/tools/plugin), [Channels](/channels/index), [Configuration](/gateway/configuration).
+関連ドキュメント: [プラグイン](/tools/plugin)、[チャネル](/channels/index)、[構成](/gateway/configuration)。

@@ -1,90 +1,89 @@
-# Contributing to the OpenClaw Threat Model
+---
+title: "OpenClaw 脅威モデルへの貢献"
+---
 
-Thanks for helping make OpenClaw more secure. This threat model is a living document and we welcome contributions from anyone - you don't need to be a security expert.
+# OpenClaw 脅威モデルへの貢献
 
-## Ways to Contribute
+OpenClaw の安全性の向上にご協力いただきありがとうございます。この脅威モデルは生きているドキュメントであり、セキュリティの専門家である必要はなく、誰からの貢献も歓迎します。
 
-### Add a Threat
+## 貢献する方法
 
-Spotted an attack vector or risk we haven't covered? Open an issue on [openclaw/trust](https://github.com/openclaw/trust/issues) and describe it in your own words. You don't need to know any frameworks or fill in every field - just describe the scenario.
+### 脅威を追加する
 
-**Helpful to include (but not required):**
+これまでカバーしていない攻撃ベクトルやリスクを発見しましたか? [openclaw/trust](https://github.com/openclaw/trust/issues) で問題を開き、自分の言葉で説明してください。フレームワークを知ったり、すべてのフィールドに入力したりする必要はありません。シナリオを説明するだけです。
 
-- The attack scenario and how it could be exploited
-- Which parts of OpenClaw are affected (CLI, gateway, channels, ClawHub, MCP servers, etc.)
-- How severe you think it is (low / medium / high / critical)
-- Any links to related research, CVEs, or real-world examples
+**含めると役立ちます (必須ではありません):**
 
-We'll handle the ATLAS mapping, threat IDs, and risk assessment during review. If you want to include those details, great - but it's not expected.
+- 攻撃シナリオとその悪用方法
+- OpenClaw のどの部分が影響を受けるか (CLI、ゲートウェイ、チャネル、ClawHub、MCP サーバーなど)
+- どれくらい深刻だと思いますか (低 / 中 / 高 / 重大)
+- 関連する研究、CVE、または実際の例へのリンク
 
-> **This is for adding to the threat model, not reporting live vulnerabilities.** If you've found an exploitable vulnerability, see our [Trust page](https://trust.openclaw.ai) for responsible disclosure instructions.
+レビュー中に ATLAS マッピング、脅威 ID、リスク評価を処理します。これらの詳細を含めたい場合は、それは素晴らしいことですが、それは期待されていません。
 
-### Suggest a Mitigation
+> **これは脅威モデルに追加するためのものであり、実際の脆弱性を報告するものではありません。** 悪用可能な脆弱性を見つけた場合は、責任ある開示手順について [信頼ページ](https://trust.openclaw.ai) を参照してください。
 
-Have an idea for how to address an existing threat? Open an issue or PR referencing the threat. Useful mitigations are specific and actionable - for example, "per-sender rate limiting of 10 messages/minute at the gateway" is better than "implement rate limiting."
+### 緩和策を提案する既存の脅威に対処する方法についてアイデアはありますか?脅威に関する問題または PR を開きます。有用な軽減策は具体的で実行可能です。たとえば、「ゲートウェイでの送信者ごとのレート制限を 1 分あたり 10 メッセージに制限する」ことは、「レート制限を実装する」よりも優れています
 
-### Propose an Attack Chain
+### 攻撃チェーンを提案する
 
-Attack chains show how multiple threats combine into a realistic attack scenario. If you see a dangerous combination, describe the steps and how an attacker would chain them together. A short narrative of how the attack unfolds in practice is more valuable than a formal template.
+攻撃チェーンは、複数の脅威がどのように組み合わされて現実的な攻撃シナリオになるかを示します。危険な組み合わせを見つけた場合は、その手順と、攻撃者がそれらをどのように連鎖させるかを説明します。実際に攻撃がどのように展開されるのかについての短い説明は、正式なテンプレートよりも価値があります。
 
-### Fix or Improve Existing Content
+### 既存のコンテンツを修正または改善する
 
-Typos, clarifications, outdated info, better examples - PRs welcome, no issue needed.
+タイプミス、説明、古い情報、より良い例 - PR は歓迎です。問題は必要ありません。
 
-## What We Use
+## 私たちが使用するもの
 
-### MITRE ATLAS
+### マイトレアトラス
 
-This threat model is built on [MITRE ATLAS](https://atlas.mitre.org/) (Adversarial Threat Landscape for AI Systems), a framework designed specifically for AI/ML threats like prompt injection, tool misuse, and agent exploitation. You don't need to know ATLAS to contribute - we map submissions to the framework during review.
+この脅威モデルは、プロンプト インジェクション、ツールの悪用、エージェントの悪用などの AI/ML 脅威のために特別に設計されたフレームワークである [MITRE ATLAS](https://atlas.mitre.org/) (AI システムの敵対的脅威ランドスケープ) に基づいて構築されています。貢献するために ATLAS について知る必要はありません。レビュー中に提出物をフレームワークにマッピングします。
 
-### Threat IDs
+### 脅威 ID
 
-Each threat gets an ID like `T-EXEC-003`. The categories are:
+| 各脅威には、`T-EXEC-003` のような ID が付けられます。カテゴリは次のとおりです。 | コード                            | カテゴリー |
+| ------------------------------------------------------------------------------- | --------------------------------- | ---------- |
+| 偵察                                                                            | 偵察 - 情報収集                   |
+| アクセス                                                                        | 初期アクセス - エントリーの取得   |
+| 執行                                                                            | 実行 - 悪意のあるアクションの実行 |
+| 持続する                                                                        | 永続性 - アクセスの維持           |
+| 回避                                                                            | 防御回避 - 検出を回避する         |
+| ディスク                                                                        | 発見 - 環境について学ぶ           |
+| エクスフィル                                                                    | 窃盗 - データの窃盗               |
+| 影響                                                                            | 影響 - 損害または混乱             |
 
-| Code    | Category                                   |
-| ------- | ------------------------------------------ |
-| RECON   | Reconnaissance - information gathering     |
-| ACCESS  | Initial access - gaining entry             |
-| EXEC    | Execution - running malicious actions      |
-| PERSIST | Persistence - maintaining access           |
-| EVADE   | Defense evasion - avoiding detection       |
-| DISC    | Discovery - learning about the environment |
-| EXFIL   | Exfiltration - stealing data               |
-| IMPACT  | Impact - damage or disruption              |
+ID は、レビュー中に保守者によって割り当てられます。どれか 1 つを選ぶ必要はありません。
 
-IDs are assigned by maintainers during review. You don't need to pick one.
+### リスクレベル
 
-### Risk Levels
+| レベル   | 意味                                                          |
+| -------- | ------------------------------------------------------------- |
+| **重大** | システム全体の侵害、または可能性が高く重大な影響              |
+| **高**   | 重大な損害の可能性、または中程度の可能性 + クリティカルな影響 |
+| **中**   | 中程度のリスク、または可能性が低い + 影響が大きい             |
+| **低い** | 影響は起こりそうもなく限定的                                  |
 
-| Level        | Meaning                                                           |
-| ------------ | ----------------------------------------------------------------- |
-| **Critical** | Full system compromise, or high likelihood + critical impact      |
-| **High**     | Significant damage likely, or medium likelihood + critical impact |
-| **Medium**   | Moderate risk, or low likelihood + high impact                    |
-| **Low**      | Unlikely and limited impact                                       |
+リスク レベルが不明な場合は、影響を説明していただければ評価いたします。
 
-If you're unsure about the risk level, just describe the impact and we'll assess it.
+## レビュープロセス1. **トリアージ** - 新しい提出物を 48 時間以内に審査します
 
-## Review Process
+2. **評価** - 実現可能性を検証し、ATLAS マッピングと脅威 ID を割り当て、リスク レベルを検証します。
+3. **ドキュメント** - すべてがフォーマットされ、完全であることを確認します
+4. **マージ** - 脅威モデルと視覚化に追加
 
-1. **Triage** - We review new submissions within 48 hours
-2. **Assessment** - We verify feasibility, assign ATLAS mapping and threat ID, validate risk level
-3. **Documentation** - We ensure everything is formatted and complete
-4. **Merge** - Added to the threat model and visualization
+## リソース
 
-## Resources
+- [ATLAS ウェブサイト](https://atlas.mitre.org/)
+- [ATLAS テクニック](https://atlas.mitre.org/techniques/)
+- [ATLAS 導入事例](https://atlas.mitre.org/studies/)
+- [OpenClaw 脅威モデル](/security/THREAT-MODEL-ATLAS)
 
-- [ATLAS Website](https://atlas.mitre.org/)
-- [ATLAS Techniques](https://atlas.mitre.org/techniques/)
-- [ATLAS Case Studies](https://atlas.mitre.org/studies/)
-- [OpenClaw Threat Model](/security/THREAT-MODEL-ATLAS)
+## 連絡先
 
-## Contact
+- **セキュリティの脆弱性:** 報告手順については、[信頼ページ](https://trust.openclaw.ai) を参照してください。
+- **脅威モデルに関する質問:** [openclaw/trust](https://github.com/openclaw/trust/issues) で問題をオープンしてください
+- **一般チャット:** Discord #security チャンネル
 
-- **Security vulnerabilities:** See our [Trust page](https://trust.openclaw.ai) for reporting instructions
-- **Threat model questions:** Open an issue on [openclaw/trust](https://github.com/openclaw/trust/issues)
-- **General chat:** Discord #security channel
+## 認識
 
-## Recognition
-
-Contributors to the threat model are recognized in the threat model acknowledgments, release notes, and the OpenClaw security hall of fame for significant contributions.
+脅威モデルへの貢献者は、脅威モデルの謝辞、リリース ノート、および重要な貢献に対する OpenClaw セキュリティの殿堂で認められます。

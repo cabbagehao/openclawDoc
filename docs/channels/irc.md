@@ -1,19 +1,25 @@
 ---
 title: IRC
-description: Connect OpenClaw to IRC channels and direct messages.
-summary: "IRC plugin setup, access controls, and troubleshooting"
+description: OpenClaw を IRC チャンネルおよびダイレクトメッセージへ接続します。
+summary: "IRC プラグインのセットアップ、アクセス制御、トラブルシューティング"
 read_when:
-  - You want to connect OpenClaw to IRC channels or DMs
-  - You are configuring IRC allowlists, group policy, or mention gating
+  - OpenClaw を IRC チャンネルまたは DM に接続したい場合
+  - IRC の allowlist、グループポリシー、メンション制御を設定する場合
+x-i18n:
+  source_path: "channels/irc.md"
+  source_hash: "82ec2803ee4d34f480f75bd1714239761c533a482a559e9a57049256ff0aabba"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T06:38:42.907Z"
 ---
 
-Use IRC when you want OpenClaw in classic channels (`#room`) and direct messages.
-IRC ships as an extension plugin, but it is configured in the main config under `channels.irc`.
+クラシックな IRC チャンネル (`#room`) やダイレクトメッセージで OpenClaw を使いたい場合は IRC を利用します。IRC は拡張プラグインとして提供されますが、設定はメイン設定ファイル内の `channels.irc` で行います。
 
 ## Quick start
 
-1. Enable IRC config in `~/.openclaw/openclaw.json`.
-2. Set at least:
+1. `~/.openclaw/openclaw.json` で IRC の設定を有効にします。
+2. 最低限、次の項目を設定します。
 
 ```json
 {
@@ -30,7 +36,7 @@ IRC ships as an extension plugin, but it is configured in the main config under 
 }
 ```
 
-3. Start/restart gateway:
+3. ゲートウェイを起動または再起動します。
 
 ```bash
 openclaw gateway run
@@ -38,40 +44,39 @@ openclaw gateway run
 
 ## Security defaults
 
-- `channels.irc.dmPolicy` defaults to `"pairing"`.
-- `channels.irc.groupPolicy` defaults to `"allowlist"`.
-- With `groupPolicy="allowlist"`, set `channels.irc.groups` to define allowed channels.
-- Use TLS (`channels.irc.tls=true`) unless you intentionally accept plaintext transport.
+- `channels.irc.dmPolicy` のデフォルトは `"pairing"` です。
+- `channels.irc.groupPolicy` のデフォルトは `"allowlist"` です。
+- `groupPolicy="allowlist"` を使う場合は、`channels.irc.groups` で許可するチャンネルを定義します。
+- 平文通信を意図的に許可する場合を除き、TLS (`channels.irc.tls=true`) を使ってください。
 
 ## Access control
 
-There are two separate “gates” for IRC channels:
+IRC チャンネルには、独立した 2 つの「ゲート」があります。
 
-1. **Channel access** (`groupPolicy` + `groups`): whether the bot accepts messages from a channel at all.
-2. **Sender access** (`groupAllowFrom` / per-channel `groups["#channel"].allowFrom`): who is allowed to trigger the bot inside that channel.
+1. **チャンネルアクセス** (`groupPolicy` + `groups`): そのチャンネルからのメッセージをボットが受け付けるかどうか
+2. **送信者アクセス** (`groupAllowFrom` / チャンネルごとの `groups["#channel"].allowFrom`): そのチャンネル内でボットを起動できる送信者は誰か
 
-Config keys:
+主な設定キー:
 
-- DM allowlist (DM sender access): `channels.irc.allowFrom`
-- Group sender allowlist (channel sender access): `channels.irc.groupAllowFrom`
-- Per-channel controls (channel + sender + mention rules): `channels.irc.groups["#channel"]`
-- `channels.irc.groupPolicy="open"` allows unconfigured channels (**still mention-gated by default**)
+- DM allowlist (DM 送信者アクセス): `channels.irc.allowFrom`
+- グループ送信者 allowlist (チャンネル送信者アクセス): `channels.irc.groupAllowFrom`
+- チャンネルごとの制御 (チャンネル + 送信者 + メンションルール): `channels.irc.groups["#channel"]`
+- `channels.irc.groupPolicy="open"` を使うと、未設定のチャンネルも許可されます。ただし **デフォルトでは引き続きメンション制御が有効** です。
 
-Allowlist entries should use stable sender identities (`nick!user@host`).
-Bare nick matching is mutable and only enabled when `channels.irc.dangerouslyAllowNameMatching: true`.
+allowlist のエントリには、安定した送信者識別子 (`nick!user@host`) を使うことを推奨します。ニックネーム単体での照合は可変であり、`channels.irc.dangerouslyAllowNameMatching: true` を設定した場合にのみ有効になります。
 
 ### Common gotcha: `allowFrom` is for DMs, not channels
 
-If you see logs like:
+次のようなログが出る場合があります。
 
 - `irc: drop group sender alice!ident@host (policy=allowlist)`
 
-…it means the sender wasn’t allowed for **group/channel** messages. Fix it by either:
+これは、送信者が **グループ / チャンネル** メッセージに対して許可されていないことを意味します。対処方法は次のいずれかです。
 
-- setting `channels.irc.groupAllowFrom` (global for all channels), or
-- setting per-channel sender allowlists: `channels.irc.groups["#channel"].allowFrom`
+- `channels.irc.groupAllowFrom` を設定する (全チャンネル共通)
+- チャンネルごとの送信者 allowlist を設定する: `channels.irc.groups["#channel"].allowFrom`
 
-Example (allow anyone in `#tuirc-dev` to talk to the bot):
+例: `#tuirc-dev` 内の誰でもボットへ話しかけられるようにする設定です。
 
 ```json5
 {
@@ -88,11 +93,11 @@ Example (allow anyone in `#tuirc-dev` to talk to the bot):
 
 ## Reply triggering (mentions)
 
-Even if a channel is allowed (via `groupPolicy` + `groups`) and the sender is allowed, OpenClaw defaults to **mention-gating** in group contexts.
+チャンネルが許可されており (`groupPolicy` + `groups`)、かつ送信者も許可されていても、OpenClaw はグループ文脈ではデフォルトで **メンション制御** を行います。
 
-That means you may see logs like `drop channel … (missing-mention)` unless the message includes a mention pattern that matches the bot.
+そのため、メッセージにボットへ一致するメンションパターンが含まれていないと、`drop channel ... (missing-mention)` のようなログが出ることがあります。
 
-To make the bot reply in an IRC channel **without needing a mention**, disable mention gating for that channel:
+IRC チャンネルで **メンションなしでも** ボットに返信させたい場合は、そのチャンネルのメンション制御を無効にします。
 
 ```json5
 {
@@ -110,7 +115,7 @@ To make the bot reply in an IRC channel **without needing a mention**, disable m
 }
 ```
 
-Or to allow **all** IRC channels (no per-channel allowlist) and still reply without mentions:
+あるいは、**すべての** IRC チャンネルを許可し、メンションなしで返信させることもできます。
 
 ```json5
 {
@@ -127,8 +132,7 @@ Or to allow **all** IRC channels (no per-channel allowlist) and still reply with
 
 ## Security note (recommended for public channels)
 
-If you allow `allowFrom: ["*"]` in a public channel, anyone can prompt the bot.
-To reduce risk, restrict tools for that channel.
+公開チャンネルで `allowFrom: ["*"]` を許可すると、誰でもボットへプロンプトを送れるようになります。リスクを下げるため、そのチャンネルで利用できるツールを制限してください。
 
 ### Same tools for everyone in the channel
 
@@ -151,7 +155,7 @@ To reduce risk, restrict tools for that channel.
 
 ### Different tools per sender (owner gets more power)
 
-Use `toolsBySender` to apply a stricter policy to `"*"` and a looser one to your nick:
+`toolsBySender` を使うと、`"*"` に対して厳しいポリシーを適用しつつ、自分の nick だけをより緩いポリシーにできます。
 
 ```json5
 {
@@ -175,18 +179,17 @@ Use `toolsBySender` to apply a stricter policy to `"*"` and a looser one to your
 }
 ```
 
-Notes:
+補足:
 
-- `toolsBySender` keys should use `id:` for IRC sender identity values:
-  `id:eigen` or `id:eigen!~eigen@174.127.248.171` for stronger matching.
-- Legacy unprefixed keys are still accepted and matched as `id:` only.
-- The first matching sender policy wins; `"*"` is the wildcard fallback.
+- `toolsBySender` のキーでは、IRC の送信者識別子に `id:` プレフィックスを付けてください。たとえば `id:eigen` や、より強く一致させたい場合は `id:eigen!~eigen@174.127.248.171` を使います。
+- 従来のプレフィックスなしキーも引き続き受け付けますが、`id:` としてのみ照合されます。
+- 最初に一致した送信者ポリシーが適用されます。`"*"` はワイルドカードのフォールバックです。
 
-For more on group access vs mention-gating (and how they interact), see: [/channels/groups](/channels/groups).
+グループアクセスとメンション制御の関係については [/channels/groups](/channels/groups) も参照してください。
 
 ## NickServ
 
-To identify with NickServ after connect:
+接続後に NickServ で認証するには、次のように設定します。
 
 ```json
 {
@@ -202,7 +205,7 @@ To identify with NickServ after connect:
 }
 ```
 
-Optional one-time registration on connect:
+接続時に一度だけ登録するオプションもあります。
 
 ```json
 {
@@ -217,11 +220,11 @@ Optional one-time registration on connect:
 }
 ```
 
-Disable `register` after the nick is registered to avoid repeated REGISTER attempts.
+nick の登録が終わったら、`register` は無効にしてください。無効にしないと、毎回 REGISTER を試みる可能性があります。
 
 ## Environment variables
 
-Default account supports:
+デフォルトアカウントでは次の環境変数を利用できます。
 
 - `IRC_HOST`
 - `IRC_PORT`
@@ -230,12 +233,12 @@ Default account supports:
 - `IRC_USERNAME`
 - `IRC_REALNAME`
 - `IRC_PASSWORD`
-- `IRC_CHANNELS` (comma-separated)
+- `IRC_CHANNELS` (カンマ区切り)
 - `IRC_NICKSERV_PASSWORD`
 - `IRC_NICKSERV_REGISTER_EMAIL`
 
 ## Troubleshooting
 
-- If the bot connects but never replies in channels, verify `channels.irc.groups` **and** whether mention-gating is dropping messages (`missing-mention`). If you want it to reply without pings, set `requireMention:false` for the channel.
-- If login fails, verify nick availability and server password.
-- If TLS fails on a custom network, verify host/port and certificate setup.
+- ボットが接続しているのにチャンネルで返信しない場合は、`channels.irc.groups` の設定に加え、メンション制御によって `missing-mention` で落ちていないか確認してください。メンションなしで返信させたい場合は、そのチャンネルへ `requireMention:false` を設定します。
+- ログインに失敗する場合は、nick が使用可能かどうか、サーバーパスワードが正しいかどうかを確認してください。
+- カスタムネットワークで TLS に失敗する場合は、host、port、証明書設定を確認してください。

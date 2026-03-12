@@ -1,102 +1,93 @@
 ---
-summary: "How OpenClaw presence entries are produced, merged, and displayed"
+summary: "OpenClaw のプレゼンス情報（稼働状況）がどのように生成、マージ、表示されるか"
 read_when:
-  - Debugging the Instances tab
-  - Investigating duplicate or stale instance rows
-  - Changing gateway WS connect or system-event beacons
-title: "Presence"
+  - macOS アプリの「インスタンス」タブをデバッグする場合
+  - 重複した、あるいは古いインスタンス情報が表示される問題を調査したい場合
+  - ゲートウェイの WebSocket 接続やシステムイベントの動作を変更したい場合
+title: "プレゼンス (稼働状況)"
+x-i18n:
+  source_hash: "c752c76a880878fed673d656db88beb5dbdeefff2491985127ad791521f97d00"
 ---
 
-# Presence
+# プレゼンス (稼働状況)
 
-OpenClaw “presence” is a lightweight, best‑effort view of:
+OpenClaw の「プレゼンス」は、以下の要素の稼働状況をベストエフォートで可視化したものです:
 
-- the **Gateway** itself, and
-- **clients connected to the Gateway** (mac app, WebChat, CLI, etc.)
+- **ゲートウェイ** 自体
+- **ゲートウェイに接続されているクライアント** (macOS アプリ、WebChat、CLI など)
 
-Presence is used primarily to render the macOS app’s **Instances** tab and to
-provide quick operator visibility.
+プレゼンス情報は、主に macOS アプリの **Instances（インスタンス）** タブでの表示や、管理者が現在の接続状況を把握するために使用されます。
 
-## Presence fields (what shows up)
+## プレゼンスフィールド (表示される項目)
 
-Presence entries are structured objects with fields like:
+各プレゼンスエントリは、以下のようなフィールドを持つ構造化されたオブジェクトです:
 
-- `instanceId` (optional but strongly recommended): stable client identity (usually `connect.client.instanceId`)
-- `host`: human‑friendly host name
-- `ip`: best‑effort IP address
-- `version`: client version string
-- `deviceFamily` / `modelIdentifier`: hardware hints
-- `mode`: `ui`, `webchat`, `cli`, `backend`, `probe`, `test`, `node`, ...
-- `lastInputSeconds`: “seconds since last user input” (if known)
-- `reason`: `self`, `connect`, `node-connected`, `periodic`, ...
-- `ts`: last update timestamp (ms since epoch)
+- `instanceId` (任意だが強く推奨): クライアントの固定 ID（通常は `connect.client.instanceId`）
+- `host`: 人間が読みやすいホスト名
+- `ip`: 取得可能な IP アドレス
+- `version`: クライアントのバージョン文字列
+- `deviceFamily` / `modelIdentifier`: ハードウェアの種類に関するヒント
+- `mode`: `ui`, `webchat`, `cli`, `backend`, `probe`, `test`, `node` など
+- `lastInputSeconds`: ユーザーが最後に入力してからの経過秒数（取得可能な場合）
+- `reason`: エントリが作成された理由 (`self`, `connect`, `node-connected`, `periodic` など)
+- `ts`: 最終更新日時のタイムスタンプ（ミリ秒）
 
-## Producers (where presence comes from)
+## 情報のソース (どこから来るか)
 
-Presence entries are produced by multiple sources and **merged**.
+プレゼンス情報は複数のソースから生成され、**マージ（統合）** されます。
 
-### 1) Gateway self entry
+### 1) ゲートウェイ自身のセルフエントリ
 
-The Gateway always seeds a “self” entry at startup so UIs show the gateway host
-even before any clients connect.
+ゲートウェイは起動時に自身の情報を登録します。これにより、クライアントが 1 つも接続されていない状態でも UI にゲートウェイホストが表示されます。
 
-### 2) WebSocket connect
+### 2) WebSocket の接続時
 
-Every WS client begins with a `connect` request. On successful handshake the
-Gateway upserts a presence entry for that connection.
+すべての WebSocket クライアントは `connect` リクエストから始まります。ハンドシェイク（接続確立）が成功すると、ゲートウェイはその接続に対するプレゼンスエントリを作成または更新（upsert）します。
 
-#### Why one‑off CLI commands don’t show up
+#### CLI コマンドが表示されない理由
+CLI は短時間の単発コマンドのために頻繁に接続します。インスタンス一覧が CLI で埋め尽くされるのを避けるため、`client.mode === "cli"` の接続はプレゼンスエントリとして**登録されません**。
 
-The CLI often connects for short, one‑off commands. To avoid spamming the
-Instances list, `client.mode === "cli"` is **not** turned into a presence entry.
+### 3) `system-event` による定期通知
 
-### 3) `system-event` beacons
+クライアントは `system-event` メソッドを使用して、より詳細な情報を定期的に通知できます。macOS アプリはこの仕組みを利用して、ホスト名、IP、および `lastInputSeconds` を報告しています。
 
-Clients can send richer periodic beacons via the `system-event` method. The mac
-app uses this to report host name, IP, and `lastInputSeconds`.
+### 4) ノードの接続 (role: node)
 
-### 4) Node connects (role: node)
+ノードが `role: node` としてゲートウェイの WebSocket に接続すると、他のクライアントと同様のフローでプレゼンスエントリが作成されます。
 
-When a node connects over the Gateway WebSocket with `role: node`, the Gateway
-upserts a presence entry for that node (same flow as other WS clients).
+## マージと重複排除のルール (`instanceId` の重要性)
 
-## Merge + dedupe rules (why `instanceId` matters)
+すべてのプレゼンスエントリは、メモリ上の 1 つのマップに保存されます:
 
-Presence entries are stored in a single in‑memory map:
+- 各エントリは **プレゼンスキー** によって管理されます。
+- 最も適切なキーは、再起動後も変わらない安定した `instanceId` (`connect.client.instanceId` 由来) です。
+- キーの大文字・小文字は区別されません。
 
-- Entries are keyed by a **presence key**.
-- The best key is a stable `instanceId` (from `connect.client.instanceId`) that survives restarts.
-- Keys are case‑insensitive.
+クライアントが固定の `instanceId` を持たずに再接続を繰り返すと、一覧に **重複した行** が表示される原因となります。
 
-If a client reconnects without a stable `instanceId`, it may show up as a
-**duplicate** row.
+## 有効期限 (TTL) と最大件数
 
-## TTL and bounded size
+プレゼンス情報は意図的に一時的なものとして扱われます:
 
-Presence is intentionally ephemeral:
+- **TTL**: 最終更新から 5 分以上経過したエントリは自動的に削除されます。
+- **最大件数**: 200 件（上限を超えた場合は古いものから削除されます）。
 
-- **TTL:** entries older than 5 minutes are pruned
-- **Max entries:** 200 (oldest dropped first)
+これにより、常に最新の稼働状況が保たれ、メモリの無制限な増加を防いでいます。
 
-This keeps the list fresh and avoids unbounded memory growth.
+## リモート/トンネル利用時の注意 (ループバック IP)
 
-## Remote/tunnel caveat (loopback IPs)
+SSH トンネルやローカルポート転送を介してクライアントが接続している場合、ゲートウェイから見たリモートアドレスが `127.0.0.1` になることがあります。クライアントが報告した正しい IP アドレスを上書きしてしまわないよう、ループバックアドレスからの通知は IP 情報の更新対象から除外されます。
 
-When a client connects over an SSH tunnel / local port forward, the Gateway may
-see the remote address as `127.0.0.1`. To avoid overwriting a good client‑reported
-IP, loopback remote addresses are ignored.
+## 情報の利用者
 
-## Consumers
+### macOS アプリの Instances タブ
 
-### macOS Instances tab
+macOS アプリは `system-presence` の出力を表示し、最終更新からの経過時間に基づいて「Active（アクティブ）」「Idle（アイドル）」「Stale（古い）」のステータスインジケーターを付与します。
 
-The macOS app renders the output of `system-presence` and applies a small status
-indicator (Active/Idle/Stale) based on the age of the last update.
+## デバッグのヒント
 
-## Debugging tips
-
-- To see the raw list, call `system-presence` against the Gateway.
-- If you see duplicates:
-  - confirm clients send a stable `client.instanceId` in the handshake
-  - confirm periodic beacons use the same `instanceId`
-  - check whether the connection‑derived entry is missing `instanceId` (duplicates are expected)
+- 生のリストを確認するには、ゲートウェイに対して `system-presence` メソッドを呼び出してください。
+- 重複が発生している場合:
+  - クライアントが接続時のハンドシェイクで固定の `client.instanceId` を送信しているか確認してください。
+  - 定期的な `system-event` 通知でも同じ `instanceId` が使われているか確認してください。
+  - 接続由来のエントリに `instanceId` が欠落していないか確認してください（欠落していると重複が発生しやすくなります）。

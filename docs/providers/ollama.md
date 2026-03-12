@@ -1,24 +1,26 @@
 ---
-summary: "Run OpenClaw with Ollama (local LLM runtime)"
+summary: "Ollama で OpenClaw を実行する (ローカル LLM ランタイム)"
 read_when:
-  - You want to run OpenClaw with local models via Ollama
-  - You need Ollama setup and configuration guidance
-title: "Ollama"
+  - Ollama 経由でローカル モデルで OpenClaw を実行したい
+  - Ollama のセットアップと構成のガイダンスが必要です
+title: "オラマ"
+x-i18n:
+  source_hash: "bdd202620fbdb26db54a45554ec4c33910bde53dd37da5729ab60bb57fbccedf"
 ---
 
-# Ollama
+# オラマ
 
-Ollama is a local LLM runtime that makes it easy to run open-source models on your machine. OpenClaw integrates with Ollama's native API (`/api/chat`), supporting streaming and tool calling, and can **auto-discover tool-capable models** when you opt in with `OLLAMA_API_KEY` (or an auth profile) and do not define an explicit `models.providers.ollama` entry.
+Ollama は、マシン上でオープンソース モデルを簡単に実行できるようにするローカル LLM ランタイムです。 OpenClaw は Ollama のネイティブ API (`/api/chat`) と統合し、ストリーミングとツール呼び出しをサポートし、`OLLAMA_API_KEY` (または認証プロファイル) でオプトインし、明示的な `models.providers.ollama` エントリを定義しない場合、**ツール対応モデルを自動検出**できます。
 
 <Warning>
-**Remote Ollama users**: Do not use the `/v1` OpenAI-compatible URL (`http://host:11434/v1`) with OpenClaw. This breaks tool calling and models may output raw tool JSON as plain text. Use the native Ollama API URL instead: `baseUrl: "http://host:11434"` (no `/v1`).
+**リモート Ollama ユーザー**: `/v1` OpenAI 互換 URL (`http://host:11434/v1`) を OpenClaw で使用しないでください。これによりツールの呼び出しが中断され、モデルは生のツール JSON をプレーン テキストとして出力する可能性があります。代わりに、ネイティブの Ollama API URL を使用してください: `baseUrl: "http://host:11434"` (`/v1` は使用できません)。
 </Warning>
 
-## Quick start
+## クイックスタート
 
-1. Install Ollama: [https://ollama.ai](https://ollama.ai)
+1. Ollama をインストールします: [https://ollama.ai](https://ollama.ai)
 
-2. Pull a model:
+2. モデルをプルします。
 
 ```bash
 ollama pull gpt-oss:20b
@@ -30,7 +32,7 @@ ollama pull qwen2.5-coder:32b
 ollama pull deepseek-r1:32b
 ```
 
-3. Enable Ollama for OpenClaw (any value works; Ollama doesn't require a real key):
+3. OpenClaw に対して Ollama を有効にします (任意の値が機能します。Ollama には実際のキーは必要ありません)。
 
 ```bash
 # Set environment variable
@@ -40,7 +42,7 @@ export OLLAMA_API_KEY="ollama-local"
 openclaw config set models.providers.ollama.apiKey "ollama-local"
 ```
 
-4. Use Ollama models:
+4. Ollama モデルを使用します。
 
 ```json5
 {
@@ -52,53 +54,52 @@ openclaw config set models.providers.ollama.apiKey "ollama-local"
 }
 ```
 
-## Model discovery (implicit provider)
+## モデル検出 (暗黙的なプロバイダー)
 
-When you set `OLLAMA_API_KEY` (or an auth profile) and **do not** define `models.providers.ollama`, OpenClaw discovers models from the local Ollama instance at `http://127.0.0.1:11434`:
+`OLLAMA_API_KEY` (または認証プロファイル) を設定し、**OC_I18N_0024\_\_ を定義しない**場合、OpenClaw は `http://127.0.0.1:11434` にあるローカル Ollama インスタンスからモデルを検出します。- クエリ `/api/tags` および `/api/show`
 
-- Queries `/api/tags` and `/api/show`
-- Keeps only models that report `tools` capability
-- Marks `reasoning` when the model reports `thinking`
-- Reads `contextWindow` from `model_info["<arch>.context_length"]` when available
-- Sets `maxTokens` to 10× the context window
-- Sets all costs to `0`
+- `tools` 機能をレポートするモデルのみを保持します
+- モデルが `thinking` を報告する場合、 `reasoning` をマークします。
+- 利用可能な場合、`model_info["<arch>.context_length"]` から `contextWindow` を読み取ります
+- `maxTokens` をコンテキスト ウィンドウの 10 倍に設定します
+- すべてのコストを `0` に設定します
 
-This avoids manual model entries while keeping the catalog aligned with Ollama's capabilities.
+これにより、カタログを Ollama の機能に合わせた状態に保ちながら、手動でモデルを入力する必要がなくなります。
 
-To see what models are available:
+利用可能なモデルを確認するには:
 
 ```bash
 ollama list
 openclaw models list
 ```
 
-To add a new model, simply pull it with Ollama:
+新しいモデルを追加するには、Ollama を使用してそれをプルするだけです。
 
 ```bash
 ollama pull mistral
 ```
 
-The new model will be automatically discovered and available to use.
+新しいモデルは自動的に検出され、使用できるようになります。
 
-If you set `models.providers.ollama` explicitly, auto-discovery is skipped and you must define models manually (see below).
+`models.providers.ollama` を明示的に設定した場合、自動検出はスキップされ、モデルを手動で定義する必要があります (以下を参照)。
 
-## Configuration
+## 構成
 
-### Basic setup (implicit discovery)
+### 基本セットアップ (暗黙的な検出)
 
-The simplest way to enable Ollama is via environment variable:
+Ollama を有効にする最も簡単な方法は、環境変数を使用することです。
 
 ```bash
 export OLLAMA_API_KEY="ollama-local"
 ```
 
-### Explicit setup (manual models)
+### 明示的なセットアップ (手動モデル)
 
-Use explicit config when:
+次の場合に明示的な構成を使用します。
 
-- Ollama runs on another host/port.
-- You want to force specific context windows or model lists.
-- You want to include models that do not report tool support.
+- Ollama は別のホスト/ポートで実行されます。
+- 特定のコンテキスト ウィンドウまたはモデル リストを強制したい。
+- ツールのサポートを報告しないモデルを含めたい。
 
 ```json5
 {
@@ -125,33 +126,34 @@ Use explicit config when:
 }
 ```
 
-If `OLLAMA_API_KEY` is set, you can omit `apiKey` in the provider entry and OpenClaw will fill it for availability checks.
+`OLLAMA_API_KEY` が設定されている場合は、プロバイダー エントリの `apiKey` を省略でき、OpenClaw が可用性チェックのためにそれを入力します。
 
-### Custom base URL (explicit config)
+### カスタムベース URL (明示的な構成)
 
-If Ollama is running on a different host or port (explicit config disables auto-discovery, so define models manually):
+Ollama が別のホストまたはポートで実行されている場合 (明示的な構成により自動検出が無効になるため、モデルを手動で定義します):
 
 ```json5
 {
-  models: {
-    providers: {
-      ollama: {
-        apiKey: "ollama-local",
-        baseUrl: "http://ollama-host:11434", // No /v1 - use native Ollama API URL
-        api: "ollama", // Set explicitly to guarantee native tool-calling behavior
-      },
-    },
-  },
+models: {
+providers: {
+ollama: {
+apiKey: "ollama-local",
+baseUrl: "<http://ollama-host:11434>", // No /v1 - use native Ollama API URL
+api: "ollama", // Set explicitly to guarantee native tool-calling behavior
+},
+},
+},
 }
-```
+
+````
 
 <Warning>
-Do not add `/v1` to the URL. The `/v1` path uses OpenAI-compatible mode, where tool calling is not reliable. Use the base Ollama URL without a path suffix.
+URL に `/v1` を追加しないでください。 `/v1` パスでは OpenAI 互換モードが使用されており、ツールの呼び出しは信頼できません。パス接尾辞のないベース Ollama URL を使用します。
 </Warning>
 
-### Model selection
+### モデルの選択
 
-Once configured, all your Ollama models are available:
+構成が完了すると、すべての Ollama モデルが使用可能になります。
 
 ```json5
 {
@@ -164,33 +166,33 @@ Once configured, all your Ollama models are available:
     },
   },
 }
-```
+````
 
-## Advanced
+## 上級者向け
 
-### Reasoning models
+### 推論モデル
 
-OpenClaw marks models as reasoning-capable when Ollama reports `thinking` in `/api/show`:
+Ollama が `/api/show` で `thinking` を報告すると、OpenClaw はモデルを推論可能としてマークします。
 
 ```bash
 ollama pull deepseek-r1:32b
 ```
 
-### Model Costs
+### モデルのコスト
 
-Ollama is free and runs locally, so all model costs are set to $0.
+Ollama は無料でローカルで実行できるため、すべてのモデルのコストは 0 ドルに設定されます。
 
-### Streaming Configuration
+### ストリーミング構成
 
-OpenClaw's Ollama integration uses the **native Ollama API** (`/api/chat`) by default, which fully supports streaming and tool calling simultaneously. No special configuration is needed.
+OpenClaw の Ollama 統合では、**ネイティブ Ollama API** (`/api/chat`) がデフォルトで使用され、ストリーミングとツール呼び出しの同時サポートが完全にサポートされます。特別な構成は必要ありません。
 
-#### Legacy OpenAI-Compatible Mode
+#### 従来の OpenAI 互換モード
 
 <Warning>
-**Tool calling is not reliable in OpenAI-compatible mode.** Use this mode only if you need OpenAI format for a proxy and do not depend on native tool calling behavior.
+**OpenAI 互換モードではツール呼び出しは信頼できません。** このモードは、プロキシに OpenAI 形式が必要で、ネイティブ ツールの呼び出し動作に依存しない場合にのみ使用してください。
 </Warning>
 
-If you need to use the OpenAI-compatible endpoint instead (e.g., behind a proxy that only supports OpenAI format), set `api: "openai-completions"` explicitly:
+代わりに OpenAI 互換エンドポイントを使用する必要がある場合 (たとえば、OpenAI 形式のみをサポートするプロキシの背後で)、明示的に `api: "openai-completions"` を設定します。
 
 ```json5
 {
@@ -208,9 +210,7 @@ If you need to use the OpenAI-compatible endpoint instead (e.g., behind a proxy 
 }
 ```
 
-This mode may not support streaming + tool calling simultaneously. You may need to disable streaming with `params: { streaming: false }` in model config.
-
-When `api: "openai-completions"` is used with Ollama, OpenClaw injects `options.num_ctx` by default so Ollama does not silently fall back to a 4096 context window. If your proxy/upstream rejects unknown `options` fields, disable this behavior:
+このモードでは、ストリーミングとツールの呼び出しを同時にサポートできない場合があります。モデル設定で `params: { streaming: false }` を使用してストリーミングを無効にする必要がある場合があります。`api: "openai-completions"` が Ollama で使用される場合、OpenClaw はデフォルトで `options.num_ctx` を挿入するため、Ollama は黙って 4096 コンテキスト ウィンドウにフォールバックしません。プロキシ/アップストリームが不明な `options` フィールドを拒否する場合は、この動作を無効にします。
 
 ```json5
 {
@@ -228,34 +228,34 @@ When `api: "openai-completions"` is used with Ollama, OpenClaw injects `options.
 }
 ```
 
-### Context windows
+### コンテキストウィンドウ
 
-For auto-discovered models, OpenClaw uses the context window reported by Ollama when available, otherwise it defaults to `8192`. You can override `contextWindow` and `maxTokens` in explicit provider config.
+自動検出されたモデルの場合、OpenClaw は、利用可能な場合は Ollama によって報告されたコンテキスト ウィンドウを使用します。それ以外の場合は、デフォルトの `8192` が使用されます。明示的なプロバイダー構成で `contextWindow` および `maxTokens` をオーバーライドできます。
 
-## Troubleshooting
+## トラブルシューティング
 
-### Ollama not detected
+### オラマが検出されませんでした
 
-Make sure Ollama is running and that you set `OLLAMA_API_KEY` (or an auth profile), and that you did **not** define an explicit `models.providers.ollama` entry:
+Ollama が実行中であること、`OLLAMA_API_KEY` (または認証プロファイル) を設定していること、および明示的な `models.providers.ollama` エントリを**定義していない**ことを確認してください。
 
 ```bash
 ollama serve
 ```
 
-And that the API is accessible:
+API にアクセスできること:
 
 ```bash
 curl http://localhost:11434/api/tags
 ```
 
-### No models available
+### 利用可能なモデルはありません
 
-OpenClaw only auto-discovers models that report tool support. If your model isn't listed, either:
+OpenClaw は、レポート ツールがサポートするモデルのみを自動検出します。お使いのモデルがリストにない場合は、次のいずれかを行ってください。
 
-- Pull a tool-capable model, or
-- Define the model explicitly in `models.providers.ollama`.
+- ツール対応モデルをプルする、または
+- `models.providers.ollama` でモデルを明示的に定義します。
 
-To add models:
+モデルを追加するには:
 
 ```bash
 ollama list  # See what's installed
@@ -263,9 +263,9 @@ ollama pull gpt-oss:20b  # Pull a tool-capable model
 ollama pull llama3.3     # Or another model
 ```
 
-### Connection refused
+### 接続が拒否されました
 
-Check that Ollama is running on the correct port:
+Ollama が正しいポートで実行されていることを確認します。
 
 ```bash
 # Check if Ollama is running
@@ -275,8 +275,8 @@ ps aux | grep ollama
 ollama serve
 ```
 
-## See Also
+## 関連項目
 
-- [Model Providers](/concepts/model-providers) - Overview of all providers
-- [Model Selection](/concepts/models) - How to choose models
-- [Configuration](/gateway/configuration) - Full config reference
+- [モデルプロバイダー](/concepts/model-providers) - すべてのプロバイダーの概要
+- [機種選定](/concepts/models) - 機種の選び方
+- [構成](/gateway/configuration) - 完全な構成リファレンス

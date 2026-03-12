@@ -1,34 +1,36 @@
 ---
-summary: "Direct `openclaw agent` CLI runs (with optional delivery)"
+summary: "直接の「openclaw エージェント」 CLI の実行 (オプションの配信あり)"
 read_when:
-  - Adding or modifying the agent CLI entrypoint
-title: "Agent Send"
+  - エージェント CLI エントリポイントの追加または変更
+title: "エージェント送信"
+x-i18n:
+  source_hash: "a84d6a304333eebe155da2bf24cf5fc0482022a0a48ab34aa1465cd6e667022d"
 ---
 
-# `openclaw agent` (direct agent runs)
+# `openclaw agent` (直接エージェントを実行)
 
-`openclaw agent` runs a single agent turn without needing an inbound chat message.
-By default it goes **through the Gateway**; add `--local` to force the embedded
-runtime on the current machine.
+`openclaw agent` は、受信チャット メッセージを必要とせずに、単一のエージェント ターンを実行します。
+デフォルトでは、**ゲートウェイ**を経由します。 `--local` を追加して埋め込みを強制します
+現在のマシンのランタイム。
 
-## Behavior
+## 動作
 
-- Required: `--message <text>`
-- Session selection:
-  - `--to <dest>` derives the session key (group/channel targets preserve isolation; direct chats collapse to `main`), **or**
-  - `--session-id <id>` reuses an existing session by id, **or**
-  - `--agent <id>` targets a configured agent directly (uses that agent's `main` session key)
-- Runs the same embedded agent runtime as normal inbound replies.
-- Thinking/verbose flags persist into the session store.
-- Output:
-  - default: prints reply text (plus `MEDIA:<url>` lines)
-  - `--json`: prints structured payload + metadata
-- Optional delivery back to a channel with `--deliver` + `--channel` (target formats match `openclaw message --target`).
-- Use `--reply-channel`/`--reply-to`/`--reply-account` to override delivery without changing the session.
+- 必須: `--message <text>`
+- セッションの選択:
+  - `--to <dest>` はセッション キーを取得します (グループ/チャネル ターゲットは分離を維持します。直接チャットは `main` に折りたたまれます)、**または**
+  - `--session-id <id>` は、ID、**または** によって既存のセッションを再利用します。
+  - `--agent <id>` は、設定されたエージェントを直接ターゲットにします (そのエージェントの `main` セッション キーを使用します)
+- 通常の受信応答と同じ組み込みエージェント ランタイムを実行します。
+- 思考/冗長フラグはセッション ストアに永続化されます。
+- 出力:
+  - デフォルト: 返信テキスト (および `MEDIA:<url>` 行) を印刷します。
+  - `--json`: 構造化ペイロード + メタデータを出力します
+- `--deliver` + `--channel` を使用してチャネルに返送するオプションの配信 (ターゲット形式は `openclaw message --target` と一致します)。
+- `--reply-channel`/`--reply-to`/`--reply-account` を使用して、セッションを変更せずに配信を上書きします。
 
-If the Gateway is unreachable, the CLI **falls back** to the embedded local run.
+ゲートウェイに到達できない場合、CLI は埋め込まれたローカル実行に **フォールバック**します。
 
-## Examples
+## 例
 
 ```bash
 openclaw agent --to +15555550123 --message "status update"
@@ -39,15 +41,14 @@ openclaw agent --to +15555550123 --message "Summon reply" --deliver
 openclaw agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"
 ```
 
-## Flags
+## フラグ- `--local`: ローカルで実行します (シェルにモデル プロバイダー API キーが必要です)
 
-- `--local`: run locally (requires model provider API keys in your shell)
-- `--deliver`: send the reply to the chosen channel
-- `--channel`: delivery channel (`whatsapp|telegram|discord|googlechat|slack|signal|imessage`, default: `whatsapp`)
-- `--reply-to`: delivery target override
-- `--reply-channel`: delivery channel override
-- `--reply-account`: delivery account id override
-- `--thinking <off|minimal|low|medium|high|xhigh>`: persist thinking level (GPT-5.2 + Codex models only)
-- `--verbose <on|full|off>`: persist verbose level
-- `--timeout <seconds>`: override agent timeout
-- `--json`: output structured JSON
+- `--deliver`: 選択したチャネルに応答を送信します
+- `--channel`: 配信チャネル (`whatsapp|telegram|discord|googlechat|slack|signal|imessage`、デフォルト: `whatsapp`)
+- `--reply-to`: 配信ターゲットの上書き
+- `--reply-channel`: 配信チャネルの上書き
+- `--reply-account`: 配信アカウント ID の上書き
+- `--thinking <off|minimal|low|medium|high|xhigh>`: 持続思考レベル (GPT-5.2 + Codex モデルのみ)
+- `--verbose <on|full|off>`: 詳細レベルを保持します
+- `--timeout <seconds>`: エージェントのタイムアウトを上書きします
+- `--json`: 構造化された JSON を出力します

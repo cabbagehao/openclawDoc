@@ -1,34 +1,40 @@
 ---
-summary: "Get OpenClaw installed and run your first chat in minutes."
+summary: "OpenClawをインストールして、数分で最初のチャットを実行しましょう。"
 read_when:
-  - First time setup from zero
-  - You want the fastest path to a working chat
-title: "Getting Started"
+  - ゼロからの初回セットアップ
+  - 動作するチャットへの最速パスが必要な場合
+title: "はじめに"
+x-i18n:
+  source_path: "start/getting-started.md"
+  source_hash: "4ec86bd0345cc7a70236e566da2ccb9ff17764cc5a7c3b23eab8d5d558251520"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:49:44.266Z"
 ---
 
-# Getting Started
+# はじめに
 
-Goal: go from zero to a first working chat with minimal setup.
+目標: ゼロから最小限のセットアップで最初の動作するチャットまで到達します。
 
 <Info>
-Fastest chat: open the Control UI (no channel setup needed). Run `openclaw dashboard`
-and chat in the browser, or open `http://127.0.0.1:18789/` on the
-<Tooltip headline="Gateway host" tip="The machine running the OpenClaw gateway service.">gateway host</Tooltip>.
-Docs: [Dashboard](/web/dashboard) and [Control UI](/web/control-ui).
+最速のチャット: Control UIを開きます(チャンネルセットアップは不要)。`openclaw dashboard`を実行してブラウザでチャットするか、
+<Tooltip headline="Gatewayホスト" tip="OpenClaw gatewayサービスを実行しているマシン。">gatewayホスト</Tooltip>で`http://127.0.0.1:18789/`を開きます。
+ドキュメント: [Dashboard](/web/dashboard)と[Control UI](/web/control-ui)。
 </Info>
 
-## Prereqs
+## 前提条件
 
-- Node 22 or newer
+- Node 22以降
 
 <Tip>
-Check your Node version with `node --version` if you are unsure.
+不明な場合は`node --version`でNodeのバージョンを確認してください。
 </Tip>
 
-## Quick setup (CLI)
+## クイックセットアップ (CLI)
 
 <Steps>
-  <Step title="Install OpenClaw (recommended)">
+  <Step title="OpenClawをインストール (推奨)">
     <Tabs>
       <Tab title="macOS/Linux">
         ```bash
@@ -48,28 +54,28 @@ Check your Node version with `node --version` if you are unsure.
     </Tabs>
 
     <Note>
-    Other install methods and requirements: [Install](/install).
+    その他のインストール方法と要件: [Install](/install)。
     </Note>
 
   </Step>
-  <Step title="Run the onboarding wizard">
+  <Step title="オンボーディングウィザードを実行">
     ```bash
     openclaw onboard --install-daemon
     ```
 
-    The wizard configures auth, gateway settings, and optional channels.
-    See [Onboarding Wizard](/start/wizard) for details.
+    ウィザードは認証、Gateway設定、およびオプションのチャンネルを構成します。
+    詳細は[オンボーディングウィザード](/start/wizard)を参照してください。
 
   </Step>
-  <Step title="Check the Gateway">
-    If you installed the service, it should already be running:
+  <Step title="Gatewayを確認">
+    サービスをインストールした場合、すでに実行されているはずです:
 
     ```bash
     openclaw gateway status
     ```
 
   </Step>
-  <Step title="Open the Control UI">
+  <Step title="Control UIを開く">
     ```bash
     openclaw dashboard
     ```
@@ -77,22 +83,22 @@ Check your Node version with `node --version` if you are unsure.
 </Steps>
 
 <Check>
-If the Control UI loads, your Gateway is ready for use.
+Control UIが読み込まれれば、Gatewayは使用可能です。
 </Check>
 
-## Optional checks and extras
+## オプションの確認と追加機能
 
 <AccordionGroup>
-  <Accordion title="Run the Gateway in the foreground">
-    Useful for quick tests or troubleshooting.
+  <Accordion title="Gatewayをフォアグラウンドで実行">
+    クイックテストやトラブルシューティングに便利です。
 
     ```bash
     openclaw gateway --port 18789
     ```
 
   </Accordion>
-  <Accordion title="Send a test message">
-    Requires a configured channel.
+  <Accordion title="テストメッセージを送信">
+    構成済みのチャンネルが必要です。
 
     ```bash
     openclaw message send --target +15555550123 --message "Hello from OpenClaw"
@@ -101,35 +107,35 @@ If the Control UI loads, your Gateway is ready for use.
   </Accordion>
 </AccordionGroup>
 
-## Useful environment variables
+## 便利な環境変数
 
-If you run OpenClaw as a service account or want custom config/state locations:
+OpenClawをサービスアカウントとして実行する場合や、カスタムの設定/状態の場所を指定したい場合:
 
-- `OPENCLAW_HOME` sets the home directory used for internal path resolution.
-- `OPENCLAW_STATE_DIR` overrides the state directory.
-- `OPENCLAW_CONFIG_PATH` overrides the config file path.
+- `OPENCLAW_HOME`は内部パス解決に使用されるホームディレクトリを設定します。
+- `OPENCLAW_STATE_DIR`は状態ディレクトリを上書きします。
+- `OPENCLAW_CONFIG_PATH`は設定ファイルのパスを上書きします。
 
-Full environment variable reference: [Environment vars](/help/environment).
+完全な環境変数リファレンス: [環境変数](/help/environment)。
 
-## Go deeper
+## さらに深く
 
 <Columns>
-  <Card title="Onboarding Wizard (details)" href="/start/wizard">
-    Full CLI wizard reference and advanced options.
+  <Card title="オンボーディングウィザード (詳細)" href="/start/wizard">
+    完全なCLIウィザードリファレンスと高度なオプション。
   </Card>
-  <Card title="macOS app onboarding" href="/start/onboarding">
-    First run flow for the macOS app.
+  <Card title="macOSアプリのオンボーディング" href="/start/onboarding">
+    macOSアプリの初回実行フロー。
   </Card>
 </Columns>
 
-## What you will have
+## 完了後の状態
 
-- A running Gateway
-- Auth configured
-- Control UI access or a connected channel
+- 実行中のGateway
+- 構成済みの認証
+- Control UIアクセスまたは接続済みのチャンネル
 
-## Next steps
+## 次のステップ
 
-- DM safety and approvals: [Pairing](/channels/pairing)
-- Connect more channels: [Channels](/channels)
-- Advanced workflows and from source: [Setup](/start/setup)
+- DMの安全性と承認: [ペアリング](/channels/pairing)
+- さらにチャンネルを接続: [チャンネル](/channels)
+- 高度なワークフローとソースからのセットアップ: [セットアップ](/start/setup)

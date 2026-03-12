@@ -1,35 +1,39 @@
 ---
-summary: "Usage tracking surfaces and credential requirements"
+summary: "利用状況の追跡（Usage Tracking）が表示される場所と認証の要件"
 read_when:
-  - You are wiring provider usage/quota surfaces
-  - You need to explain usage tracking behavior or auth requirements
-title: "Usage Tracking"
+  - 各プロバイダーの利用状況やクォータ（制限枠）情報を確認したい場合
+  - 利用状況の表示動作や必要な認証情報を理解したい場合
+title: "利用状況の追跡"
+x-i18n:
+  source_hash: "6f6ed2a70329b2a6206c327aa749a84fbfe979762caca5f0e7fb556f91631cbb"
 ---
 
-# Usage tracking
+# 利用状況の追跡 (Usage Tracking)
 
-## What it is
+## 概要
 
-- Pulls provider usage/quota directly from their usage endpoints.
-- No estimated costs; only the provider-reported windows.
+- 各プロバイダーの利用状況（Usage）やクォータ（Quota）情報を、プロバイダー側のエンドポイントから直接取得します。
+- OpenClaw 側での独自計算による推定コストではなく、プロバイダーが報告する値を表示します。
 
-## Where it shows up
+## 表示される場所
 
-- `/status` in chats: emoji‑rich status card with session tokens + estimated cost (API key only). Provider usage shows for the **current model provider** when available.
-- `/usage off|tokens|full` in chats: per-response usage footer (OAuth shows tokens only).
-- `/usage cost` in chats: local cost summary aggregated from OpenClaw session logs.
-- CLI: `openclaw status --usage` prints a full per-provider breakdown.
-- CLI: `openclaw channels list` prints the same usage snapshot alongside provider config (use `--no-usage` to skip).
-- macOS menu bar: “Usage” section under Context (only if available).
+- チャット内の `/status`: セッションごとのトークン消費量と推定コスト（API キー使用時のみ）を含む、絵文字豊かなステータスカードを表示します。利用可能な場合、**現在のモデルプロバイダー** の利用状況も表示されます。
+- チャット内の `/usage off|tokens|full`: 各返信の末尾に利用状況フッターを表示します（OAuth 使用時はトークン数のみ表示）。
+- チャット内の `/usage cost`: OpenClaw のセッションログから集計されたローカルなコストサマリーを表示します。
+- CLI: `openclaw status --usage` を実行すると、プロバイダーごとの詳細な内訳が表示されます。
+- CLI: `openclaw channels list` を実行すると、チャネル構成と並んで利用状況のスナップショットが表示されます（`--no-usage` でスキップ可能）。
+- macOS メニューバー: 「Context」メニュー内の「Usage」セクション（利用可能な場合のみ）。
 
-## Providers + credentials
+## プロバイダーと認証情報の要件
 
-- **Anthropic (Claude)**: OAuth tokens in auth profiles.
-- **GitHub Copilot**: OAuth tokens in auth profiles.
-- **Gemini CLI**: OAuth tokens in auth profiles.
-- **Antigravity**: OAuth tokens in auth profiles.
-- **OpenAI Codex**: OAuth tokens in auth profiles (accountId used when present).
-- **MiniMax**: API key (coding plan key; `MINIMAX_CODE_PLAN_KEY` or `MINIMAX_API_KEY`); uses the 5‑hour coding plan window.
-- **z.ai**: API key via env/config/auth store.
+以下のプロバイダーで利用状況の追跡がサポートされています。対応する認証情報が構成されている場合のみ表示されます。
 
-Usage is hidden if no matching OAuth/API credentials exist.
+- **Anthropic (Claude)**: 認証プロファイル内の OAuth トークン。
+- **GitHub Copilot**: 認証プロファイル内の OAuth トークン。
+- **Gemini CLI**: 認証プロファイル内の OAuth トークン。
+- **Antigravity**: 認証プロファイル内の OAuth トークン。
+- **OpenAI Codex**: 認証プロファイル内の OAuth トークン（`accountId` があればそれを使用）。
+- **MiniMax**: API キー（コーディングプラン用。`MINIMAX_CODE_PLAN_KEY` または `MINIMAX_API_KEY`）。直近 5 時間のコーディングプラン枠を使用します。
+- **z.ai**: 環境変数、構成ファイル、または認証ストア経由の API キー。
+
+一致する OAuth または API 認証情報が存在しない場合、利用状況セクションは非表示になります。

@@ -1,165 +1,162 @@
 ---
-summary: "Advanced setup and development workflows for OpenClaw"
+summary: "OpenClaw の高度なセットアップと開発ワークフロー"
 read_when:
-  - Setting up a new machine
-  - You want “latest + greatest” without breaking your personal setup
-title: "Setup"
+  - 新しいマシンをセットアップする場合
+  - 個人のセットアップを壊すことなく「最新で最高」のものが欲しい場合
+title: "セットアップ"
 ---
 
-# Setup
+# セットアップ (Setup)
 
 <Note>
-If you are setting up for the first time, start with [Getting Started](/start/getting-started).
-For wizard details, see [Onboarding Wizard](/start/wizard).
+初めてセットアップする場合は、[はじめに](/start/getting-started)から始めてください。
+ウィザードの詳細については、[オンボーディングウィザード](/start/wizard)を参照してください。
 </Note>
 
-Last updated: 2026-01-01
+最終更新日: 2026-01-01
 
-## TL;DR
+## 概要 (TL;DR)
 
-- **Tailoring lives outside the repo:** `~/.openclaw/workspace` (workspace) + `~/.openclaw/openclaw.json` (config).
-- **Stable workflow:** install the macOS app; let it run the bundled Gateway.
-- **Bleeding edge workflow:** run the Gateway yourself via `pnpm gateway:watch`, then let the macOS app attach in Local mode.
+- **カスタマイズはリポジトリの外部に置きます:** `~/.openclaw/workspace` (ワークスペース) + `~/.openclaw/openclaw.json` (設定)。
+- **安定したワークフロー:** macOS アプリをインストールし、バンドルされた Gateway を実行させます。
+- **最先端 (Bleeding edge) のワークフロー:** `pnpm gateway:watch` を介して自分で Gateway を実行し、macOS アプリをローカルモードでアタッチさせます。
 
-## Prereqs (from source)
+## 前提条件 (ソースから)
 
 - Node `>=22`
 - `pnpm`
-- Docker (optional; only for containerized setup/e2e — see [Docker](/install/docker))
+- Docker (オプション。コンテナ化されたセットアップ/e2e のみ — [Docker](/install/docker) を参照してください)
 
-## Tailoring strategy (so updates don’t hurt)
+## カスタマイズ戦略 (アップデートで壊れないようにする)
 
-If you want “100% tailored to me” _and_ easy updates, keep your customization in:
+「100% 自分向けにカスタマイズされたもの」*かつ*簡単なアップデートが必要な場合は、カスタマイズを以下に保持します：
 
-- **Config:** `~/.openclaw/openclaw.json` (JSON/JSON5-ish)
-- **Workspace:** `~/.openclaw/workspace` (skills, prompts, memories; make it a private git repo)
+- **設定:** `~/.openclaw/openclaw.json` (JSON / JSON5 風)
+- **ワークスペース:** `~/.openclaw/workspace` (スキル、プロンプト、記憶。プライベートな git リポジトリにしてください)
 
-Bootstrap once:
-
-```bash
-openclaw setup
-```
-
-From inside this repo, use the local CLI entry:
+一度だけブートストラップします：
 
 ```bash
 openclaw setup
 ```
 
-If you don’t have a global install yet, run it via `pnpm openclaw setup`.
+このリポジトリ内から、ローカルの CLI エントリを使用します：
 
-## Run the Gateway from this repo
+```bash
+openclaw setup
+```
 
-After `pnpm build`, you can run the packaged CLI directly:
+グローバルインストールがまだない場合は、`pnpm openclaw setup` 経由で実行してください。
+
+## このリポジトリから Gateway を実行する
+
+`pnpm build` の後、パッケージ化された CLI を直接実行できます：
 
 ```bash
 node openclaw.mjs gateway --port 18789 --verbose
 ```
 
-## Stable workflow (macOS app first)
+## 安定したワークフロー (macOS アプリ優先)
 
-1. Install + launch **OpenClaw.app** (menu bar).
-2. Complete the onboarding/permissions checklist (TCC prompts).
-3. Ensure Gateway is **Local** and running (the app manages it).
-4. Link surfaces (example: WhatsApp):
+1. **OpenClaw.app** (メニューバー) をインストールして起動します。
+2. オンボーディング / 権限チェックリスト (TCC プロンプト) を完了します。
+3. Gateway が **Local** になっており、実行されていることを確認します (アプリが管理します)。
+4. サーフェスをリンクします (例：WhatsApp)：
 
 ```bash
 openclaw channels login
 ```
 
-5. Sanity check:
+5. サニティチェック：
 
 ```bash
 openclaw health
 ```
 
-If onboarding is not available in your build:
+ビルドでオンボーディングが利用できない場合：
 
-- Run `openclaw setup`, then `openclaw channels login`, then start the Gateway manually (`openclaw gateway`).
+- `openclaw setup` を実行し、次に `openclaw channels login` を実行して、手動で Gateway を起動します (`openclaw gateway`)。
 
-## Bleeding edge workflow (Gateway in a terminal)
+## 最先端のワークフロー (ターミナルでの Gateway)
 
-Goal: work on the TypeScript Gateway, get hot reload, keep the macOS app UI attached.
+目標：TypeScript の Gateway で作業し、ホットリロードを取得し、macOS アプリの UI をアタッチしたままにする。
 
-### 0) (Optional) Run the macOS app from source too
+### 0) (オプション) macOS アプリもソースから実行する
 
-If you also want the macOS app on the bleeding edge:
+macOS アプリも最先端の状態にしたい場合：
 
 ```bash
 ./scripts/restart-mac.sh
 ```
 
-### 1) Start the dev Gateway
+### 1) 開発用 Gateway を起動する
 
 ```bash
 pnpm install
 pnpm gateway:watch
 ```
 
-`gateway:watch` runs the gateway in watch mode and reloads on TypeScript changes.
+`gateway:watch` はゲートウェイをウォッチモードで実行し、TypeScript の変更時にリロードします。
 
-### 2) Point the macOS app at your running Gateway
+### 2) macOS アプリを実行中の Gateway に向ける
 
-In **OpenClaw.app**:
+**OpenClaw.app** で：
 
-- Connection Mode: **Local**
-  The app will attach to the running gateway on the configured port.
+- 接続モード (Connection Mode): **Local**
+  アプリは、設定されたポートで実行中のゲートウェイにアタッチします。
 
-### 3) Verify
+### 3) 確認
 
-- In-app Gateway status should read **“Using existing gateway …”**
-- Or via CLI:
+- アプリ内の Gateway ステータスが **“Using existing gateway …”** になっているはずです
+- または CLI 経由：
 
 ```bash
 openclaw health
 ```
 
-### Common footguns
+### よくある落とし穴
 
-- **Wrong port:** Gateway WS defaults to `ws://127.0.0.1:18789`; keep app + CLI on the same port.
-- **Where state lives:**
-  - Credentials: `~/.openclaw/credentials/`
-  - Sessions: `~/.openclaw/agents/<agentId>/sessions/`
-  - Logs: `/tmp/openclaw/`
+- **間違ったポート:** Gateway WS のデフォルトは `ws://127.0.0.1:18789` です。アプリと CLI を同じポートに保ってください。
+- **状態が保存される場所:**
+  - 資格情報: `~/.openclaw/credentials/`
+  - セッション: `~/.openclaw/agents/<agentId>/sessions/`
+  - ログ: `/tmp/openclaw/`
 
-## Credential storage map
+## 資格情報ストレージマップ
 
-Use this when debugging auth or deciding what to back up:
+認証のデバッグやバックアップ対象を決定する際にこれを使用してください：
 
 - **WhatsApp**: `~/.openclaw/credentials/whatsapp/<accountId>/creds.json`
-- **Telegram bot token**: config/env or `channels.telegram.tokenFile`
-- **Discord bot token**: config/env or SecretRef (env/file/exec providers)
-- **Slack tokens**: config/env (`channels.slack.*`)
-- **Pairing allowlists**:
-  - `~/.openclaw/credentials/<channel>-allowFrom.json` (default account)
-  - `~/.openclaw/credentials/<channel>-<accountId>-allowFrom.json` (non-default accounts)
-- **Model auth profiles**: `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
-- **File-backed secrets payload (optional)**: `~/.openclaw/secrets.json`
-- **Legacy OAuth import**: `~/.openclaw/credentials/oauth.json`
-  More detail: [Security](/gateway/security#credential-storage-map).
+- **Telegram ボットトークン**: config/env または `channels.telegram.tokenFile`
+- **Discord ボットトークン**: config/env または SecretRef (env/file/exec プロバイダー)
+- **Slack トークン**: config/env (`channels.slack.*`)
+- **ペアリング許可リスト**:
+  - `~/.openclaw/credentials/<channel>-allowFrom.json` (デフォルトアカウント)
+  - `~/.openclaw/credentials/<channel>-<accountId>-allowFrom.json` (非デフォルトアカウント)
+- **モデル認証プロファイル**: `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
+- **ファイルバックアップされたシークレットペイロード (オプション)**: `~/.openclaw/secrets.json`
+- **レガシー OAuth インポート**: `~/.openclaw/credentials/oauth.json`
+  詳細: [セキュリティ](/gateway/security#credential-storage-map)。
 
-## Updating (without wrecking your setup)
+## アップデート (セットアップを壊さずに)
 
-- Keep `~/.openclaw/workspace` and `~/.openclaw/` as “your stuff”; don’t put personal prompts/config into the `openclaw` repo.
-- Updating source: `git pull` + `pnpm install` (when lockfile changed) + keep using `pnpm gateway:watch`.
+- `~/.openclaw/workspace` と `~/.openclaw/` は「あなたのもの」として保持してください。個人のプロンプトや設定を `openclaw` リポジトリに入れないでください。
+- ソースのアップデート：`git pull` + `pnpm install` (ロックファイルが変更された場合) + 引き続き `pnpm gateway:watch` を使用します。
 
-## Linux (systemd user service)
+## Linux (systemd ユーザーサービス)
 
-Linux installs use a systemd **user** service. By default, systemd stops user
-services on logout/idle, which kills the Gateway. Onboarding attempts to enable
-lingering for you (may prompt for sudo). If it’s still off, run:
+Linux インストールでは、systemd の**ユーザー**サービスを使用します。デフォルトでは、systemd はログアウトやアイドル状態になるとユーザーサービスを停止し、Gateway を終了させます。オンボーディングでは、リンガリング (lingering) の有効化を試みます (sudo のプロンプトが表示される場合があります)。それでもオフの場合は、次を実行してください：
 
 ```bash
 sudo loginctl enable-linger $USER
 ```
 
-For always-on or multi-user servers, consider a **system** service instead of a
-user service (no lingering needed). See [Gateway runbook](/gateway) for the systemd notes.
+常時稼働またはマルチユーザーのサーバーの場合は、ユーザーサービスではなく**システム**サービスを検討してください (リンガリングは不要です)。systemd に関する注意事項については、[Gateway ランブック](/gateway) を参照してください。
 
-## Related docs
+## 関連ドキュメント
 
-- [Gateway runbook](/gateway) (flags, supervision, ports)
-- [Gateway configuration](/gateway/configuration) (config schema + examples)
-- [Discord](/channels/discord) and [Telegram](/channels/telegram) (reply tags + replyToMode settings)
-- [OpenClaw assistant setup](/start/openclaw)
-- [macOS app](/platforms/macos) (gateway lifecycle)
+- [Gateway ランブック](/gateway) (フラグ、監視、ポート)
+- [Gateway の構成](/gateway/configuration) (設定スキーマ + 例)
+- [Discord](/channels/discord) および [Telegram](/channels/telegram) (返信タグ + replyToMode 設定)
+- [OpenClaw アシスタントのセットアップ](/start/openclaw)
+- [macOS アプリ](/platforms/macos) (ゲートウェイのライフサイクル)

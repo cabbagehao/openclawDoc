@@ -1,22 +1,23 @@
 ---
-summary: "CLI reference for `openclaw approvals` (exec approvals for gateway or node hosts)"
+summary: "`openclaw approvals` の CLI リファレンス (ゲートウェイまたはノードホストにおける実行承認の管理)"
 read_when:
-  - You want to edit exec approvals from the CLI
-  - You need to manage allowlists on gateway or node hosts
+  - CLI から実行承認を編集したい場合
+  - ゲートウェイやノードホストの許可リスト（allowlist）を管理する必要がある場合
 title: "approvals"
+x-i18n:
+  source_hash: "4329cdaaec2c5f5d619415b6431196512d4834dc1ccd7363576f03dd9b845130"
 ---
 
 # `openclaw approvals`
 
-Manage exec approvals for the **local host**, **gateway host**, or a **node host**.
-By default, commands target the local approvals file on disk. Use `--gateway` to target the gateway, or `--node` to target a specific node.
+**ローカルホスト**、**ゲートウェイホスト**、または特定の**ノードホスト**における実行承認（exec approvals）を管理します。
+デフォルトでは、コマンドはディスク上のローカル承認ファイルを対象とします。`--gateway` フラグを指定するとゲートウェイを、`--node` フラグを指定すると特定のノードを対象にします。
 
-Related:
+関連ドキュメント:
+- 実行承認（Exec approvals）: [実行承認](/tools/exec-approvals)
+- ノード: [ノード](/nodes)
 
-- Exec approvals: [Exec approvals](/tools/exec-approvals)
-- Nodes: [Nodes](/nodes)
-
-## Common commands
+## よく使われるコマンド
 
 ```bash
 openclaw approvals get
@@ -24,7 +25,7 @@ openclaw approvals get --node <id|name|ip>
 openclaw approvals get --gateway
 ```
 
-## Replace approvals from a file
+## ファイルの内容で承認を置き換える
 
 ```bash
 openclaw approvals set --file ./exec-approvals.json
@@ -32,7 +33,7 @@ openclaw approvals set --node <id|name|ip> --file ./exec-approvals.json
 openclaw approvals set --gateway --file ./exec-approvals.json
 ```
 
-## Allowlist helpers
+## 許可リスト（Allowlist）用ヘルパー
 
 ```bash
 openclaw approvals allowlist add "~/Projects/**/bin/rg"
@@ -42,9 +43,9 @@ openclaw approvals allowlist add --agent "*" "/usr/bin/uname"
 openclaw approvals allowlist remove "~/Projects/**/bin/rg"
 ```
 
-## Notes
+## 補足事項
 
-- `--node` uses the same resolver as `openclaw nodes` (id, name, ip, or id prefix).
-- `--agent` defaults to `"*"`, which applies to all agents.
-- The node host must advertise `system.execApprovals.get/set` (macOS app or headless node host).
-- Approvals files are stored per host at `~/.openclaw/exec-approvals.json`.
+- `--node` フラグには `openclaw nodes` と同じリゾルバー（ID、名前、IP、または ID プレフィックス）を使用できます。
+- `--agent` フラグのデフォルトは `"*"` であり、すべてのエージェントに適用されます。
+- ノードホストを対象とする場合、そのホストが `system.execApprovals.get/set` 機能を公開している必要があります（macOS アプリやヘッドレスノードなど）。
+- 承認ファイルは、各ホスト上の `~/.openclaw/exec-approvals.json` に保存されます。

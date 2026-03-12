@@ -1,30 +1,32 @@
 ---
-title: "Vercel AI Gateway"
-summary: "Vercel AI Gateway setup (auth + model selection)"
+title: "Vercel AI ゲートウェイ"
+summary: "Vercel AI Gateway のセットアップ (認証 + モデルの選択)"
 read_when:
-  - You want to use Vercel AI Gateway with OpenClaw
-  - You need the API key env var or CLI auth choice
+  - OpenClaw で Vercel AI Gateway を使用したい
+  - API キーの環境変数または CLI 認証の選択が必要です
+x-i18n:
+  source_hash: "f30768dc3db49708b25042d317906f7ad9a2c72b0fa03263bc04f5eefbf7a507"
 ---
 
-# Vercel AI Gateway
+# バーセル AI ゲートウェイ
 
-The [Vercel AI Gateway](https://vercel.com/ai-gateway) provides a unified API to access hundreds of models through a single endpoint.
+[Vercel AI Gateway](https://vercel.com/ai-gateway) は、単一のエンドポイントを通じて数百のモデルにアクセスするための統合 API を提供します。
 
-- Provider: `vercel-ai-gateway`
-- Auth: `AI_GATEWAY_API_KEY`
-- API: Anthropic Messages compatible
-- OpenClaw auto-discovers the Gateway `/v1/models` catalog, so `/models vercel-ai-gateway`
-  includes current model refs such as `vercel-ai-gateway/openai/gpt-5.4`.
+- プロバイダー: `vercel-ai-gateway`
+- 認証: `AI_GATEWAY_API_KEY`
+- API: Anthropic Messages 互換
+- OpenClaw はゲートウェイ `/v1/models` カタログを自動検出するため、`/models vercel-ai-gateway`
+  `vercel-ai-gateway/openai/gpt-5.4` などの現在のモデル参照が含まれます。
 
-## Quick start
+## クイックスタート
 
-1. Set the API key (recommended: store it for the Gateway):
+1. API キーを設定します (推奨: ゲートウェイ用に保存します)。
 
 ```bash
 openclaw onboard --auth-choice ai-gateway-api-key
 ```
 
-2. Set a default model:
+2. デフォルトのモデルを設定します。
 
 ```json5
 {
@@ -36,7 +38,7 @@ openclaw onboard --auth-choice ai-gateway-api-key
 }
 ```
 
-## Non-interactive example
+## 非対話型の例
 
 ```bash
 openclaw onboard --non-interactive \
@@ -45,16 +47,16 @@ openclaw onboard --non-interactive \
   --ai-gateway-api-key "$AI_GATEWAY_API_KEY"
 ```
 
-## Environment note
+## 環境に関する注意事項
 
-If the Gateway runs as a daemon (launchd/systemd), make sure `AI_GATEWAY_API_KEY`
-is available to that process (for example, in `~/.openclaw/.env` or via
-`env.shellEnv`).
+ゲートウェイがデーモン (launchd/systemd) として実行されている場合は、`AI_GATEWAY_API_KEY` であることを確認してください。
+そのプロセスで利用できます (たとえば、`~/.openclaw/.env` または経由)
+`env.shellEnv`)。
 
-## Model ID shorthand
+## モデル ID の省略表記
 
-OpenClaw accepts Vercel Claude shorthand model refs and normalizes them at
-runtime:
+OpenClaw は Vercel Claude の短縮形モデル参照を受け入れ、それらを次のように正規化します。
+ランタイム:
 
 - `vercel-ai-gateway/claude-opus-4.6` -> `vercel-ai-gateway/anthropic/claude-opus-4.6`
 - `vercel-ai-gateway/opus-4.6` -> `vercel-ai-gateway/anthropic/claude-opus-4-6`

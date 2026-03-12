@@ -1,12 +1,14 @@
 ---
 title: "HEARTBEAT.md Template"
-summary: "Workspace template for HEARTBEAT.md"
+summary: "HEARTBEAT.md 用のワークスペーステンプレート"
 read_when:
-  - Bootstrapping a workspace manually
+  - ワークスペースを手動でブートストラップするとき
+x-i18n:
+  source_hash: "2435dd405f798e5c34b5f1dd5fcb4a12a9fad375fd09e7c4c1e0d55c1d0ae88e"
 ---
 
 # HEARTBEAT.md
 
-# Keep this file empty (or with only comments) to skip heartbeat API calls.
+# heartbeat API 呼び出しをスキップしたい場合は、このファイルを空にするか、コメントだけにしてください。
 
-# Add tasks below when you want the agent to check something periodically.
+# エージェントに定期的な確認をさせたい場合は、以下にタスクを書いてください。

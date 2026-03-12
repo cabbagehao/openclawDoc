@@ -1,32 +1,31 @@
 ---
-summary: "Deepgram transcription for inbound voice notes"
+summary: "受信音声メモ向け Deepgram 文字起こし"
 read_when:
-  - You want Deepgram speech-to-text for audio attachments
-  - You need a quick Deepgram config example
+  - 音声添付ファイルに Deepgram の speech-to-text を使いたいとき
+  - Deepgram の簡単な設定例を確認したいとき
 title: "Deepgram"
+x-i18n:
+  source_hash: "dabd1f6942c339fbd744fbf38040b6a663b06ddf4d9c9ee31e3ac034de9e79d9"
 ---
 
 # Deepgram (Audio Transcription)
 
-Deepgram is a speech-to-text API. In OpenClaw it is used for **inbound audio/voice note
-transcription** via `tools.media.audio`.
+Deepgram は speech-to-text API です。OpenClaw では、`tools.media.audio` を通じて **受信した音声 / ボイスノートの文字起こし** に使われます。
 
-When enabled, OpenClaw uploads the audio file to Deepgram and injects the transcript
-into the reply pipeline (`{{Transcript}}` + `[Audio]` block). This is **not streaming**;
-it uses the pre-recorded transcription endpoint.
+有効化すると、OpenClaw は音声ファイルを Deepgram へアップロードし、その transcript を返信パイプラインへ挿入します (`{{Transcript}}` + `[Audio]` block)。これは **ストリーミングではなく**、録音済み音声向けの transcription endpoint を使います。
 
-Website: [https://deepgram.com](https://deepgram.com)  
+Website: [https://deepgram.com](https://deepgram.com)
 Docs: [https://developers.deepgram.com](https://developers.deepgram.com)
 
-## Quick start
+## クイックスタート
 
-1. Set your API key:
+1. API key を設定します。
 
 ```
 DEEPGRAM_API_KEY=dg_...
 ```
 
-2. Enable the provider:
+2. provider を有効化します。
 
 ```json5
 {
@@ -41,15 +40,15 @@ DEEPGRAM_API_KEY=dg_...
 }
 ```
 
-## Options
+## オプション
 
-- `model`: Deepgram model id (default: `nova-3`)
-- `language`: language hint (optional)
-- `tools.media.audio.providerOptions.deepgram.detect_language`: enable language detection (optional)
-- `tools.media.audio.providerOptions.deepgram.punctuate`: enable punctuation (optional)
-- `tools.media.audio.providerOptions.deepgram.smart_format`: enable smart formatting (optional)
+- `model`: Deepgram の model id (既定値: `nova-3`)
+- `language`: 言語ヒント (任意)
+- `tools.media.audio.providerOptions.deepgram.detect_language`: 言語検出を有効化 (任意)
+- `tools.media.audio.providerOptions.deepgram.punctuate`: 句読点を有効化 (任意)
+- `tools.media.audio.providerOptions.deepgram.smart_format`: smart formatting を有効化 (任意)
 
-Example with language:
+言語を指定する例:
 
 ```json5
 {
@@ -64,7 +63,7 @@ Example with language:
 }
 ```
 
-Example with Deepgram options:
+Deepgram 固有オプションを使う例:
 
 ```json5
 {
@@ -86,8 +85,8 @@ Example with Deepgram options:
 }
 ```
 
-## Notes
+## 補足
 
-- Authentication follows the standard provider auth order; `DEEPGRAM_API_KEY` is the simplest path.
-- Override endpoints or headers with `tools.media.audio.baseUrl` and `tools.media.audio.headers` when using a proxy.
-- Output follows the same audio rules as other providers (size caps, timeouts, transcript injection).
+- 認証は標準の provider 認証順に従います。`DEEPGRAM_API_KEY` を使うのが最も簡単です。
+- proxy を使う場合は、`tools.media.audio.baseUrl` と `tools.media.audio.headers` で endpoint や header を上書きできます。
+- 出力は他 provider と同じ audio ルール (サイズ上限、timeout、transcript 注入) に従います。

@@ -1,318 +1,145 @@
 ---
-summary: "CLI reference for `openclaw hooks` (agent hooks)"
+summary: "`openclaw hooks` (エージェントフック) の CLI リファレンス"
 read_when:
-  - You want to manage agent hooks
-  - You want to install or update hooks
+  - エージェントフックを管理したい場合
+  - フックのインストールや更新を行いたい場合
 title: "hooks"
+x-i18n:
+  source_hash: "c9de9c21e7e474dc19753e2bed326510df02a3c8cd70c0cc0e0c54112230756a"
 ---
 
 # `openclaw hooks`
 
-Manage agent hooks (event-driven automations for commands like `/new`, `/reset`, and gateway startup).
+エージェントフック（`/new`、`/reset`、ゲートウェイの起動などのイベントに基づいて実行される自動化スクリプト）を管理します。
 
-Related:
+関連ドキュメント:
+- フックの概要: [フック](/automation/hooks)
+- プラグインフック: [プラグイン](/tools/plugin#plugin-hooks)
 
-- Hooks: [Hooks](/automation/hooks)
-- Plugin hooks: [Plugins](/tools/plugin#plugin-hooks)
-
-## List All Hooks
+## すべてのフックを一覧表示する
 
 ```bash
 openclaw hooks list
 ```
 
-List all discovered hooks from workspace, managed, and bundled directories.
+ワークスペース、管理ディレクトリ、および同梱ディレクトリから検出されたすべてのフックを表示します。
 
-**Options:**
+**オプション:**
 
-- `--eligible`: Show only eligible hooks (requirements met)
-- `--json`: Output as JSON
-- `-v, --verbose`: Show detailed information including missing requirements
+- `--eligible`: 実行条件を満たしているフックのみを表示
+- `--json`: JSON 形式で出力
+- `-v, --verbose`: 不足している要件などの詳細情報を表示
 
-**Example output:**
+**出力例:**
 
 ```
 Hooks (4/4 ready)
 
 Ready:
-  🚀 boot-md ✓ - Run BOOT.md on gateway startup
-  📎 bootstrap-extra-files ✓ - Inject extra workspace bootstrap files during agent bootstrap
-  📝 command-logger ✓ - Log all command events to a centralized audit file
-  💾 session-memory ✓ - Save session context to memory when /new command is issued
+  🚀 boot-md ✓ - ゲートウェイ起動時に BOOT.md を実行
+  📎 bootstrap-extra-files ✓ - エージェント起動時（bootstrap）に追加ファイルを注入
+  📝 command-logger ✓ - すべてのコマンドイベントを中央監査ファイルに記録
+  💾 session-memory ✓ - /new コマンド実行時にセッションコンテキストを記憶に保存
 ```
 
-**Example (verbose):**
-
-```bash
-openclaw hooks list --verbose
-```
-
-Shows missing requirements for ineligible hooks.
-
-**Example (JSON):**
-
-```bash
-openclaw hooks list --json
-```
-
-Returns structured JSON for programmatic use.
-
-## Get Hook Information
+## フックの詳細情報を取得する
 
 ```bash
 openclaw hooks info <name>
 ```
 
-Show detailed information about a specific hook.
+特定のフックに関する詳細情報を表示します。
 
-**Arguments:**
+**引数:**
 
-- `<name>`: Hook name (e.g., `session-memory`)
+- `<name>`: フック名 (例: `session-memory`)
 
-**Options:**
+**オプション:**
 
-- `--json`: Output as JSON
+- `--json`: JSON 形式で出力
 
-**Example:**
-
-```bash
-openclaw hooks info session-memory
-```
-
-**Output:**
-
-```
-💾 session-memory ✓ Ready
-
-Save session context to memory when /new command is issued
-
-Details:
-  Source: openclaw-bundled
-  Path: /path/to/openclaw/hooks/bundled/session-memory/HOOK.md
-  Handler: /path/to/openclaw/hooks/bundled/session-memory/handler.ts
-  Homepage: https://docs.openclaw.ai/automation/hooks#session-memory
-  Events: command:new
-
-Requirements:
-  Config: ✓ workspace.dir
-```
-
-## Check Hooks Eligibility
+## フックの実行可否をチェックする
 
 ```bash
 openclaw hooks check
 ```
 
-Show summary of hook eligibility status (how many are ready vs. not ready).
+フックの実行可否ステータスのサマリーを表示します（準備完了数 vs 未準備数）。
 
-**Options:**
-
-- `--json`: Output as JSON
-
-**Example output:**
-
-```
-Hooks Status
-
-Total hooks: 4
-Ready: 4
-Not ready: 0
-```
-
-## Enable a Hook
+## フックを有効にする
 
 ```bash
 openclaw hooks enable <name>
 ```
 
-Enable a specific hook by adding it to your config (`~/.openclaw/config.json`).
+構成ファイル (`~/.openclaw/config.json`) を更新して、特定のフックを有効にします。
 
-**Note:** Hooks managed by plugins show `plugin:<id>` in `openclaw hooks list` and
-can’t be enabled/disabled here. Enable/disable the plugin instead.
+**注意:** プラグインによって提供されるフックは `openclaw hooks list` で `plugin:<id>` と表示され、ここから個別に有効・無効を切り替えることはできません。代わりにプラグイン自体の有効・無効を切り替えてください。
 
-**Arguments:**
-
-- `<name>`: Hook name (e.g., `session-memory`)
-
-**Example:**
-
-```bash
-openclaw hooks enable session-memory
-```
-
-**Output:**
-
-```
-✓ Enabled hook: 💾 session-memory
-```
-
-**What it does:**
-
-- Checks if hook exists and is eligible
-- Updates `hooks.internal.entries.<name>.enabled = true` in your config
-- Saves config to disk
-
-**After enabling:**
-
-- Restart the gateway so hooks reload (menu bar app restart on macOS, or restart your gateway process in dev).
-
-## Disable a Hook
+## フックを無効にする
 
 ```bash
 openclaw hooks disable <name>
 ```
 
-Disable a specific hook by updating your config.
+構成ファイルを更新して、特定のフックを無効にします。
 
-**Arguments:**
-
-- `<name>`: Hook name (e.g., `command-logger`)
-
-**Example:**
-
-```bash
-openclaw hooks disable command-logger
-```
-
-**Output:**
-
-```
-⏸ Disabled hook: 📝 command-logger
-```
-
-**After disabling:**
-
-- Restart the gateway so hooks reload
-
-## Install Hooks
+## フックをインストールする
 
 ```bash
 openclaw hooks install <path-or-spec>
 openclaw hooks install <npm-spec> --pin
 ```
 
-Install a hook pack from a local folder/archive or npm.
+ローカルフォルダ、アーカイブ、または npm からフックパックをインストールします。
 
-Npm specs are **registry-only** (package name + optional **exact version** or
-**dist-tag**). Git/URL/file specs and semver ranges are rejected. Dependency
-installs run with `--ignore-scripts` for safety.
+npm スペックは**レジストリ経由のみ**（パッケージ名 + オプションで**正確なバージョン**または **dist-tag**）をサポートします。Git、URL、ローカルファイルパスによる指定やセマンティックバージョニングの範囲指定は拒否されます。依存関係のインストールは安全のため `--ignore-scripts` 付きで実行されます。
 
-Bare specs and `@latest` stay on the stable track. If npm resolves either of
-those to a prerelease, OpenClaw stops and asks you to opt in explicitly with a
-prerelease tag such as `@beta`/`@rc` or an exact prerelease version.
+**インストール時の動作:**
 
-**What it does:**
+- フックパックを `~/.openclaw/hooks/<id>` にコピーします。
+- `hooks.internal.entries.*` でインストールしたフックを有効にします。
+- インストール情報を `hooks.internal.installs` に記録します。
 
-- Copies the hook pack into `~/.openclaw/hooks/<id>`
-- Enables the installed hooks in `hooks.internal.entries.*`
-- Records the install under `hooks.internal.installs`
+**オプション:**
 
-**Options:**
+- `-l, --link`: コピーする代わりにローカルディレクトリをリンクします（`hooks.internal.load.extraDirs` に追加）。
+- `--pin`: npm インストール時に、解決された正確な `name@version` を記録します。
 
-- `-l, --link`: Link a local directory instead of copying (adds it to `hooks.internal.load.extraDirs`)
-- `--pin`: Record npm installs as exact resolved `name@version` in `hooks.internal.installs`
-
-**Supported archives:** `.zip`, `.tgz`, `.tar.gz`, `.tar`
-
-**Examples:**
-
-```bash
-# Local directory
-openclaw hooks install ./my-hook-pack
-
-# Local archive
-openclaw hooks install ./my-hook-pack.zip
-
-# NPM package
-openclaw hooks install @openclaw/my-hook-pack
-
-# Link a local directory without copying
-openclaw hooks install -l ./my-hook-pack
-```
-
-## Update Hooks
+## フックを更新する
 
 ```bash
 openclaw hooks update <id>
 openclaw hooks update --all
 ```
 
-Update installed hook packs (npm installs only).
+インストール済みのフックパック（npm インストールのみ）を更新します。
 
-**Options:**
-
-- `--all`: Update all tracked hook packs
-- `--dry-run`: Show what would change without writing
-
-When a stored integrity hash exists and the fetched artifact hash changes,
-OpenClaw prints a warning and asks for confirmation before proceeding. Use
-global `--yes` to bypass prompts in CI/non-interactive runs.
-
-## Bundled Hooks
+## 同梱されているフックの例
 
 ### session-memory
 
-Saves session context to memory when you issue `/new`.
+`/new` コマンド実行時にセッションコンテキストを記憶として保存します。
 
-**Enable:**
-
-```bash
-openclaw hooks enable session-memory
-```
-
-**Output:** `~/.openclaw/workspace/memory/YYYY-MM-DD-slug.md`
-
-**See:** [session-memory documentation](/automation/hooks#session-memory)
+**有効化:** `openclaw hooks enable session-memory`
+**出力先:** `~/.openclaw/workspace/memory/YYYY-MM-DD-slug.md`
 
 ### bootstrap-extra-files
 
-Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TOOLS.md`) during `agent:bootstrap`.
+エージェントのセットアップ（`agent:bootstrap`）中に、追加の構成ファイル（モノリポ内の `AGENTS.md` や `TOOLS.md` など）を注入します。
 
-**Enable:**
-
-```bash
-openclaw hooks enable bootstrap-extra-files
-```
-
-**See:** [bootstrap-extra-files documentation](/automation/hooks#bootstrap-extra-files)
+**有効化:** `openclaw hooks enable bootstrap-extra-files`
 
 ### command-logger
 
-Logs all command events to a centralized audit file.
+すべてのコマンドイベントを中央監査ファイルに記録します。
 
-**Enable:**
-
-```bash
-openclaw hooks enable command-logger
-```
-
-**Output:** `~/.openclaw/logs/commands.log`
-
-**View logs:**
-
-```bash
-# Recent commands
-tail -n 20 ~/.openclaw/logs/commands.log
-
-# Pretty-print
-cat ~/.openclaw/logs/commands.log | jq .
-
-# Filter by action
-grep '"action":"new"' ~/.openclaw/logs/commands.log | jq .
-```
-
-**See:** [command-logger documentation](/automation/hooks#command-logger)
+**有効化:** `openclaw hooks enable command-logger`
+**出力先:** `~/.openclaw/logs/commands.log`
 
 ### boot-md
 
-Runs `BOOT.md` when the gateway starts (after channels start).
+ゲートウェイの起動直後（チャネルの開始後）に `BOOT.md` を実行します。
 
-**Events**: `gateway:startup`
-
-**Enable**:
-
-```bash
-openclaw hooks enable boot-md
-```
-
-**See:** [boot-md documentation](/automation/hooks#boot-md)
+**イベント:** `gateway:startup`
+**有効化:** `openclaw hooks enable boot-md`

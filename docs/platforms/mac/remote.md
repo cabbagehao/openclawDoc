@@ -1,84 +1,86 @@
 ---
-summary: "macOS app flow for controlling a remote OpenClaw gateway over SSH"
+summary: "SSH 経由でリモート OpenClaw ゲートウェイを制御するための macOS アプリ フロー"
 read_when:
-  - Setting up or debugging remote mac control
-title: "Remote Control"
+  - macOS からのリモート制御をセットアップまたはデバッグするとき
+title: "リモート制御"
+x-i18n:
+  source_hash: "4bb945460f613e02cc26008d19400b1439ff1208fe93a1e4c956865ad0286fe1"
 ---
 
-# Remote OpenClaw (macOS ⇄ remote host)
+# リモート OpenClaw（macOS ⇄ リモート ホスト）
 
-This flow lets the macOS app act as a full remote control for a OpenClaw gateway running on another host (desktop/server). It’s the app’s **Remote over SSH** (remote run) feature. All features—health checks, Voice Wake forwarding, and Web Chat—reuse the same remote SSH configuration from _Settings → General_.
+この構成では、macOS アプリを、別ホスト（デスクトップ / サーバー）で動作する OpenClaw ゲートウェイの完全なリモート コントローラーとして利用できます。これはアプリの **Remote over SSH**（remote run）機能です。ヘルスチェック、Voice Wake の転送、Web Chat を含むすべての機能が、_Settings → General_ で設定した同じ SSH 構成を共有します。
 
-## Modes
+## モード
 
-- **Local (this Mac)**: Everything runs on the laptop. No SSH involved.
-- **Remote over SSH (default)**: OpenClaw commands are executed on the remote host. The mac app opens an SSH connection with `-o BatchMode` plus your chosen identity/key and a local port-forward.
-- **Remote direct (ws/wss)**: No SSH tunnel. The mac app connects to the gateway URL directly (for example, via Tailscale Serve or a public HTTPS reverse proxy).
+- **Local (this Mac)**: すべてをこの Mac 上で実行します。SSH は使いません。
+- **Remote over SSH (default)**: OpenClaw コマンドはリモート ホスト上で実行されます。macOS アプリは `-o BatchMode`、選択した identity / key、ローカル ポート転送を含む SSH 接続を開きます。
+- **Remote direct (ws/wss)**: SSH トンネルを使わず、ゲートウェイ URL に直接接続します。たとえば Tailscale Serve や公開 HTTPS リバース プロキシ経由です。
 
-## Remote transports
+## リモート転送方式
 
-Remote mode supports two transports:
+リモート モードでは 2 種類の転送方式を利用できます。
 
-- **SSH tunnel** (default): Uses `ssh -N -L ...` to forward the gateway port to localhost. The gateway will see the node’s IP as `127.0.0.1` because the tunnel is loopback.
-- **Direct (ws/wss)**: Connects straight to the gateway URL. The gateway sees the real client IP.
+- **SSH tunnel**（既定）: `ssh -N -L ...` でゲートウェイ ポートを localhost に転送します。トンネルは loopback を使うため、ゲートウェイ側からはノードの IP が `127.0.0.1` に見えます。
+- **Direct (ws/wss)**: ゲートウェイ URL へ直接接続します。ゲートウェイには実際のクライアント IP が見えます。
 
-## Prereqs on the remote host
+## リモート ホスト側の前提条件
 
-1. Install Node + pnpm and build/install the OpenClaw CLI (`pnpm install && pnpm build && pnpm link --global`).
-2. Ensure `openclaw` is on PATH for non-interactive shells (symlink into `/usr/local/bin` or `/opt/homebrew/bin` if needed).
-3. Open SSH with key auth. We recommend **Tailscale** IPs for stable reachability off-LAN.
+1. Node と pnpm をインストールし、OpenClaw CLI をビルド / インストールします（`pnpm install && pnpm build && pnpm link --global`）。
+2. 非対話シェルでも `openclaw` が PATH 上で見つかるようにしてください。必要なら `/usr/local/bin` または `/opt/homebrew/bin` に symlink します。
+3. 鍵認証で SSH 接続できるようにします。LAN 外から安定して到達させるには **Tailscale** IP の利用を推奨します。
 
-## macOS app setup
+## macOS アプリ側のセットアップ
 
-1. Open _Settings → General_.
-2. Under **OpenClaw runs**, pick **Remote over SSH** and set:
-   - **Transport**: **SSH tunnel** or **Direct (ws/wss)**.
-   - **SSH target**: `user@host` (optional `:port`).
-     - If the gateway is on the same LAN and advertises Bonjour, pick it from the discovered list to auto-fill this field.
-   - **Gateway URL** (Direct only): `wss://gateway.example.ts.net` (or `ws://...` for local/LAN).
-   - **Identity file** (advanced): path to your key.
-   - **Project root** (advanced): remote checkout path used for commands.
-   - **CLI path** (advanced): optional path to a runnable `openclaw` entrypoint/binary (auto-filled when advertised).
-3. Hit **Test remote**. Success indicates the remote `openclaw status --json` runs correctly. Failures usually mean PATH/CLI issues; exit 127 means the CLI isn’t found remotely.
-4. Health checks and Web Chat will now run through this SSH tunnel automatically.
+1. _Settings → General_ を開きます。
+2. **OpenClaw runs** で **Remote over SSH** を選び、次を設定します。
+   - **Transport**: **SSH tunnel** または **Direct (ws/wss)**
+   - **SSH target**: `user@host`（必要なら `:port` を付与）
+     - ゲートウェイが同一 LAN 上にあり Bonjour を広告している場合は、検出済みリストから選んで自動入力できます。
+   - **Gateway URL**（Direct のみ）: `wss://gateway.example.ts.net`。ローカル / LAN なら `ws://...` も使用できます。
+   - **Identity file**（advanced）: 利用する鍵ファイルへのパス
+   - **Project root**（advanced）: コマンド実行に使うリモート側 checkout パス
+   - **CLI path**（advanced）: 実行可能な `openclaw` エントリポイント、またはバイナリへの任意のパス。広告されている場合は自動入力されます。
+3. **Test remote** を実行します。成功すれば、リモート側で `openclaw status --json` が正しく実行できています。失敗の多くは PATH または CLI の問題で、exit 127 はリモート側で CLI が見つからないことを示します。
+4. 以後、ヘルスチェックと Web Chat はこの SSH トンネル経由で自動実行されます。
 
 ## Web Chat
 
-- **SSH tunnel**: Web Chat connects to the gateway over the forwarded WebSocket control port (default 18789).
-- **Direct (ws/wss)**: Web Chat connects straight to the configured gateway URL.
-- There is no separate WebChat HTTP server anymore.
+- **SSH tunnel**: Web Chat は転送された WebSocket 制御ポート（既定 18789）経由でゲートウェイに接続します。
+- **Direct (ws/wss)**: Web Chat は設定されたゲートウェイ URL へ直接接続します。
+- 個別の WebChat HTTP サーバーは、現在は存在しません。
 
-## Permissions
+## 権限
 
-- The remote host needs the same TCC approvals as local (Automation, Accessibility, Screen Recording, Microphone, Speech Recognition, Notifications). Run onboarding on that machine to grant them once.
-- Nodes advertise their permission state via `node.list` / `node.describe` so agents know what’s available.
+- リモート ホストにも、ローカルと同じ TCC 承認が必要です。Automation、Accessibility、Screen Recording、Microphone、Speech Recognition、Notifications を、そのマシンで一度オンボーディングして付与してください。
+- ノードは `node.list` / `node.describe` を通じて権限状態を通知するため、エージェントは利用可能な機能を把握できます。
 
-## Security notes
+## セキュリティに関する注意
 
-- Prefer loopback binds on the remote host and connect via SSH or Tailscale.
-- SSH tunneling uses strict host-key checking; trust the host key first so it exists in `~/.ssh/known_hosts`.
-- If you bind the Gateway to a non-loopback interface, require token/password auth.
-- See [Security](/gateway/security) and [Tailscale](/gateway/tailscale).
+- リモート ホストでは loopback bind を優先し、SSH または Tailscale 経由で接続してください。
+- SSH トンネルでは strict host-key checking を使用します。事前にホスト鍵を信頼し、`~/.ssh/known_hosts` に登録しておいてください。
+- ゲートウェイを非 loopback インターフェースへ bind する場合は、トークンまたはパスワード認証を必須にしてください。
+- 詳細は [Security](/gateway/security) と [Tailscale](/gateway/tailscale) を参照してください。
 
-## WhatsApp login flow (remote)
+## WhatsApp ログイン フロー（リモート）
 
-- Run `openclaw channels login --verbose` **on the remote host**. Scan the QR with WhatsApp on your phone.
-- Re-run login on that host if auth expires. Health check will surface link problems.
+- `openclaw channels login --verbose` は **リモート ホスト上で** 実行します。表示された QR を電話の WhatsApp で読み取ってください。
+- 認証期限が切れた場合も、そのホスト上でログインを再実行します。リンクの問題はヘルスチェックに反映されます。
 
-## Troubleshooting
+## トラブルシューティング
 
-- **exit 127 / not found**: `openclaw` isn’t on PATH for non-login shells. Add it to `/etc/paths`, your shell rc, or symlink into `/usr/local/bin`/`/opt/homebrew/bin`.
-- **Health probe failed**: check SSH reachability, PATH, and that Baileys is logged in (`openclaw status --json`).
-- **Web Chat stuck**: confirm the gateway is running on the remote host and the forwarded port matches the gateway WS port; the UI requires a healthy WS connection.
-- **Node IP shows 127.0.0.1**: expected with the SSH tunnel. Switch **Transport** to **Direct (ws/wss)** if you want the gateway to see the real client IP.
-- **Voice Wake**: trigger phrases are forwarded automatically in remote mode; no separate forwarder is needed.
+- **exit 127 / not found**: 非ログイン シェルで `openclaw` が PATH にありません。`/etc/paths`、シェル rc、または `/usr/local/bin` / `/opt/homebrew/bin` への symlink を確認してください。
+- **Health probe failed**: SSH の到達性、PATH、Baileys がログイン済みか（`openclaw status --json`）を確認してください。
+- **Web Chat stuck**: リモート ホストでゲートウェイが動作しており、転送ポートがゲートウェイの WS ポートと一致しているか確認してください。UI は正常な WS 接続を前提とします。
+- **Node IP shows 127.0.0.1**: SSH tunnel では正常です。ゲートウェイ側で実際のクライアント IP を見たい場合は、**Transport** を **Direct (ws/wss)** に切り替えてください。
+- **Voice Wake**: リモート モードではトリガー フレーズが自動転送されます。追加の転送プロセスは不要です。
 
-## Notification sounds
+## 通知音
 
-Pick sounds per notification from scripts with `openclaw` and `node.invoke`, e.g.:
+`openclaw` と `node.invoke` を使えば、スクリプトから通知単位でサウンドを指定できます。例:
 
 ```bash
 openclaw nodes notify --node <id> --title "Ping" --body "Remote gateway ready" --sound Glass
 ```
 
-There is no global “default sound” toggle in the app anymore; callers choose a sound (or none) per request.
+現在のアプリには、グローバルな `default sound` 切り替えはありません。呼び出し側がリクエストごとにサウンドを指定するか、無音にするかを決めます。

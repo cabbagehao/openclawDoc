@@ -1,23 +1,25 @@
 ---
-summary: "Use OpenAI via API keys or Codex subscription in OpenClaw"
+summary: "OpenClaw の API キーまたは Codex サブスクリプションを介して OpenAI を使用する"
 read_when:
-  - You want to use OpenAI models in OpenClaw
-  - You want Codex subscription auth instead of API keys
+  - OpenClaw で OpenAI モデルを使用したい
+  - API キーの代わりに Codex サブスクリプション認証が必要な場合
 title: "OpenAI"
+x-i18n:
+  source_hash: "3b28e56807133a82747d1d874181c75d9ae3d2430b1e8b486738fe09b6e46e70"
 ---
 
 # OpenAI
 
-OpenAI provides developer APIs for GPT models. Codex supports **ChatGPT sign-in** for subscription
-access or **API key** sign-in for usage-based access. Codex cloud requires ChatGPT sign-in.
-OpenAI explicitly supports subscription OAuth usage in external tools/workflows like OpenClaw.
+OpenAI は、GPT モデル用の開発者 API を提供します。 Codex はサブスクリプションの **ChatGPT サインイン**をサポートします
+使用量ベースのアクセスの場合は、**API キー** サインインにアクセスします。 Codex クラウドには ChatGPT サインインが必要です。
+OpenAI は、OpenClaw などの外部ツール/ワークフローでのサブスクリプション OAuth の使用を明示的にサポートしています。
 
-## Option A: OpenAI API key (OpenAI Platform)
+## オプション A: OpenAI API キー (OpenAI プラットフォーム)
 
-**Best for:** direct API access and usage-based billing.
-Get your API key from the OpenAI dashboard.
+**最適な用途:** 直接 API アクセスと使用量ベースの課金。
+OpenAI ダッシュボードから API キーを取得します。
 
-### CLI setup
+### CLI セットアップ
 
 ```bash
 openclaw onboard --auth-choice openai-api-key
@@ -25,7 +27,7 @@ openclaw onboard --auth-choice openai-api-key
 openclaw onboard --openai-api-key "$OPENAI_API_KEY"
 ```
 
-### Config snippet
+### 構成スニペット
 
 ```json5
 {
@@ -34,15 +36,15 @@ openclaw onboard --openai-api-key "$OPENAI_API_KEY"
 }
 ```
 
-OpenAI's current API model docs list `gpt-5.4` and `gpt-5.4-pro` for direct
-OpenAI API usage. OpenClaw forwards both through the `openai/*` Responses path.
+OpenAI の現在の API モデルのドキュメント リスト `gpt-5.4` および `gpt-5.4-pro` (直接の場合)
+OpenAI APIの使用法。 OpenClaw は両方を `openai/*` 応答パス経由で転送します。
 
-## Option B: OpenAI Code (Codex) subscription
+## オプション B: OpenAI Code (Codex) サブスクリプション
 
-**Best for:** using ChatGPT/Codex subscription access instead of an API key.
-Codex cloud requires ChatGPT sign-in, while the Codex CLI supports ChatGPT or API key sign-in.
+**最適な用途:** API キーの代わりに ChatGPT/Codex サブスクリプション アクセスを使用します。
+Codex クラウドには ChatGPT サインインが必要ですが、Codex CLI は ChatGPT または API キー サインインをサポートしています。
 
-### CLI setup (Codex OAuth)
+### CLI セットアップ (Codex OAuth)
 
 ```bash
 # Run Codex OAuth in the wizard
@@ -52,7 +54,7 @@ openclaw onboard --auth-choice openai-codex
 openclaw models auth login --provider openai-codex
 ```
 
-### Config snippet (Codex subscription)
+### 構成スニペット (Codex サブスクリプション)
 
 ```json5
 {
@@ -60,28 +62,27 @@ openclaw models auth login --provider openai-codex
 }
 ```
 
-OpenAI's current Codex docs list `gpt-5.4` as the current Codex model. OpenClaw
-maps that to `openai-codex/gpt-5.4` for ChatGPT/Codex OAuth usage.
+OpenAI の現在の Codex ドキュメントには、現在の Codex モデルとして `gpt-5.4` がリストされています。オープンクロー
+これを ChatGPT/Codex OAuth の使用のために `openai-codex/gpt-5.4` にマップします。
 
-### Transport default
+### トランスポートのデフォルト
 
-OpenClaw uses `pi-ai` for model streaming. For both `openai/*` and
-`openai-codex/*`, default transport is `"auto"` (WebSocket-first, then SSE
-fallback).
+OpenClaw はモデルのストリーミングに `pi-ai` を使用します。 `openai/*` と
+`openai-codex/*`、デフォルトのトランスポートは `"auto"` (最初に WebSocket、次に SSE)
+フォールバック)。
 
-You can set `agents.defaults.models.<provider/model>.params.transport`:
+`agents.defaults.models.<provider/model>.params.transport` を設定できます。- `"sse"`: SSE を強制する
 
-- `"sse"`: force SSE
-- `"websocket"`: force WebSocket
-- `"auto"`: try WebSocket, then fall back to SSE
+- `"websocket"`: WebSocket を強制する
+- `"auto"`: WebSocket を試してから、SSE にフォールバックします。
 
-For `openai/*` (Responses API), OpenClaw also enables WebSocket warm-up by
-default (`openaiWsWarmup: true`) when WebSocket transport is used.
+`openai/*` (応答 API) の場合、OpenClaw は次の方法で WebSocket のウォームアップも有効にします。
+WebSocket トランスポートが使用される場合のデフォルト (`openaiWsWarmup: true`)。
 
-Related OpenAI docs:
+関連する OpenAI ドキュメント:
 
-- [Realtime API with WebSocket](https://platform.openai.com/docs/guides/realtime-websocket)
-- [Streaming API responses (SSE)](https://platform.openai.com/docs/guides/streaming-responses)
+- [WebSocketによるリアルタイムAPI](https://platform.openai.com/docs/guides/realtime-websocket)
+- [ストリーミング API 応答 (SSE)](https://platform.openai.com/docs/guides/streaming-responses)
 
 ```json5
 {
@@ -100,12 +101,12 @@ Related OpenAI docs:
 }
 ```
 
-### OpenAI WebSocket warm-up
+### OpenAI WebSocket のウォームアップ
 
-OpenAI docs describe warm-up as optional. OpenClaw enables it by default for
-`openai/*` to reduce first-turn latency when using WebSocket transport.
+OpenAI のドキュメントでは、ウォームアップはオプションとして説明されています。 OpenClaw はデフォルトで有効になっています
+`openai/*` WebSocket トランスポート使用時の最初のターンのレイテンシを短縮します。
 
-### Disable warm-up
+### ウォームアップを無効にする
 
 ```json5
 {
@@ -123,7 +124,7 @@ OpenAI docs describe warm-up as optional. OpenClaw enables it by default for
 }
 ```
 
-### Enable warm-up explicitly
+### ウォームアップを明示的に有効にする
 
 ```json5
 {
@@ -141,11 +142,11 @@ OpenAI docs describe warm-up as optional. OpenClaw enables it by default for
 }
 ```
 
-### OpenAI priority processing
+### OpenAIの優先処理
 
-OpenAI's API exposes priority processing via `service_tier=priority`. In
-OpenClaw, set `agents.defaults.models["openai/<model>"].params.serviceTier` to
-pass that field through on direct `openai/*` Responses requests.
+OpenAI の API は、`service_tier=priority` を介して優先処理を公開します。で
+OpenClaw、`agents.defaults.models["openai/<model>"].params.serviceTier` を次のように設定します
+直接の `openai/*` 応答リクエストでそのフィールドを渡します。
 
 ```json5
 {
@@ -163,24 +164,22 @@ pass that field through on direct `openai/*` Responses requests.
 }
 ```
 
-Supported values are `auto`, `default`, `flex`, and `priority`.
+サポートされている値は、`auto`、`default`、`flex`、および `priority` です。
 
-### OpenAI Responses server-side compaction
+### OpenAI Responses のサーバー側圧縮
 
-For direct OpenAI Responses models (`openai/*` using `api: "openai-responses"` with
-`baseUrl` on `api.openai.com`), OpenClaw now auto-enables OpenAI server-side
-compaction payload hints:
+直接 OpenAI Response モデルの場合 (`openai/*` と `api: "openai-responses"` を使用)
+`baseUrl` (`api.openai.com` 上)、OpenClaw がサーバー側で OpenAI を自動的に有効にするようになりました
+圧縮ペイロードのヒント:
 
-- Forces `store: true` (unless model compat sets `supportsStore: false`)
-- Injects `context_management: [{ type: "compaction", compact_threshold: ... }]`
+- `store: true` を強制します (モデル互換性が `supportsStore: false` を設定しない場合)
+- `context_management: [{ type: "compaction", compact_threshold: ... }]` を注入しますデフォルトでは、`compact_threshold` はモデル `contextWindow` (または `80000`) の `70%` です。
+  利用できない場合）。
 
-By default, `compact_threshold` is `70%` of model `contextWindow` (or `80000`
-when unavailable).
+### サーバー側の圧縮を明示的に有効にする
 
-### Enable server-side compaction explicitly
-
-Use this when you want to force `context_management` injection on compatible
-Responses models (for example Azure OpenAI Responses):
+互換性のあるものに `context_management` インジェクションを強制したい場合にこれを使用します。
+応答モデル (例: Azure OpenAI Responses):
 
 ```json5
 {
@@ -198,7 +197,7 @@ Responses models (for example Azure OpenAI Responses):
 }
 ```
 
-### Enable with a custom threshold
+### カスタムしきい値を使用して有効にする
 
 ```json5
 {
@@ -217,7 +216,7 @@ Responses models (for example Azure OpenAI Responses):
 }
 ```
 
-### Disable server-side compaction
+### サーバー側の圧縮を無効にする
 
 ```json5
 {
@@ -235,11 +234,11 @@ Responses models (for example Azure OpenAI Responses):
 }
 ```
 
-`responsesServerCompaction` only controls `context_management` injection.
-Direct OpenAI Responses models still force `store: true` unless compat sets
-`supportsStore: false`.
+`responsesServerCompaction` は `context_management` インジェクションのみを制御します。
+Direct OpenAI Responses モデルは、互換性が設定されていない限り、引き続き `store: true` を強制します
+`supportsStore: false`。
 
-## Notes
+## 注意事項
 
-- Model refs always use `provider/model` (see [/concepts/models](/concepts/models)).
-- Auth details + reuse rules are in [/concepts/oauth](/concepts/oauth).
+- モデル参照は常に `provider/model` を使用します ([/concepts/models](/concepts/models) を参照)。
+- 認証の詳細と再利用ルールは [/concepts/oauth](/concepts/oauth) にあります。

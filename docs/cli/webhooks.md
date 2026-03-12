@@ -1,18 +1,20 @@
 ---
-summary: "CLI reference for `openclaw webhooks` (webhook helpers + Gmail Pub/Sub)"
+summary: "「openclaw Webhook」の CLI リファレンス (Webhook ヘルパー + Gmail Pub/Sub)"
 read_when:
-  - You want to wire Gmail Pub/Sub events into OpenClaw
-  - You want webhook helper commands
-title: "webhooks"
+  - Gmail Pub/Sub イベントを OpenClaw に接続したい
+  - Webhook ヘルパー コマンドが必要な場合
+title: "Webhook"
+x-i18n:
+  source_hash: "785ec62afe6631b340ce4a4541ceb34cd6b97704cf7a9889762cb4c1f29a5ca0"
 ---
 
 # `openclaw webhooks`
 
-Webhook helpers and integrations (Gmail Pub/Sub, webhook helpers).
+Webhook ヘルパーと統合 (Gmail Pub/Sub、Webhook ヘルパー)。
 
-Related:
+関連:
 
-- Webhooks: [Webhook](/automation/webhook)
+- Webhook: [Webhook](/automation/webhook)
 - Gmail Pub/Sub: [Gmail Pub/Sub](/automation/gmail-pubsub)
 
 ## Gmail
@@ -22,4 +24,4 @@ openclaw webhooks gmail setup --account you@example.com
 openclaw webhooks gmail run
 ```
 
-See [Gmail Pub/Sub documentation](/automation/gmail-pubsub) for details.
+詳細については、[Gmail Pub/Sub ドキュメント](/automation/gmail-pubsub) を参照してください。

@@ -1,42 +1,43 @@
 ---
-summary: "Synology Chat webhook setup and OpenClaw config"
+summary: "Synology Chat webhook のセットアップと OpenClaw 構成"
 read_when:
-  - Setting up Synology Chat with OpenClaw
-  - Debugging Synology Chat webhook routing
+  - OpenClaw で Synology Chat をセットアップする場合
+  - Synology Chat webhook ルーティングをデバッグする場合
 title: "Synology Chat"
+x-i18n:
+  source_hash: "65cdf3be3fbf0652e201428d71e0ebd00dc6ab41f7e54c60b8f8019b4aeb12cf"
 ---
 
-# Synology Chat (plugin)
+# Synology Chat (プラグイン)
 
-Status: supported via plugin as a direct-message channel using Synology Chat webhooks.
-The plugin accepts inbound messages from Synology Chat outgoing webhooks and sends replies
-through a Synology Chat incoming webhook.
+ステータス: Synology Chat webhook を使用したダイレクトメッセージチャネルとして、プラグイン経由でサポートされています。
+このプラグインは、Synology Chat の送信（Outgoing）webhook からのインバウンドメッセージを受け取り、Synology Chat の受信（Incoming）webhook を介して返信を送信します。
 
-## Plugin required
+## プラグインが必要
 
-Synology Chat is plugin-based and not part of the default core channel install.
+Synology Chat はプラグインベースであり、デフォルトのコアチャネルには含まれていません。
 
-Install from a local checkout:
+ローカルチェックアウトからインストールする場合:
 
 ```bash
 openclaw plugins install ./extensions/synology-chat
 ```
 
-Details: [Plugins](/tools/plugin)
+詳細: [プラグイン](/tools/plugin)
 
-## Quick setup
+## クイックセットアップ
 
-1. Install and enable the Synology Chat plugin.
-2. In Synology Chat integrations:
-   - Create an incoming webhook and copy its URL.
-   - Create an outgoing webhook with your secret token.
-3. Point the outgoing webhook URL to your OpenClaw gateway:
-   - `https://gateway-host/webhook/synology` by default.
-   - Or your custom `channels.synology-chat.webhookPath`.
-4. Configure `channels.synology-chat` in OpenClaw.
-5. Restart gateway and send a DM to the Synology Chat bot.
+1. Synology Chat プラグインをインストールして有効にします。
+2. Synology Chat の「統合」設定で以下の操作を行います:
+   - **受信（Incoming）webhook** を作成し、その URL をコピーします。
+   - **送信（Outgoing）webhook** を作成し、トークンをコピーします。
+3. 送信 webhook の URL を OpenClaw ゲートウェイに向けます:
+   - デフォルト: `https://gateway-host/webhook/synology`
+   - または、カスタム設定した `channels.synology-chat.webhookPath`。
+4. OpenClaw の `channels.synology-chat` セクションを構成します。
+5. ゲートウェイを再起動し、Synology Chat ボットにメッセージを送信します。
 
-Minimal config:
+最小限の構成:
 
 ```json5
 {
@@ -55,47 +56,47 @@ Minimal config:
 }
 ```
 
-## Environment variables
+## 環境変数
 
-For the default account, you can use env vars:
+デフォルトアカウントでは、環境変数を使用することもできます:
 
 - `SYNOLOGY_CHAT_TOKEN`
 - `SYNOLOGY_CHAT_INCOMING_URL`
 - `SYNOLOGY_NAS_HOST`
-- `SYNOLOGY_ALLOWED_USER_IDS` (comma-separated)
+- `SYNOLOGY_ALLOWED_USER_IDS` (カンマ区切り)
 - `SYNOLOGY_RATE_LIMIT`
 - `OPENCLAW_BOT_NAME`
 
-Config values override env vars.
+構成ファイル内の値は、環境変数を上書きします。
 
-## DM policy and access control
+## DM ポリシーとアクセス制御
 
-- `dmPolicy: "allowlist"` is the recommended default.
-- `allowedUserIds` accepts a list (or comma-separated string) of Synology user IDs.
-- In `allowlist` mode, an empty `allowedUserIds` list is treated as misconfiguration and the webhook route will not start (use `dmPolicy: "open"` for allow-all).
-- `dmPolicy: "open"` allows any sender.
-- `dmPolicy: "disabled"` blocks DMs.
-- Pairing approvals work with:
+- 推奨設定は `dmPolicy: "allowlist"` です。
+- `allowedUserIds` には、Synology のユーザー ID のリスト（またはカンマ区切りの文字列）を指定します。
+- `allowlist` モードで `allowedUserIds` が空の場合、構成エラーとみなされ webhook ルートは開始されません（全員を許可する場合は `dmPolicy: "open"` を使用してください）。
+- `dmPolicy: "open"` はすべての送信者を許可します。
+- `dmPolicy: "disabled"` は DM をブロックします。
+- ペアリング承認は以下のコマンドで操作できます:
   - `openclaw pairing list synology-chat`
   - `openclaw pairing approve synology-chat <CODE>`
 
-## Outbound delivery
+## アウトバウンド配信
 
-Use numeric Synology Chat user IDs as targets.
+数値形式の Synology Chat ユーザー ID をターゲットとして使用します。
 
-Examples:
+例:
 
 ```bash
-openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
-openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
+openclaw message send --channel synology-chat --target 123456 --text "OpenClaw からのメッセージです"
+openclaw message send --channel synology-chat --target synology-chat:123456 --text "再送テスト"
 ```
 
-Media sends are supported by URL-based file delivery.
+メディア送信は、URL ベースのファイル配信としてサポートされています。
 
-## Multi-account
+## マルチアカウント
 
-Multiple Synology Chat accounts are supported under `channels.synology-chat.accounts`.
-Each account can override token, incoming URL, webhook path, DM policy, and limits.
+`channels.synology-chat.accounts` 配下で、複数の Synology Chat アカウントを運用できます。
+各アカウントでトークン、受信 URL、webhook パス、DM ポリシー、制限値を上書き可能です。
 
 ```json5
 {
@@ -120,9 +121,9 @@ Each account can override token, incoming URL, webhook path, DM policy, and limi
 }
 ```
 
-## Security notes
+## セキュリティに関する注意
 
-- Keep `token` secret and rotate it if leaked.
-- Keep `allowInsecureSsl: false` unless you explicitly trust a self-signed local NAS cert.
-- Inbound webhook requests are token-verified and rate-limited per sender.
-- Prefer `dmPolicy: "allowlist"` for production.
+- `token` は秘密に保ち、漏洩した場合は速やかにローテーションしてください。
+- 自己署名の NAS 証明書を明示的に信頼する場合を除き、`allowInsecureSsl: false` のままにしてください。
+- インバウンドの webhook リクエストはトークンで検証され、送信者ごとにレート制限が適用されます。
+- 本番環境では `dmPolicy: "allowlist"` の使用を推奨します。

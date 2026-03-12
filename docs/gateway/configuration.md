@@ -1,29 +1,31 @@
 ---
-summary: "Configuration overview: common tasks, quick setup, and links to the full reference"
+summary: "設定の概要: 一般的なタスク、クイックセットアップ、および詳細なリファレンスへのリンク"
 read_when:
-  - Setting up OpenClaw for the first time
-  - Looking for common configuration patterns
-  - Navigating to specific config sections
-title: "Configuration"
+  - OpenClaw を初めてセットアップする場合
+  - 一般的な設定パターンを確認したい場合
+  - 特定の設定セクションを探している場合
+title: "構成"
+x-i18n:
+  source_hash: "f152f06f31bc06b527d9c28ab1a914879312827aeef69b077b6816f499196e97"
 ---
 
-# Configuration
+# 設定
 
-OpenClaw reads an optional <Tooltip tip="JSON5 supports comments and trailing commas">**JSON5**</Tooltip> config from `~/.openclaw/openclaw.json`.
+OpenClaw は、オプションの <Tooltip tip="JSON5 supports comments and trailing commas">**JSON5**</Tooltip> 構成を `~/.openclaw/openclaw.json` から読み取ります。
 
-If the file is missing, OpenClaw uses safe defaults. Common reasons to add a config:
+ファイルが見つからない場合、OpenClaw は安全なデフォルトを使用します。構成を追加する一般的な理由:
 
-- Connect channels and control who can message the bot
-- Set models, tools, sandboxing, or automation (cron, hooks)
-- Tune sessions, media, networking, or UI
+- チャネルを接続し、ボットにメッセージを送信できる人を制御します
+- モデル、ツール、サンドボックス、または自動化 (cron、フック) を設定します。
+- セッション、メディア、ネットワーキング、または UI を調整する
 
-See the [full reference](/gateway/configuration-reference) for every available field.
+利用可能なすべてのフィールドについては、[完全なリファレンス](/gateway/configuration-reference) を参照してください。
 
 <Tip>
-**New to configuration?** Start with `openclaw onboard` for interactive setup, or check out the [Configuration Examples](/gateway/configuration-examples) guide for complete copy-paste configs.
+**構成は初めてですか?** 対話型セットアップについては `openclaw onboard` から始めるか、完全な構成のコピー＆ペーストについては [構成例](/gateway/configuration-examples) ガイドを参照してください。
 </Tip>
 
-## Minimal config
+## 最小限の構成
 
 ```json5
 // ~/.openclaw/openclaw.json
@@ -33,49 +35,50 @@ See the [full reference](/gateway/configuration-reference) for every available f
 }
 ```
 
-## Editing config
+## 構成の編集
 
 <Tabs>
-  <Tab title="Interactive wizard">
+  <Tab title="インタラクティブウィザード">
     ```bash
     openclaw onboard       # full setup wizard
     openclaw configure     # config wizard
     ```
   </Tab>
-  <Tab title="CLI (one-liners)">
+  <Tab title="CLI (ワンライナー)">
     ```bash
     openclaw config get agents.defaults.workspace
     openclaw config set agents.defaults.heartbeat.every "2h"
     openclaw config unset tools.web.search.apiKey
     ```
   </Tab>
-  <Tab title="Control UI">
-    Open [http://127.0.0.1:18789](http://127.0.0.1:18789) and use the **Config** tab.
-    The Control UI renders a form from the config schema, with a **Raw JSON** editor as an escape hatch.
+  <Tab title="コントロールUI">
+    [http://127.0.0.1:18789](http://127.0.0.1:18789) を開き、**構成** タブを使用します。
+    コントロール UI は、**Raw JSON** エディターをエスケープ ハッチとして使用して、構成スキーマからフォームをレンダリングします。
   </Tab>
-  <Tab title="Direct edit">
-    Edit `~/.openclaw/openclaw.json` directly. The Gateway watches the file and applies changes automatically (see [hot reload](#config-hot-reload)).
+  <Tab title="直接編集">
+    `~/.openclaw/openclaw.json` を直接編集します。ゲートウェイはファイルを監視し、変更を自動的に適用します ([ホット リロード](#config-hot-reload) を参照)。
   </Tab>
 </Tabs>
 
-## Strict validation
+## 厳密な検証
 
 <Warning>
-OpenClaw only accepts configurations that fully match the schema. Unknown keys, malformed types, or invalid values cause the Gateway to **refuse to start**. The only root-level exception is `$schema` (string), so editors can attach JSON Schema metadata.
+
+OpenClaw は、スキーマに完全に一致する構成のみを受け入れます。不明なキー、不正な形式、または無効な値により、ゲートウェイは **起動を拒否**します。唯一のルートレベルの例外は `$schema` (文字列) であるため、編集者は JSON スキーマ メタデータを添付できます。
 </Warning>
 
-When validation fails:
+検証が失敗した場合:
 
-- The Gateway does not boot
-- Only diagnostic commands work (`openclaw doctor`, `openclaw logs`, `openclaw health`, `openclaw status`)
-- Run `openclaw doctor` to see exact issues
-- Run `openclaw doctor --fix` (or `--yes`) to apply repairs
+- ゲートウェイが起動しない
+- 診断コマンドのみが機能します (`openclaw doctor`、`openclaw logs`、`openclaw health`、`openclaw status`)
+- `openclaw doctor` を実行して、正確な問題を確認してください
+- `openclaw doctor --fix` (または `--yes`) を実行して修復を適用します
 
-## Common tasks
+## 一般的なタスク
 
 <AccordionGroup>
-  <Accordion title="Set up a channel (WhatsApp, Telegram, Discord, etc.)">
-    Each channel has its own config section under `channels.<provider>`. See the dedicated channel page for setup steps:
+  <Accordion title="チャネルをセットアップする (WhatsApp、Telegram、Discord など)">
+    各チャネルには、`channels.<provider>` の下に独自の構成セクションがあります。セットアップ手順については、専用チャンネルのページを参照してください。
 
     - [WhatsApp](/channels/whatsapp) — `channels.whatsapp`
     - [Telegram](/channels/telegram) — `channels.telegram`
@@ -87,7 +90,7 @@ When validation fails:
     - [Mattermost](/channels/mattermost) — `channels.mattermost`
     - [MS Teams](/channels/msteams) — `channels.msteams`
 
-    All channels share the same DM policy pattern:
+    すべてのチャネルは同じ DM ポリシー パターンを共有します。
 
     ```json5
     {
@@ -104,8 +107,8 @@ When validation fails:
 
   </Accordion>
 
-  <Accordion title="Choose and configure models">
-    Set the primary model and optional fallbacks:
+  <Accordion title="モデルの選択と構成">
+    プライマリ モデルとオプションのフォールバックを設定します。
 
     ```json5
     {
@@ -122,32 +125,30 @@ When validation fails:
         },
       },
     }
-    ```
-
-    - `agents.defaults.models` defines the model catalog and acts as the allowlist for `/model`.
-    - Model refs use `provider/model` format (e.g. `anthropic/claude-opus-4-6`).
-    - `agents.defaults.imageMaxDimensionPx` controls transcript/tool image downscaling (default `1200`); lower values usually reduce vision-token usage on screenshot-heavy runs.
-    - See [Models CLI](/concepts/models) for switching models in chat and [Model Failover](/concepts/model-failover) for auth rotation and fallback behavior.
-    - For custom/self-hosted providers, see [Custom providers](/gateway/configuration-reference#custom-providers-and-base-urls) in the reference.
+    ```- `agents.defaults.models` はモデル カタログを定義し、`/model` の許可リストとして機能します。
+    - モデル参照は `provider/model` 形式 (例: `anthropic/claude-opus-4-6`) を使用します。
+    - `agents.defaults.imageMaxDimensionPx` は、トランスクリプト/ツール イメージのダウンスケーリングを制御します (デフォルト `1200`)。通常、値を低くすると、スクリーンショットを大量に使用する実行時のビジョン トークンの使用量が減少します。
+    - チャットでのモデルの切り替えについては [モデル CLI](/concepts/models) を、認証ローテーションとフォールバックの動作については [モデル フェールオーバー](/concepts/model-failover) を参照してください。
+    - カスタム/セルフホストプロバイダーについては、リファレンスの [カスタムプロバイダー](/gateway/configuration-reference#custom-providers-and-base-urls) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Control who can message the bot">
-    DM access is controlled per channel via `dmPolicy`:
+  <Accordion title="ボットにメッセージを送信できる人を制御する">
+    DM アクセスは、`dmPolicy` を介してチャネルごとに制御されます。
 
-    - `"pairing"` (default): unknown senders get a one-time pairing code to approve
-    - `"allowlist"`: only senders in `allowFrom` (or the paired allow store)
-    - `"open"`: allow all inbound DMs (requires `allowFrom: ["*"]`)
-    - `"disabled"`: ignore all DMs
+    - `"pairing"` (デフォルト): 不明な送信者は承認用の 1 回限りのペアリング コードを取得します。
+    - `"allowlist"`: `allowFrom` (またはペアの許可ストア) の送信者のみ
+    - `"open"`: すべての受信 DM を許可します (`allowFrom: ["*"]` が必要)
+    - `"disabled"`: すべての DM を無視します
 
-    For groups, use `groupPolicy` + `groupAllowFrom` or channel-specific allowlists.
+    グループの場合は、`groupPolicy` + `groupAllowFrom` またはチャネル固有の許可リストを使用します。
 
-    See the [full reference](/gateway/configuration-reference#dm-and-group-access) for per-channel details.
+    チャネルごとの詳細については、[完全なリファレンス](/gateway/configuration-reference#dm-and-group-access) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Set up group chat mention gating">
-    Group messages default to **require mention**. Configure patterns per agent:
+  <Accordion title="グループチャットのメンションゲートを設定する">
+    グループ メッセージはデフォルトで **メンションが必要** になっています。エージェントごとにパターンを構成します。
 
     ```json5
     {
@@ -167,16 +168,14 @@ When validation fails:
         },
       },
     }
-    ```
-
-    - **Metadata mentions**: native @-mentions (WhatsApp tap-to-mention, Telegram @bot, etc.)
-    - **Text patterns**: regex patterns in `mentionPatterns`
-    - See [full reference](/gateway/configuration-reference#group-chat-mention-gating) for per-channel overrides and self-chat mode.
+    ```- **メタデータのメンション**: ネイティブの @-メンション (WhatsApp のタップツーメンション、Telegram @bot など)
+    - **テキスト パターン**: `mentionPatterns` の正規表現パターン
+    - チャネルごとのオーバーライドとセルフチャット モードについては、[完全なリファレンス](/gateway/configuration-reference#group-chat-mention-gating) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Configure sessions and resets">
-    Sessions control conversation continuity and isolation:
+  <Accordion title="セッションとリセットを構成する">
+    セッションは会話の継続性と分離を制御します。
 
     ```json5
     {
@@ -196,15 +195,15 @@ When validation fails:
     }
     ```
 
-    - `dmScope`: `main` (shared) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
-    - `threadBindings`: global defaults for thread-bound session routing (Discord supports `/focus`, `/unfocus`, `/agents`, `/session idle`, and `/session max-age`).
-    - See [Session Management](/concepts/session) for scoping, identity links, and send policy.
-    - See [full reference](/gateway/configuration-reference#session) for all fields.
+    - `dmScope`: `main` (共有) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
+    - `threadBindings`: スレッドバインドされたセッションルーティングのグローバルデフォルト (Discord は、`/focus`、`/unfocus`、`/agents`、`/session idle`、および `/session max-age` をサポートします)。
+    - スコープ、ID リンク、および送信ポリシーについては、[セッション管理](/concepts/session) を参照してください。
+    - すべてのフィールドについては、[完全なリファレンス](/gateway/configuration-reference#session) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Enable sandboxing">
-    Run agent sessions in isolated Docker containers:
+  <Accordion title="サンドボックスを有効にする">
+    分離された Docker コンテナーでエージェント セッションを実行します。
 
     ```json5
     {
@@ -219,13 +218,13 @@ When validation fails:
     }
     ```
 
-    Build the image first: `scripts/sandbox-setup.sh`
+    最初にイメージをビルドします: `scripts/sandbox-setup.sh`
 
-    See [Sandboxing](/gateway/sandboxing) for the full guide and [full reference](/gateway/configuration-reference#sandbox) for all options.
+    完全なガイドについては [サンドボックス](/gateway/sandboxing) を、すべてのオプションについては [完全なリファレンス](/gateway/configuration-reference#sandbox) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Set up heartbeat (periodic check-ins)">
+  <Accordion title="ハートビートの設定 (定期的なチェックイン)">
     ```json5
     {
       agents: {
@@ -237,16 +236,14 @@ When validation fails:
         },
       },
     }
-    ```
-
-    - `every`: duration string (`30m`, `2h`). Set `0m` to disable.
+    ```- `every`: 期間文字列 (`30m`、`2h`)。 `0m` を無効に設定します。
     - `target`: `last` | `whatsapp` | `telegram` | `discord` | `none`
-    - `directPolicy`: `allow` (default) or `block` for DM-style heartbeat targets
-    - See [Heartbeat](/gateway/heartbeat) for the full guide.
+    - `directPolicy`: `allow` (デフォルト) または `block` (DM スタイルのハートビート ターゲットの場合)
+    - 完全なガイドについては、[ハートビート](/gateway/heartbeat) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Configure cron jobs">
+  <Accordion title="cron ジョブを構成する">
     ```json5
     {
       cron: {
@@ -261,14 +258,14 @@ When validation fails:
     }
     ```
 
-    - `sessionRetention`: prune completed isolated run sessions from `sessions.json` (default `24h`; set `false` to disable).
-    - `runLog`: prune `cron/runs/<jobId>.jsonl` by size and retained lines.
-    - See [Cron jobs](/automation/cron-jobs) for feature overview and CLI examples.
+    - `sessionRetention`: `sessions.json` から完了した分離実行セッションをプルーニングします (デフォルトは `24h`、`false` を無効に設定します)。
+    - `runLog`: サイズと保持された行によって `cron/runs/<jobId>.jsonl` を削除します。
+    - 機能の概要と CLI の例については、[Cron ジョブ](/automation/cron-jobs) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Set up webhooks (hooks)">
-    Enable HTTP webhook endpoints on the Gateway:
+  <Accordion title="Webhook (フック) を設定する">
+    ゲートウェイで HTTP Webhook エンドポイントを有効にします。
 
     ```json5
     {
@@ -291,17 +288,15 @@ When validation fails:
     }
     ```
 
-    Security note:
-    - Treat all hook/webhook payload content as untrusted input.
-    - Keep unsafe-content bypass flags disabled (`hooks.gmail.allowUnsafeExternalContent`, `hooks.mappings[].allowUnsafeExternalContent`) unless doing tightly scoped debugging.
-    - For hook-driven agents, prefer strong modern model tiers and strict tool policy (for example messaging-only plus sandboxing where possible).
+    セキュリティ上の注意:
+    - すべてのフック/Webhook ペイロード コンテンツを信頼できない入力として扱います。
+    - 厳密に範囲を絞ったデバッグを実行しない限り、安全でないコンテンツのバイパス フラグを無効にしておきます (`hooks.gmail.allowUnsafeExternalContent`、`hooks.mappings[].allowUnsafeExternalContent`)。
+    - フック駆動型エージェントの場合は、強力な最新のモデル層と厳密なツール ポリシー (たとえば、メッセージングのみと可能な場合はサンドボックス) を好みます。
 
-    See [full reference](/gateway/configuration-reference#hooks) for all mapping options and Gmail integration.
+    すべてのマッピング オプションと Gmail の統合については、[完全なリファレンス](/gateway/configuration-reference#hooks) を参照してください。
 
-  </Accordion>
-
-  <Accordion title="Configure multi-agent routing">
-    Run multiple isolated agents with separate workspaces and sessions:
+</Accordion><Accordion title="マルチエージェントルーティングを構成する">
+別々のワークスペースとセッションを使用して、複数の分離されたエージェントを実行します。
 
     ```json5
     {
@@ -318,12 +313,12 @@ When validation fails:
     }
     ```
 
-    See [Multi-Agent](/concepts/multi-agent) and [full reference](/gateway/configuration-reference#multi-agent-routing) for binding rules and per-agent access profiles.
+    バインド ルールとエージェントごとのアクセス プロファイルについては、[マルチエージェント](/concepts/multi-agent) および [完全なリファレンス](/gateway/configuration-reference#multi-agent-routing) を参照してください。
 
   </Accordion>
 
-  <Accordion title="Split config into multiple files ($include)">
-    Use `$include` to organize large configs:
+  <Accordion title="構成を複数のファイルに分割する ($include)">
+    `$include` を使用して大規模な構成を整理します。
 
     ```json5
     // ~/.openclaw/openclaw.json
@@ -336,28 +331,27 @@ When validation fails:
     }
     ```
 
-    - **Single file**: replaces the containing object
-    - **Array of files**: deep-merged in order (later wins)
-    - **Sibling keys**: merged after includes (override included values)
-    - **Nested includes**: supported up to 10 levels deep
-    - **Relative paths**: resolved relative to the including file
-    - **Error handling**: clear errors for missing files, parse errors, and circular includes
+    - **単一ファイル**: 含まれているオブジェクトを置き換えます
+    - **ファイルの配列**: 順番にディープマージされます (後の方が優先)
+    - **兄弟キー**: インクルード後にマージされます (インクルードされた値をオーバーライドします)
+    - **ネストされたインクルード**: 最大 10 レベルの深さまでサポートされています
+    - **相対パス**: 含まれるファイルを基準にして解決されます。
+    - **エラー処理**: ファイルの欠落、解析エラー、循環インクルードのエラーをクリアします。
 
   </Accordion>
 </AccordionGroup>
 
-## Config hot reload
+## ホットリロードを構成する
 
-The Gateway watches `~/.openclaw/openclaw.json` and applies changes automatically — no manual restart needed for most settings.
+ゲートウェイは `~/.openclaw/openclaw.json` を監視し、変更を自動的に適用します。ほとんどの設定では手動で再起動する必要はありません。
 
-### Reload modes
+### リロードモード|モード |行動 |
 
-| Mode                   | Behavior                                                                                |
-| ---------------------- | --------------------------------------------------------------------------------------- |
-| **`hybrid`** (default) | Hot-applies safe changes instantly. Automatically restarts for critical ones.           |
-| **`hot`**              | Hot-applies safe changes only. Logs a warning when a restart is needed — you handle it. |
-| **`restart`**          | Restarts the Gateway on any config change, safe or not.                                 |
-| **`off`**              | Disables file watching. Changes take effect on the next manual restart.                 |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| **`hybrid`** (デフォルト) |安全な変更を即座にホット適用します。重要なものについては自動的に再起動します。 |
+| **`hot`** |安全な変更のみをホット適用します。再起動が必要な場合、警告をログに記録します。再起動はユーザーが処理します。 |
+| **`restart`** |安全かどうかにかかわらず、設定変更時にゲートウェイを再起動します。 |
+| **`off`** |ファイル監視を無効にします。変更は次回の手動再起動時に有効になります。 |
 
 ```json5
 {
@@ -367,48 +361,47 @@ The Gateway watches `~/.openclaw/openclaw.json` and applies changes automaticall
 }
 ```
 
-### What hot-applies vs what needs a restart
+### ホットアプライするものと再起動が必要なもの
 
-Most fields hot-apply without downtime. In `hybrid` mode, restart-required changes are handled automatically.
-
-| Category            | Fields                                                               | Restart needed? |
-| ------------------- | -------------------------------------------------------------------- | --------------- |
-| Channels            | `channels.*`, `web` (WhatsApp) — all built-in and extension channels | No              |
-| Agent & models      | `agent`, `agents`, `models`, `routing`                               | No              |
-| Automation          | `hooks`, `cron`, `agent.heartbeat`                                   | No              |
-| Sessions & messages | `session`, `messages`                                                | No              |
-| Tools & media       | `tools`, `browser`, `skills`, `audio`, `talk`                        | No              |
-| UI & misc           | `ui`, `logging`, `identity`, `bindings`                              | No              |
-| Gateway server      | `gateway.*` (port, bind, auth, tailscale, TLS, HTTP)                 | **Yes**         |
-| Infrastructure      | `discovery`, `canvasHost`, `plugins`                                 | **Yes**         |
+| ほとんどのフィールドはダウンタイムなしでホットアプライされます。 `hybrid` モードでは、再起動が必要な変更は自動的に処理されます。 | カテゴリー                                                          | フィールド | 再起動が必要ですか? |
+| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------- | ------------------- |
+| チャンネル               | `channels.*`、`web` (WhatsApp) — すべての組み込みおよび拡張チャネル | いいえ   |
+| エージェントとモデル     | `agent`、`agents`、`models`、`routing`                              | いいえ   |
+| 自動化                   | `hooks`、`cron`、`agent.heartbeat`                                  | いいえ   |
+| セッションとメッセージ   | `session`、`messages`                                               | いいえ   |
+| ツールとメディア         | `tools`、`browser`、`skills`、`audio`、`talk`                       | いいえ   |
+| UI とその他              | `ui`、`logging`、`identity`、`bindings`                             | いいえ   |
+| ゲートウェイサーバー     | `gateway.*` (ポート、バインド、認証、テールスケール、TLS、HTTP)     | **はい** |
+| インフラ                 | `discovery`、`canvasHost`、`plugins`                                | **はい** |
 
 <Note>
-`gateway.reload` and `gateway.remote` are exceptions — changing them does **not** trigger a restart.
+
+`gateway.reload` と `gateway.remote` は例外です。これらを変更しても再起動は**行われません**。
 </Note>
 
-## Config RPC (programmatic updates)
+## Config RPC (プログラムによる更新)
 
 <Note>
-Control-plane write RPCs (`config.apply`, `config.patch`, `update.run`) are rate-limited to **3 requests per 60 seconds** per `deviceId+clientIp`. When limited, the RPC returns `UNAVAILABLE` with `retryAfterMs`.
+コントロール プレーン書き込み RPC (`config.apply`、`config.patch`、`update.run`) は、`deviceId+clientIp` ごとに **60 秒あたり 3 リクエスト** にレート制限されています。制限されている場合、RPC は `retryAfterMs` とともに `UNAVAILABLE` を返します。
 </Note>
 
 <AccordionGroup>
-  <Accordion title="config.apply (full replace)">
-    Validates + writes the full config and restarts the Gateway in one step.
+  <Accordion title="config.apply (完全置換)">
+    検証し、完全な構成を書き込み、ゲートウェイを 1 ステップで再起動します。
 
     <Warning>
-    `config.apply` replaces the **entire config**. Use `config.patch` for partial updates, or `openclaw config set` for single keys.
+    `config.apply` は **構成全体** を置き換えます。部分的な更新には `config.patch` を使用し、単一キーには `openclaw config set` を使用します。
     </Warning>
 
-    Params:
+    パラメータ:
 
-    - `raw` (string) — JSON5 payload for the entire config
-    - `baseHash` (optional) — config hash from `config.get` (required when config exists)
-    - `sessionKey` (optional) — session key for the post-restart wake-up ping
-    - `note` (optional) — note for the restart sentinel
-    - `restartDelayMs` (optional) — delay before restart (default 2000)
+    - `raw` (文字列) — 構成全体の JSON5 ペイロード
+    - `baseHash` (オプション) — `config.get` からの構成ハッシュ (構成が存在する場合に必要)
+    - `sessionKey` (オプション) — 再起動後のウェイクアップ ping 用のセッション キー
+    - `note` (オプション) — 再起動センチネルに関するメモ
+    - `restartDelayMs` (オプション) — 再起動前の遅延 (デフォルトは 2000)
 
-    Restart requests are coalesced while one is already pending/in-flight, and a 30-second cooldown applies between restart cycles.
+    再起動リクエストは、1 つがすでに保留中または実行中であるときに結合され、再起動サイクルの間に 30 秒のクールダウンが適用されます。
 
     ```bash
     openclaw gateway call config.get --params '{}'  # capture payload.hash
@@ -421,20 +414,18 @@ Control-plane write RPCs (`config.apply`, `config.patch`, `update.run`) are rate
 
   </Accordion>
 
-  <Accordion title="config.patch (partial update)">
-    Merges a partial update into the existing config (JSON merge patch semantics):
+  <Accordion title="config.patch (部分更新)">
+    部分的な更新を既存の構成にマージします (JSON マージ パッチ セマンティクス)。- オブジェクトは再帰的にマージされます
+    - `null` はキーを削除します
+    - 配列の置換
 
-    - Objects merge recursively
-    - `null` deletes a key
-    - Arrays replace
+    パラメータ:
 
-    Params:
+    - `raw` (文字列) — 変更するキーのみを含む JSON5
+    - `baseHash` (必須) — `config.get` からの構成ハッシュ
+    - `sessionKey`、`note`、`restartDelayMs` — `config.apply` と同じ
 
-    - `raw` (string) — JSON5 with just the keys to change
-    - `baseHash` (required) — config hash from `config.get`
-    - `sessionKey`, `note`, `restartDelayMs` — same as `config.apply`
-
-    Restart behavior matches `config.apply`: coalesced pending restarts plus a 30-second cooldown between restart cycles.
+    再起動の動作は `config.apply` と一致します。合体した保留中の再起動に加え、再起動サイクル間に 30 秒のクールダウンが発生します。
 
     ```bash
     openclaw gateway call config.patch --params '{
@@ -446,14 +437,14 @@ Control-plane write RPCs (`config.apply`, `config.patch`, `update.run`) are rate
   </Accordion>
 </AccordionGroup>
 
-## Environment variables
+## 環境変数
 
-OpenClaw reads env vars from the parent process plus:
+OpenClaw は、親プロセスから環境変数を読み取り、さらに次のことを行います。
 
-- `.env` from the current working directory (if present)
-- `~/.openclaw/.env` (global fallback)
+- 現在の作業ディレクトリからの `.env` (存在する場合)
+- `~/.openclaw/.env` (グローバル フォールバック)
 
-Neither file overrides existing env vars. You can also set inline env vars in config:
+どちらのファイルも既存の環境変数をオーバーライドしません。 config でインライン環境変数を設定することもできます。
 
 ```json5
 {
@@ -464,8 +455,8 @@ Neither file overrides existing env vars. You can also set inline env vars in co
 }
 ```
 
-<Accordion title="Shell env import (optional)">
-  If enabled and expected keys aren't set, OpenClaw runs your login shell and imports only the missing keys:
+<Accordion title="シェル環境インポート (オプション)">
+  有効で予期されるキーが設定されていない場合、OpenClaw はログイン シェルを実行し、不足しているキーのみをインポートします。
 
 ```json5
 {
@@ -475,11 +466,11 @@ Neither file overrides existing env vars. You can also set inline env vars in co
 }
 ```
 
-Env var equivalent: `OPENCLAW_LOAD_SHELL_ENV=1`
+同等の環境変数: `OPENCLAW_LOAD_SHELL_ENV=1`
 </Accordion>
 
-<Accordion title="Env var substitution in config values">
-  Reference env vars in any config string value with `${VAR_NAME}`:
+<Accordion title="構成値の環境変数置換">
+  `${VAR_NAME}` を使用して、構成文字列値内の環境変数を参照します。
 
 ```json5
 {
@@ -488,18 +479,16 @@ Env var equivalent: `OPENCLAW_LOAD_SHELL_ENV=1`
 }
 ```
 
-Rules:
+ルール:
 
-- Only uppercase names matched: `[A-Z_][A-Z0-9_]*`
-- Missing/empty vars throw an error at load time
-- Escape with `$${VAR}` for literal output
-- Works inside `$include` files
-- Inline substitution: `"${BASE}/v1"` → `"https://api.example.com/v1"`
+- 大文字の名前のみが一致します: `[A-Z_][A-Z0-9_]*`
+- 欠落している/空の変数はロード時にエラーをスローします
+- リテラル出力の場合は `${VAR}` でエスケープします
+- `$include` ファイル内で動作します
+- インライン置換: `"${BASE}/v1"` → `"https://api.example.com/v1"`
 
-</Accordion>
-
-<Accordion title="Secret refs (env, file, exec)">
-  For fields that support SecretRef objects, you can use:
+</Accordion><Accordion title="シークレット参照 (env、file、exec)">
+SecretRef オブジェクトをサポートするフィールドの場合、以下を使用できます。
 
 ```json5
 {
@@ -531,16 +520,16 @@ Rules:
 }
 ```
 
-SecretRef details (including `secrets.providers` for `env`/`file`/`exec`) are in [Secrets Management](/gateway/secrets).
-Supported credential paths are listed in [SecretRef Credential Surface](/reference/secretref-credential-surface).
+SecretRef の詳細 (`env`/`file`/`exec` の `secrets.providers` を含む) は、[シークレット管理](/gateway/secrets) にあります。
+サポートされている資格情報パスは、[SecretRef Credential Surface](/reference/secretref-credential-surface) にリストされています。
 </Accordion>
 
-See [Environment](/help/environment) for full precedence and sources.
+完全な優先順位とソースについては、[環境](/help/environment) を参照してください。
 
-## Full reference
+## 完全なリファレンス
 
-For the complete field-by-field reference, see **[Configuration Reference](/gateway/configuration-reference)**.
+フィールドごとの完全なリファレンスについては、**[構成リファレンス](/gateway/configuration-reference)** を参照してください。
 
 ---
 
-_Related: [Configuration Examples](/gateway/configuration-examples) · [Configuration Reference](/gateway/configuration-reference) · [Doctor](/gateway/doctor)_
+_関連: [構成例](/gateway/configuration-examples) · [構成リファレンス](/gateway/configuration-reference) · [ドクター](/gateway/doctor)_

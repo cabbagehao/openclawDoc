@@ -1,40 +1,43 @@
 ---
-summary: "Run OpenClaw through LiteLLM Proxy for unified model access and cost tracking"
+summary: "統合モデルへのアクセスとコスト追跡のために、LiteLLM プロキシを介して OpenClaw を実行します"
 read_when:
-  - You want to route OpenClaw through a LiteLLM proxy
-  - You need cost tracking, logging, or model routing through LiteLLM
+  - OpenClaw を LiteLLM プロキシ経由でルーティングしたい場合
+  - LiteLLM を介したコスト追跡、ロギング、またはモデル ルーティングが必要な場合
+title: "LiteLLM"
+x-i18n:
+  source_hash: "269529671c60864972441606c730b5ca327546a45d3b264dbd03204c4401936f"
 ---
 
 # LiteLLM
 
-[LiteLLM](https://litellm.ai) is an open-source LLM gateway that provides a unified API to 100+ model providers. Route OpenClaw through LiteLLM to get centralized cost tracking, logging, and the flexibility to switch backends without changing your OpenClaw config.
+[LiteLLM](https://litellm.ai) は、100 を超えるモデル プロバイダーに統合 API を提供するオープンソース LLM ゲートウェイです。 LiteLLM を介して OpenClaw をルーティングすると、一元的なコスト追跡、ロギングが実現し、OpenClaw 構成を変更せずにバックエンドを切り替える柔軟性が得られます。
 
-## Why use LiteLLM with OpenClaw?
+## OpenClaw で LiteLLM を使用する理由
 
-- **Cost tracking** — See exactly what OpenClaw spends across all models
-- **Model routing** — Switch between Claude, GPT-4, Gemini, Bedrock without config changes
-- **Virtual keys** — Create keys with spend limits for OpenClaw
-- **Logging** — Full request/response logs for debugging
-- **Fallbacks** — Automatic failover if your primary provider is down
+- **コスト追跡** — OpenClaw がすべてのモデルに費やした金額を正確に確認します
+- **モデル ルーティング** — 設定を変更せずに、Claude、GPT-4、Gemini、Bedrock を切り替える
+- **仮想キー** — OpenClaw の使用制限のあるキーを作成する
+- **ログ** — デバッグ用の完全なリクエスト/レスポンス ログ
+- **フォールバック** — プライマリプロバイダーがダウンした場合の自動フェイルオーバー
 
-## Quick start
+## クイックスタート
 
-### Via onboarding
+### オンボーディング経由
 
 ```bash
 openclaw onboard --auth-choice litellm-api-key
 ```
 
-### Manual setup
+### 手動セットアップ
 
-1. Start LiteLLM Proxy:
+1. LiteLLM プロキシを開始します。
 
 ```bash
 pip install 'litellm[proxy]'
 litellm --model claude-opus-4-6
 ```
 
-2. Point OpenClaw to LiteLLM:
+2. OpenClaw を LiteLLM に指定します。
 
 ```bash
 export LITELLM_API_KEY="your-litellm-key"
@@ -42,17 +45,17 @@ export LITELLM_API_KEY="your-litellm-key"
 openclaw
 ```
 
-That's it. OpenClaw now routes through LiteLLM.
+それだけです。 OpenClaw は LiteLLM を介してルーティングされるようになりました。
 
-## Configuration
+## 構成
 
-### Environment variables
+### 環境変数
 
 ```bash
 export LITELLM_API_KEY="sk-litellm-key"
 ```
 
-### Config file
+### 設定ファイル
 
 ```json5
 {
@@ -91,9 +94,9 @@ export LITELLM_API_KEY="sk-litellm-key"
 }
 ```
 
-## Virtual keys
+## 仮想キー
 
-Create a dedicated key for OpenClaw with spend limits:
+使用制限のある OpenClaw 専用のキーを作成します。
 
 ```bash
 curl -X POST "http://localhost:4000/key/generate" \
@@ -106,11 +109,11 @@ curl -X POST "http://localhost:4000/key/generate" \
   }'
 ```
 
-Use the generated key as `LITELLM_API_KEY`.
+生成されたキーを `LITELLM_API_KEY` として使用します。
 
-## Model routing
+## モデルのルーティング
 
-LiteLLM can route model requests to different backends. Configure in your LiteLLM `config.yaml`:
+LiteLLM は、モデルリクエストをさまざまなバックエンドにルーティングできます。 LiteLLM `config.yaml` で設定します。
 
 ```yaml
 model_list:
@@ -125,13 +128,13 @@ model_list:
       api_key: os.environ/OPENAI_API_KEY
 ```
 
-OpenClaw keeps requesting `claude-opus-4-6` — LiteLLM handles the routing.
+OpenClaw は `claude-opus-4-6` を要求し続けます — LiteLLM がルーティングを処理します。
 
-## Viewing usage
+## 使用状況の表示
 
-Check LiteLLM's dashboard or API:
+LiteLLM のダッシュボードまたは API を確認します。
 
-```bash
+````bash
 # Key info
 curl "http://localhost:4000/key/info" \
   -H "Authorization: Bearer sk-litellm-key"
@@ -139,15 +142,14 @@ curl "http://localhost:4000/key/info" \
 # Spend logs
 curl "http://localhost:4000/spend/logs" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY"
-```
+```## 注意事項
 
-## Notes
+- LiteLLM はデフォルトで `http://localhost:4000` で実行されます
+- OpenClaw は、OpenAI 互換の `/v1/chat/completions` エンドポイント経由で接続します
+- すべての OpenClaw 機能は LiteLLM を通じて機能します - 制限はありません
 
-- LiteLLM runs on `http://localhost:4000` by default
-- OpenClaw connects via the OpenAI-compatible `/v1/chat/completions` endpoint
-- All OpenClaw features work through LiteLLM — no limitations
+## も参照
 
-## See also
-
-- [LiteLLM Docs](https://docs.litellm.ai)
-- [Model Providers](/concepts/model-providers)
+- [LiteLLM ドキュメント](https://docs.litellm.ai)
+- [モデルプロバイダー](/concepts/model-providers)
+````

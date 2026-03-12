@@ -1,194 +1,201 @@
 ---
-summary: "Hubs that link to every OpenClaw doc"
+summary: "すべてのOpenClawドキュメントへのリンクを集めたハブ"
 read_when:
-  - You want a complete map of the documentation
-title: "Docs Hubs"
+  - ドキュメントの完全なマップが必要な場合
+title: "ドキュメントハブ"
+x-i18n:
+  source_path: "start/hubs.md"
+  source_hash: "7faa7ebec705a3ef3968eabee1ab45cb7630af9ab76bf76f021dbbaec8cf5be9"
+  provider: "anthropic"
+  model: "claude-opus-4-6"
+  workflow: 1
+  generated_at: "2026-03-10T05:49:54.776Z"
 ---
 
-# Docs hubs
+# ドキュメントハブ
 
 <Note>
-If you are new to OpenClaw, start with [Getting Started](/start/getting-started).
+OpenClawが初めての方は、[はじめに](/start/getting-started)から始めてください。
 </Note>
 
-Use these hubs to discover every page, including deep dives and reference docs that don’t appear in the left nav.
+これらのハブを使用して、左側のナビゲーションに表示されない詳細な解説やリファレンスドキュメントを含む、すべてのページを見つけることができます。
 
-## Start here
+## ここから始める
 
-- [Index](/)
-- [Getting Started](/start/getting-started)
-- [Quick start](/start/quickstart)
-- [Onboarding](/start/onboarding)
-- [Wizard](/start/wizard)
-- [Setup](/start/setup)
-- [Dashboard (local Gateway)](http://127.0.0.1:18789/)
-- [Help](/help)
-- [Docs directory](/start/docs-directory)
-- [Configuration](/gateway/configuration)
-- [Configuration examples](/gateway/configuration-examples)
-- [OpenClaw assistant](/start/openclaw)
-- [Showcase](/start/showcase)
-- [Lore](/start/lore)
+- [インデックス](/)
+- [はじめに](/start/getting-started)
+- [クイックスタート](/start/quickstart)
+- [オンボーディング](/start/onboarding)
+- [ウィザード](/start/wizard)
+- [セットアップ](/start/setup)
+- [ダッシュボード (ローカルGateway)](http://127.0.0.1:18789/)
+- [ヘルプ](/help)
+- [ドキュメントディレクトリ](/start/docs-directory)
+- [設定](/gateway/configuration)
+- [設定例](/gateway/configuration-examples)
+- [OpenClawアシスタント](/start/openclaw)
+- [ショーケース](/start/showcase)
+- [ロア](/start/lore)
 
-## Installation + updates
+## インストール + アップデート
 
 - [Docker](/install/docker)
 - [Nix](/install/nix)
-- [Updating / rollback](/install/updating)
-- [Bun workflow (experimental)](/install/bun)
+- [アップデート / ロールバック](/install/updating)
+- [Bunワークフロー (実験的)](/install/bun)
 
-## Core concepts
+## コアコンセプト
 
-- [Architecture](/concepts/architecture)
-- [Features](/concepts/features)
-- [Network hub](/network)
-- [Agent runtime](/concepts/agent)
-- [Agent workspace](/concepts/agent-workspace)
-- [Memory](/concepts/memory)
-- [Agent loop](/concepts/agent-loop)
-- [Streaming + chunking](/concepts/streaming)
-- [Multi-agent routing](/concepts/multi-agent)
-- [Compaction](/concepts/compaction)
-- [Sessions](/concepts/session)
-- [Session pruning](/concepts/session-pruning)
-- [Session tools](/concepts/session-tool)
-- [Queue](/concepts/queue)
-- [Slash commands](/tools/slash-commands)
-- [RPC adapters](/reference/rpc)
-- [TypeBox schemas](/concepts/typebox)
-- [Timezone handling](/concepts/timezone)
-- [Presence](/concepts/presence)
-- [Discovery + transports](/gateway/discovery)
+- [アーキテクチャ](/concepts/architecture)
+- [機能](/concepts/features)
+- [ネットワークハブ](/network)
+- [エージェントランタイム](/concepts/agent)
+- [エージェントワークスペース](/concepts/agent-workspace)
+- [メモリ](/concepts/memory)
+- [エージェントループ](/concepts/agent-loop)
+- [ストリーミング + チャンキング](/concepts/streaming)
+- [マルチエージェントルーティング](/concepts/multi-agent)
+- [コンパクション](/concepts/compaction)
+- [セッション](/concepts/session)
+- [セッションプルーニング](/concepts/session-pruning)
+- [セッションツール](/concepts/session-tool)
+- [キュー](/concepts/queue)
+- [スラッシュコマンド](/tools/slash-commands)
+- [RPCアダプター](/reference/rpc)
+- [TypeBoxスキーマ](/concepts/typebox)
+- [タイムゾーン処理](/concepts/timezone)
+- [プレゼンス](/concepts/presence)
+- [ディスカバリー + トランスポート](/gateway/discovery)
 - [Bonjour](/gateway/bonjour)
-- [Channel routing](/channels/channel-routing)
-- [Groups](/channels/groups)
-- [Group messages](/channels/group-messages)
-- [Model failover](/concepts/model-failover)
+- [チャンネルルーティング](/channels/channel-routing)
+- [グループ](/channels/groups)
+- [グループメッセージ](/channels/group-messages)
+- [モデルフェイルオーバー](/concepts/model-failover)
 - [OAuth](/concepts/oauth)
 
-## Providers + ingress
+## プロバイダー + イングレス
 
-- [Chat channels hub](/channels)
-- [Model providers hub](/providers/models)
+- [チャットチャンネルハブ](/channels)
+- [モデルプロバイダーハブ](/providers/models)
 - [WhatsApp](/channels/whatsapp)
 - [Telegram](/channels/telegram)
 - [Slack](/channels/slack)
 - [Discord](/channels/discord)
-- [Mattermost](/channels/mattermost) (plugin)
+- [Mattermost](/channels/mattermost) (プラグイン)
 - [Signal](/channels/signal)
 - [BlueBubbles (iMessage)](/channels/bluebubbles)
-- [iMessage (legacy)](/channels/imessage)
-- [Location parsing](/channels/location)
+- [iMessage (レガシー)](/channels/imessage)
+- [位置情報パース](/channels/location)
 - [WebChat](/web/webchat)
-- [Webhooks](/automation/webhook)
+- [Webhook](/automation/webhook)
 - [Gmail Pub/Sub](/automation/gmail-pubsub)
 
-## Gateway + operations
+## Gateway + 運用
 
-- [Gateway runbook](/gateway)
-- [Network model](/gateway/network-model)
-- [Gateway pairing](/gateway/pairing)
-- [Gateway lock](/gateway/gateway-lock)
-- [Background process](/gateway/background-process)
-- [Health](/gateway/health)
-- [Heartbeat](/gateway/heartbeat)
+- [Gatewayランブック](/gateway)
+- [ネットワークモデル](/gateway/network-model)
+- [Gatewayペアリング](/gateway/pairing)
+- [Gatewayロック](/gateway/gateway-lock)
+- [バックグラウンドプロセス](/gateway/background-process)
+- [ヘルス](/gateway/health)
+- [ハートビート](/gateway/heartbeat)
 - [Doctor](/gateway/doctor)
-- [Logging](/gateway/logging)
-- [Sandboxing](/gateway/sandboxing)
-- [Dashboard](/web/dashboard)
+- [ロギング](/gateway/logging)
+- [サンドボックス化](/gateway/sandboxing)
+- [ダッシュボード](/web/dashboard)
 - [Control UI](/web/control-ui)
-- [Remote access](/gateway/remote)
-- [Remote gateway README](/gateway/remote-gateway-readme)
+- [リモートアクセス](/gateway/remote)
+- [リモートgateway README](/gateway/remote-gateway-readme)
 - [Tailscale](/gateway/tailscale)
-- [Security](/gateway/security)
-- [Troubleshooting](/gateway/troubleshooting)
+- [セキュリティ](/gateway/security)
+- [トラブルシューティング](/gateway/troubleshooting)
 
-## Tools + automation
+## ツール + 自動化
 
-- [Tools surface](/tools)
+- [ツールサーフェス](/tools)
 - [OpenProse](/prose)
-- [CLI reference](/cli)
-- [Exec tool](/tools/exec)
-- [PDF tool](/tools/pdf)
-- [Elevated mode](/tools/elevated)
-- [Cron jobs](/automation/cron-jobs)
+- [CLIリファレンス](/cli)
+- [Execツール](/tools/exec)
+- [PDFツール](/tools/pdf)
+- [昇格モード](/tools/elevated)
+- [Cronジョブ](/automation/cron-jobs)
 - [Cron vs Heartbeat](/automation/cron-vs-heartbeat)
 - [Thinking + verbose](/tools/thinking)
-- [Models](/concepts/models)
-- [Sub-agents](/tools/subagents)
-- [Agent send CLI](/tools/agent-send)
-- [Terminal UI](/web/tui)
-- [Browser control](/tools/browser)
-- [Browser (Linux troubleshooting)](/tools/browser-linux-troubleshooting)
-- [Polls](/automation/poll)
+- [モデル](/concepts/models)
+- [サブエージェント](/tools/subagents)
+- [エージェント送信CLI](/tools/agent-send)
+- [ターミナルUI](/web/tui)
+- [ブラウザコントロール](/tools/browser)
+- [ブラウザ (Linuxトラブルシューティング)](/tools/browser-linux-troubleshooting)
+- [ポーリング](/automation/poll)
 
-## Nodes, media, voice
+## ノード、メディア、音声
 
-- [Nodes overview](/nodes)
-- [Camera](/nodes/camera)
-- [Images](/nodes/images)
-- [Audio](/nodes/audio)
-- [Location command](/nodes/location-command)
-- [Voice wake](/nodes/voicewake)
-- [Talk mode](/nodes/talk)
+- [ノード概要](/nodes)
+- [カメラ](/nodes/camera)
+- [画像](/nodes/images)
+- [オーディオ](/nodes/audio)
+- [位置情報コマンド](/nodes/location-command)
+- [音声ウェイク](/nodes/voicewake)
+- [トークモード](/nodes/talk)
 
-## Platforms
+## プラットフォーム
 
-- [Platforms overview](/platforms)
+- [プラットフォーム概要](/platforms)
 - [macOS](/platforms/macos)
 - [iOS](/platforms/ios)
 - [Android](/platforms/android)
 - [Windows (WSL2)](/platforms/windows)
 - [Linux](/platforms/linux)
-- [Web surfaces](/web)
+- [Webサーフェス](/web)
 
-## macOS companion app (advanced)
+## macOSコンパニオンアプリ (上級)
 
-- [macOS dev setup](/platforms/mac/dev-setup)
-- [macOS menu bar](/platforms/mac/menu-bar)
-- [macOS voice wake](/platforms/mac/voicewake)
-- [macOS voice overlay](/platforms/mac/voice-overlay)
+- [macOS開発セットアップ](/platforms/mac/dev-setup)
+- [macOSメニューバー](/platforms/mac/menu-bar)
+- [macOS音声ウェイク](/platforms/mac/voicewake)
+- [macOS音声オーバーレイ](/platforms/mac/voice-overlay)
 - [macOS WebChat](/platforms/mac/webchat)
 - [macOS Canvas](/platforms/mac/canvas)
-- [macOS child process](/platforms/mac/child-process)
-- [macOS health](/platforms/mac/health)
-- [macOS icon](/platforms/mac/icon)
-- [macOS logging](/platforms/mac/logging)
-- [macOS permissions](/platforms/mac/permissions)
-- [macOS remote](/platforms/mac/remote)
-- [macOS signing](/platforms/mac/signing)
-- [macOS release](/platforms/mac/release)
+- [macOS子プロセス](/platforms/mac/child-process)
+- [macOSヘルス](/platforms/mac/health)
+- [macOSアイコン](/platforms/mac/icon)
+- [macOSロギング](/platforms/mac/logging)
+- [macOSパーミッション](/platforms/mac/permissions)
+- [macOSリモート](/platforms/mac/remote)
+- [macOS署名](/platforms/mac/signing)
+- [macOSリリース](/platforms/mac/release)
 - [macOS gateway (launchd)](/platforms/mac/bundled-gateway)
 - [macOS XPC](/platforms/mac/xpc)
 - [macOS skills](/platforms/mac/skills)
 - [macOS Peekaboo](/platforms/mac/peekaboo)
 
-## Workspace + templates
+## ワークスペース + テンプレート
 
 - [Skills](/tools/skills)
 - [ClawHub](/tools/clawhub)
-- [Skills config](/tools/skills-config)
-- [Default AGENTS](/reference/AGENTS.default)
-- [Templates: AGENTS](/reference/templates/AGENTS)
-- [Templates: BOOTSTRAP](/reference/templates/BOOTSTRAP)
-- [Templates: HEARTBEAT](/reference/templates/HEARTBEAT)
-- [Templates: IDENTITY](/reference/templates/IDENTITY)
-- [Templates: SOUL](/reference/templates/SOUL)
-- [Templates: TOOLS](/reference/templates/TOOLS)
-- [Templates: USER](/reference/templates/USER)
+- [Skills設定](/tools/skills-config)
+- [デフォルトAGENTS](/reference/AGENTS.default)
+- [テンプレート: AGENTS](/reference/templates/AGENTS)
+- [テンプレート: BOOTSTRAP](/reference/templates/BOOTSTRAP)
+- [テンプレート: HEARTBEAT](/reference/templates/HEARTBEAT)
+- [テンプレート: IDENTITY](/reference/templates/IDENTITY)
+- [テンプレート: SOUL](/reference/templates/SOUL)
+- [テンプレート: TOOLS](/reference/templates/TOOLS)
+- [テンプレート: USER](/reference/templates/USER)
 
-## Experiments (exploratory)
+## 実験 (探索的)
 
-- [Onboarding config protocol](/experiments/onboarding-config-protocol)
-- [Research: memory](/experiments/research/memory)
-- [Model config exploration](/experiments/proposals/model-config)
+- [オンボーディング設定プロトコル](/experiments/onboarding-config-protocol)
+- [研究: メモリ](/experiments/research/memory)
+- [モデル設定探索](/experiments/proposals/model-config)
 
-## Project
+## プロジェクト
 
-- [Credits](/reference/credits)
+- [クレジット](/reference/credits)
 
-## Testing + release
+## テスト + リリース
 
-- [Testing](/reference/test)
-- [Release checklist](/reference/RELEASING)
-- [Device models](/reference/device-models)
+- [テスト](/reference/test)
+- [リリースチェックリスト](/reference/RELEASING)
+- [デバイスモデル](/reference/device-models)

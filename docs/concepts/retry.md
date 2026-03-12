@@ -1,44 +1,46 @@
 ---
-summary: "Retry policy for outbound provider calls"
+summary: "アウトバウンドプロバイダー呼び出しの再試行ポリシー"
 read_when:
-  - Updating provider retry behavior or defaults
-  - Debugging provider send errors or rate limits
-title: "Retry Policy"
+  - プロバイダーの再試行動作またはデフォルトの更新
+  - プロバイダーの送信エラーまたはレート制限をデバッグする
+title: "再試行ポリシー"
+x-i18n:
+  source_hash: "55bb261ff567f46ce447be9c0ee0c5b5e6d2776287d7662762656c14108dd607"
 ---
 
-# Retry policy
+# 再試行ポリシー
 
-## Goals
+## 目標
 
-- Retry per HTTP request, not per multi-step flow.
-- Preserve ordering by retrying only the current step.
-- Avoid duplicating non-idempotent operations.
+- 複数ステップのフローごとではなく、HTTP リクエストごとに再試行します。
+- 現在のステップのみを再試行して順序を保持します。
+- 非冪等操作の重複を避けてください。
 
-## Defaults
+## デフォルト
 
-- Attempts: 3
-- Max delay cap: 30000 ms
-- Jitter: 0.1 (10 percent)
-- Provider defaults:
-  - Telegram min delay: 400 ms
-  - Discord min delay: 500 ms
+- 試行回数: 3
+- 最大遅延上限: 30000 ミリ秒
+- ジッター: 0.1 (10%)
+- プロバイダーのデフォルト:
+  - テレグラムの最小遅延: 400 ミリ秒
+  - Discord の最小遅延: 500 ミリ秒
 
-## Behavior
+## 動作
 
-### Discord
+### 不和
 
-- Retries only on rate-limit errors (HTTP 429).
-- Uses Discord `retry_after` when available, otherwise exponential backoff.
+- レート制限エラー (HTTP 429) の場合にのみ再試行します。
+- 利用可能な場合は Discord `retry_after` を使用し、それ以外の場合は指数バックオフを使用します。
 
 ### Telegram
 
-- Retries on transient errors (429, timeout, connect/reset/closed, temporarily unavailable).
-- Uses `retry_after` when available, otherwise exponential backoff.
-- Markdown parse errors are not retried; they fall back to plain text.
+- 一時的なエラー (429、タイムアウト、接続/リセット/クローズ、一時的に利用不可) の場合は再試行します。
+- 利用可能な場合は `retry_after` を使用し、それ以外の場合は指数バックオフを使用します。
+- マークダウン解析エラーは再試行されません。プレーンテキストに戻ります。
 
-## Configuration
+## 構成
 
-Set retry policy per provider in `~/.openclaw/openclaw.json`:
+`~/.openclaw/openclaw.json` でプロバイダーごとに再試行ポリシーを設定します。
 
 ```json5
 {
@@ -63,7 +65,7 @@ Set retry policy per provider in `~/.openclaw/openclaw.json`:
 }
 ```
 
-## Notes
+## 注意事項
 
-- Retries apply per request (message send, media upload, reaction, poll, sticker).
-- Composite flows do not retry completed steps.
+- 再試行はリクエストごとに適用されます (メッセージ送信、メディアアップロード、反応、投票、ステッカー)。
+- 複合フローは、完了したステップを再試行しません。
