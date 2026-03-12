@@ -2259,28 +2259,28 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Get started",
+        "tab": "はじめに",
         "groups": [
           {
-            "group": "Home",
+            "group": "ホーム",
             "pages": [
               "index"
             ]
           },
           {
-            "group": "Overview",
+            "group": "概要",
             "pages": [
               "start/showcase"
             ]
           },
           {
-            "group": "Core concepts",
+            "group": "コアコンセプト",
             "pages": [
               "concepts/features"
             ]
           },
           {
-            "group": "First steps",
+            "group": "最初のステップ",
             "pages": [
               "start/getting-started",
               "start/onboarding-overview",
@@ -2289,7 +2289,7 @@
             ]
           },
           {
-            "group": "Guides",
+            "group": "ガイド",
             "pages": [
               "start/openclaw",
               "start/wizard-cli-reference",
@@ -2299,17 +2299,17 @@
         ]
       },
       {
-        "tab": "Install",
+        "tab": "インストール",
         "groups": [
           {
-            "group": "Install overview",
+            "group": "インストール概要",
             "pages": [
               "install/index",
               "install/installer"
             ]
           },
           {
-            "group": "Other install methods",
+            "group": "その他のインストール方法",
             "pages": [
               "install/docker",
               "install/podman",
@@ -2319,7 +2319,7 @@
             ]
           },
           {
-            "group": "Maintenance",
+            "group": "メンテナンス",
             "pages": [
               "install/updating",
               "install/migrating",
@@ -2327,7 +2327,7 @@
             ]
           },
           {
-            "group": "Hosting and deployment",
+            "group": "ホスティングとデプロイ",
             "pages": [
               "vps",
               "install/fly",
@@ -2341,7 +2341,7 @@
             ]
           },
           {
-            "group": "Advanced",
+            "group": "上級",
             "pages": [
               "install/development-channels"
             ]
@@ -2349,16 +2349,16 @@
         ]
       },
       {
-        "tab": "Channels",
+        "tab": "チャンネル",
         "groups": [
           {
-            "group": "Overview",
+            "group": "概要",
             "pages": [
               "channels/index"
             ]
           },
           {
-            "group": "Messaging platforms",
+            "group": "メッセージングプラットフォーム",
             "pages": [
               "channels/bluebubbles",
               "channels/discord",
@@ -2384,7 +2384,7 @@
             ]
           },
           {
-            "group": "Configuration",
+            "group": "設定",
             "pages": [
               "channels/pairing",
               "channels/group-messages",
@@ -2398,10 +2398,10 @@
         ]
       },
       {
-        "tab": "Agents",
+        "tab": "エージェント",
         "groups": [
           {
-            "group": "Fundamentals",
+            "group": "基礎",
             "pages": [
               "pi",
               "concepts/architecture",
@@ -2414,13 +2414,13 @@
             ]
           },
           {
-            "group": "Bootstrapping",
+            "group": "ブートストラップ",
             "pages": [
               "start/bootstrapping"
             ]
           },
           {
-            "group": "Sessions and memory",
+            "group": "セッションとメモリ",
             "pages": [
               "concepts/session",
               "concepts/session-pruning",
@@ -2430,14 +2430,14 @@
             ]
           },
           {
-            "group": "Multi-agent",
+            "group": "マルチエージェント",
             "pages": [
               "concepts/multi-agent",
               "concepts/presence"
             ]
           },
           {
-            "group": "Messages and delivery",
+            "group": "メッセージと配信",
             "pages": [
               "concepts/messages",
               "concepts/streaming",
@@ -2448,16 +2448,16 @@
         ]
       },
       {
-        "tab": "Tools",
+        "tab": "ツール",
         "groups": [
           {
-            "group": "Overview",
+            "group": "概要",
             "pages": [
               "tools/index"
             ]
           },
           {
-            "group": "Built-in tools",
+            "group": "組み込みツール",
             "pages": [
               "tools/apply-patch",
               "brave-search",
@@ -2477,7 +2477,7 @@
             ]
           },
           {
-            "group": "Browser",
+            "group": "ブラウザ",
             "pages": [
               "tools/browser",
               "tools/browser-login",
@@ -2487,7 +2487,7 @@
             ]
           },
           {
-            "group": "Agent coordination",
+            "group": "エージェント連携",
             "pages": [
               "tools/agent-send",
               "tools/subagents",
@@ -2496,7 +2496,7 @@
             ]
           },
           {
-            "group": "Skills",
+            "group": "スキル",
             "pages": [
               "tools/creating-skills",
               "tools/slash-commands",
@@ -2507,7 +2507,7 @@
             ]
           },
           {
-            "group": "Extensions",
+            "group": "拡張機能",
             "pages": [
               "plugins/community",
               "plugins/voice-call",
@@ -2518,7 +2518,7 @@
             ]
           },
           {
-            "group": "Automation",
+            "group": "自動化",
             "pages": [
               "automation/hooks",
               "automation/cron-jobs",
@@ -2531,7 +2531,7 @@
             ]
           },
           {
-            "group": "Media and devices",
+            "group": "メディアとデバイス",
             "pages": [
               "nodes/index",
               "nodes/troubleshooting",
@@ -2548,29 +2548,29 @@
         ]
       },
       {
-        "tab": "Models",
+        "tab": "モデル",
         "groups": [
           {
-            "group": "Overview",
+            "group": "概要",
             "pages": [
               "providers/index"
             ]
           },
           {
-            "group": "Model concepts",
+            "group": "モデルの概念",
             "pages": [
               "concepts/models"
             ]
           },
           {
-            "group": "Configuration",
+            "group": "設定",
             "pages": [
               "concepts/model-providers",
               "concepts/model-failover"
             ]
           },
           {
-            "group": "Providers",
+            "group": "プロバイダー",
             "pages": [
               "providers/anthropic",
               "providers/bedrock",
@@ -2604,10 +2604,10 @@
         ]
       },
       {
-        "tab": "Platforms",
+        "tab": "プラットフォーム",
         "groups": [
           {
-            "group": "Platforms overview",
+            "group": "プラットフォーム概要",
             "pages": [
               "platforms/index",
               "platforms/macos",
@@ -2621,7 +2621,7 @@
             ]
           },
           {
-            "group": "macOS companion app",
+            "group": "macOS コンパニオンアプリ",
             "pages": [
               "platforms/mac/dev-setup",
               "platforms/mac/menu-bar",
@@ -2646,14 +2646,14 @@
         ]
       },
       {
-        "tab": "Gateway & Ops",
+        "tab": "Gateway と運用",
         "groups": [
           {
             "group": "Gateway",
             "pages": [
               "gateway/index",
               {
-                "group": "Configuration and operations",
+                "group": "設定と運用",
                 "pages": [
                   "gateway/configuration",
                   "gateway/configuration-reference",
@@ -2674,7 +2674,7 @@
                 ]
               },
               {
-                "group": "Security and sandboxing",
+                "group": "セキュリティとサンドボックス",
                 "pages": [
                   "gateway/security/index",
                   "gateway/sandboxing",
@@ -2682,7 +2682,7 @@
                 ]
               },
               {
-                "group": "Protocols and APIs",
+                "group": "プロトコルと API",
                 "pages": [
                   "gateway/protocol",
                   "gateway/bridge-protocol",
@@ -2694,7 +2694,7 @@
                 ]
               },
               {
-                "group": "Networking and discovery",
+                "group": "ネットワークと検出",
                 "pages": [
                   "gateway/network-model",
                   "gateway/pairing",
@@ -2705,7 +2705,7 @@
             ]
           },
           {
-            "group": "Remote access",
+            "group": "リモートアクセス",
             "pages": [
               "gateway/remote",
               "gateway/remote-gateway-readme",
@@ -2713,7 +2713,7 @@
             ]
           },
           {
-            "group": "Security",
+            "group": "セキュリティ",
             "pages": [
               "security/formal-verification",
               "security/README",
@@ -2722,7 +2722,7 @@
             ]
           },
           {
-            "group": "Web interfaces",
+            "group": "Web インターフェース",
             "pages": [
               "web/index",
               "web/control-ui",
@@ -2734,10 +2734,10 @@
         ]
       },
       {
-        "tab": "Reference",
+        "tab": "リファレンス",
         "groups": [
           {
-            "group": "CLI commands",
+            "group": "CLI コマンド",
             "pages": [
               "cli/index",
               "cli/acp",
@@ -2788,14 +2788,14 @@
             ]
           },
           {
-            "group": "RPC and API",
+            "group": "RPC と API",
             "pages": [
               "reference/rpc",
               "reference/device-models"
             ]
           },
           {
-            "group": "Templates",
+            "group": "テンプレート",
             "pages": [
               "reference/AGENTS.default",
               "reference/templates/AGENTS",
@@ -2809,7 +2809,7 @@
             ]
           },
           {
-            "group": "Technical reference",
+            "group": "技術リファレンス",
             "pages": [
               "reference/wizard",
               "reference/token-use",
@@ -2821,7 +2821,7 @@
             ]
           },
           {
-            "group": "Concept internals",
+            "group": "内部構造",
             "pages": [
               "concepts/typebox",
               "concepts/markdown-formatting",
@@ -2831,20 +2831,20 @@
             ]
           },
           {
-            "group": "Project",
+            "group": "プロジェクト",
             "pages": [
               "reference/credits"
             ]
           },
           {
-            "group": "Release notes",
+            "group": "リリースノート",
             "pages": [
               "reference/RELEASING",
               "reference/test"
             ]
           },
           {
-            "group": "Experiments",
+            "group": "実験",
             "pages": [
               "design/kilo-gateway-integration",
               "experiments/onboarding-config-protocol",
@@ -2861,10 +2861,10 @@
         ]
       },
       {
-        "tab": "Help",
+        "tab": "ヘルプ",
         "groups": [
           {
-            "group": "Help",
+            "group": "ヘルプ",
             "pages": [
               "help/index",
               "help/troubleshooting",
@@ -2872,13 +2872,13 @@
             ]
           },
           {
-            "group": "Community",
+            "group": "コミュニティ",
             "pages": [
               "start/lore"
             ]
           },
           {
-            "group": "Environment and debugging",
+            "group": "環境とデバッグ",
             "pages": [
               "help/environment",
               "help/debugging",
@@ -2889,32 +2889,32 @@
             ]
           },
           {
-            "group": "Node runtime",
+            "group": "Node ランタイム",
             "pages": [
               "install/node"
             ]
           },
           {
-            "group": "Compaction internals",
+            "group": "コンパクション内部",
             "pages": [
               "reference/session-management-compaction"
             ]
           },
           {
-            "group": "Developer setup",
+            "group": "開発者セットアップ",
             "pages": [
               "start/setup",
               "pi-dev"
             ]
           },
           {
-            "group": "Contributing",
+            "group": "コントリビュート",
             "pages": [
               "ci"
             ]
           },
           {
-            "group": "Docs meta",
+            "group": "ドキュメントメタ",
             "pages": [
               "start/hubs",
               "start/docs-directory"
