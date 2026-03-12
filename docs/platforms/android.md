@@ -8,9 +8,6 @@ title: "Android App"
 x-i18n:
   source_hash: "39e9206a770d78adc09aa35c30cecfb07093605a7f432d942b68014332b3c56b"
 ---
-
-# Android App (Node)
-
 ## サポート概要
 
 - 役割: companion node app（Android 自体は Gateway をホストしません）

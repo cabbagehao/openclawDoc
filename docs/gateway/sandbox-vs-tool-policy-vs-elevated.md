@@ -7,9 +7,6 @@ status: active
 x-i18n:
   source_hash: "863ea5e6d137dfb61f12bd686b9557d6df1fd0c13ba5f15861bf72248bc975f1"
 ---
-
-# サンドボックス vs ツールポリシー vs 昇格（Elevated）
-
 OpenClaw には、互いに関連しつつも異なる役割を持つ 3 つの制御機能があります:
 
 1. **サンドボックス** (`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`): ツールを **どこで実行するか**（Docker コンテナ内か、ホスト上か）を決定します。

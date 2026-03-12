@@ -7,9 +7,6 @@ title: "Media Understanding"
 x-i18n:
   source_hash: "3f4364c2744a9d48f6b7863d1e6ad495b7706af57fa7509f83dde4448e22f151"
 ---
-
-# Media Understanding (Inbound) — 2026-01-17
-
 OpenClaw は、返信パイプラインに入る前に **受信メディア**（画像 / 音声 / 動画）を要約できます。ローカルツールや provider key が利用可能な場合は自動検出され、必要に応じて無効化やカスタマイズも可能です。understanding を無効にしても、model には従来どおり元のファイル / URL が渡されます。
 
 ## 目標

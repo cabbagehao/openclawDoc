@@ -12,9 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:51:35.483Z"
 ---
-
-# Gmail Pub/Sub -> OpenClaw
-
 目的: Gmail watch -> Pub/Sub プッシュ -> `gog gmail watch serve` -> OpenClaw webhook。
 
 ## 前提条件

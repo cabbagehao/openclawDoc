@@ -6,9 +6,6 @@ title: "リモート制御"
 x-i18n:
   source_hash: "4bb945460f613e02cc26008d19400b1439ff1208fe93a1e4c956865ad0286fe1"
 ---
-
-# リモート OpenClaw（macOS ⇄ リモート ホスト）
-
 この構成では、macOS アプリを、別ホスト（デスクトップ / サーバー）で動作する OpenClaw ゲートウェイの完全なリモート コントローラーとして利用できます。これはアプリの **Remote over SSH**（remote run）機能です。ヘルスチェック、Voice Wake の転送、Web Chat を含むすべての機能が、_Settings → General_ で設定した同じ SSH 構成を共有します。
 
 ## モード

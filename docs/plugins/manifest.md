@@ -7,9 +7,6 @@ title: "プラグイン マニフェスト"
 x-i18n:
   source_hash: "a4c589022cea530e524951a11cf654d3bf80ee536893c2d4b7823d20d583c631"
 ---
-
-# Plugin manifest（openclaw.plugin.json）
-
 すべてのプラグインは、**plugin root** に `openclaw.plugin.json` を **必ず** 含める必要があります。OpenClaw はこの manifest を使って、**プラグイン コードを実行せずに** 設定を検証します。manifest が欠落している、または不正な場合は plugin error として扱われ、設定検証は失敗します。
 
 完全なプラグイン システムの説明は [Plugins](/tools/plugin) を参照してください。

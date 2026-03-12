@@ -5,9 +5,6 @@ read_when:
   - Docker フローを検証したい
 title: "Docker"
 ---
-
-# Docker (任意)
-
 Docker は **任意** です。コンテナ化したゲートウェイが必要な場合や、Docker フローを検証したい場合にのみ使ってください。
 
 ## Docker は自分に適しているか？

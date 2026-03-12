@@ -7,9 +7,6 @@ title: "合成"
 x-i18n:
   source_hash: "3a2adb0b831babe3e88b027772167748764d85ee72d402ff759571420a91757f"
 ---
-
-# 合成
-
 Synthetic は Anthropic 互換のエンドポイントを公開します。 OpenClaw はそれを
 `synthetic` プロバイダーであり、Anthropic Messages API を使用します。
 

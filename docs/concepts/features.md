@@ -6,9 +6,6 @@ title: "機能一覧"
 x-i18n:
   source_hash: "709ea22218ffb9c5435af0ecfef105cb6350754ede0f99094abe18afb8e4e119"
 ---
-
-# 機能一覧
-
 ## ハイライト
 
 <Columns>

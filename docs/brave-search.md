@@ -12,9 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:52:01.989Z"
 ---
-
-# Brave Search API
-
 OpenClaw は、`web_search` のプロバイダーとして Brave Search API をサポートしています。
 
 ## APIキーの取得

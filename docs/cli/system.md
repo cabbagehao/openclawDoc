@@ -8,9 +8,6 @@ title: "system"
 x-i18n:
   source_hash: "36ae5dbdec327f5a32f7ef44bdc1f161bad69868de62f5071bb4d25a71bfdfe9"
 ---
-
-# `openclaw system`
-
 ゲートウェイ用のシステムレベルヘルパーです。システムイベントの投入、ハートビートの制御、プレゼンス情報の表示を行います。
 
 ## よく使われるコマンド

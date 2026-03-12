@@ -5,9 +5,6 @@ title: "ブラウザのトラブルシューティング"
 x-i18n:
   source_hash: "bac2301022511a0bf8ebe1309606cc03e8a979ff74866c894f89d280ca3e514e"
 ---
-
-# ブラウザのトラブルシューティング (Linux)
-
 ## 問題: 「ポート 18800 で Chrome CDP を起動できませんでした」
 
 OpenClaw のブラウザ コントロール サーバーは、次のエラーで Chrome/Brave/Edge/Chromium の起動に失敗します。

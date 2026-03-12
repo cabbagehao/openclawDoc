@@ -6,9 +6,6 @@ title: "ペアリング"
 x-i18n:
   source_hash: "266732af69e57b8849ddc9963426902f60e81daed6e5a80ef4ed5b7923ffa9e2"
 ---
-
-# `openclaw pairing`
-
 DM ペアリング リクエストを承認または検査します (ペアリングをサポートするチャネルの場合)。
 
 関連:

@@ -6,9 +6,6 @@ title: "Microsoft Teams"
 x-i18n:
   source_hash: "9559705b08291578f9d476ea4924d53aa77ae81d682a95d93e9b148430007e32"
 ---
-
-# Microsoft Teams (プラグイン)
-
 > 「ここに入る者よ、一切の希望を捨てよ。」
 
 更新日: 2026-01-21

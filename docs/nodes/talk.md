@@ -7,9 +7,6 @@ title: "Talk Mode"
 x-i18n:
   source_hash: "34ceb3669c5f9c166af6951ab8c6fcb0e626ed487de5cbe9449bcf9ba4aa12ac"
 ---
-
-# Talk Mode
-
 Talk mode は、継続的な音声会話ループです。
 
 1. 音声を聞き取る

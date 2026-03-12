@@ -7,9 +7,6 @@ title: "RPCアダプター"
 x-i18n:
   source_hash: "06dc6b97184cc704ba4ec4a9af90502f4316bcf717c3f4925676806d8b184c57"
 ---
-
-# RPC アダプター
-
 OpenClaw は、JSON-RPC 経由で外部 CLI を統合します。今日は 2 つのパターンが使用されます。
 
 ## パターン A: HTTP デーモン (signal-cli)

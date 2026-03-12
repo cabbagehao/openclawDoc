@@ -7,9 +7,6 @@ title: "利用状況の追跡"
 x-i18n:
   source_hash: "6f6ed2a70329b2a6206c327aa749a84fbfe979762caca5f0e7fb556f91631cbb"
 ---
-
-# 利用状況の追跡 (Usage Tracking)
-
 ## 概要
 
 - 各プロバイダーの利用状況（Usage）やクォータ（Quota）情報を、プロバイダー側のエンドポイントから直接取得します。

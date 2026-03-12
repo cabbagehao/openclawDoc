@@ -7,9 +7,6 @@ read_when:
 x-i18n:
   source_hash: "f30768dc3db49708b25042d317906f7ad9a2c72b0fa03263bc04f5eefbf7a507"
 ---
-
-# バーセル AI ゲートウェイ
-
 [Vercel AI Gateway](https://vercel.com/ai-gateway) は、単一のエンドポイントを通じて数百のモデルにアクセスするための統合 API を提供します。
 
 - プロバイダー: `vercel-ai-gateway`

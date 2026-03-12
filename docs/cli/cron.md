@@ -7,9 +7,6 @@ title: "cron"
 x-i18n:
   source_hash: "e298fef3a657d10183dbcdb71cd65a4b1b5b5b04485d726fe925be82b06c099a"
 ---
-
-# `openclaw cron`
-
 ゲートウェイスケジューラにおける Cron ジョブを管理します。
 
 関連ドキュメント:

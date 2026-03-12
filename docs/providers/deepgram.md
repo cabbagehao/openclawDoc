@@ -7,9 +7,6 @@ title: "Deepgram"
 x-i18n:
   source_hash: "dabd1f6942c339fbd744fbf38040b6a663b06ddf4d9c9ee31e3ac034de9e79d9"
 ---
-
-# Deepgram (Audio Transcription)
-
 Deepgram は speech-to-text API です。OpenClaw では、`tools.media.audio` を通じて **受信した音声 / ボイスノートの文字起こし** に使われます。
 
 有効化すると、OpenClaw は音声ファイルを Deepgram へアップロードし、その transcript を返信パイプラインへ挿入します (`{{Transcript}}` + `[Audio]` block)。これは **ストリーミングではなく**、録音済み音声向けの transcription endpoint を使います。

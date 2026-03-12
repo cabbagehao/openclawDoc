@@ -7,9 +7,6 @@ title: "Anthropic"
 x-i18n:
   source_hash: "2a94be0bbc40cf9b89991a3f7054f5297c8b0f832b8aceb0d561dc7521332885"
 ---
-
-# Anthropic（Claude）
-
 Anthropic は **Claude** モデル ファミリを提供しており、OpenClaw では API キーまたは **setup-token** を使って認証できます。
 
 ## Option A: Anthropic API キー

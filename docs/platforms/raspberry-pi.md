@@ -8,9 +8,6 @@ title: "Raspberry Pi"
 x-i18n:
   source_hash: "c114f5a285e18fb1132d5e559a668a738b8beba65531a3583434db9af0bef5b0"
 ---
-
-# Raspberry Pi 上の OpenClaw
-
 ## 目標
 
 Raspberry Pi 上で、**約 $35〜80** の初期費用だけで（月額料金なし）、永続的かつ常時稼働の OpenClaw ゲートウェイを運用します。

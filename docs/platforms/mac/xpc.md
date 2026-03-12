@@ -6,9 +6,6 @@ title: "macOS IPC"
 x-i18n:
   source_hash: "d0211c334a4a59b71afb29dd7b024778172e529fa618985632d3d11d795ced92"
 ---
-
-# OpenClaw macOS IPC アーキテクチャ
-
 **現在のモデル:** ローカル Unix socket を使って、**node host service** と **macOS アプリ** を接続し、exec approval と `system.run` をやり取りします。発見や接続確認用には `openclaw-mac` debug CLI があり、エージェントの実際の操作は引き続きゲートウェイ WebSocket と `node.invoke` を通ります。UI 自動化には PeekabooBridge を使います。
 
 ## 目標

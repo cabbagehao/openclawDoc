@@ -7,9 +7,6 @@ title: "vLLM"
 x-i18n:
   source_hash: "47a7b4a302fa829dd9de2da048d6ecd0cea843b84acf92455653a900976216c3"
 ---
-
-# vLLM
-
 vLLM は、**OpenAI 互換** HTTP API 経由でオープンソース (および一部のカスタム) モデルを提供できます。 OpenClaw は、`openai-completions` API を使用して vLLM に接続できます。
 
 OpenClaw は、`VLLM_API_KEY` (サーバーが認証を強制しない場合は任意の値が機能します) でオプトインし、明示的な `models.providers.vllm` エントリを定義しない場合、vLLM から利用可能なモデルを**自動検出**することもできます。

@@ -7,9 +7,6 @@ title: "OpenResponses API"
 x-i18n:
   source_hash: "59aceb2143d65b2d13f39736170ef7c2d01f61b2b223941635148ba819c702d6"
 ---
-
-# OpenResponses API (HTTP)
-
 OpenClaw ゲートウェイは、OpenResponses 互換の `POST /v1/responses` エンドポイントを提供できます。
 
 このエンドポイントは **デフォルトで無効** になっています。利用するには、まず構成ファイルで有効にする必要があります。

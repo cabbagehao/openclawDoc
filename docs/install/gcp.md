@@ -6,9 +6,6 @@ read_when:
   - 永続性、バイナリ、再起動の動作を完全に制御したい場合
 title: "GCP"
 ---
-
-# GCP Compute Engine での OpenClaw (Docker、本番 VPS ガイド)
-
 ## 目標
 
 永続状態、ビルド時に組み込んだバイナリ、安全な再起動挙動を備えた GCP Compute Engine VM 上で、Docker を使って OpenClaw ゲートウェイを常時稼働させます。

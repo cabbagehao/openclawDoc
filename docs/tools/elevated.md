@@ -6,9 +6,6 @@ title: "昇格モード"
 x-i18n:
   source_hash: "d3fcd557c3c792209eaa09773e215e70d9406e7bdea52f2ed80ca270c82ae750"
 ---
-
-# 昇格モード (/elevated ディレクティブ)
-
 ## 何をするのか
 
 - `/elevated on` はゲートウェイ ホスト上で実行され、実行承認を維持します (`/elevated ask` と同じ)。

@@ -5,9 +5,6 @@ read_when:
   - 外部システムをOpenClawに接続する場合
 title: "webhook"
 ---
-
-# webhook
-
 ゲートウェイは、外部トリガー向けに小さな HTTP webhook エンドポイントを公開できます。
 
 ## 有効化

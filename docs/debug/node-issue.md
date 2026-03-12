@@ -7,9 +7,6 @@ title: "Node + tsx のクラッシュ"
 x-i18n:
   source_hash: "f5beab7cdfe7679680f65176234a617293ce495886cfffb151518adfa61dc8dc"
 ---
-
-# Node + tsx での「__name is not a function」クラッシュ
-
 ## 概要
 
 Node 上で `tsx` を使用して OpenClaw を実行しようとすると、起動時に以下の TypeError で失敗する場合があります:

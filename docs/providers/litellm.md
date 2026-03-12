@@ -7,9 +7,6 @@ title: "LiteLLM"
 x-i18n:
   source_hash: "269529671c60864972441606c730b5ca327546a45d3b264dbd03204c4401936f"
 ---
-
-# LiteLLM
-
 [LiteLLM](https://litellm.ai) は、100 を超えるモデル プロバイダーに統合 API を提供するオープンソース LLM ゲートウェイです。 LiteLLM を介して OpenClaw をルーティングすると、一元的なコスト追跡、ロギングが実現し、OpenClaw 構成を変更せずにバックエンドを切り替える柔軟性が得られます。
 
 ## OpenClaw で LiteLLM を使用する理由

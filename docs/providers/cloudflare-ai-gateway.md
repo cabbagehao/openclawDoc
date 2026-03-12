@@ -7,9 +7,6 @@ read_when:
 x-i18n:
   source_hash: "db77652c37652ca20f7c50f32382dbaeaeb50ea5bdeaf1d4fd17dc394e58950c"
 ---
-
-# Cloudflare AI Gateway
-
 Cloudflare AI Gateway は provider API の前段に置かれ、分析、キャッシュ、各種制御を追加できます。Anthropic については、OpenClaw はゲートウェイ endpoint を通して Anthropic Messages API を利用します。
 
 - Provider: `cloudflare-ai-gateway`

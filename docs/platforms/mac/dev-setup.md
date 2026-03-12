@@ -6,9 +6,6 @@ title: "macOS 開発セットアップ"
 x-i18n:
   source_hash: "1cb41c449e4a314f6327c63458006aeb4d7723f093f3e3866a76f5ffaa00e2d3"
 ---
-
-# macOS 開発者セットアップ
-
 このガイドでは、OpenClaw の macOS アプリをソースコードからビルドし、実行するまでの手順を説明します。
 
 ## 前提条件

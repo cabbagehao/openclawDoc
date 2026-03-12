@@ -6,9 +6,6 @@ read_when:
   - 状態ストレージの仕組みを理解したいとき
 title: "OpenProse"
 ---
-
-# OpenProse
-
 OpenProse は、AI セッションをオーケストレーションするための、ポータブルで markdown-first なワークフロー形式です。OpenClaw では、OpenProse skill pack と `/prose` slash command を追加する plugin として提供されます。プログラムは `.prose` ファイルに記述し、明示的な制御フローで複数の sub-agent を起動できます。
 
 公式サイト: [https://www.prose.md](https://www.prose.md)

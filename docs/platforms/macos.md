@@ -7,9 +7,6 @@ title: "macOS アプリ"
 x-i18n:
   source_hash: "e9e6a8af9c8eaec6b51a41a330667f826fdc52a95de169a61268ac5e0e8772ed"
 ---
-
-# OpenClaw macOS Companion (メニュー バー + ゲートウェイ broker)
-
 macOS アプリは、OpenClaw の **メニュー バー companion** です。各種アクセス許可を管理し、ローカルではゲートウェイを管理または接続し (launchd または手動起動)、macOS 固有の機能を node としてエージェントへ公開します。
 
 ## 役割

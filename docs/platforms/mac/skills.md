@@ -7,9 +7,6 @@ title: "スキル"
 x-i18n:
   source_hash: "ecd5286bbe49eed89319686c4f7d6da55ef7b0d3952656ba98ef5e769f3fbf79"
 ---
-
-# スキル (macOS)
-
 macOS アプリは、OpenClaw のスキル情報をゲートウェイ経由で表示します。ローカルで `SKILL.md` を解析することはありません。
 
 ## データ ソース

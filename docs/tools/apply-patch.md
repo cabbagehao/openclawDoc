@@ -7,9 +7,6 @@ title: "apply_patch ツール"
 x-i18n:
   source_hash: "a1b251e8327228ff327eda8989626421edbe75cd1483acfc6a2f2fd31ed6cfc2"
 ---
-
-# apply_patch ツール
-
 構造化されたパッチ形式を使用してファイルの変更を適用します。これはマルチファイルに最適です
 または、単一の `edit` 呼び出しが脆弱になるマルチハンク編集。
 

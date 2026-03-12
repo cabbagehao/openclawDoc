@@ -6,9 +6,6 @@ title: "テスト"
 x-i18n:
   source_hash: "c98456042ff6ff4ba0773cb461fa85beae69864b65d41f546e0b488f60d98c26"
 ---
-
-# テスト
-
 - 完全なテスト キット (スイート、ライブ、Docker): [テスト](/help/testing)- `pnpm test:force`: デフォルトの制御ポートを保持している残留ゲートウェイ プロセスを強制終了し、分離されたゲートウェイ ポートを使用して完全な Vitest スイートを実行するため、サーバー テストは実行中のインスタンスと衝突しません。以前のゲートウェイ実行によりポート 18789 が占有されたままになっている場合にこれを使用します。
 - `pnpm test:coverage`: V8 をカバーするユニット スイートを実行します (`vitest.unit.config.ts` 経由)。グローバルしきい値は 70% の行/分岐/関数/ステートメントです。ターゲットを単体テスト可能なロジックに集中させるため、統合の重要なエントリポイント (CLI 配線、ゲートウェイ/テレグラム ブリッジ、Web チャット静的サーバー) はカバーされません。
 - ノード 24+ の `pnpm test`: OpenClaw は Vitest `vmForks` を自動無効にし、`forks` を使用して `ERR_VM_MODULE_LINK_FAILURE` / `module is already linked` を回避します。 `OPENCLAW_TEST_VM_FORKS=0|1` を使用して動作を強制できます。

@@ -7,9 +7,6 @@ title: "Bonjour による検出"
 x-i18n:
   source_hash: "2454692d8d590506fe224d92e4aa6ddf2838a2a11e64529da556c7bd3e35a90c"
 ---
-
-# Bonjour / mDNS による検出
-
 OpenClaw は、稼働中のゲートウェイ（WebSocket エンドポイント）を見つけるための **LAN 内限定の便利な機能** として Bonjour (mDNS / DNS-SD) を使用します。これはベストエフォートの仕組みであり、SSH や Tailscale による接続を完全に置き換えるものではありません。
 
 ## Tailscale を介した広域 Bonjour (ユニキャスト DNS-SD)

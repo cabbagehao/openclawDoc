@@ -7,9 +7,6 @@ title: "Mattermost"
 x-i18n:
   source_hash: "c1d43218b97fdaa30e8739287056151feeb88aace9b1787769a890f9cc5eca59"
 ---
-
-# Mattermost (プラグイン)
-
 ステータス: プラグイン経由でサポートされています（ボットトークン + WebSocket イベント）。チャネル、グループ、DM がサポートされています。
 Mattermost は、自己ホスト可能なチームメッセージングプラットフォームです。製品の詳細やダウンロードについては、公式サイト [mattermost.com](https://mattermost.com) をご覧ください。
 

@@ -7,9 +7,6 @@ title: "Zalo Personal プラグイン"
 x-i18n:
   source_hash: "c3afa0375b8fd2957a3f6f12e166a2703a606c782736b09818588d9f9800b8bf"
 ---
-
-# Zalo Personal（plugin）
-
 このプラグインは、ネイティブの `zca-js` を用いて通常の Zalo 個人アカウントを自動操作し、OpenClaw から Zalo Personal を利用できるようにします。
 
 > **Warning:** 非公式な自動化は、アカウント停止や ban の原因になる可能性があります。自己責任で使用してください。

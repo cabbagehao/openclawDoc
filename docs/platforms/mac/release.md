@@ -7,9 +7,6 @@ title: "macOS リリース"
 x-i18n:
   source_hash: "df73aa6c64c15917a7a370c7880bafbab73f9083839d0debafc16bff2f3990a6"
 ---
-
-# OpenClaw macOS リリース（Sparkle）
-
 このアプリは Sparkle による自動更新を同梱しています。リリース ビルドは、Developer ID で署名し、zip 化したうえで、署名済みの appcast エントリと一緒に公開する必要があります。
 
 ## 前提条件

@@ -7,9 +7,6 @@ read_when:
 x-i18n:
   source_hash: "7d544c51781ee5b635f36a5e393ffbc92652769bd296e2c63ea3445db518a0a2"
 ---
-
-# AGENTS.md — OpenClaw パーソナル アシスタント (デフォルト)
-
 ## 最初の実行 (推奨)
 
 OpenClaw は、エージェント専用のワークスペース ディレクトリを使用します。デフォルト: `~/.openclaw/workspace` (`agents.defaults.workspace` 経由で構成可能)。

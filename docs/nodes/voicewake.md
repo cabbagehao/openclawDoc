@@ -7,9 +7,6 @@ title: "Voice Wake"
 x-i18n:
   source_hash: "a80e0cf7f68a3d48ff79af0ffb3058a7a0ecebd2cdbaad20b9ff53bc2b39dc84"
 ---
-
-# Voice Wake (Global Wake Words)
-
 OpenClaw では、**wake word は gateway が管理する 1 つのグローバルリスト** として扱われます。
 
 - **node ごとのカスタム wake word** はありません

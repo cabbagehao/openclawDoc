@@ -7,9 +7,6 @@ title: "トゥイ"
 x-i18n:
   source_hash: "89d30c5b6ebd8cf35561aaff45202d13831d6530a09f69ed3e152cf2a51a6dc9"
 ---
-
-# TUI（ターミナルUI）
-
 ## クイックスタート
 
 1. ゲートウェイを起動します。

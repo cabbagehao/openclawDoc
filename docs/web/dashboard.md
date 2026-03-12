@@ -6,9 +6,6 @@ title: "ダッシュボード"
 x-i18n:
   source_hash: "243230ad35672a374afec7ad9ea344c5fb74bdb7ea3a36e21a0b2a313583d000"
 ---
-
-# ダッシュボード（Control UI）
-
 Gateway ダッシュボードは、デフォルトで `/` から提供されるブラウザ Control UI です
 （`gateway.controlUi.basePath` で上書き可能）。
 

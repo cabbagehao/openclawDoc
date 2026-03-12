@@ -8,9 +8,6 @@ title: "iOS App"
 x-i18n:
   source_hash: "aa473aad6bd953b8489c752467c1e4c33532e7b325a992d836fefad449ff960c"
 ---
-
-# iOS App (Node)
-
 提供状況: internal preview。iOS app はまだ一般公開されていません。
 
 ## できること

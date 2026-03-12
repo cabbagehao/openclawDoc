@@ -7,9 +7,6 @@ title: "channels"
 x-i18n:
   source_hash: "b2b34e5aa73559fb9f670438881608ce735a4dfcf7f5b3299b34ae99a6a4f8d3"
 ---
-
-# `openclaw channels`
-
 ゲートウェイにおけるチャットチャネルアカウントとその実行ステータスを管理します。
 
 関連ドキュメント:

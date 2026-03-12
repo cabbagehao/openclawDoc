@@ -7,9 +7,6 @@ title: "Doctor"
 x-i18n:
   source_hash: "814e0719a170ef7c9fc43358e1fda1f3646f3f8dfa3214654354aab60c0fde2c"
 ---
-
-# Doctor
-
 `openclaw doctor` は、OpenClaw の修復および移行（マイグレーション）用ツールです。古くなった構成設定や状態を修正し、ヘルスチェックを実行して、具体的な修復手順を提示します。
 
 ## クイックスタート

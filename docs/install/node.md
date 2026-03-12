@@ -6,9 +6,6 @@ read_when:
   - "OpenClaw をインストールしたが `openclaw` コマンドが見つからない場合"
   - "npm install -g が権限や PATH の問題で失敗する場合"
 ---
-
-# Node.js
-
 OpenClaw には **Node 22 以降** が必要です。[インストーラースクリプト](/install#install-methods) は Node を自動検出して導入しますが、このページは、Node を手動でセットアップし、バージョン、PATH、グローバルインストールが正しく揃っているか確認したい場合のガイドです。
 
 ## バージョンの確認

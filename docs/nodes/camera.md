@@ -7,9 +7,6 @@ title: "Camera Capture"
 x-i18n:
   source_hash: "30b1beaac9602ff29733f72b953065f271928743c8fff03191a007e8b965c88d"
 ---
-
-# Camera capture (agent)
-
 OpenClaw は、エージェントワークフロー向けに **camera capture** をサポートしています。
 
 - **iOS node**（Gateway 経由でペアリング）: `node.invoke` で **写真**（`jpg`）または **短い動画クリップ**（`mp4`、音声は任意）を取得できます

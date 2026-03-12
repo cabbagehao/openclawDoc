@@ -6,9 +6,6 @@ read_when:
   - すべてを固定して宣言的に管理したい場合
 title: "Nix"
 ---
-
-# Nix インストール
-
 Nix で OpenClaw を使う場合の推奨手段は、**[nix-openclaw](https://github.com/openclaw/nix-openclaw)** を利用する方法です。必要なものが一通り揃った Home Manager モジュールとして提供されています。
 
 ## クイックスタート

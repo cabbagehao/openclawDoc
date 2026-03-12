@@ -6,9 +6,6 @@ title: "Image and Media Support"
 x-i18n:
   source_hash: "971aed398ea01078efbad7a8a4bca17f2a975222a2c4db557565e4334c9450e0"
 ---
-
-# Image & Media Support — 2025-12-05
-
 WhatsApp チャンネルは **Baileys Web** で動作します。この文書では、送信、gateway、エージェント返信における現在のメディア処理ルールを整理します。
 
 ## 目標

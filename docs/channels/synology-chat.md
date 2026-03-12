@@ -7,9 +7,6 @@ title: "Synology Chat"
 x-i18n:
   source_hash: "65cdf3be3fbf0652e201428d71e0ebd00dc6ab41f7e54c60b8f8019b4aeb12cf"
 ---
-
-# Synology Chat (プラグイン)
-
 ステータス: Synology Chat webhook を使用したダイレクトメッセージチャネルとして、プラグイン経由でサポートされています。
 このプラグインは、Synology Chat の送信（Outgoing）webhook からのインバウンドメッセージを受け取り、Synology Chat の受信（Incoming）webhook を介して返信を送信します。
 

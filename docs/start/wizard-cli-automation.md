@@ -6,9 +6,6 @@ read_when:
 title: "CLI 自動化"
 sidebarTitle: "CLI 自動化"
 ---
-
-# CLI 自動化 (CLI Automation)
-
 `openclaw onboard` を自動化するには `--non-interactive` を使用します。
 
 <Note>

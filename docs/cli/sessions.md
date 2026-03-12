@@ -6,9 +6,6 @@ title: "sessions"
 x-i18n:
   source_hash: "e609bd7f303cc74977d12caae6a8af9fa4c16537fae6294c970bb80e3e472f18"
 ---
-
-# `openclaw sessions`
-
 保存されている会話セッションを一覧表示します。
 
 ```bash

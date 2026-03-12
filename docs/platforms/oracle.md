@@ -8,9 +8,6 @@ title: "Oracle Cloud"
 x-i18n:
   source_hash: "8ec927ab5055c915fda464458f85bfb96151967c3b7cd1b1fd2b2f156110fc6d"
 ---
-
-# Oracle Cloud（OCI）上の OpenClaw
-
 ## 目標
 
 Oracle Cloud の **Always Free** ARM 枠で、常時稼働する OpenClaw ゲートウェイを運用します。

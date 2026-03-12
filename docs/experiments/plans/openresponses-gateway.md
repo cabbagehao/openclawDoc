@@ -10,9 +10,6 @@ title: "OpenResponses ゲートウェイ計画"
 x-i18n:
   source_hash: "c112e9eb5077ff7c88b1bd1b28d57f0526280207211e1f19ada88ebf212b51d1"
 ---
-
-# OpenResponses ゲートウェイ統合計画
-
 ## コンテキスト
 
 OpenClaw Gateway は現在、最小限の OpenAI 互換 Chat Completions エンドポイントを `/v1/chat/completions` で公開しています。詳細は [OpenAI Chat Completions](/gateway/openai-http-api) を参照してください。

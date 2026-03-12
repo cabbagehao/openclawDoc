@@ -7,9 +7,6 @@ title: "Qianfan"
 x-i18n:
   source_hash: "2ca710b422f190b65d23db51a3219f0abd67074fb385251efeca6eae095d02e0"
 ---
-
-# Qianfan Provider Guide
-
 Qianfan は Baidu の MaaS プラットフォームです。単一の endpoint と API キーの背後で多数のモデルへリクエストをルーティングする**統合 API**を提供します。OpenAI 互換であるため、多くの OpenAI SDK は base URL を切り替えるだけで利用できます。
 
 ## 前提条件

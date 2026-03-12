@@ -7,9 +7,6 @@ title: "hooks"
 x-i18n:
   source_hash: "c9de9c21e7e474dc19753e2bed326510df02a3c8cd70c0cc0e0c54112230756a"
 ---
-
-# `openclaw hooks`
-
 エージェントフック（`/new`、`/reset`、ゲートウェイの起動などのイベントに基づいて実行される自動化スクリプト）を管理します。
 
 関連ドキュメント:

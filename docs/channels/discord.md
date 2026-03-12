@@ -6,9 +6,6 @@ title: "Discord"
 x-i18n:
   source_hash: "62001ac1c2832bc2321787bbdb97e40240dc9478b7b4f024434e299d580f763c"
 ---
-
-# Discord (Bot API)
-
 ステータス: 公式 Discord ゲートウェイ経由で、DM とギルドチャンネルに対応しています。
 
 <CardGroup cols={3}>

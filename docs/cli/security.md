@@ -7,9 +7,6 @@ title: "security"
 x-i18n:
   source_hash: "0f3a5c6f9847962056fd68c3fe4aa49d8613734e32ac6d7a82a61163b4748fee"
 ---
-
-# `openclaw security`
-
 セキュリティツール（監査およびオプションの自動修正）を提供します。
 
 関連ドキュメント:

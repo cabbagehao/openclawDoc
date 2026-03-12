@@ -7,9 +7,6 @@ title: "acp"
 x-i18n:
   source_hash: "dfc8230568ae37649a303d532dc332f73b5d69a3358ae7b68a872c7d1614ec7f"
 ---
-
-# acp
-
 OpenClaw ゲートウェイと通信する [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) ブリッジを実行します。
 
 このコマンドは、IDE 等との標準入出力を介した ACP 通信を行い、プロンプトを WebSocket 経由でゲートウェイに転送します。ACP セッションとゲートウェイのセッションキーのマッピングを維持します。

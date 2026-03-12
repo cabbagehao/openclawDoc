@@ -7,9 +7,6 @@ title: "Discord 非同期インバウンドワーカー計画"
 x-i18n:
   source_hash: "7d1a5892b9b833fd68f383ace5ee0f7c054cc8f842e7933cfae1c3ce112d0455"
 ---
-
-# Discord 非同期インバウンドワーカー計画
-
 ## 目的
 
 インバウンド（受信）の Discord ターンを非同期化することで、Discord リスナーのタイムアウトによる失敗を解消します:

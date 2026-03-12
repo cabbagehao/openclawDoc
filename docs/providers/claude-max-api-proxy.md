@@ -8,9 +8,6 @@ title: "Claude Max API Proxy"
 x-i18n:
   source_hash: "f1e379025bd26798973e6eff790a4c88835a8d5e3032abcef300d45fdf81afb9"
 ---
-
-# Claude Max API Proxy
-
 **claude-max-api-proxy** は、Claude Max / Pro subscription を OpenAI 互換 API endpoint として公開するコミュニティ製ツールです。これにより、OpenAI API 形式をサポートする任意のツールから Claude subscription を利用できます。
 
 <Warning>

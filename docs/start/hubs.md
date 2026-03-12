@@ -11,9 +11,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:49:54.776Z"
 ---
-
-# ドキュメントハブ
-
 <Note>
 OpenClawが初めての方は、[はじめに](/start/getting-started)から始めてください。
 </Note>

@@ -8,9 +8,6 @@ title: "テスト"
 x-i18n:
   source_hash: "0ae8b68d1649d80f9d9fe515415e66b706629532b5b8aadbfb31512e250835cd"
 ---
-
-# テスト
-
 OpenClaw には、Vitest ベースの 3 つのスイート (unit/integration、e2e、live) と、少数の Docker ランナーがあります。
 
 このページは、「どのようにテストするか」を説明するガイドです。

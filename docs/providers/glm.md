@@ -7,9 +7,6 @@ title: "GLM Models"
 x-i18n:
   source_hash: "11d3a0189a0a8033dd4dd1c5a6d7d8de0cd0d1b629b677ed05a37562ca61d2f8"
 ---
-
-# GLM models
-
 GLM は **モデル ファミリー** であり、企業名ではありません。Z.AI platform から提供されており、OpenClaw では `zai` provider と `zai/glm-5` のような model ID を通じて利用します。
 
 ## CLI セットアップ

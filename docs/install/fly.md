@@ -6,9 +6,6 @@ read_when:
   - OpenClaw を Fly.io にデプロイする場合
   - Fly のボリューム、シークレット、および初回実行時の設定を行う場合
 ---
-
-# Fly.io へのデプロイ
-
 **目標:** 永続ストレージ、自動 HTTPS、Discord などのチャネル接続を備えた [Fly.io](https://fly.io) マシン上で OpenClaw ゲートウェイを実行することです。
 
 ## 必要なもの

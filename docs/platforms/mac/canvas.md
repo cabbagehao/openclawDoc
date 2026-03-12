@@ -8,9 +8,6 @@ title: "Canvas"
 x-i18n:
   source_hash: "b6c71763d693264d943e570a852208cce69fc469976b2a1cdd9e39e2550534c1"
 ---
-
-# Canvas（macOS アプリ）
-
 macOS アプリには、`WKWebView` を使ったエージェント制御の **Canvas パネル**が組み込まれています。これは HTML / CSS / JS、A2UI、小規模なインタラクティブ UI を扱うための軽量なビジュアル ワークスペースです。
 
 ## Canvas の保存場所

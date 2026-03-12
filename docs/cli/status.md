@@ -7,9 +7,6 @@ title: "status"
 x-i18n:
   source_hash: "7c0050b01ed5c9027e4eb274048ca6e40ae042805896585edc48ca5edfbce2f0"
 ---
-
-# `openclaw status`
-
 チャネルおよびセッションの状態に関する診断情報を表示します。
 
 ```bash

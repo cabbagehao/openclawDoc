@@ -7,9 +7,6 @@ title: "ミストラル"
 x-i18n:
   source_hash: "4f3efe060cbaeb14e20439ade040e57d27e7d98fb9dd06e657f6a69ae808f24f"
 ---
-
-# ミストラル
-
 OpenClaw は、テキスト/イメージ モデル ルーティング (`mistral/...`) と、
 メディア理解における Voxtral を介した音声転写。
 Mistral はメモリ埋め込みにも使用できます (`memorySearch.provider = "mistral"`)。

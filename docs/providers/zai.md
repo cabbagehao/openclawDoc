@@ -7,9 +7,6 @@ title: "Z.AI"
 x-i18n:
   source_hash: "e3db40cb27b48179b7eaf5fb8fadaec6340f99616f199df44ffbb79372c53659"
 ---
-
-# Z.AI
-
 Z.AI は **GLM** モデル向けの API プラットフォームです。GLM 用の REST API を提供し、認証には API キーを使用します。API キーは Z.AI Console で作成します。OpenClaw では `zai` provider と Z.AI API キーを使って利用します。
 
 ## CLI セットアップ

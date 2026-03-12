@@ -8,9 +8,6 @@ x-i18n:
   source_path: "providers/models.md"
   source_hash: "76b3fce65756fbb2598ea592ab97e257f72246f0476b7ed3e7d6018a9f75778b"
 ---
-
-# モデルプロバイダー
-
 OpenClaw は多くの LLM プロバイダーを利用できます。1 つ選んで認証し、既定モデルを `provider/model` 形式で設定してください。
 
 ## クイックスタート (2 ステップ)

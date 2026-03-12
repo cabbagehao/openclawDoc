@@ -7,9 +7,6 @@ title: "Platforms"
 x-i18n:
   source_hash: "653f395598b9558cb15b58ab42ed931dba47c70780be1c803d33dd795bad6503"
 ---
-
-# Platforms
-
 OpenClaw core は TypeScript 製で、**推奨ランタイムは Node** です。Bun は Gateway には推奨されません（WhatsApp / Telegram 周りに既知の不具合があります）。
 
 companion app は macOS（menu bar app）と mobile node（iOS / Android）向けに提供されています。Windows と Linux の companion app は今後対応予定ですが、Gateway 自体はすでに完全サポートされています。Windows 向け native companion app も計画中で、Gateway は現時点では WSL2 経由の利用を推奨します。

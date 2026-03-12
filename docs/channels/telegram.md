@@ -6,9 +6,6 @@ title: "Telegram"
 x-i18n:
   source_hash: "bf7d861c40280b172e13ce6d1778e9ebe6a5441c0d7ad0f09506cbbc5b1afd7d"
 ---
-
-# テレグラム（ボットAPI）
-
 ステータス: grammY を介したボット DM + グループの運用準備が整っています。ロングポーリングがデフォルトのモードです。 Webhook モードはオプションです。
 
 <CardGroup cols={3}>

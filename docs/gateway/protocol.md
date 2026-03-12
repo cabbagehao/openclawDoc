@@ -8,9 +8,6 @@ title: "ゲートウェイプロトコル"
 x-i18n:
   source_hash: "d0d110acae55813c5d8c126d95912e5ca145910b05d9a01a9a53822830cc8cd6"
 ---
-
-# ゲートウェイプロトコル (WebSocket)
-
 ゲートウェイの WebSocket (WS) プロトコルは、OpenClaw における **統合されたコントロールプレーンおよびノード通信路** です。すべてのクライアント（CLI、Web UI、macOS アプリ、iOS/Android ノード、ヘッドレスノード）は WebSocket 経由で接続し、接続確立（ハンドシェイク）時に自身の **ロール (Role)** と **スコープ (Scope)** を宣言します。
 
 ## 通信方式（トランスポート）

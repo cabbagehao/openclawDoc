@@ -11,9 +11,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:49:54.083Z"
 ---
-
-# OpenClaw 🦞
-
 <p align="center">
     <img
         src="/assets/openclaw-logo-text-dark.png"

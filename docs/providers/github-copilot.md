@@ -7,9 +7,6 @@ title: "GitHub Copilot"
 x-i18n:
   source_hash: "503e0496d92c921e2f7111b1b4ba16374f5b781643bfbc6cb69cea97d9395c25"
 ---
-
-# GitHub Copilot
-
 ## GitHub Copilot とは
 
 GitHub Copilot は GitHub の AI コーディング アシスタントです。GitHub アカウントと契約プランに応じて Copilot モデルへアクセスできます。OpenClaw では、Copilot を 2 通りの方法で model provider として利用できます。

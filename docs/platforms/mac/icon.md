@@ -6,9 +6,6 @@ title: "メニュー バー アイコン"
 x-i18n:
   source_hash: "a67a6e6bbdc2b611ba365d3be3dd83f9e24025d02366bc35ffcce9f0b121872b"
 ---
-
-# メニューバー アイコンの状態
-
 Author: steipete · Updated: 2025-12-06 · Scope: macOS app (`apps/macos`)
 
 - **Idle:** 通常時のアイコン アニメーションです。まばたきを行い、ときどき軽く揺れます。

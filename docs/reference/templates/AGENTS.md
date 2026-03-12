@@ -6,9 +6,6 @@ read_when:
 x-i18n:
   source_hash: "ede171764b5443af3dabf9dd511c1952e64cd4b11d61346f2bda56923bbebb78"
 ---
-
-# AGENTS.md - ワークスペース
-
 このフォルダーがホームです。そのように扱ってください。
 
 ## 最初の実行

@@ -6,9 +6,6 @@ title: "Audio and Voice Notes"
 x-i18n:
   source_hash: "c694fd66dde1fad196da5addd6533d7b7874f3cfa5f266f4ee0253996fc7e600"
 ---
-
-# Audio / Voice Notes — 2026-01-17
-
 ## 現在できること
 
 - **メディア理解（音声）**: 音声理解が有効、または自動検出された場合、OpenClaw は次の順で処理します。

@@ -7,9 +7,6 @@ title: "Signal"
 x-i18n:
   source_hash: "524d9868f138d46495bb9518b0cbb9c6ef6174248552377a8a659d616501a394"
 ---
-
-# Signal (signal-cli)
-
 ステータス: 外部 CLI 連携。ゲートウェイは HTTP JSON-RPC + SSE 経由で `signal-cli` と通信します。
 
 ## 前提条件

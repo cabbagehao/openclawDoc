@@ -6,9 +6,6 @@ read_when:
 status: experimental
 title: "Broadcast Groups"
 ---
-
-# Broadcast Groups
-
 **ステータス:** 実験的<br />
 **バージョン:** 2026.1.9 で追加
 

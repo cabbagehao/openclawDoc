@@ -7,9 +7,6 @@ title: "nodes"
 x-i18n:
   source_hash: "2b9767046159c0e30c51fce179d2f87365a6f2a8f7e04cf8b2111308d0f44d0c"
 ---
-
-# `openclaw nodes`
-
 ペアリング済みのノード（デバイス）を管理し、ノードの機能を呼び出します。
 
 関連ドキュメント:

@@ -8,9 +8,6 @@ title: "Nodes"
 x-i18n:
   source_hash: "e41328845dfec03dbd9e31b90482ec2cd7aad57491e1aa413bf674eadc58d310"
 ---
-
-# Nodes
-
 **node** は companion device（macOS / iOS / Android / headless）であり、`role: "node"` を使って Gateway の **WebSocket**（operator と同じポート）へ接続し、`node.invoke` 経由で command surface（例: `canvas.*`、`camera.*`、`device.*`、`notifications.*`、`system.*`）を公開します。protocol の詳細は [Gateway protocol](/gateway/protocol) を参照してください。
 
 legacy transport は [Bridge protocol](/gateway/bridge-protocol) です（TCP JSONL。現行 node では deprecated / removed）。

@@ -7,9 +7,6 @@ title: "USER.md - ユーザープロファイル"
 x-i18n:
   source_hash: "f78f58bdbef10afbba0bc2673832eaa12e0c26270906d04a56584d5620af6fdf"
 ---
-
-# USER.md - ユーザープロファイル
-
 - **名前:** クロードリビューターズ
 - **優先アドレス:** They/Them (集合)
 - **代名詞:** 彼ら/彼ら

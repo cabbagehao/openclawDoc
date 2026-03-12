@@ -7,9 +7,6 @@ title: "オラマ"
 x-i18n:
   source_hash: "bdd202620fbdb26db54a45554ec4c33910bde53dd37da5729ab60bb57fbccedf"
 ---
-
-# オラマ
-
 Ollama は、マシン上でオープンソース モデルを簡単に実行できるようにするローカル LLM ランタイムです。 OpenClaw は Ollama のネイティブ API (`/api/chat`) と統合し、ストリーミングとツール呼び出しをサポートし、`OLLAMA_API_KEY` (または認証プロファイル) でオプトインし、明示的な `models.providers.ollama` エントリを定義しない場合、**ツール対応モデルを自動検出**できます。
 
 <Warning>

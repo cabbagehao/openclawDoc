@@ -7,9 +7,6 @@ title: "update"
 x-i18n:
   source_hash: "f0ab6c4d21952fc637f91e245bcacfe99e18d79d2782076b3bfba35ba4fc4300"
 ---
-
-# `openclaw update`
-
 OpenClaw を安全にアップデートし、stable（安定版）、beta（ベータ版）、dev（開発版）の各チャンネルを切り替えます。
 
 **npm** または **pnpm** を使用してインストールした場合（グローバルインストールで git メタデータがない場合）、アップデートは [アップデートガイド](/install/updating) に記載されているパッケージマネージャーのフローに従って行われます。

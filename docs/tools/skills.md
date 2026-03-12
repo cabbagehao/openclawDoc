@@ -7,9 +7,6 @@ title: "スキル"
 x-i18n:
   source_hash: "b1088c2daabb12bffc1511aa3d3c06d389fb054092ed5aff8f8bf30cbf11236c"
 ---
-
-# スキル (OpenClaw)
-
 OpenClaw は、**[AgentSkills](https://agentskills.io) 互換** スキル フォルダーを使用して、エージェントにツールの使用方法を教えます。各スキルは、YAML フロントマターと命令を含む `SKILL.md` を含むディレクトリです。 OpenClaw は、**バンドルされたスキル** とオプションのローカル オーバーライドをロードし、環境、構成、バイナリの存在に基づいてロード時にそれらをフィルタリングします。
 
 ## 場所と優先順位

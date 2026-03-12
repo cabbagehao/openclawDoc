@@ -8,9 +8,6 @@ title: "モデル CLI"
 x-i18n:
   source_hash: "f1cd7e092e0f722bb0109873d52dbdaba87bfd74a2b4199371f43488c9dce2e4"
 ---
-
-# モデル CLI
-
 認証プロファイルの切り替え、クールダウン、およびフォールバックとの連携については、[モデルフェイルオーバー](/concepts/model-failover) を参照してください。
 プロバイダーの概要と構成例については、[モデルプロバイダー](/concepts/model-providers) を参照してください。
 

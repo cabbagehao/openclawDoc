@@ -6,9 +6,6 @@ title: "Twitch"
 x-i18n:
   source_hash: "4fa7daa11d1e5ed43c9a8f9f7092809bf2c643838fc5b0c8df27449e430796dc"
 ---
-
-# Twitch (プラグイン)
-
 IRC 接続を介した Twitch チャットのサポートです。OpenClaw は Twitch ユーザー（ボットアカウント）として接続し、指定したチャネルでメッセージの送受信を行います。
 
 ## プラグインが必要

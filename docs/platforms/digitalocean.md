@@ -7,9 +7,6 @@ title: "DigitalOcean"
 x-i18n:
   source_hash: "a927c4d61f30b94db1c624ccebfc950f7050ab1b425efc60542f0bc4c629af8b"
 ---
-
-# OpenClaw on DigitalOcean
-
 ## 目標
 
 DigitalOcean 上で、**月額 6 ドル**（予約価格なら 4 ドル程度）で常時稼働する OpenClaw Gateway を動かします。

@@ -7,9 +7,6 @@ title: "エヌビディア"
 x-i18n:
   source_hash: "81e7a1b6cd6821b68db9c71b864d36023b1ccfad1641bf88e2bc2957782edf8b"
 ---
-
-# エヌビディア
-
 NVIDIA は、Nemotron および NeMo モデル用の OpenAI 互換 API を `https://integrate.api.nvidia.com/v1` で提供しています。 [NVIDIA NGC](https://catalog.ngc.nvidia.com/) の API キーを使用して認証します。
 
 ## CLI セットアップ

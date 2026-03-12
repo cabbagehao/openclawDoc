@@ -7,9 +7,6 @@ title: "AGENTS.md - OpenClaw ワークスペース"
 x-i18n:
   source_hash: "3bb17ab484f02c6d08546ad4f8356d5c5b0c0e86cc4d03022734109e85dd26dc"
 ---
-
-# AGENTS.md - OpenClaw ワークスペース
-
 このフォルダーはアシスタントの作業ディレクトリです。
 
 ## 最初の実行 (1 回限り)

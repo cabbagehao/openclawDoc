@@ -7,9 +7,6 @@ title: "音声通話プラグイン"
 x-i18n:
   source_hash: "5417fbfcdca2ed10a1e478715604cdc4e9fdace2fa0d50924e6a1da58d604444"
 ---
-
-# Voice Call（plugin）
-
 このプラグインは、OpenClaw に音声通話機能を追加します。発信通知と、着信ポリシーを伴う複数ターンの会話をサポートします。
 
 現在利用できる provider:

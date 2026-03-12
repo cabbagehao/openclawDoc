@@ -8,9 +8,6 @@ title: "ウェブツール"
 x-i18n:
   source_hash: "1903be38c22f514b117d0577b2dedcb55338b98432137635ad52b0b1a5e624e5"
 ---
-
-# Webツール
-
 OpenClaw には、次の 2 つの軽量 Web ツールが付属しています。
 
 - `web_search` — Brave Search API、Google 検索グラウンディングを備えた Gemini、Grok、Kimi、または Perplexity Search API を使用して Web を検索します。

@@ -12,9 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T06:38:11.999Z"
 ---
-
-# iMessage (legacy: imsg)
-
 <Warning>
 新規の iMessage 構成では <a href="/channels/bluebubbles">BlueBubbles</a> を使ってください。
 

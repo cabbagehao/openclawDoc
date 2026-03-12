@@ -7,9 +7,6 @@ title: "message"
 x-i18n:
   source_hash: "41b8483f92051e5ac96eff1887fa03a1c1158876a54a2ae2fdbfb2322bdc98d8"
 ---
-
-# `openclaw message`
-
 メッセージの送信およびチャネル固有のアクション（Discord, Google Chat, Slack, Mattermost, Telegram, WhatsApp, Signal, iMessage, MS Teams）を一括して管理するためのアウトバウンド用コマンドです。
 
 ## 使用法

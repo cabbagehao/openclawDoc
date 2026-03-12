@@ -8,9 +8,6 @@ title: "Chrome拡張機能"
 x-i18n:
   source_hash: "7ecc9356e7fce6edd6b12a4ae117339ef404c292466dc28052852a3dd644b51d"
 ---
-
-# Chrome 拡張機能 (ブラウザリレー)
-
 OpenClaw Chrome 拡張機能を使用すると、エージェントは、openclaw で管理される個別の Chrome プロファイルを起動する代わりに、**既存の Chrome タブ** (通常の Chrome ウィンドウ) を制御できるようになります。
 
 **単一の Chrome ツールバー ボタン**を使用して接続/切断が行われます。

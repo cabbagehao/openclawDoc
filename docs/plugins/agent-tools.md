@@ -7,9 +7,6 @@ title: "プラグイン エージェント ツール"
 x-i18n:
   source_hash: "4479462e9d8b17b664bf6b5f424f2efc8e7bedeaabfdb6a93126e051e635c659"
 ---
-
-# Plugin agent tools
-
 OpenClaw のプラグインは、エージェント実行時に LLM へ公開される **agent tool**（JSON Schema ベースの関数）を登録できます。ツールは **required**（常に利用可能）にも **optional**（opt-in）にもできます。
 
 agent tool は、メイン設定の `tools`、またはエージェントごとの `agents.list[].tools` で制御します。どのツールをエージェントが呼び出せるかは、allowlist / denylist ポリシーによって決まります。

@@ -7,9 +7,6 @@ title: "Amazon Bedrock"
 x-i18n:
   source_hash: "73b0472f571ee6eb9c1b0d851ce94208914f2fa24eacc3b92a571aeb162dbca8"
 ---
-
-# Amazon Bedrock
-
 OpenClaw は、pi-ai の **Bedrock Converse** streaming provider を介して **Amazon Bedrock** モデルを利用できます。Bedrock 認証では API キーではなく、**AWS SDK の default credential chain** を使用します。
 
 ## pi-ai がサポートする内容

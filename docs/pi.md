@@ -5,9 +5,6 @@ read_when:
   - OpenClaw における Pi SDK 統合設計を理解したいとき
   - Pi 向けのエージェントのセッションライフサイクル、ツール、またはプロバイダー接続を変更するとき
 ---
-
-# Pi 統合アーキテクチャ
-
 このドキュメントでは、OpenClaw が [pi-coding-agent](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent) と、その関連パッケージである `pi-ai`、`pi-agent-core`、`pi-tui` をどのように統合し、AI エージェント機能を実装しているかを説明します。
 
 ## 概要

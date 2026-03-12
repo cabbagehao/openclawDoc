@@ -7,9 +7,6 @@ title: "uninstall"
 x-i18n:
   source_hash: "5a82cdcb2a7254f87edd3c6678e4c35f00c805971c705610149cbb2ff48b29a4"
 ---
-
-# `openclaw uninstall`
-
 ゲートウェイサービスおよびローカルデータをアンインストールします（CLI 自体は削除されません）。
 
 ```bash

@@ -7,9 +7,6 @@ title: "Location Command"
 x-i18n:
   source_hash: "5c691cfe147b0b9b16b3a4984d544c168a46b37f91d55b82b2507407d2011529"
 ---
-
-# Location command (nodes)
-
 ## TL;DR
 
 - `location.get` は node command（`node.invoke` 経由）

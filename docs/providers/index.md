@@ -7,9 +7,6 @@ title: "モデル プロバイダー"
 x-i18n:
   source_hash: "4d17e6399e5b0a8c7e4cb3b4678ec75aa61225a37c65bf3d6884c1d35d229466"
 ---
-
-# Model Providers
-
 OpenClaw は多数の LLM provider を利用できます。provider を選び、認証を済ませたうえで、既定モデルを `provider/model` 形式で設定します。
 
 チャット用 channel の説明 (WhatsApp / Telegram / Discord / Slack / Mattermost (plugin) など) を探している場合は、[Channels](/channels) を参照してください。

@@ -6,9 +6,6 @@ title: "agents"
 x-i18n:
   source_hash: "b6a6b7b9ac330a6eb35dbbb6c080fcca621b6310983534fe7ad10b90e7f0c38c"
 ---
-
-# `openclaw agents`
-
 ワークスペース、認証、ルーティングが分離された個別のエージェントを管理します。
 
 関連ドキュメント:

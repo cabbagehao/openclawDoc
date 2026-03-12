@@ -7,9 +7,6 @@ title: "DNS"
 x-i18n:
   source_hash: "d2011e41982ffb4b71ab98211574529bc1c8b7769ab1838abddd593f42b12380"
 ---
-
-# `openclaw dns`
-
 広域検出のための DNS ヘルパー (Tailscale + CoreDNS)。現在は macOS + Homebrew CoreDNS に重点を置いています。
 
 関連:

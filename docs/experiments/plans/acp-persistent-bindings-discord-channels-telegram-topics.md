@@ -2,9 +2,6 @@
 summary: "Discord チャネルと Telegram フォーラムトピックを長寿命 ACP セッションへ結び付ける永続バインディング計画"
 title: "Discord チャネルおよび Telegram トピック向けの ACP 永続バインディング"
 ---
-
-# Discord チャネルおよび Telegram トピック向けの ACP 永続バインディング
-
 ステータス: 草案
 
 ## 概要

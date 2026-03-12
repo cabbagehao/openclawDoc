@@ -7,9 +7,6 @@ title: "Windows（WSL2）"
 x-i18n:
   source_hash: "0732bb1719830ea088a86d9f4e2662d693fd6b3e256dcd3034d5ccdf3413035c"
 ---
-
-# Windows（WSL2）
-
 Windows 上の OpenClaw は、**WSL2 経由での利用を推奨**します（Ubuntu 推奨）。CLI とゲートウェイを Linux 内で動かすことで、ランタイムの整合性を保ちやすくなり、Node / Bun / pnpm、Linux バイナリ、skills などの互換性も高くなります。ネイティブ Windows より扱いやすく、`wsl --install` の 1 コマンドで完全な Linux 環境を導入できます。
 
 ネイティブ Windows companion app は今後対応予定です。

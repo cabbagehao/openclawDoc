@@ -7,9 +7,6 @@ title: "directory"
 x-i18n:
   source_hash: "7c878d9013aeaa22c8a21563fac30b465a86be85d8c917c5d4591b5c3d4b2025"
 ---
-
-# `openclaw directory`
-
 ディレクトリ検索に対応しているチャネルにおいて、連絡先（ピア）、グループ、および自分自身の情報を検索します。
 
 ## よく使われるフラグ

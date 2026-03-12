@@ -7,9 +7,6 @@ title: "シャオミ MiMo"
 x-i18n:
   source_hash: "366fd2297b2caf8c5ad944d7f1b6d233b248fe43aedd22a28352ae7f370d2435"
 ---
-
-# シャオミミモ
-
 Xiaomi MiMo は **MiMo** モデル用の API プラットフォームです。と互換性のある REST API を提供します。
 OpenAI と Anthropic は認証に API キーをフォーマットし、使用します。 API キーを作成します
 [Xiaomi MiMo コンソール](https://platform.xiaomimimo.com/#/console/api-keys)。 OpenClaw の用途

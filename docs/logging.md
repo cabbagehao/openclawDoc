@@ -8,9 +8,6 @@ title: "Logging"
 x-i18n:
   source_hash: "11907b8364e374c6eb1f157f380c2c14aced3053ef28c0f90e732ab475c21f93"
 ---
-
-# Logging
-
 OpenClaw のログは 2 か所に出力されます。
 
 - **ファイルログ**: ゲートウェイが書き込む JSON Lines 形式のログ

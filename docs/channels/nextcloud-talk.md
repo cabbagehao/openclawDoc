@@ -6,9 +6,6 @@ title: "Nextcloud Talk"
 x-i18n:
   source_hash: "2769144221e41391fc903a8a9289165fb9ffcc795dd54615e5009f1d6f48df3f"
 ---
-
-# Nextcloud Talk (プラグイン)
-
 ステータス: プラグイン (webhook ボット) 経由でサポートされています。ダイレクトメッセージ、ルーム、リアクション、および Markdown メッセージがサポートされています。
 
 ## プラグインが必要

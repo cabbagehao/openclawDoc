@@ -8,9 +8,6 @@ title: "ムーンショットAI"
 x-i18n:
   source_hash: "fb44b0d1213834934aac9b049193104d65fe01dbedc73558495d3cc8a1d3b6bf"
 ---
-
-# ムーンショットAI(キミ)
-
 Moonshot は、OpenAI 互換エンドポイントを備えた Kim API を提供します。を設定します。
 プロバイダーを選択し、デフォルトのモデルを `moonshot/kimi-k2.5` に設定するか、使用します
 `kimi-coding/k2p5` を使用したキミ コーディング。

@@ -6,9 +6,6 @@ title: "思考レベル"
 x-i18n:
   source_hash: "8553ee7532439b0c61346679a95063049c9430e6bf5307012154bb9735bed961"
 ---
-
-# 思考レベル (/think ディレクティブ)
-
 ## 何をするのか
 
 - 受信本文内のインライン ディレクティブ: `/t <level>`、`/think:<level>`、または `/thinking <level>`。

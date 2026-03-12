@@ -9,9 +9,6 @@ title: "OAuth"
 x-i18n:
   source_hash: "976668c3e02ee50500fcaaa585a89af718398dc41988318ec3a583c2d5449df3"
 ---
-
-# OAuth
-
 OpenClaw は、対応しているプロバイダー（特に **OpenAI Codex (ChatGPT OAuth)**）において、OAuth 経由のサブスクリプション認証をサポートしています。Anthropic のサブスクリプション利用には **setup-token** フローを使用します。Anthropic のサブスクリプションを Claude Code 以外で利用することは、過去に一部のユーザーで制限された事例があるため、リスクを理解した上で自己責任で利用し、最新のポリシーを確認してください。OpenAI Codex OAuth は、OpenClaw のような外部ツールでの利用が明示的にサポートされています。
 
 本番環境での Anthropic 利用においては、サブスクリプションベースの setup-token よりも、API キーによる認証の方が安全であり、推奨されるパスです。

@@ -7,9 +7,6 @@ title: "OpenAI"
 x-i18n:
   source_hash: "3b28e56807133a82747d1d874181c75d9ae3d2430b1e8b486738fe09b6e46e70"
 ---
-
-# OpenAI
-
 OpenAI は、GPT モデル用の開発者 API を提供します。 Codex はサブスクリプションの **ChatGPT サインイン**をサポートします
 使用量ベースのアクセスの場合は、**API キー** サインインにアクセスします。 Codex クラウドには ChatGPT サインインが必要です。
 OpenAI は、OpenClaw などの外部ツール/ワークフローでのサブスクリプション OAuth の使用を明示的にサポートしています。

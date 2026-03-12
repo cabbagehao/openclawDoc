@@ -7,9 +7,6 @@ title: "OpenRouter"
 x-i18n:
   source_hash: "b7e29fc9c456c64d567dd909a85166e6dea8388ebd22155a31e69c970e081586"
 ---
-
-# OpenRouter
-
 OpenRouter は、単一の endpoint と API キーの背後で多数のモデルへリクエストをルーティングする**統合 API**を提供します。OpenAI 互換であるため、多くの OpenAI SDK は base URL を切り替えるだけで利用できます。
 
 ## CLI セットアップ

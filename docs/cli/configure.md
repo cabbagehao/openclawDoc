@@ -6,9 +6,6 @@ title: "configure"
 x-i18n:
   source_hash: "2df6bce0bf8c02cca7cdc28d6d28f3e32dd52329c54438c7b4fb7a236e105fa4"
 ---
-
-# `openclaw configure`
-
 認証情報、デバイス、およびエージェントのデフォルト設定を行うための対話形式のプロンプトです。
 
 補足: **Model** セクションには、`agents.defaults.models` の許可リスト（`/model` コマンドやモデル選択ツールに表示されるモデル）の複数選択機能が含まれています。

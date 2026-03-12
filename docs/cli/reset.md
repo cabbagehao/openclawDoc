@@ -7,9 +7,6 @@ title: "リセット"
 x-i18n:
   source_hash: "76e808ce44da49603504aacf92e67ea4af427f0ed9081684b24fb7d3f3922cd5"
 ---
-
-# `openclaw reset`
-
 ローカルの設定/状態をリセットします (CLI のインストールを維持します)。
 
 ```bash

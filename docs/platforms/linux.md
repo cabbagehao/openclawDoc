@@ -7,9 +7,6 @@ title: "Linux App"
 x-i18n:
   source_hash: "93b8250cd1267004a3342c8119462d0442af96704f9b3be250d8ee1eeeb7d4cd"
 ---
-
-# Linux App
-
 Gateway は Linux で完全サポートされています。**推奨ランタイムは Node** です。Bun は Gateway には推奨されません（WhatsApp / Telegram 周りに既知の不具合があります）。
 
 native Linux companion app は今後対応予定です。構築に協力したい場合は contribution を歓迎します。

@@ -10,9 +10,6 @@ title: "ACPエージェント"
 x-i18n:
   source_hash: "52f8793716668a9f3a333a8787aab2a9e5d55015c505176b0add674017b07179"
 ---
-
-# ACP エージェント
-
 [エージェント クライアント プロトコル (ACP)](https://agentclientprotocol.com/) セッションにより、OpenClaw は ACP バックエンド プラグインを通じて外部コーディング ハーネス (Pi、Claude Code、Codex、OpenCode、Gemini CLI など) を実行できます。
 
 OpenClaw に平易な言葉で「これを Codex で実行する」または「Claude Code をスレッドで開始する」ように要求した場合、OpenClaw はそのリクエストを ACP ランタイム (ネイティブ サブエージェント ランタイムではない) にルーティングする必要があります。

@@ -5,9 +5,6 @@ read_when:
   - ツールポリシーの適用が必要な自動化を構築する場合
 title: "Tools Invoke API"
 ---
-
-# Tools Invoke (HTTP)
-
 OpenClawのゲートウェイは、単一のツールを直接呼び出すためのシンプルなHTTPエンドポイントを公開しています。この機能は常に有効ですが、ゲートウェイ認証とツールポリシーによって制限されます。
 
 - `POST /tools/invoke`

@@ -5,9 +5,6 @@ read_when:
   - 自前の VPS を立てずにリモートの Control UI へアクセスしたい
 title: "exe.dev"
 ---
-
-# exe.dev
-
 目的は、exe.dev の VM 上で OpenClaw ゲートウェイを動かし、手元の PC から `https://<vm-name>.exe.xyz` で到達できるようにすることです。
 
 このページでは、exe.dev 既定の **exeuntu** イメージを前提にしています。別のディストリビューションを選んだ場合は、パッケージ名などを適宜読み替えてください。

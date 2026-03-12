@@ -8,9 +8,6 @@ status: active
 x-i18n:
   source_hash: "6e1186f26c77e188206ce5e198ab624d6b38bc7bb7c06e4d2281b6935c39e347"
 ---
-
-# サンドボックス CLI
-
 エージェントを分離して実行するための Docker ベースのサンドボックスコンテナを管理します。
 
 ## 概要

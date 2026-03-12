@@ -6,9 +6,6 @@ title: "Slack"
 x-i18n:
   source_hash: "be99246c8d9235549e030416966b72b5db1d7d111364d35aeb2ae2760e66dc1e"
 ---
-
-# Slack
-
 ステータス: Slack アプリ連携を介した DM およびチャネルでの利用が可能です。デフォルトはソケットモード（Socket Mode）ですが、HTTP イベント API モードもサポートされています。
 
 <CardGroup cols={3}>

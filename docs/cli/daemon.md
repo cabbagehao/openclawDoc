@@ -7,9 +7,6 @@ title: "daemon"
 x-i18n:
   source_hash: "b67f116e565b9f69967d95e5eac8ddc8d818f195b0d7d610e0997cf504edcfb7"
 ---
-
-# `openclaw daemon`
-
 ゲートウェイのサービス管理コマンド用のレガシーな別名（エイリアス）です。
 
 `openclaw daemon ...` は、`openclaw gateway ...` のサービス制御コマンドと同じ機能を実行します。

@@ -7,9 +7,6 @@ title: "プラグイン"
 x-i18n:
   source_hash: "3e2a92dcf47a441a026ac65faf9f0de123171b6753c3897f950e3db2a0d750f1"
 ---
-
-# `openclaw plugins`
-
 ゲートウェイのプラグイン/拡張機能を管理します (プロセス中にロードされます)。
 
 関連:

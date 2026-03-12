@@ -6,9 +6,6 @@ read_when:
   - macOS での iMessage の設定
 title: "BlueBubbles"
 ---
-
-# BlueBubbles (macOS REST)
-
 ステータス: HTTP 経由で BlueBubbles の macOS サーバーと通信する同梱プラグインです。レガシーな `imsg` チャンネルより API が充実しており、導入も簡単なため、**iMessage 連携にはこちらを推奨**します。
 
 ## 概要

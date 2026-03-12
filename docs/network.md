@@ -8,9 +8,6 @@ title: "Network"
 x-i18n:
   source_hash: "6a0d5080db73de4c21d9bf376059f6c4a26ab129c8280ce6b1f54fa9ace48beb"
 ---
-
-# ネットワークハブ
-
 このハブでは、OpenClaw が localhost、LAN、tailnet をまたいでデバイスと接続し、ペアリングし、安全性を確保するための中核ドキュメントをまとめています。
 
 ## コアモデル

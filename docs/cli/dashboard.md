@@ -7,9 +7,6 @@ title: "dashboard"
 x-i18n:
   source_hash: "a34cd109a3803e2910fcb4d32f2588aa205a4933819829ef5598f0780f586c94"
 ---
-
-# `openclaw dashboard`
-
 現在の認証情報を使用してコントロール UI を開きます。
 
 ```bash

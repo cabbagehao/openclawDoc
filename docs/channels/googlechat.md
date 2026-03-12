@@ -6,9 +6,6 @@ title: "Google Chat"
 x-i18n:
   source_hash: "63af1b6326be96cc47be45e90bafefe3465195c2dedff4ed1c19bf07bd2f8f80"
 ---
-
-# Google Chat (Chat API)
-
 ステータス: Google Chat API の webhook 経由で DM とスペースに対応しています (HTTP のみ)。
 
 ## Quick setup (beginner)

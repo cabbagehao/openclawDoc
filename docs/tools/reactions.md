@@ -6,9 +6,6 @@ title: "Reactions"
 x-i18n:
   source_hash: "db7aae38b5f7a53cd1ef58545c5fd66238f89240f09e6acc775bac24dbcbbca1"
 ---
-
-# リアクションツール
-
 チャネルをまたいで共通するリアクションの意味は次のとおりです。
 
 - リアクションを追加する場合、`emoji` は必須です

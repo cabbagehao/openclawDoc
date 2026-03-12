@@ -6,9 +6,6 @@ title: "ワッツアップ"
 x-i18n:
   source_hash: "94934ae5c4bd637170ed849e2e5fdcb840124347657b5646a573cc450ee5682f"
 ---
-
-# WhatsApp (Web チャネル)
-
 ステータス: WhatsApp Web (Baileys) 経由で実稼働準備完了。ゲートウェイはリンクされたセッションを所有します。
 
 <CardGroup cols={3}>

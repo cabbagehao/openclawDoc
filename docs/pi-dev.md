@@ -12,9 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:49:41.210Z"
 ---
-
-# Pi Development Workflow
-
 このガイドは、OpenClaw における pi 統合の作業で使う、実用的な開発フローをまとめたものです。
 
 ## 型チェックと lint

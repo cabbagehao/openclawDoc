@@ -9,9 +9,6 @@ title: "Hetzner"
 x-i18n:
   source_hash: "97339c7ddb8b9007fa51bb5c31b1fe5d2b1e190239216df3bd83ed8859f5dae1"
 ---
-
-# Hetzner 上の OpenClaw (Docker、本番 VPS ガイド)
-
 ## 目標
 
 Hetzner の VPS 上で Docker を使って、状態が永続化され、必要なバイナリをビルド時に組み込み、安全に再起動できる OpenClaw ゲートウェイを常時稼働させます。

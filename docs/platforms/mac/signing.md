@@ -6,9 +6,6 @@ title: "macOS の署名"
 x-i18n:
   source_hash: "403b92f9a0ecdb7cb42ec097c684b7a696be3696d6eece747314a4dc90d8797e"
 ---
-
-# mac signing (debug builds)
-
 このアプリは通常 [`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) からビルドします。このスクリプトは現在、次の処理を行います。
 
 - 安定した debug 用 bundle identifier `ai.openclaw.mac.debug` を設定します。

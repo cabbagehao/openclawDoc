@@ -7,9 +7,6 @@ title: "qr"
 x-i18n:
   source_hash: "1ca1f1bd3812f105a7fd62d90004ecbdeeaa5894470e6d981e4fc7534157c1d6"
 ---
-
-# `openclaw qr`
-
 現在のゲートウェイ構成に基づいて、iOS アプリのペアリング用 QR コードとセットアップコードを生成します。
 
 ## 使用法

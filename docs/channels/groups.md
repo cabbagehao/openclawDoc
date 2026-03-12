@@ -6,9 +6,6 @@ title: "Groups"
 x-i18n:
   source_hash: "3464d9d4f283ea437a6e4ac3984df163f44715c51469e449241bf7a4d9ba6332"
 ---
-
-# Groups
-
 OpenClaw は、WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams、Zalo など、複数のサーフェスにまたがってグループチャットを一貫した考え方で扱います。
 
 ## Beginner intro (2 minutes)

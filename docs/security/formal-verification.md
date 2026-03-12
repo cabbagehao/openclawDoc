@@ -8,9 +8,6 @@ permalink: /security/formal-verification/
 x-i18n:
   source_hash: "b576c7437f598eba41c3e8c644eac801113437c8292ddddf25df67bac504a576"
 ---
-
-# 正式な検証 (セキュリティ モデル)
-
 このページでは、OpenClaw の **正式なセキュリティ モデル** (現在は TLA+/TLC、必要に応じて追加) を追跡します。
 
 > 注: 一部の古いリンクでは、以前のプロジェクト名が参照されている場合があります。

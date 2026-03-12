@@ -6,9 +6,6 @@ title: "health"
 x-i18n:
   source_hash: "82a78a5a97123f7a5736699ae8d793592a736f336c5caced9eba06d14d973fd7"
 ---
-
-# `openclaw health`
-
 稼働中のゲートウェイからヘルスステータス（健全性情報）を取得します。
 
 ```bash

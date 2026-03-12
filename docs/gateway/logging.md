@@ -7,9 +7,6 @@ title: "ロギング"
 x-i18n:
   source_hash: "efb8eda5e77e3809369a8ff569fac110323a86b3945797093f20e9bc98f39b2e"
 ---
-
-# ロギング
-
 ユーザー向けの概要（CLI、コントロール UI、構成設定）については、[/logging](/logging) を参照してください。
 
 OpenClaw には 2 つのログ「出力先（サーフェス）」があります:

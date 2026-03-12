@@ -7,9 +7,6 @@ read_when:
   - ローカルとホスト型の macOS VM オプションを比較したい場合
 title: "macOS VMs"
 ---
-
-# macOS VM 上の OpenClaw (サンドボックス化)
-
 ## 推奨されるデフォルト (ほとんどのユーザー向け)
 
 - **小規模な Linux VPS**: 低コストで常時稼働するゲートウェイを用意したい場合。[VPS hosting](/vps) を参照してください。

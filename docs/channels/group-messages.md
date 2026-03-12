@@ -11,9 +11,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T06:36:49.684Z"
 ---
-
-# Group messages (WhatsApp web channel)
-
 目的: Clawd を WhatsApp グループに参加させ、必要なときだけ起動し、そのスレッドを個人 DM セッションから分離して扱えるようにすることです。
 
 注: `agents.list[].groupChat.mentionPatterns` は現在、Telegram、Discord、Slack、iMessage でも使われています。このページでは WhatsApp 固有の挙動に絞って説明します。マルチエージェント構成では、エージェントごとに `agents.list[].groupChat.mentionPatterns` を設定してください。グローバルなフォールバックとして `messages.groupChat.mentionPatterns` も利用できます。

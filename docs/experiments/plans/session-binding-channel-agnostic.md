@@ -10,9 +10,6 @@ title: "Session Binding Channel Agnostic 計画"
 x-i18n:
   source_hash: "9bf79098053da3d7a28ec4f7fe8289b5c39462c23b5ca1420a83ffb02191c7cd"
 ---
-
-# Session Binding Channel Agnostic 計画
-
 ## 概要
 
 この文書では、長期的に採用するチャネル非依存の session binding モデルと、次の実装イテレーションで扱う具体的な範囲を定義します。

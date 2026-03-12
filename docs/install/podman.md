@@ -4,9 +4,6 @@ read_when:
   - Docker の代わりに Podman を使ったコンテナ化ゲートウェイが必要な場合
 title: "Podman"
 ---
-
-# Podman
-
 **ルートレス** Podman コンテナで OpenClaw ゲートウェイを実行します。使用するイメージは Docker と同じで、リポジトリの [Dockerfile](https://github.com/openclaw/openclaw/blob/main/Dockerfile) からビルドします。
 
 ## 要件

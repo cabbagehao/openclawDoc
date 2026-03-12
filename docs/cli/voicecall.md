@@ -7,9 +7,6 @@ title: "音声通話"
 x-i18n:
   source_hash: "2c99e7a3d256e1c74a0f07faba9675cc5a88b1eb2fc6e22993caf3874d4f340a"
 ---
-
-# `openclaw voicecall`
-
 `voicecall` はプラグインが提供するコマンドです。これは、音声通話プラグインがインストールされ有効になっている場合にのみ表示されます。
 
 主なドキュメント:

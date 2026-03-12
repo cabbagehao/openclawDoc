@@ -8,9 +8,6 @@ title: "Ansible"
 x-i18n:
   source_hash: "b1e1e1ea13bff37b22bc58dad4b15a2233c6492771403dff364c738504aa7159"
 ---
-
-# Ansible インストール
-
 OpenClaw を本番サーバーへデプロイする推奨手段は、**[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** を使う方法です。これは、セキュリティを優先した設計の自動インストーラーです。
 
 ## クイックスタート

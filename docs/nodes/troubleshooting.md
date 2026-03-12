@@ -7,9 +7,6 @@ title: "Node Troubleshooting"
 x-i18n:
   source_hash: "d5c053beb8b9ce9b63085ac2bb00f83ce3f046b78f9ee85c225c650742991adc"
 ---
-
-# Node troubleshooting
-
 status 上では node が見えているのに、node tool が失敗する場合はこのページを使ってください。
 
 ## コマンドラダー

@@ -13,9 +13,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:54:25.000Z"
 ---
-
-# cron ジョブ（ゲートウェイスケジューラ）
-
 > **cron と heartbeat はどう使い分けるべきですか？** 判断の目安は [Cron vs Heartbeat](/automation/cron-vs-heartbeat) を参照してください。
 
 cron はゲートウェイに組み込まれたスケジューラです。ジョブを永続化し、適切なタイミングでエージェントを起動し、必要に応じて出力をチャットへ返せます。

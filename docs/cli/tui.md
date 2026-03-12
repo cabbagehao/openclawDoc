@@ -7,9 +7,6 @@ title: "tui"
 x-i18n:
   source_hash: "60e35062c0551f85ce0da604a915b3e1ca2514d00d840afe3b94c529304c2c1a"
 ---
-
-# `openclaw tui`
-
 ゲートウェイに接続して対話を行うターミナル UI（TUI）を開きます。
 
 関連ドキュメント:

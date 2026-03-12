@@ -7,9 +7,6 @@ title: "クウェン"
 x-i18n:
   source_hash: "88b88e224e2fecbb1ca26e24fbccdbe25609be40b38335d0451343a5da53fdd4"
 ---
-
-# クウェン
-
 Qwen は、Qwen Coder および Qwen Vision モデルに無料層 OAuth フローを提供します
 (1 日あたり 2,000 リクエスト、Qwen のレート制限の対象となります)。
 

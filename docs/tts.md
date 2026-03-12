@@ -8,9 +8,6 @@ title: "テキスト読み上げ"
 x-i18n:
   source_hash: "02dbaf88bae62e0815c19121ee0469deb6ddb620f5c58b0a09bf17133837c7b5"
 ---
-
-# テキスト読み上げ (TTS)
-
 OpenClaw は、イレブンラボ、OpenAI、または Edge TTS を使用して、アウトバウンド返信を音声に変換できます。
 OpenClaw が音声を送信できる場所ならどこでも機能します。 Telegram には丸い音声メモのバブルが表示されます。
 

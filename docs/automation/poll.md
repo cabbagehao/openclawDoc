@@ -12,9 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T05:51:25.864Z"
 ---
-
-# 投票
-
 ## 対応チャンネル
 
 - Telegram

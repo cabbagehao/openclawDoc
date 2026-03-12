@@ -5,9 +5,6 @@ read_when:
   - "`PERPLEXITY_API_KEY` または `OPENROUTER_API_KEY` の設定が必要なとき"
 title: "Perplexity Search"
 ---
-
-# Perplexity Search API
-
 OpenClaw は `web_search` provider として Perplexity Search API をサポートしています。返されるのは `title`、`url`、`snippet` を含む構造化結果です。
 
 互換性のため、OpenClaw は legacy の Perplexity Sonar / OpenRouter 構成もサポートしています。`OPENROUTER_API_KEY` を使う場合、`tools.web.search.perplexity.apiKey` に `sk-or-...` 形式の key を設定した場合、または `tools.web.search.perplexity.baseUrl` / `model` を設定した場合、provider は chat-completions 経路へ切り替わり、構造化された Search API 結果ではなく、引用付きの AI 合成回答を返します。

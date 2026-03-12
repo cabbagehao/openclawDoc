@@ -6,9 +6,6 @@ title: "OpenAI 互換 HTTP API"
 x-i18n:
   source_hash: "e12f1b5dacbd5a6fe6fe5304dc6a84f56312c57d4b88db5037b1863a8e0edd65"
 ---
-
-# OpenAI 互換 HTTP API
-
 OpenClaw ゲートウェイは、OpenAI 互換の最小限の Chat Completions エンドポイントを提供できます。
 
 このエンドポイントは **デフォルトで無効** になっています。利用するには、まず構成ファイルで有効にする必要があります。

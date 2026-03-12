@@ -5,9 +5,6 @@ read_when:
   - ブラウザControl UIと設定編集が必要な場合
 title: "Web"
 ---
-
-# Web (Gateway)
-
 Gatewayは、Gateway WebSocketと同じポートから小さな**ブラウザControl UI**（Vite + Lit）を提供します:
 
 - デフォルト: `http://<host>:18789/`

@@ -7,9 +7,6 @@ title: "Hugging Face（Inference）"
 x-i18n:
   source_hash: "e7ba5cb533f652ba9bb514ab8c5ffbd50170077ac0005555915405c109198a4f"
 ---
-
-# Hugging Face（Inference）
-
 [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers) は、単一の router API を通じて OpenAI 互換の chat completions を提供します。1 つの token で DeepSeek、Llama など多数のモデルへアクセスできます。OpenClaw は **OpenAI 互換 endpoint** を利用します（chat completions のみ）。text-to-image、embeddings、speech を使いたい場合は、[HF inference clients](https://huggingface.co/docs/api-inference/quicktour) を直接利用してください。
 
 - Provider: `huggingface`

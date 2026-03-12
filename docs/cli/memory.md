@@ -7,9 +7,6 @@ title: "memory"
 x-i18n:
   source_hash: "a5b73731b37e1d3f6d0ddb17d58077a76d85d531ead51f59611e254d94337ba0"
 ---
-
-# `openclaw memory`
-
 セマンティック記憶（Semantic Memory）のインデックス管理と検索を行います。
 この機能は現在有効な記憶プラグイン（デフォルトは `memory-core`）によって提供されます。無効にする場合は、構成で `plugins.slots.memory = "none"` を設定してください。
 

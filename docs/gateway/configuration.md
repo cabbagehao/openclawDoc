@@ -8,9 +8,6 @@ title: "構成"
 x-i18n:
   source_hash: "f152f06f31bc06b527d9c28ab1a914879312827aeef69b077b6816f499196e97"
 ---
-
-# 設定
-
 OpenClaw は、オプションの <Tooltip tip="JSON5 supports comments and trailing commas">**JSON5**</Tooltip> 構成を `~/.openclaw/openclaw.json` から読み取ります。
 
 ファイルが見つからない場合、OpenClaw は安全なデフォルトを使用します。構成を追加する一般的な理由:

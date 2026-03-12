@@ -6,9 +6,6 @@ title: "ボイスウェイク"
 x-i18n:
   source_hash: "f6440bb89f349ba5c1c9aacffe95e568681beb9899ca736dedfe2f4a366cb5e4"
 ---
-
-# 音声ウェイクとプッシュトゥトーク
-
 ## モード
 
 - **ウェイクワード モード** (既定): 常時オンの Speech recognizer がトリガー語 (`swabbleTriggerWords`) を待機します。一致するとキャプチャを開始し、部分テキスト付きのオーバーレイを表示し、無音後に自動送信します。

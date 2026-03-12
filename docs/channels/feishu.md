@@ -7,9 +7,6 @@ title: Feishu
 x-i18n:
   source_hash: "da86292f422fef1945309c89a6daa5768974284a936778f082c085d40acc0f52"
 ---
-
-# Feishu bot
-
 Feishu (Lark) は、企業でのメッセージングやコラボレーションに使われるチームチャットプラットフォームです。このプラグインは、Feishu / Lark の WebSocket イベントサブスクリプションを使って OpenClaw をボットへ接続します。そのため、公開 webhook URL を外部へ公開せずにメッセージを受信できます。
 
 ---

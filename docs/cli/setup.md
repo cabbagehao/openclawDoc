@@ -7,9 +7,6 @@ title: "設定"
 x-i18n:
   source_hash: "7f3fc8b246924edf48501785be2c0d356bd31bfbb133e75a139a5ee41dbf57f4"
 ---
-
-# `openclaw setup`
-
 `~/.openclaw/openclaw.json` とエージェント ワークスペースを初期化します。
 
 関連:

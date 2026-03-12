@@ -8,9 +8,6 @@ title: "SecretRef 資格情報表面"
 x-i18n:
   source_hash: "836ed5867601d359f966eca357ebcf675bff06d52f046ca47e7a79d3ee5f0b9a"
 ---
-
-# SecretRef 資格情報サーフェス
-
 このページは、正規の SecretRef 資格情報サーフェスを定義します。
 
 スコープの意図:

@@ -6,9 +6,6 @@ read_when:
 title: "CLI オンボーディングリファレンス"
 sidebarTitle: "CLI リファレンス"
 ---
-
-# CLI オンボーディングリファレンス (CLI Onboarding Reference)
-
 このページは `openclaw onboard` の完全なリファレンスです。
 簡単なガイドについては、[オンボーディングウィザード (CLI)](/start/wizard) を参照してください。
 

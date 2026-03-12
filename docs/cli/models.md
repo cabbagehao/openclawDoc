@@ -7,9 +7,6 @@ title: "models"
 x-i18n:
   source_hash: "ada94faade0a50a0e450cfab9675d6d1a8f1c3015f7a6f29f540f30367b301df"
 ---
-
-# `openclaw models`
-
 モデルの検出、スキャン、および構成（デフォルトモデル、フォールバック、認証プロファイル）を管理します。
 
 関連ドキュメント:

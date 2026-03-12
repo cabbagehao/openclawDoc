@@ -7,9 +7,6 @@ title: "completion"
 x-i18n:
   source_hash: "7bbf140a880bafdb7140149f85465d66d0d46e5a3da6a1e41fb78be2fd2bd4d0"
 ---
-
-# `openclaw completion`
-
 シェル補完スクリプトを生成し、オプションでシェルプロファイルにインストールします。
 
 ## 使用法

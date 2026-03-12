@@ -8,9 +8,6 @@ title: "secrets"
 x-i18n:
   source_hash: "e73d70ca4d7aba0f4698384e8b9c79ce9b458456a30a73b8dc244529b676c8ed"
 ---
-
-# `openclaw secrets`
-
 `openclaw secrets` コマンドを使用して SecretRef を管理し、稼働中のスナップショットを安全な状態に保ちます。
 
 ## 各サブコマンドの役割

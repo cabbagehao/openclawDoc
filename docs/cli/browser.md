@@ -8,9 +8,6 @@ title: "browser"
 x-i18n:
   source_hash: "af35adfd68726fd519c704d046451effd330458c2b8305e713137fb07b2571fd"
 ---
-
-# `openclaw browser`
-
 OpenClaw のブラウザ制御サーバーを管理し、ブラウザ操作（タブ管理、スナップショット取得、スクリーンショット、ナビゲーション、クリック、入力など）を実行します。
 
 関連ドキュメント:

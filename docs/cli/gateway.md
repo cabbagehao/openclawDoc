@@ -8,9 +8,6 @@ title: "ゲートウェイ"
 x-i18n:
   source_hash: "6777ffdef99e09b54bd495e40cb3fee336a511addfed509f715dfe5e8001bddf"
 ---
-
-# ゲートウェイ CLI
-
 ゲートウェイは OpenClaw の WebSocket サーバー (チャネル、ノード、セッション、フック) です。
 
 このページのサブコマンドは `openclaw gateway …` の下にあります。

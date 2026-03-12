@@ -6,9 +6,6 @@ title: "ウェブチャット"
 x-i18n:
   source_hash: "18739c0332e9a78e78d51275b3f5f55e267c9b11316a79bf38ac95b7d3f3bdd1"
 ---
-
-# WebChat (ゲートウェイ WebSocket UI)
-
 ステータス: macOS/iOS SwiftUI チャット UI はゲートウェイ WebSocket と直接通信します。
 
 ## それは何ですか

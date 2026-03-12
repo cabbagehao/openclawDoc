@@ -7,9 +7,6 @@ title: "Webhook"
 x-i18n:
   source_hash: "785ec62afe6631b340ce4a4541ceb34cd6b97704cf7a9889762cb4c1f29a5ca0"
 ---
-
-# `openclaw webhooks`
-
 Webhook ヘルパーと統合 (Gmail Pub/Sub、Webhook ヘルパー)。
 
 関連:

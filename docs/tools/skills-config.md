@@ -7,9 +7,6 @@ title: "スキル構成"
 x-i18n:
   source_hash: "6f00565595d7ab01892e45e38152c2f81220db6b1c998b2fdc49ec1cf4d7dcf4"
 ---
-
-# スキル構成
-
 すべてのスキル関連の構成は、`~/.openclaw/openclaw.json` の `skills` の下に存在します。
 
 ```json5

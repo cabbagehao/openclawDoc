@@ -7,9 +7,6 @@ title: "node"
 x-i18n:
   source_hash: "cf901108417a08df7293e7f2542b424057fcb8e4e12455d39895e4c8d4cfaee6"
 ---
-
-# `openclaw node`
-
 ゲートウェイの WebSocket に接続し、このマシン上で `system.run` や `system.which` 機能を公開する**ヘッドレスノードホスト**を実行します。
 
 ## ノードホストを利用する理由

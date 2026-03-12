@@ -10,9 +10,6 @@ title: "ブラウザ Evaluate の CDP リファクタリング"
 x-i18n:
   source_hash: "7176b8e2d41c3114657e57262938089635c7dbb3617c20ac796c2f8957e9dac2"
 ---
-
-# ブラウザ Evaluate の CDP リファクタリング計画
-
 ## 背景
 
 `act:evaluate` は、ページ内でユーザー指定の JavaScript を実行する機能です。現在は Playwright (`page.evaluate` または `locator.evaluate`) 経由で実行されています。Playwright はページごとに CDP コマンドをシリアル化（直列化）するため、evaluate がスタックしたり長時間実行されたりすると、そのページのコマンドキューがブロックされ、その後の操作がすべて「スタック」したように見えてしまいます。

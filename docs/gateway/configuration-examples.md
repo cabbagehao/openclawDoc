@@ -8,9 +8,6 @@ title: "構成例"
 x-i18n:
   source_hash: "bf3ebaf29b2ea19c84d0e1dee5ae35da81ec61f46abbf17bd024836aa4907b5c"
 ---
-
-# 構成例
-
 以下の例は、現在の構成スキーマに準拠しています。すべての項目の詳細なリファレンスとフィールドごとの説明については、[構成](/gateway/configuration) を参照してください。
 
 ## クイックスタート

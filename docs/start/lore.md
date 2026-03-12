@@ -4,9 +4,6 @@ read_when:
   - ロアを参照するドキュメントやUXコピーを作成する場合
 title: "OpenClaw Lore"
 ---
-
-# The Lore of OpenClaw 🦞📖
-
 _ロブスター、脱皮する殻、そして多すぎるトークンについての物語。_
 
 ## 起源の物語 (The Origin Story)

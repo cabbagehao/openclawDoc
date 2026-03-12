@@ -7,9 +7,6 @@ title: "devices"
 x-i18n:
   source_hash: "efcc88d20e64556eb06158a8fd5e5c785e9c31421c2a89353d136a6578dc1d1d"
 ---
-
-# `openclaw devices`
-
 デバイスのペアリング要求と、デバイススコープのトークンを管理します。
 
 ## コマンド一覧

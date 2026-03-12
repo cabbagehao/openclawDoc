@@ -6,9 +6,6 @@ title: "タイピングインジケーター"
 x-i18n:
   source_hash: "8ee82d02829c4ff58462be8bf5bb52f23f519aeda816c2fd8a583e7a317a2e98"
 ---
-
-# タイピングインジケーター
-
 OpenClaw はエージェントが実行されている間、チャットチャネルに対してタイピングインジケーター（「入力中...」の表示）を送信します。`agents.defaults.typingMode` を使用して入力開始の **タイミング** を、`typingIntervalSeconds` を使用して更新の **頻度** を制御できます。
 
 ## デフォルト設定

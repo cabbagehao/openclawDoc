@@ -7,9 +7,6 @@ title: "OpenCode Zen"
 x-i18n:
   source_hash: "b3b5c640ac32f3177f6f4ffce766f3f57ff75c6ca918822c817d9a18f680be8f"
 ---
-
-# OpenCode Zen
-
 OpenCode Zen は、OpenCode チームがコーディング エージェント向けに推奨する**厳選モデル一覧**です。
 API キーと `opencode` provider を使う、任意のホスト型モデル アクセス経路として利用できます。
 Zen は現在 beta です。
