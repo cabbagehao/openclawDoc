@@ -48,6 +48,10 @@
   },
   "redirects": [
     {
+      "source": "/5f8a9e1d2c3b4a5f6e7d8c9b0a1f2e3d.txt",
+      "destination": "/assets/5f8a9e1d2c3b4a5f6e7d8c9b0a1f2e3d.txt"
+    },
+    {
       "source": "/messages",
       "destination": "/concepts/messages"
     },

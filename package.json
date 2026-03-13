@@ -21,11 +21,12 @@
     "format:docs": "node scripts/docs-format-targets.mjs | xargs oxfmt --write",
     "format:docs:check": "node scripts/docs-format-targets.mjs | xargs oxfmt --check",
     "lint:docs": "pnpm dlx markdownlint-cli2",
-    "lint:docs:fix": "pnpm dlx markdownlint-cli2 --fix"
+    "lint:docs:fix": "pnpm dlx markdownlint-cli2 --fix",
+    "docs:indexnow": "tsx scripts/submit-indexnow.ts"
   },
   "devDependencies": {
     "@mariozechner/pi-coding-agent": "^0.57.1",
     "oxfmt": "0.36.0",
     "tsx": "^4.21.0"
   }
-}
+}\n
