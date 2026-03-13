@@ -11,34 +11,33 @@
 </p>
 
 <p align="center">
-  <a href="https://openclawdoc.org/">Official Japanese Docs</a> •
-  <a href="https://docs.openclaw.ai">Official Docs (EN/ZH)</a> •
-  <a href="https://github.com/openclaw/openclaw">Official GitHub</a>
+  <a href="https://openclawdoc.org/">Official Japanese Portal</a> •
+  <a href="https://github.com/openclaw/openclaw">Official GitHub</a> •
+  <a href="https://docs.openclaw.ai">Multilingual Docs (EN/ZH)</a>
 </p>
 
 ---
 
-This repository hosts the official 1:1 Japanese translation of the OpenClaw documentation. Our goal is to provide the Japanese developer community with high-quality, technically accurate localized content.
+This repository hosts the official 1:1 Japanese translation for OpenClaw. We aim to provide the Japanese developer community with high-quality, technically accurate, and SEO-optimized localized content.
 
-## 🌐 Official Japanese Portal
-For the best reading experience in Japanese, please visit:
+## 🌐 Official Japanese Documentation Portal
+For the most comprehensive Japanese documentation, visit:
 👉 **[OpenClaw Japanese Documentation (openclawdoc.org)](https://openclawdoc.org/)**
 
-This site is optimized for SEO and localized specifically for Japan, featuring detailed [OpenClaw installation guides](https://openclawdoc.org/install/index) and [technical references](https://openclawdoc.org/reference/rpc) in native Japanese.
+This portal provides specialized [setup tutorials](https://openclawdoc.org/start/getting-started) and [technical deep-dives](https://openclawdoc.org/reference/rpc) in native Japanese, designed to help developers deploy and maintain their OpenClaw gateways effectively.
 
-### Other Languages
-- For **English** and **Chinese** versions, please visit the official documentation at [docs.openclaw.ai](https://docs.openclaw.ai).
-- The original source code and documentation can be found at the [openclaw/openclaw](https://github.com/openclaw/openclaw) repository.
+## 📚 External Resources
+To provide additional value and enhance SEO, we provide the following resources:
+- **[GitHub Wiki](https://github.com/openclaw/openclawDocs/wiki)**: A community-driven knowledge base and FAQ.
+- **[GitHub Pages Portal](https://openclaw.github.io/openclawDocs/)**: A fast-loading entry point for quick access to the main documentation sections.
 
 ## 🛠 Translation Methodology
-We ensure the highest quality by combining advanced technology with expert review:
-
-- **1:1 Parity**: Every page is meticulously synced with the [official OpenClaw docs](https://docs.openclaw.ai), maintaining structure and logic.
-- **AI-Driven + Manual Correction**: We leverage state-of-the-art AI models for initial translation, followed by **rigorous manual proofreading** to ensure idiomatic phrasing and technical accuracy.
-- **Continuous Updates**: We track upstream changes daily to provide the Japanese community with the latest feature documentation and security updates.
+- **1:1 Parity**: Every document is strictly mapped from the official [English source](https://github.com/openclaw/openclaw/tree/main/docs).
+- **AI-Driven + Manual Correction**: We utilize advanced LLM models for initial translations, followed by **thorough manual review** by senior technical writers to ensure idiomatic phrasing and precision.
+- **Continuous Sync**: Automated tracking of upstream updates ensures our documentation is always current.
 
 ## 🚀 Local Development
-You can run and preview the documentation portal locally using the following commands:
+You can preview the documentation portal locally using [Mintlify](https://mintlify.com/).
 
 ### Prerequisites
 - Node.js 22+ & pnpm
@@ -52,17 +51,17 @@ pnpm install
 # Start the Mintlify dev server
 pnpm docs:dev
 
-# Run the i18n translation pipeline (Go-based)
+# Run the Go-based i18n translation pipeline
 pnpm docs:i18n -- -lang ja-JP <files...>
 ```
 
 ## 📂 Repository Structure
-- `docs/`: The translated Japanese content served to [openclawdoc.org](https://openclawdoc.org/).
-- `origin_docs/`: A reference mirror of the latest English source.
-- `scripts/`: Tooling for automated syncing and validation.
-- `.i18n/`: Japanese glossary terms and translation memory assets.
+- `docs/`: The localized Japanese content served to [openclawdoc.org](https://openclawdoc.org/).
+- `origin_docs/`: A mirror of the original English documentation.
+- `web-portal/`: Landing page content for GitHub Pages.
+- `wiki/`: Markdown source for the GitHub Wiki.
 
 ## 🤝 Contributing
-Found an error or have a better translation suggestion? We welcome contributions to improve the Japanese documentation! Please open a Pull Request or an Issue. 
+We welcome contributions to the Japanese localization! If you find a translation error or have a technical suggestion, please open a Pull Request or Issue.
 
-For core feature requests or bugs related to the OpenClaw gateway itself, please visit the [Main OpenClaw Repository](https://github.com/openclaw/openclaw).
+For core feature requests or bugs related to OpenClaw itself, please visit the [Main OpenClaw Repository](https://github.com/openclaw/openclaw).
