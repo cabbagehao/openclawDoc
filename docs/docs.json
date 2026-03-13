@@ -6,6 +6,13 @@
       "measurementId": "G-FQ5JB332BK"
     }
   },
+  "scripts": [
+    {
+      "src": "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4540467205535241",
+      "async": true,
+      "crossorigin": "anonymous"
+    }
+  ],
   "description": "WhatsApp、Telegram、Discord、iMessage などを AI コーディングエージェントへ接続するセルフホスト型 Gateway。自分のマシンで単一の Gateway を動かし、どこからでも AI アシスタントにメッセージできます。",
   "theme": "mint",
   "icons": {
