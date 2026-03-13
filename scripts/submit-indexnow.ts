@@ -3,7 +3,7 @@
 const DOMAIN = 'openclawdoc.org';
 // IMPORTANT: Replace this with your actual IndexNow key or generate one.
 // You must also ensure that `https://openclawdoc.org/<INDEXNOW_KEY>.txt` returns the key.
-const INDEXNOW_KEY = '5f8a9e1d2c3b4a5f6e7d8c9b0a1f2e3d'; 
+const INDEXNOW_KEY = '0d26611851fe418ce69a7c7a89bb6428'; 
 const INDEXNOW_KEY_FILENAME = `${INDEXNOW_KEY}.txt`;
 const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 
