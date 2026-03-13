@@ -1,74 +1,68 @@
-# OpenClaw Documentation Translations
+# OpenClaw Japanese Documentation Project
 
 <p align="center">
-  <a href="https://github.com/openclaw/openclaw">
-    <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/pixel-lobster.svg" width="120" height="120" alt="OpenClaw Logo">
+  <a href="https://openclawdoc.org/">
+    <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/pixel-lobster.svg" width="120" height="120" alt="OpenClaw Localization Logo">
   </a>
 </p>
 
 <p align="center">
-  <b>Official 1:1 translations of the OpenClaw documentation.</b>
+  <b>The dedicated Japanese community portal for the OpenClaw ecosystem.</b>
 </p>
 
 <p align="center">
-  <a href="https://openclaw.io">Official Website</a> •
-  <a href="https://docs.openclaw.io">Documentation</a> •
-  <a href="https://github.com/openclaw/openclaw">GitHub</a>
+  <a href="https://openclawdoc.org/">Official Japanese Docs</a> •
+  <a href="https://docs.openclaw.ai">Official Docs (EN/ZH)</a> •
+  <a href="https://github.com/openclaw/openclaw">Official GitHub</a>
 </p>
 
 ---
 
-This repository is a standalone workspace for maintaining the official translations of the [OpenClaw](https://github.com/openclaw/openclaw) documentation. We provide high-quality, localized content for global users, ensuring they have the same depth of information as the original English version.
+This repository hosts the official 1:1 Japanese translation of the OpenClaw documentation. Our goal is to provide the Japanese developer community with high-quality, technically accurate localized content.
 
-## Source & Accuracy
+## 🌐 Official Japanese Portal
+For the best reading experience in Japanese, please visit:
+👉 **[OpenClaw Japanese Documentation (openclawdoc.org)](https://openclawdoc.org/)**
 
-Our documentation is meticulously synced with the `docs/` folder in the official [openclaw/openclaw](https://github.com/openclaw/openclaw) repository.
+This site is optimized for SEO and localized specifically for Japan, featuring detailed [OpenClaw installation guides](https://openclawdoc.org/install/index) and [technical references](https://openclawdoc.org/reference/rpc) in native Japanese.
 
-- **1:1 Parity**: Every translated page corresponds directly to its English counterpart.
-- **AI-Driven Translation**: We leverage advanced AI models to generate initial translations.
-- **Manual Proofreading**: Every page undergoes a rigorous manual review process to ensure technical accuracy, correct terminology, and idiomatic phrasing.
+### Other Languages
+- For **English** and **Chinese** versions, please visit the official documentation at [docs.openclaw.ai](https://docs.openclaw.ai).
+- The original source code and documentation can be found at the [openclaw/openclaw](https://github.com/openclaw/openclaw) repository.
 
-## Supported Languages
+## 🛠 Translation Methodology
+We ensure the highest quality by combining advanced technology with expert review:
 
-- **Japanese (ja-JP)**: [View Japanese Docs](https://docs.openclaw.io/ja-JP)
-- **Simplified Chinese (zh-CN)**: [View Chinese Docs](https://docs.openclaw.io/zh-CN)
+- **1:1 Parity**: Every page is meticulously synced with the [official OpenClaw docs](https://docs.openclaw.ai), maintaining structure and logic.
+- **AI-Driven + Manual Correction**: We leverage state-of-the-art AI models for initial translation, followed by **rigorous manual proofreading** to ensure idiomatic phrasing and technical accuracy.
+- **Continuous Updates**: We track upstream changes daily to provide the Japanese community with the latest feature documentation and security updates.
 
-## Development & Setup
-
-This workspace allows you to run and preview the documentation site locally using [Mintlify](https://mintlify.com/).
+## 🚀 Local Development
+You can run and preview the documentation portal locally using the following commands:
 
 ### Prerequisites
+- Node.js 22+ & pnpm
+- [Mintlify CLI](https://mintlify.com/) (`npm i -g mintlify`)
 
-- **Node.js 22+**
-- **pnpm**
-- **Go** (for running the translation pipeline)
-- **Mintlify CLI** (`npm i -g mintlify`)
-
-### Commands
-
+### Usage
 ```bash
-# Install dependencies
+# Install local dependencies
 pnpm install
 
-# Start local development preview
+# Start the Mintlify dev server
 pnpm docs:dev
 
-# Run translation pipeline
-pnpm docs:i18n -- -lang <locale> <files...>
-
-# Lint and check links
-pnpm check:docs
+# Run the i18n translation pipeline (Go-based)
+pnpm docs:i18n -- -lang ja-JP <files...>
 ```
 
-## Repository Structure
+## 📂 Repository Structure
+- `docs/`: The translated Japanese content served to [openclawdoc.org](https://openclawdoc.org/).
+- `origin_docs/`: A reference mirror of the latest English source.
+- `scripts/`: Tooling for automated syncing and validation.
+- `.i18n/`: Japanese glossary terms and translation memory assets.
 
-- `docs/`: The user-facing documentation content.
-- `origin_docs/`: A reference copy of the original English documentation.
-- `scripts/`: Custom tooling for syncing, formatting, and translating the docs.
-- `.i18n/`: Glossary and translation memory assets.
+## 🤝 Contributing
+Found an error or have a better translation suggestion? We welcome contributions to improve the Japanese documentation! Please open a Pull Request or an Issue. 
 
-## Contributing
-
-We welcome contributions to improve our translations! If you find a technical error or an awkward phrasing, please open a Pull Request or an Issue in this repository.
-
-For core feature requests or bugs related to OpenClaw itself, please visit the [Main OpenClaw Repository](https://github.com/openclaw/openclaw).
+For core feature requests or bugs related to the OpenClaw gateway itself, please visit the [Main OpenClaw Repository](https://github.com/openclaw/openclaw).
