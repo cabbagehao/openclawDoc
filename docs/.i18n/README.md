@@ -14,7 +14,7 @@ This folder stores **generated** and **config** files for documentation translat
 ```json
 {
   "source": "troubleshooting",
-  "target": "故障排除",
+  "target": "Troubleshooting",
   "ignore_case": true,
   "whole_word": false
 }

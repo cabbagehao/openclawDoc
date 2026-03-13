@@ -1,7 +1,7 @@
-# OpenClaw 日语翻译检查与修复任务列表 (TODO)
+# OpenClaw Japanese Translation Review and Fix Task List (TODO)
 
-## 🔴 高优先级 (High Priority) - 核心入门与操作
-*关键页面，直接影响用户安装、配对和首次使用。*
+## 🔴 High Priority - Core Onboarding and Operations
+*Critical pages directly impacting installation, pairing, and first-time use.*
 
 - [x] **docs/channels/pairing.md** -> `docs/ja-JP/channels/pairing.md`
 - [x] **docs/channels/telegram.md** -> `docs/ja-JP/channels/telegram.md`
@@ -18,9 +18,8 @@
 - [x] **docs/start/getting-started.md** -> `docs/ja-JP/start/getting-started.md`
 - [x] **docs/start/wizard.md** -> `docs/ja-JP/start/wizard.md`
 
-## 📋 批量检查列表 (Batched Checklists)
-
-所有文档已按目录结构分批列出，便于分阶段进行翻译质量评估。
+## 📋 Batched Checklists
+All documents are listed by directory structure in batches for phased translation quality assessment.
 
 ### Batch 1 (20 files)
 - [x] **docs/ADDING_NEW_LANGUAGE.md** -> `docs/ja-JP/ADDING_NEW_LANGUAGE.md`
@@ -396,8 +395,8 @@
 - [ ] **docs/web/webchat.md** -> `docs/ja-JP/web/webchat.md`
 
 ---
-**核对标准：**
-1. **术语准确性**：禁止机械翻译专有名词（如 Mattermost -> 最重要）。
-2. **语气地道**：使用标准的 `です/ます` 敬体，避免第一人称（我/我们）在文档中出现。
-3. **技术逻辑**：确保代码块中的参数、环境变量名称未被错误翻译。
-4. **MDX 语法**：确保所有 `$` 符号被正确处理，防止 LaTeX 报错。
+**Review Standards:**
+1. **Terminology Accuracy**: Do not mechanically translate proper nouns (e.g., Mattermost -> Most Important).
+2. **Idiomatic Tone**: Use standard polite form (desu/masu); avoid first-person pronouns (I/we).
+3. **Technical Logic**: Ensure parameters and environment variable names in code blocks are not incorrectly translated.
+4. **MDX Syntax**: Ensure all $ symbols are correctly handled to prevent LaTeX errors.

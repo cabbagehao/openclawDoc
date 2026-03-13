@@ -1,118 +1,74 @@
-# OpenClaw Docs Workspace
+# OpenClaw Documentation Translations
 
-This directory is a standalone workspace for running and maintaining the OpenClaw documentation site without the rest of the main repository.
+<p align="center">
+  <a href="https://github.com/openclaw/openclaw">
+    <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/pixel-lobster.svg" width="120" height="120" alt="OpenClaw Logo">
+  </a>
+</p>
 
-## Repository Scope
+<p align="center">
+  <b>Official 1:1 translations of the OpenClaw documentation.</b>
+</p>
 
-This repository is for the public-facing OpenClaw documentation site.
+<p align="center">
+  <a href="https://openclaw.io">Official Website</a> •
+  <a href="https://docs.openclaw.io">Documentation</a> •
+  <a href="https://github.com/openclaw/openclaw">GitHub</a>
+</p>
 
-- `docs/` contains the user-facing documentation content served by the docs site.
-- Do not add development notes, debugging logs, migration scratchpads, or other process/internal working documents under `docs/`.
-- If you need temporary or internal documentation for development work, keep it outside `docs/`.
+---
 
-## Setup
+This repository is a standalone workspace for maintaining the official translations of the [OpenClaw](https://github.com/openclaw/openclaw) documentation. We provide high-quality, localized content for global users, ensuring they have the same depth of information as the original English version.
 
-Runtime requirements:
+## Source & Accuracy
 
-- Node 22+
-- `mint` installed and working
-- `pnpm`
-- Go, if you want to run the translation pipeline
+Our documentation is meticulously synced with the `docs/` folder in the official [openclaw/openclaw](https://github.com/openclaw/openclaw) repository.
 
-Install the local Node tooling:
+- **1:1 Parity**: Every translated page corresponds directly to its English counterpart.
+- **AI-Driven Translation**: We leverage advanced AI models to generate initial translations.
+- **Manual Proofreading**: Every page undergoes a rigorous manual review process to ensure technical accuracy, correct terminology, and idiomatic phrasing.
+
+## Supported Languages
+
+- **Japanese (ja-JP)**: [View Japanese Docs](https://docs.openclaw.io/ja-JP)
+- **Simplified Chinese (zh-CN)**: [View Chinese Docs](https://docs.openclaw.io/zh-CN)
+
+## Development & Setup
+
+This workspace allows you to run and preview the documentation site locally using [Mintlify](https://mintlify.com/).
+
+### Prerequisites
+
+- **Node.js 22+**
+- **pnpm**
+- **Go** (for running the translation pipeline)
+- **Mintlify CLI** (`npm i -g mintlify`)
+
+### Commands
 
 ```bash
+# Install dependencies
 pnpm install
-```
 
-Start the docs preview:
-
-```bash
+# Start local development preview
 pnpm docs:dev
+
+# Run translation pipeline
+pnpm docs:i18n -- -lang <locale> <files...>
+
+# Lint and check links
+pnpm check:docs
 ```
 
-## Commands
+## Repository Structure
 
-- `pnpm docs:dev`
-  Runs the Mintlify local preview from `docs/`.
+- `docs/`: The user-facing documentation content.
+- `origin_docs/`: A reference copy of the original English documentation.
+- `scripts/`: Custom tooling for syncing, formatting, and translating the docs.
+- `.i18n/`: Glossary and translation memory assets.
 
-- `pnpm check:docs`
-  Runs the docs format check, Markdown lint, and internal link audit together.
+## Contributing
 
-- `pnpm format:docs`
-  Formats all docs Markdown files and this workspace `README.md` with `oxfmt`.
+We welcome contributions to improve our translations! If you find a technical error or an awkward phrasing, please open a Pull Request or an Issue in this repository.
 
-- `pnpm format:docs:check`
-  Checks formatting only, without modifying files.
-
-- `pnpm lint:docs`
-  Runs `markdownlint-cli2` with the copied workspace config in `.markdownlint-cli2.jsonc`.
-
-- `pnpm lint:docs:fix`
-  Runs the same linter with `--fix` for auto-fixable issues.
-
-- `pnpm docs:check-links`
-  Audits internal links inside `docs/` and validates root-relative docs routes, redirects, and relative file references.
-
-- `pnpm docs:list`
-  Lists docs pages with their `summary` and `read_when` frontmatter, which is useful for discovering coverage and missing metadata.
-
-- `pnpm docs:bin`
-  Generates `bin/docs-list`, a small executable wrapper around `scripts/docs-list.js`.
-
-- `pnpm docs:spellcheck`
-  Runs `codespell` across `README.md` and `docs/`, using the copied custom dictionary and ignore list.
-
-- `pnpm docs:spellcheck:fix`
-  Runs the same spellcheck pass in write mode.
-
-- `pnpm docs:sync-moonshot`
-  Refreshes the Moonshot/Kimi model tables in the docs from the local copied model dataset.
-
-- `pnpm docs:i18n -- -lang <locale> <files...>`
-  Runs the Go-based docs translation pipeline against the current root docs source. Example:
-
-  ```bash
-  pnpm docs:i18n -- -lang <locale> docs/index.md docs/start/getting-started.md
-  ```
-
-## Copied Scripts
-
-- `scripts/build-docs-list.mjs`
-  Creates the `bin/docs-list` wrapper.
-
-- `scripts/docs-format-targets.mjs`
-  Emits the markdown file list used by the format commands. This replaces the main repo's `git ls-files` dependency so formatting still works in a standalone directory.
-
-- `scripts/docs-link-audit.mjs`
-  Scans markdown files, skips code fences and external links, resolves `docs/docs.json` redirects, and fails if an internal link target is missing.
-
-- `scripts/docs-list.js`
-  Walks the docs tree, reads frontmatter, and prints page summaries plus `read_when` hints.
-
-- `scripts/docs-spellcheck.sh`
-  Runs `codespell`, auto-installing it via Python when needed.
-
-- `scripts/sync-moonshot-docs.ts`
-  Updates model IDs, aliases, and model metadata blocks in the Moonshot docs.
-
-- `scripts/moonshot-kimi-k2.ts`
-  Local data source used by `scripts/sync-moonshot-docs.ts`.
-
-- `scripts/docs-i18n/`
-  Go translation pipeline that reads `docs/.i18n/glossary.<lang>.json` and `docs/.i18n/<lang>.tm.jsonl`, translates the current root docs source, and writes output to `docs/<lang>/...`.
-
-- `scripts/codespell-dictionary.txt`
-  Custom accepted spellings.
-
-- `scripts/codespell-ignore.txt`
-  Strings to suppress during spellcheck.
-
-- `.markdownlint-cli2.jsonc`
-  Markdown lint config copied from the main repo.
-
-## Notes
-
-- This workspace is enough to run and maintain the docs site, but it is not a full replacement for the main repository.
-- Some docs content still references the broader OpenClaw codebase as examples, but the docs preview itself does not need that code to run.
-- `mint` maintains its own local preview client under `~/.mintlify`.
+For core feature requests or bugs related to OpenClaw itself, please visit the [Main OpenClaw Repository](https://github.com/openclaw/openclaw).
