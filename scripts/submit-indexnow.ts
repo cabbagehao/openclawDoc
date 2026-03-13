@@ -47,7 +47,7 @@ async function submitToIndexNow(urls: string[]): Promise<void> {
     const submission: IndexNowSubmission = {
       host: DOMAIN,
       key: INDEXNOW_KEY,
-      keyLocation: `https://${DOMAIN}/assets/${INDEXNOW_KEY}.svg`,
+      keyLocation: `https://${DOMAIN}/${INDEXNOW_KEY}.svg`,
       urlList: batch
     };
 
