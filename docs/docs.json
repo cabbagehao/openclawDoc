@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "OpenClaw",
-  "analytics": {
+  "integrations": {
     "ga4": {
       "measurementId": "G-FQ5JB332BK"
     }
