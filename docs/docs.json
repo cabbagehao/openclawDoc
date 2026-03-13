@@ -1,6 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "OpenClaw",
+  "analytics": {
+    "ga4": {
+      "measurementId": "G-FQ5JB332BK"
+    }
+  },
   "description": "WhatsApp、Telegram、Discord、iMessage などを AI コーディングエージェントへ接続するセルフホスト型 Gateway。自分のマシンで単一の Gateway を動かし、どこからでも AI アシスタントにメッセージできます。",
   "theme": "mint",
   "icons": {
