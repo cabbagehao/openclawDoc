@@ -3,7 +3,7 @@
 const DOMAIN = 'openclawdoc.org';
 // IMPORTANT: Replace this with your actual IndexNow key or generate one.
 // You must also ensure that `https://openclawdoc.org/<INDEXNOW_KEY>.txt` returns the key.
-const INDEXNOW_KEY = '0d26611851fe418ce69a7c7a89bb6428'; 
+const INDEXNOW_KEY = 'aaee62069928a24e1781403d61296f62'; 
 const INDEXNOW_KEY_FILENAME = `${INDEXNOW_KEY}.txt`;
 const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 
@@ -47,7 +47,7 @@ async function submitToIndexNow(urls: string[]): Promise<void> {
     const submission: IndexNowSubmission = {
       host: DOMAIN,
       key: INDEXNOW_KEY,
-      keyLocation: `https://${DOMAIN}/${INDEXNOW_KEY}`,
+      keyLocation: `https://${DOMAIN}/assets/${INDEXNOW_KEY}.svg`,
       urlList: batch
     };
 
