@@ -20,6 +20,10 @@
 
 This repository hosts the official 1:1 Japanese translation for OpenClaw. We aim to provide the Japanese developer community with high-quality, technically accurate, and SEO-optimized localized content.
 
+The repository is organized around a localized docs workspace:
+- `origin_docs/` contains the upstream English documentation mirrored into this repository. It is the source of truth for translation and sync work.
+- `docs/` contains the localized documentation variants that are published from this project.
+
 ## 🌐 Official Japanese Documentation Portal
 For the most comprehensive Japanese documentation, visit:
 👉 **[OpenClaw Japanese Documentation (openclawdoc.org)](https://openclawdoc.org/)**
@@ -56,8 +60,10 @@ pnpm docs:i18n -- -lang ja-JP <files...>
 ```
 
 ## 📂 Repository Structure
-- `docs/`: The localized Japanese content served to [openclawdoc.org](https://openclawdoc.org/).
-- `origin_docs/`: A mirror of the original English documentation.
+- `docs/`: Published documentation content for this repository, including localized pages and site configuration.
+- `origin_docs/`: The mirrored upstream English documentation set. Use this directory as the canonical source when translating, syncing, or reviewing localized files.
+- `scripts/`: Local tooling for sync, coverage checks, link audits, formatting, and translation workflows.
+- `plans/`: Internal implementation and translation planning documents that should not be published as site content.
 - `web-portal/`: Landing page content for GitHub Pages.
 - `wiki/`: Markdown source for the GitHub Wiki.
 
