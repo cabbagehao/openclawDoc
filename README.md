@@ -65,3 +65,9 @@ pnpm docs:i18n -- -lang ja-JP <files...>
 We welcome contributions to the Japanese localization! If you find a translation error or have a technical suggestion, please open a Pull Request or Issue.
 
 For core feature requests or bugs related to OpenClaw itself, please visit the [Main OpenClaw Repository](https://github.com/openclaw/openclaw).
+
+## ⚠️ 重要注意事项 (Important Guidelines)
+
+1. **禁止重命名首页后缀**：请勿将 `docs/index.mdx` 重命名为 `docs/index.md` 或其他后缀。Mintlify 强依赖该后缀来正确渲染首页组件，修改后缀会导致线上首页 404 或渲染异常。
+2. **`docs/` 目录规范**：`docs/` 目录仅用于存放线上公开的文档内容。任何内部开发计划（Plans）、翻译指南、本地化脚本说明等非公开内容，请务必存放在根目录下的对应文件夹（如 `/plans`）中，严禁放入 `docs/` 目录，以免被同步发布到线上。
+3. **翻译溯源**：本项目以 `origin_docs/` 中的英文文档作为翻译的唯一标准源（Source of Truth）。添加新语言或更新翻译时，请对比 `origin_docs/` 进行。

@@ -1264,11 +1264,11 @@
                 "group": "セキュリティ",
                 "pages": [
                   "security/formal-verification",
+                  "security/README",
                   "security/THREAT-MODEL-ATLAS",
                   "security/CONTRIBUTING-THREAT-MODEL"
                 ]
-              },
-              {
+              },              {
                 "group": "Web インターフェース",
                 "pages": [
                   "web/index",
@@ -1930,11 +1930,11 @@
                 "group": "보안",
                 "pages": [
                   "ko-KR/security/formal-verification",
+                  "ko-KR/security/README",
                   "ko-KR/security/THREAT-MODEL-ATLAS",
                   "ko-KR/security/CONTRIBUTING-THREAT-MODEL"
                 ]
-              },
-              {
+              },              {
                 "group": "웹 인터페이스",
                 "pages": [
                   "ko-KR/web/index",
