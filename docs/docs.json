@@ -799,2134 +799,1338 @@
     {
       "source": "/gateway/trusted-proxy",
       "destination": "/gateway/trusted-proxy-auth"
-    },
-    {
-      "source": "/ja-JP/.i18n/README",
-      "destination": "/.i18n/README"
-    },
-    {
-      "source": "/ja-JP/auth-credential-semantics",
-      "destination": "/auth-credential-semantics"
-    },
-    {
-      "source": "/ja-JP/automation/auth-monitoring",
-      "destination": "/automation/auth-monitoring"
-    },
-    {
-      "source": "/ja-JP/automation/cron-jobs",
-      "destination": "/automation/cron-jobs"
-    },
-    {
-      "source": "/ja-JP/automation/cron-vs-heartbeat",
-      "destination": "/automation/cron-vs-heartbeat"
-    },
-    {
-      "source": "/ja-JP/automation/gmail-pubsub",
-      "destination": "/automation/gmail-pubsub"
-    },
-    {
-      "source": "/ja-JP/automation/hooks",
-      "destination": "/automation/hooks"
-    },
-    {
-      "source": "/ja-JP/automation/poll",
-      "destination": "/automation/poll"
-    },
-    {
-      "source": "/ja-JP/automation/troubleshooting",
-      "destination": "/automation/troubleshooting"
-    },
-    {
-      "source": "/ja-JP/automation/webhook",
-      "destination": "/automation/webhook"
-    },
-    {
-      "source": "/ja-JP/brave-search",
-      "destination": "/brave-search"
-    },
-    {
-      "source": "/ja-JP/channels/bluebubbles",
-      "destination": "/channels/bluebubbles"
-    },
-    {
-      "source": "/ja-JP/channels/broadcast-groups",
-      "destination": "/channels/broadcast-groups"
-    },
-    {
-      "source": "/ja-JP/channels/channel-routing",
-      "destination": "/channels/channel-routing"
-    },
-    {
-      "source": "/ja-JP/channels/discord",
-      "destination": "/channels/discord"
-    },
-    {
-      "source": "/ja-JP/channels/feishu",
-      "destination": "/channels/feishu"
-    },
-    {
-      "source": "/ja-JP/channels/googlechat",
-      "destination": "/channels/googlechat"
-    },
-    {
-      "source": "/ja-JP/channels/group-messages",
-      "destination": "/channels/group-messages"
-    },
-    {
-      "source": "/ja-JP/channels/groups",
-      "destination": "/channels/groups"
-    },
-    {
-      "source": "/ja-JP/channels/imessage",
-      "destination": "/channels/imessage"
-    },
-    {
-      "source": "/ja-JP/channels",
-      "destination": "/channels"
-    },
-    {
-      "source": "/ja-JP/channels/index",
-      "destination": "/channels"
-    },
-    {
-      "source": "/ja-JP/channels/irc",
-      "destination": "/channels/irc"
-    },
-    {
-      "source": "/ja-JP/channels/line",
-      "destination": "/channels/line"
-    },
-    {
-      "source": "/ja-JP/channels/location",
-      "destination": "/channels/location"
-    },
-    {
-      "source": "/ja-JP/channels/matrix",
-      "destination": "/channels/matrix"
-    },
-    {
-      "source": "/ja-JP/channels/mattermost",
-      "destination": "/channels/mattermost"
-    },
-    {
-      "source": "/ja-JP/channels/msteams",
-      "destination": "/channels/msteams"
-    },
-    {
-      "source": "/ja-JP/channels/nextcloud-talk",
-      "destination": "/channels/nextcloud-talk"
-    },
-    {
-      "source": "/ja-JP/channels/nostr",
-      "destination": "/channels/nostr"
-    },
-    {
-      "source": "/ja-JP/channels/pairing",
-      "destination": "/channels/pairing"
-    },
-    {
-      "source": "/ja-JP/channels/signal",
-      "destination": "/channels/signal"
-    },
-    {
-      "source": "/ja-JP/channels/slack",
-      "destination": "/channels/slack"
-    },
-    {
-      "source": "/ja-JP/channels/synology-chat",
-      "destination": "/channels/synology-chat"
-    },
-    {
-      "source": "/ja-JP/channels/telegram",
-      "destination": "/channels/telegram"
-    },
-    {
-      "source": "/ja-JP/channels/tlon",
-      "destination": "/channels/tlon"
-    },
-    {
-      "source": "/ja-JP/channels/troubleshooting",
-      "destination": "/channels/troubleshooting"
-    },
-    {
-      "source": "/ja-JP/channels/twitch",
-      "destination": "/channels/twitch"
-    },
-    {
-      "source": "/ja-JP/channels/whatsapp",
-      "destination": "/channels/whatsapp"
-    },
-    {
-      "source": "/ja-JP/channels/zalo",
-      "destination": "/channels/zalo"
-    },
-    {
-      "source": "/ja-JP/channels/zalouser",
-      "destination": "/channels/zalouser"
-    },
-    {
-      "source": "/ja-JP/ci",
-      "destination": "/ci"
-    },
-    {
-      "source": "/ja-JP/cli/acp",
-      "destination": "/cli/acp"
-    },
-    {
-      "source": "/ja-JP/cli/agent",
-      "destination": "/cli/agent"
-    },
-    {
-      "source": "/ja-JP/cli/agents",
-      "destination": "/cli/agents"
-    },
-    {
-      "source": "/ja-JP/cli/approvals",
-      "destination": "/cli/approvals"
-    },
-    {
-      "source": "/ja-JP/cli/backup",
-      "destination": "/cli/backup"
-    },
-    {
-      "source": "/ja-JP/cli/browser",
-      "destination": "/cli/browser"
-    },
-    {
-      "source": "/ja-JP/cli/channels",
-      "destination": "/cli/channels"
-    },
-    {
-      "source": "/ja-JP/cli/clawbot",
-      "destination": "/cli/clawbot"
-    },
-    {
-      "source": "/ja-JP/cli/completion",
-      "destination": "/cli/completion"
-    },
-    {
-      "source": "/ja-JP/cli/config",
-      "destination": "/cli/config"
-    },
-    {
-      "source": "/ja-JP/cli/configure",
-      "destination": "/cli/configure"
-    },
-    {
-      "source": "/ja-JP/cli/cron",
-      "destination": "/cli/cron"
-    },
-    {
-      "source": "/ja-JP/cli/daemon",
-      "destination": "/cli/daemon"
-    },
-    {
-      "source": "/ja-JP/cli/dashboard",
-      "destination": "/cli/dashboard"
-    },
-    {
-      "source": "/ja-JP/cli/devices",
-      "destination": "/cli/devices"
-    },
-    {
-      "source": "/ja-JP/cli/directory",
-      "destination": "/cli/directory"
-    },
-    {
-      "source": "/ja-JP/cli/dns",
-      "destination": "/cli/dns"
-    },
-    {
-      "source": "/ja-JP/cli/docs",
-      "destination": "/cli/docs"
-    },
-    {
-      "source": "/ja-JP/cli/doctor",
-      "destination": "/cli/doctor"
-    },
-    {
-      "source": "/ja-JP/cli/gateway",
-      "destination": "/cli/gateway"
-    },
-    {
-      "source": "/ja-JP/cli/health",
-      "destination": "/cli/health"
-    },
-    {
-      "source": "/ja-JP/cli/hooks",
-      "destination": "/cli/hooks"
-    },
-    {
-      "source": "/ja-JP/cli",
-      "destination": "/cli"
-    },
-    {
-      "source": "/ja-JP/cli/index",
-      "destination": "/cli"
-    },
-    {
-      "source": "/ja-JP/cli/logs",
-      "destination": "/cli/logs"
-    },
-    {
-      "source": "/ja-JP/cli/memory",
-      "destination": "/cli/memory"
-    },
-    {
-      "source": "/ja-JP/cli/message",
-      "destination": "/cli/message"
-    },
-    {
-      "source": "/ja-JP/cli/models",
-      "destination": "/cli/models"
-    },
-    {
-      "source": "/ja-JP/cli/node",
-      "destination": "/cli/node"
-    },
-    {
-      "source": "/ja-JP/cli/nodes",
-      "destination": "/cli/nodes"
-    },
-    {
-      "source": "/ja-JP/cli/onboard",
-      "destination": "/cli/onboard"
-    },
-    {
-      "source": "/ja-JP/cli/pairing",
-      "destination": "/cli/pairing"
-    },
-    {
-      "source": "/ja-JP/cli/plugins",
-      "destination": "/cli/plugins"
-    },
-    {
-      "source": "/ja-JP/cli/qr",
-      "destination": "/cli/qr"
-    },
-    {
-      "source": "/ja-JP/cli/reset",
-      "destination": "/cli/reset"
-    },
-    {
-      "source": "/ja-JP/cli/sandbox",
-      "destination": "/cli/sandbox"
-    },
-    {
-      "source": "/ja-JP/cli/secrets",
-      "destination": "/cli/secrets"
-    },
-    {
-      "source": "/ja-JP/cli/security",
-      "destination": "/cli/security"
-    },
-    {
-      "source": "/ja-JP/cli/sessions",
-      "destination": "/cli/sessions"
-    },
-    {
-      "source": "/ja-JP/cli/setup",
-      "destination": "/cli/setup"
-    },
-    {
-      "source": "/ja-JP/cli/skills",
-      "destination": "/cli/skills"
-    },
-    {
-      "source": "/ja-JP/cli/status",
-      "destination": "/cli/status"
-    },
-    {
-      "source": "/ja-JP/cli/system",
-      "destination": "/cli/system"
-    },
-    {
-      "source": "/ja-JP/cli/tui",
-      "destination": "/cli/tui"
-    },
-    {
-      "source": "/ja-JP/cli/uninstall",
-      "destination": "/cli/uninstall"
-    },
-    {
-      "source": "/ja-JP/cli/update",
-      "destination": "/cli/update"
-    },
-    {
-      "source": "/ja-JP/cli/voicecall",
-      "destination": "/cli/voicecall"
-    },
-    {
-      "source": "/ja-JP/cli/webhooks",
-      "destination": "/cli/webhooks"
-    },
-    {
-      "source": "/ja-JP/concepts/agent-loop",
-      "destination": "/concepts/agent-loop"
-    },
-    {
-      "source": "/ja-JP/concepts/agent-workspace",
-      "destination": "/concepts/agent-workspace"
-    },
-    {
-      "source": "/ja-JP/concepts/agent",
-      "destination": "/concepts/agent"
-    },
-    {
-      "source": "/ja-JP/concepts/architecture",
-      "destination": "/concepts/architecture"
-    },
-    {
-      "source": "/ja-JP/concepts/compaction",
-      "destination": "/concepts/compaction"
-    },
-    {
-      "source": "/ja-JP/concepts/context",
-      "destination": "/concepts/context"
-    },
-    {
-      "source": "/ja-JP/concepts/features",
-      "destination": "/concepts/features"
-    },
-    {
-      "source": "/ja-JP/concepts/markdown-formatting",
-      "destination": "/concepts/markdown-formatting"
-    },
-    {
-      "source": "/ja-JP/concepts/memory",
-      "destination": "/concepts/memory"
-    },
-    {
-      "source": "/ja-JP/concepts/messages",
-      "destination": "/concepts/messages"
-    },
-    {
-      "source": "/ja-JP/concepts/model-failover",
-      "destination": "/concepts/model-failover"
-    },
-    {
-      "source": "/ja-JP/concepts/model-providers",
-      "destination": "/concepts/model-providers"
-    },
-    {
-      "source": "/ja-JP/concepts/models",
-      "destination": "/concepts/models"
-    },
-    {
-      "source": "/ja-JP/concepts/multi-agent",
-      "destination": "/concepts/multi-agent"
-    },
-    {
-      "source": "/ja-JP/concepts/oauth",
-      "destination": "/concepts/oauth"
-    },
-    {
-      "source": "/ja-JP/concepts/presence",
-      "destination": "/concepts/presence"
-    },
-    {
-      "source": "/ja-JP/concepts/queue",
-      "destination": "/concepts/queue"
-    },
-    {
-      "source": "/ja-JP/concepts/retry",
-      "destination": "/concepts/retry"
-    },
-    {
-      "source": "/ja-JP/concepts/session-pruning",
-      "destination": "/concepts/session-pruning"
-    },
-    {
-      "source": "/ja-JP/concepts/session-tool",
-      "destination": "/concepts/session-tool"
-    },
-    {
-      "source": "/ja-JP/concepts/session",
-      "destination": "/concepts/session"
-    },
-    {
-      "source": "/ja-JP/concepts/streaming",
-      "destination": "/concepts/streaming"
-    },
-    {
-      "source": "/ja-JP/concepts/system-prompt",
-      "destination": "/concepts/system-prompt"
-    },
-    {
-      "source": "/ja-JP/concepts/timezone",
-      "destination": "/concepts/timezone"
-    },
-    {
-      "source": "/ja-JP/concepts/typebox",
-      "destination": "/concepts/typebox"
-    },
-    {
-      "source": "/ja-JP/concepts/typing-indicators",
-      "destination": "/concepts/typing-indicators"
-    },
-    {
-      "source": "/ja-JP/concepts/usage-tracking",
-      "destination": "/concepts/usage-tracking"
-    },
-    {
-      "source": "/ja-JP/date-time",
-      "destination": "/date-time"
-    },
-    {
-      "source": "/ja-JP/debug/node-issue",
-      "destination": "/debug/node-issue"
-    },
-    {
-      "source": "/ja-JP/design/kilo-gateway-integration",
-      "destination": "/design/kilo-gateway-integration"
-    },
-    {
-      "source": "/ja-JP/diagnostics/flags",
-      "destination": "/diagnostics/flags"
-    },
-    {
-      "source": "/ja-JP/experiments/onboarding-config-protocol",
-      "destination": "/experiments/onboarding-config-protocol"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/acp-persistent-bindings-discord-channels-telegram-topics",
-      "destination": "/experiments/plans/acp-persistent-bindings-discord-channels-telegram-topics"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/acp-thread-bound-agents",
-      "destination": "/experiments/plans/acp-thread-bound-agents"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/acp-unified-streaming-refactor",
-      "destination": "/experiments/plans/acp-unified-streaming-refactor"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/browser-evaluate-cdp-refactor",
-      "destination": "/experiments/plans/browser-evaluate-cdp-refactor"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/discord-async-inbound-worker",
-      "destination": "/experiments/plans/discord-async-inbound-worker"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/openresponses-gateway",
-      "destination": "/experiments/plans/openresponses-gateway"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/pty-process-supervision",
-      "destination": "/experiments/plans/pty-process-supervision"
-    },
-    {
-      "source": "/ja-JP/experiments/plans/session-binding-channel-agnostic",
-      "destination": "/experiments/plans/session-binding-channel-agnostic"
-    },
-    {
-      "source": "/ja-JP/experiments/proposals/acp-bound-command-auth",
-      "destination": "/experiments/proposals/acp-bound-command-auth"
-    },
-    {
-      "source": "/ja-JP/experiments/proposals/model-config",
-      "destination": "/experiments/proposals/model-config"
-    },
-    {
-      "source": "/ja-JP/experiments/research/memory",
-      "destination": "/experiments/research/memory"
-    },
-    {
-      "source": "/ja-JP/gateway/authentication",
-      "destination": "/gateway/authentication"
-    },
-    {
-      "source": "/ja-JP/gateway/background-process",
-      "destination": "/gateway/background-process"
-    },
-    {
-      "source": "/ja-JP/gateway/bonjour",
-      "destination": "/gateway/bonjour"
-    },
-    {
-      "source": "/ja-JP/gateway/bridge-protocol",
-      "destination": "/gateway/bridge-protocol"
-    },
-    {
-      "source": "/ja-JP/gateway/cli-backends",
-      "destination": "/gateway/cli-backends"
-    },
-    {
-      "source": "/ja-JP/gateway/configuration-examples",
-      "destination": "/gateway/configuration-examples"
-    },
-    {
-      "source": "/ja-JP/gateway/configuration-reference",
-      "destination": "/gateway/configuration-reference"
-    },
-    {
-      "source": "/ja-JP/gateway/configuration",
-      "destination": "/gateway/configuration"
-    },
-    {
-      "source": "/ja-JP/gateway/discovery",
-      "destination": "/gateway/discovery"
-    },
-    {
-      "source": "/ja-JP/gateway/doctor",
-      "destination": "/gateway/doctor"
-    },
-    {
-      "source": "/ja-JP/gateway/gateway-lock",
-      "destination": "/gateway/gateway-lock"
-    },
-    {
-      "source": "/ja-JP/gateway/health",
-      "destination": "/gateway/health"
-    },
-    {
-      "source": "/ja-JP/gateway/heartbeat",
-      "destination": "/gateway/heartbeat"
-    },
-    {
-      "source": "/ja-JP/gateway",
-      "destination": "/gateway"
-    },
-    {
-      "source": "/ja-JP/gateway/index",
-      "destination": "/gateway"
-    },
-    {
-      "source": "/ja-JP/gateway/local-models",
-      "destination": "/gateway/local-models"
-    },
-    {
-      "source": "/ja-JP/gateway/logging",
-      "destination": "/gateway/logging"
-    },
-    {
-      "source": "/ja-JP/gateway/multiple-gateways",
-      "destination": "/gateway/multiple-gateways"
-    },
-    {
-      "source": "/ja-JP/gateway/network-model",
-      "destination": "/gateway/network-model"
-    },
-    {
-      "source": "/ja-JP/gateway/openai-http-api",
-      "destination": "/gateway/openai-http-api"
-    },
-    {
-      "source": "/ja-JP/gateway/openresponses-http-api",
-      "destination": "/gateway/openresponses-http-api"
-    },
-    {
-      "source": "/ja-JP/gateway/pairing",
-      "destination": "/gateway/pairing"
-    },
-    {
-      "source": "/ja-JP/gateway/protocol",
-      "destination": "/gateway/protocol"
-    },
-    {
-      "source": "/ja-JP/gateway/remote-gateway-readme",
-      "destination": "/gateway/remote-gateway-readme"
-    },
-    {
-      "source": "/ja-JP/gateway/remote",
-      "destination": "/gateway/remote"
-    },
-    {
-      "source": "/ja-JP/gateway/sandbox-vs-tool-policy-vs-elevated",
-      "destination": "/gateway/sandbox-vs-tool-policy-vs-elevated"
-    },
-    {
-      "source": "/ja-JP/gateway/sandboxing",
-      "destination": "/gateway/sandboxing"
-    },
-    {
-      "source": "/ja-JP/gateway/secrets-plan-contract",
-      "destination": "/gateway/secrets-plan-contract"
-    },
-    {
-      "source": "/ja-JP/gateway/secrets",
-      "destination": "/gateway/secrets"
-    },
-    {
-      "source": "/ja-JP/gateway/security",
-      "destination": "/gateway/security"
-    },
-    {
-      "source": "/ja-JP/gateway/security/index",
-      "destination": "/gateway/security"
-    },
-    {
-      "source": "/ja-JP/gateway/tailscale",
-      "destination": "/gateway/tailscale"
-    },
-    {
-      "source": "/ja-JP/gateway/tools-invoke-http-api",
-      "destination": "/gateway/tools-invoke-http-api"
-    },
-    {
-      "source": "/ja-JP/gateway/troubleshooting",
-      "destination": "/gateway/troubleshooting"
-    },
-    {
-      "source": "/ja-JP/gateway/trusted-proxy-auth",
-      "destination": "/gateway/trusted-proxy-auth"
-    },
-    {
-      "source": "/ja-JP/help/debugging",
-      "destination": "/help/debugging"
-    },
-    {
-      "source": "/ja-JP/help/environment",
-      "destination": "/help/environment"
-    },
-    {
-      "source": "/ja-JP/help/faq",
-      "destination": "/help/faq"
-    },
-    {
-      "source": "/ja-JP/help",
-      "destination": "/help"
-    },
-    {
-      "source": "/ja-JP/help/index",
-      "destination": "/help"
-    },
-    {
-      "source": "/ja-JP/help/scripts",
-      "destination": "/help/scripts"
-    },
-    {
-      "source": "/ja-JP/help/testing",
-      "destination": "/help/testing"
-    },
-    {
-      "source": "/ja-JP/help/troubleshooting",
-      "destination": "/help/troubleshooting"
-    },
-    {
-      "source": "/ja-JP",
-      "destination": "/"
-    },
-    {
-      "source": "/ja-JP/index",
-      "destination": "/"
-    },
-    {
-      "source": "/ja-JP/install/ansible",
-      "destination": "/install/ansible"
-    },
-    {
-      "source": "/ja-JP/install/bun",
-      "destination": "/install/bun"
-    },
-    {
-      "source": "/ja-JP/install/development-channels",
-      "destination": "/install/development-channels"
-    },
-    {
-      "source": "/ja-JP/install/docker",
-      "destination": "/install/docker"
-    },
-    {
-      "source": "/ja-JP/install/exe-dev",
-      "destination": "/install/exe-dev"
-    },
-    {
-      "source": "/ja-JP/install/fly",
-      "destination": "/install/fly"
-    },
-    {
-      "source": "/ja-JP/install/gcp",
-      "destination": "/install/gcp"
-    },
-    {
-      "source": "/ja-JP/install/hetzner",
-      "destination": "/install/hetzner"
-    },
-    {
-      "source": "/ja-JP/install",
-      "destination": "/install"
-    },
-    {
-      "source": "/ja-JP/install/index",
-      "destination": "/install"
-    },
-    {
-      "source": "/ja-JP/install/installer",
-      "destination": "/install/installer"
-    },
-    {
-      "source": "/ja-JP/install/macos-vm",
-      "destination": "/install/macos-vm"
-    },
-    {
-      "source": "/ja-JP/install/migrating",
-      "destination": "/install/migrating"
-    },
-    {
-      "source": "/ja-JP/install/nix",
-      "destination": "/install/nix"
-    },
-    {
-      "source": "/ja-JP/install/node",
-      "destination": "/install/node"
-    },
-    {
-      "source": "/ja-JP/install/northflank",
-      "destination": "/install/northflank"
-    },
-    {
-      "source": "/ja-JP/install/podman",
-      "destination": "/install/podman"
-    },
-    {
-      "source": "/ja-JP/install/railway",
-      "destination": "/install/railway"
-    },
-    {
-      "source": "/ja-JP/install/render",
-      "destination": "/install/render"
-    },
-    {
-      "source": "/ja-JP/install/uninstall",
-      "destination": "/install/uninstall"
-    },
-    {
-      "source": "/ja-JP/install/updating",
-      "destination": "/install/updating"
-    },
-    {
-      "source": "/ja-JP/logging",
-      "destination": "/logging"
-    },
-    {
-      "source": "/ja-JP/network",
-      "destination": "/network"
-    },
-    {
-      "source": "/ja-JP/nodes/audio",
-      "destination": "/nodes/audio"
-    },
-    {
-      "source": "/ja-JP/nodes/camera",
-      "destination": "/nodes/camera"
-    },
-    {
-      "source": "/ja-JP/nodes/images",
-      "destination": "/nodes/images"
-    },
-    {
-      "source": "/ja-JP/nodes",
-      "destination": "/nodes"
-    },
-    {
-      "source": "/ja-JP/nodes/index",
-      "destination": "/nodes"
-    },
-    {
-      "source": "/ja-JP/nodes/location-command",
-      "destination": "/nodes/location-command"
-    },
-    {
-      "source": "/ja-JP/nodes/media-understanding",
-      "destination": "/nodes/media-understanding"
-    },
-    {
-      "source": "/ja-JP/nodes/talk",
-      "destination": "/nodes/talk"
-    },
-    {
-      "source": "/ja-JP/nodes/troubleshooting",
-      "destination": "/nodes/troubleshooting"
-    },
-    {
-      "source": "/ja-JP/nodes/voicewake",
-      "destination": "/nodes/voicewake"
-    },
-    {
-      "source": "/ja-JP/perplexity",
-      "destination": "/perplexity"
-    },
-    {
-      "source": "/ja-JP/pi-dev",
-      "destination": "/pi-dev"
-    },
-    {
-      "source": "/ja-JP/pi",
-      "destination": "/pi"
-    },
-    {
-      "source": "/ja-JP/platforms/android",
-      "destination": "/platforms/android"
-    },
-    {
-      "source": "/ja-JP/platforms/digitalocean",
-      "destination": "/platforms/digitalocean"
-    },
-    {
-      "source": "/ja-JP/platforms",
-      "destination": "/platforms"
-    },
-    {
-      "source": "/ja-JP/platforms/index",
-      "destination": "/platforms"
-    },
-    {
-      "source": "/ja-JP/platforms/ios",
-      "destination": "/platforms/ios"
-    },
-    {
-      "source": "/ja-JP/platforms/linux",
-      "destination": "/platforms/linux"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/bundled-gateway",
-      "destination": "/platforms/mac/bundled-gateway"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/canvas",
-      "destination": "/platforms/mac/canvas"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/child-process",
-      "destination": "/platforms/mac/child-process"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/dev-setup",
-      "destination": "/platforms/mac/dev-setup"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/health",
-      "destination": "/platforms/mac/health"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/icon",
-      "destination": "/platforms/mac/icon"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/logging",
-      "destination": "/platforms/mac/logging"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/menu-bar",
-      "destination": "/platforms/mac/menu-bar"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/peekaboo",
-      "destination": "/platforms/mac/peekaboo"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/permissions",
-      "destination": "/platforms/mac/permissions"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/release",
-      "destination": "/platforms/mac/release"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/remote",
-      "destination": "/platforms/mac/remote"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/signing",
-      "destination": "/platforms/mac/signing"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/skills",
-      "destination": "/platforms/mac/skills"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/voice-overlay",
-      "destination": "/platforms/mac/voice-overlay"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/voicewake",
-      "destination": "/platforms/mac/voicewake"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/webchat",
-      "destination": "/platforms/mac/webchat"
-    },
-    {
-      "source": "/ja-JP/platforms/mac/xpc",
-      "destination": "/platforms/mac/xpc"
-    },
-    {
-      "source": "/ja-JP/platforms/macos",
-      "destination": "/platforms/macos"
-    },
-    {
-      "source": "/ja-JP/platforms/oracle",
-      "destination": "/platforms/oracle"
-    },
-    {
-      "source": "/ja-JP/platforms/raspberry-pi",
-      "destination": "/platforms/raspberry-pi"
-    },
-    {
-      "source": "/ja-JP/platforms/windows",
-      "destination": "/platforms/windows"
-    },
-    {
-      "source": "/ja-JP/plugins/agent-tools",
-      "destination": "/plugins/agent-tools"
-    },
-    {
-      "source": "/ja-JP/plugins/community",
-      "destination": "/plugins/community"
-    },
-    {
-      "source": "/ja-JP/plugins/manifest",
-      "destination": "/plugins/manifest"
-    },
-    {
-      "source": "/ja-JP/plugins/voice-call",
-      "destination": "/plugins/voice-call"
-    },
-    {
-      "source": "/ja-JP/plugins/zalouser",
-      "destination": "/plugins/zalouser"
-    },
-    {
-      "source": "/ja-JP/prose",
-      "destination": "/prose"
-    },
-    {
-      "source": "/ja-JP/providers/anthropic",
-      "destination": "/providers/anthropic"
-    },
-    {
-      "source": "/ja-JP/providers/bedrock",
-      "destination": "/providers/bedrock"
-    },
-    {
-      "source": "/ja-JP/providers/claude-max-api-proxy",
-      "destination": "/providers/claude-max-api-proxy"
-    },
-    {
-      "source": "/ja-JP/providers/cloudflare-ai-gateway",
-      "destination": "/providers/cloudflare-ai-gateway"
-    },
-    {
-      "source": "/ja-JP/providers/deepgram",
-      "destination": "/providers/deepgram"
-    },
-    {
-      "source": "/ja-JP/providers/github-copilot",
-      "destination": "/providers/github-copilot"
-    },
-    {
-      "source": "/ja-JP/providers/glm",
-      "destination": "/providers/glm"
-    },
-    {
-      "source": "/ja-JP/providers/huggingface",
-      "destination": "/providers/huggingface"
-    },
-    {
-      "source": "/ja-JP/providers",
-      "destination": "/providers"
-    },
-    {
-      "source": "/ja-JP/providers/index",
-      "destination": "/providers"
-    },
-    {
-      "source": "/ja-JP/providers/kilocode",
-      "destination": "/providers/kilocode"
-    },
-    {
-      "source": "/ja-JP/providers/litellm",
-      "destination": "/providers/litellm"
-    },
-    {
-      "source": "/ja-JP/providers/minimax",
-      "destination": "/providers/minimax"
-    },
-    {
-      "source": "/ja-JP/providers/mistral",
-      "destination": "/providers/mistral"
-    },
-    {
-      "source": "/ja-JP/providers/models",
-      "destination": "/providers/models"
-    },
-    {
-      "source": "/ja-JP/providers/moonshot",
-      "destination": "/providers/moonshot"
-    },
-    {
-      "source": "/ja-JP/providers/nvidia",
-      "destination": "/providers/nvidia"
-    },
-    {
-      "source": "/ja-JP/providers/ollama",
-      "destination": "/providers/ollama"
-    },
-    {
-      "source": "/ja-JP/providers/openai",
-      "destination": "/providers/openai"
-    },
-    {
-      "source": "/ja-JP/providers/opencode",
-      "destination": "/providers/opencode"
-    },
-    {
-      "source": "/ja-JP/providers/openrouter",
-      "destination": "/providers/openrouter"
-    },
-    {
-      "source": "/ja-JP/providers/qianfan",
-      "destination": "/providers/qianfan"
-    },
-    {
-      "source": "/ja-JP/providers/qwen",
-      "destination": "/providers/qwen"
-    },
-    {
-      "source": "/ja-JP/providers/synthetic",
-      "destination": "/providers/synthetic"
-    },
-    {
-      "source": "/ja-JP/providers/together",
-      "destination": "/providers/together"
-    },
-    {
-      "source": "/ja-JP/providers/venice",
-      "destination": "/providers/venice"
-    },
-    {
-      "source": "/ja-JP/providers/vercel-ai-gateway",
-      "destination": "/providers/vercel-ai-gateway"
-    },
-    {
-      "source": "/ja-JP/providers/vllm",
-      "destination": "/providers/vllm"
-    },
-    {
-      "source": "/ja-JP/providers/xiaomi",
-      "destination": "/providers/xiaomi"
-    },
-    {
-      "source": "/ja-JP/providers/zai",
-      "destination": "/providers/zai"
-    },
-    {
-      "source": "/ja-JP/refactor/clawnet",
-      "destination": "/refactor/clawnet"
-    },
-    {
-      "source": "/ja-JP/refactor/cluster",
-      "destination": "/refactor/cluster"
-    },
-    {
-      "source": "/ja-JP/refactor/exec-host",
-      "destination": "/refactor/exec-host"
-    },
-    {
-      "source": "/ja-JP/refactor/outbound-session-mirroring",
-      "destination": "/refactor/outbound-session-mirroring"
-    },
-    {
-      "source": "/ja-JP/refactor/plugin-sdk",
-      "destination": "/refactor/plugin-sdk"
-    },
-    {
-      "source": "/ja-JP/refactor/strict-config",
-      "destination": "/refactor/strict-config"
-    },
-    {
-      "source": "/ja-JP/reference/AGENTS.default",
-      "destination": "/reference/AGENTS.default"
-    },
-    {
-      "source": "/ja-JP/reference/RELEASING",
-      "destination": "/reference/RELEASING"
-    },
-    {
-      "source": "/ja-JP/reference/api-usage-costs",
-      "destination": "/reference/api-usage-costs"
-    },
-    {
-      "source": "/ja-JP/reference/credits",
-      "destination": "/reference/credits"
-    },
-    {
-      "source": "/ja-JP/reference/device-models",
-      "destination": "/reference/device-models"
-    },
-    {
-      "source": "/ja-JP/reference/prompt-caching",
-      "destination": "/reference/prompt-caching"
-    },
-    {
-      "source": "/ja-JP/reference/rpc",
-      "destination": "/reference/rpc"
-    },
-    {
-      "source": "/ja-JP/reference/secretref-credential-surface",
-      "destination": "/reference/secretref-credential-surface"
-    },
-    {
-      "source": "/ja-JP/reference/session-management-compaction",
-      "destination": "/reference/session-management-compaction"
-    },
-    {
-      "source": "/ja-JP/reference/templates/AGENTS.dev",
-      "destination": "/reference/templates/AGENTS.dev"
-    },
-    {
-      "source": "/ja-JP/reference/templates/AGENTS",
-      "destination": "/reference/templates/AGENTS"
-    },
-    {
-      "source": "/ja-JP/reference/templates/BOOT",
-      "destination": "/reference/templates/BOOT"
-    },
-    {
-      "source": "/ja-JP/reference/templates/BOOTSTRAP",
-      "destination": "/reference/templates/BOOTSTRAP"
-    },
-    {
-      "source": "/ja-JP/reference/templates/HEARTBEAT",
-      "destination": "/reference/templates/HEARTBEAT"
-    },
-    {
-      "source": "/ja-JP/reference/templates/IDENTITY.dev",
-      "destination": "/reference/templates/IDENTITY.dev"
-    },
-    {
-      "source": "/ja-JP/reference/templates/IDENTITY",
-      "destination": "/reference/templates/IDENTITY"
-    },
-    {
-      "source": "/ja-JP/reference/templates/SOUL.dev",
-      "destination": "/reference/templates/SOUL.dev"
-    },
-    {
-      "source": "/ja-JP/reference/templates/SOUL",
-      "destination": "/reference/templates/SOUL"
-    },
-    {
-      "source": "/ja-JP/reference/templates/TOOLS.dev",
-      "destination": "/reference/templates/TOOLS.dev"
-    },
-    {
-      "source": "/ja-JP/reference/templates/TOOLS",
-      "destination": "/reference/templates/TOOLS"
-    },
-    {
-      "source": "/ja-JP/reference/templates/USER.dev",
-      "destination": "/reference/templates/USER.dev"
-    },
-    {
-      "source": "/ja-JP/reference/templates/USER",
-      "destination": "/reference/templates/USER"
-    },
-    {
-      "source": "/ja-JP/reference/test",
-      "destination": "/reference/test"
-    },
-    {
-      "source": "/ja-JP/reference/token-use",
-      "destination": "/reference/token-use"
-    },
-    {
-      "source": "/ja-JP/reference/transcript-hygiene",
-      "destination": "/reference/transcript-hygiene"
-    },
-    {
-      "source": "/ja-JP/reference/wizard",
-      "destination": "/reference/wizard"
-    },
-    {
-      "source": "/ja-JP/security/CONTRIBUTING-THREAT-MODEL",
-      "destination": "/security/CONTRIBUTING-THREAT-MODEL"
-    },
-    {
-      "source": "/ja-JP/security/README",
-      "destination": "/security/README"
-    },
-    {
-      "source": "/ja-JP/security/THREAT-MODEL-ATLAS",
-      "destination": "/security/THREAT-MODEL-ATLAS"
-    },
-    {
-      "source": "/ja-JP/security/formal-verification",
-      "destination": "/security/formal-verification"
-    },
-    {
-      "source": "/ja-JP/start/bootstrapping",
-      "destination": "/start/bootstrapping"
-    },
-    {
-      "source": "/ja-JP/start/docs-directory",
-      "destination": "/start/docs-directory"
-    },
-    {
-      "source": "/ja-JP/start/getting-started",
-      "destination": "/start/getting-started"
-    },
-    {
-      "source": "/ja-JP/start/hubs",
-      "destination": "/start/hubs"
-    },
-    {
-      "source": "/ja-JP/start/lore",
-      "destination": "/start/lore"
-    },
-    {
-      "source": "/ja-JP/start/onboarding-overview",
-      "destination": "/start/onboarding-overview"
-    },
-    {
-      "source": "/ja-JP/start/onboarding",
-      "destination": "/start/onboarding"
-    },
-    {
-      "source": "/ja-JP/start/openclaw",
-      "destination": "/start/openclaw"
-    },
-    {
-      "source": "/ja-JP/start/quickstart",
-      "destination": "/start/quickstart"
-    },
-    {
-      "source": "/ja-JP/start/setup",
-      "destination": "/start/setup"
-    },
-    {
-      "source": "/ja-JP/start/showcase",
-      "destination": "/start/showcase"
-    },
-    {
-      "source": "/ja-JP/start/wizard-cli-automation",
-      "destination": "/start/wizard-cli-automation"
-    },
-    {
-      "source": "/ja-JP/start/wizard-cli-reference",
-      "destination": "/start/wizard-cli-reference"
-    },
-    {
-      "source": "/ja-JP/start/wizard",
-      "destination": "/start/wizard"
-    },
-    {
-      "source": "/ja-JP/tools/acp-agents",
-      "destination": "/tools/acp-agents"
-    },
-    {
-      "source": "/ja-JP/tools/agent-send",
-      "destination": "/tools/agent-send"
-    },
-    {
-      "source": "/ja-JP/tools/apply-patch",
-      "destination": "/tools/apply-patch"
-    },
-    {
-      "source": "/ja-JP/tools/browser-linux-troubleshooting",
-      "destination": "/tools/browser-linux-troubleshooting"
-    },
-    {
-      "source": "/ja-JP/tools/browser-login",
-      "destination": "/tools/browser-login"
-    },
-    {
-      "source": "/ja-JP/tools/browser-wsl2-windows-remote-cdp-troubleshooting",
-      "destination": "/tools/browser-wsl2-windows-remote-cdp-troubleshooting"
-    },
-    {
-      "source": "/ja-JP/tools/browser",
-      "destination": "/tools/browser"
-    },
-    {
-      "source": "/ja-JP/tools/chrome-extension",
-      "destination": "/tools/chrome-extension"
-    },
-    {
-      "source": "/ja-JP/tools/clawhub",
-      "destination": "/tools/clawhub"
-    },
-    {
-      "source": "/ja-JP/tools/creating-skills",
-      "destination": "/tools/creating-skills"
-    },
-    {
-      "source": "/ja-JP/tools/diffs",
-      "destination": "/tools/diffs"
-    },
-    {
-      "source": "/ja-JP/tools/elevated",
-      "destination": "/tools/elevated"
-    },
-    {
-      "source": "/ja-JP/tools/exec-approvals",
-      "destination": "/tools/exec-approvals"
-    },
-    {
-      "source": "/ja-JP/tools/exec",
-      "destination": "/tools/exec"
-    },
-    {
-      "source": "/ja-JP/tools/firecrawl",
-      "destination": "/tools/firecrawl"
-    },
-    {
-      "source": "/ja-JP/tools",
-      "destination": "/tools"
-    },
-    {
-      "source": "/ja-JP/tools/index",
-      "destination": "/tools"
-    },
-    {
-      "source": "/ja-JP/tools/llm-task",
-      "destination": "/tools/llm-task"
-    },
-    {
-      "source": "/ja-JP/tools/lobster",
-      "destination": "/tools/lobster"
-    },
-    {
-      "source": "/ja-JP/tools/loop-detection",
-      "destination": "/tools/loop-detection"
-    },
-    {
-      "source": "/ja-JP/tools/multi-agent-sandbox-tools",
-      "destination": "/tools/multi-agent-sandbox-tools"
-    },
-    {
-      "source": "/ja-JP/tools/pdf",
-      "destination": "/tools/pdf"
-    },
-    {
-      "source": "/ja-JP/tools/plugin",
-      "destination": "/tools/plugin"
-    },
-    {
-      "source": "/ja-JP/tools/reactions",
-      "destination": "/tools/reactions"
-    },
-    {
-      "source": "/ja-JP/tools/skills-config",
-      "destination": "/tools/skills-config"
-    },
-    {
-      "source": "/ja-JP/tools/skills",
-      "destination": "/tools/skills"
-    },
-    {
-      "source": "/ja-JP/tools/slash-commands",
-      "destination": "/tools/slash-commands"
-    },
-    {
-      "source": "/ja-JP/tools/subagents",
-      "destination": "/tools/subagents"
-    },
-    {
-      "source": "/ja-JP/tools/thinking",
-      "destination": "/tools/thinking"
-    },
-    {
-      "source": "/ja-JP/tools/web",
-      "destination": "/tools/web"
-    },
-    {
-      "source": "/ja-JP/tts",
-      "destination": "/tts"
-    },
-    {
-      "source": "/ja-JP/vps",
-      "destination": "/vps"
-    },
-    {
-      "source": "/ja-JP/web/control-ui",
-      "destination": "/web/control-ui"
-    },
-    {
-      "source": "/ja-JP/web/dashboard",
-      "destination": "/web/dashboard"
-    },
-    {
-      "source": "/ja-JP/web",
-      "destination": "/web"
-    },
-    {
-      "source": "/ja-JP/web/index",
-      "destination": "/web"
-    },
-    {
-      "source": "/ja-JP/web/tui",
-      "destination": "/web/tui"
-    },
-    {
-      "source": "/ja-JP/web/webchat",
-      "destination": "/web/webchat"
     }
   ],
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "はじめに",
-        "groups": [
+        "language": "ja",
+        "tabs": [
           {
-            "group": "ホーム",
-            "pages": [
-              "index"
-            ]
-          },
-          {
-            "group": "概要",
-            "pages": [
-              "start/showcase"
-            ]
-          },
-          {
-            "group": "コアコンセプト",
-            "pages": [
-              "concepts/features"
-            ]
-          },
-          {
-            "group": "最初のステップ",
-            "pages": [
-              "start/getting-started",
-              "start/onboarding-overview",
-              "start/wizard",
-              "start/onboarding"
-            ]
-          },
-          {
-            "group": "ガイド",
-            "pages": [
-              "start/openclaw",
-              "start/wizard-cli-reference",
-              "start/wizard-cli-automation"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "インストール",
-        "groups": [
-          {
-            "group": "インストール概要",
-            "pages": [
-              "install/index",
-              "install/installer"
-            ]
-          },
-          {
-            "group": "その他のインストール方法",
-            "pages": [
-              "install/docker",
-              "install/podman",
-              "install/nix",
-              "install/ansible",
-              "install/bun"
-            ]
-          },
-          {
-            "group": "メンテナンス",
-            "pages": [
-              "install/updating",
-              "install/migrating",
-              "install/uninstall"
-            ]
-          },
-          {
-            "group": "ホスティングとデプロイ",
-            "pages": [
-              "vps",
-              "install/fly",
-              "install/hetzner",
-              "install/gcp",
-              "install/macos-vm",
-              "install/exe-dev",
-              "install/railway",
-              "install/render",
-              "install/northflank"
-            ]
-          },
-          {
-            "group": "上級",
-            "pages": [
-              "install/development-channels"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "チャンネル",
-        "groups": [
-          {
-            "group": "概要",
-            "pages": [
-              "channels/index"
-            ]
-          },
-          {
-            "group": "メッセージングプラットフォーム",
-            "pages": [
-              "channels/bluebubbles",
-              "channels/discord",
-              "channels/feishu",
-              "channels/googlechat",
-              "channels/imessage",
-              "channels/irc",
-              "channels/line",
-              "channels/matrix",
-              "channels/mattermost",
-              "channels/msteams",
-              "channels/nextcloud-talk",
-              "channels/nostr",
-              "channels/signal",
-              "channels/synology-chat",
-              "channels/slack",
-              "channels/telegram",
-              "channels/tlon",
-              "channels/twitch",
-              "channels/whatsapp",
-              "channels/zalo",
-              "channels/zalouser"
-            ]
-          },
-          {
-            "group": "設定",
-            "pages": [
-              "channels/pairing",
-              "channels/group-messages",
-              "channels/groups",
-              "channels/broadcast-groups",
-              "channels/channel-routing",
-              "channels/location",
-              "channels/troubleshooting"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "エージェント",
-        "groups": [
-          {
-            "group": "基礎",
-            "pages": [
-              "pi",
-              "concepts/architecture",
-              "concepts/agent",
-              "concepts/agent-loop",
-              "concepts/system-prompt",
-              "concepts/context",
-              "concepts/agent-workspace",
-              "concepts/oauth"
-            ]
-          },
-          {
-            "group": "ブートストラップ",
-            "pages": [
-              "start/bootstrapping"
-            ]
-          },
-          {
-            "group": "セッションとメモリ",
-            "pages": [
-              "concepts/session",
-              "concepts/session-pruning",
-              "concepts/session-tool",
-              "concepts/memory",
-              "concepts/compaction"
-            ]
-          },
-          {
-            "group": "マルチエージェント",
-            "pages": [
-              "concepts/multi-agent",
-              "concepts/presence"
-            ]
-          },
-          {
-            "group": "メッセージと配信",
-            "pages": [
-              "concepts/messages",
-              "concepts/streaming",
-              "concepts/retry",
-              "concepts/queue"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "ツール",
-        "groups": [
-          {
-            "group": "概要",
-            "pages": [
-              "tools/index"
-            ]
-          },
-          {
-            "group": "組み込みツール",
-            "pages": [
-              "tools/apply-patch",
-              "brave-search",
-              "perplexity",
-              "tools/diffs",
-              "tools/pdf",
-              "tools/elevated",
-              "tools/exec",
-              "tools/exec-approvals",
-              "tools/firecrawl",
-              "tools/llm-task",
-              "tools/lobster",
-              "tools/loop-detection",
-              "tools/reactions",
-              "tools/thinking",
-              "tools/web"
-            ]
-          },
-          {
-            "group": "ブラウザ",
-            "pages": [
-              "tools/browser",
-              "tools/browser-login",
-              "tools/chrome-extension",
-              "tools/browser-linux-troubleshooting",
-              "tools/browser-wsl2-windows-remote-cdp-troubleshooting"
-            ]
-          },
-          {
-            "group": "エージェント連携",
-            "pages": [
-              "tools/agent-send",
-              "tools/subagents",
-              "tools/acp-agents",
-              "tools/multi-agent-sandbox-tools"
-            ]
-          },
-          {
-            "group": "スキル",
-            "pages": [
-              "tools/creating-skills",
-              "tools/slash-commands",
-              "tools/skills",
-              "tools/skills-config",
-              "tools/clawhub",
-              "tools/plugin"
-            ]
-          },
-          {
-            "group": "拡張機能",
-            "pages": [
-              "plugins/community",
-              "plugins/voice-call",
-              "plugins/zalouser",
-              "plugins/manifest",
-              "plugins/agent-tools",
-              "prose"
-            ]
-          },
-          {
-            "group": "自動化",
-            "pages": [
-              "automation/hooks",
-              "automation/cron-jobs",
-              "automation/cron-vs-heartbeat",
-              "automation/troubleshooting",
-              "automation/webhook",
-              "automation/gmail-pubsub",
-              "automation/poll",
-              "automation/auth-monitoring"
-            ]
-          },
-          {
-            "group": "メディアとデバイス",
-            "pages": [
-              "nodes/index",
-              "nodes/troubleshooting",
-              "nodes/media-understanding",
-              "nodes/images",
-              "nodes/audio",
-              "nodes/camera",
-              "nodes/talk",
-              "nodes/voicewake",
-              "nodes/location-command",
-              "tts"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "モデル",
-        "groups": [
-          {
-            "group": "概要",
-            "pages": [
-              "providers/index"
-            ]
-          },
-          {
-            "group": "モデルの概念",
-            "pages": [
-              "concepts/models"
-            ]
-          },
-          {
-            "group": "設定",
-            "pages": [
-              "concepts/model-providers",
-              "concepts/model-failover"
-            ]
-          },
-          {
-            "group": "プロバイダー",
-            "pages": [
-              "providers/anthropic",
-              "providers/bedrock",
-              "providers/cloudflare-ai-gateway",
-              "providers/claude-max-api-proxy",
-              "providers/deepgram",
-              "providers/github-copilot",
-              "providers/huggingface",
-              "providers/kilocode",
-              "providers/litellm",
-              "providers/glm",
-              "providers/minimax",
-              "providers/moonshot",
-              "providers/mistral",
-              "providers/nvidia",
-              "providers/ollama",
-              "providers/openai",
-              "providers/opencode",
-              "providers/openrouter",
-              "providers/qianfan",
-              "providers/qwen",
-              "providers/synthetic",
-              "providers/together",
-              "providers/vercel-ai-gateway",
-              "providers/venice",
-              "providers/vllm",
-              "providers/xiaomi",
-              "providers/zai"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "プラットフォーム",
-        "groups": [
-          {
-            "group": "プラットフォーム概要",
-            "pages": [
-              "platforms/index",
-              "platforms/macos",
-              "platforms/linux",
-              "platforms/windows",
-              "platforms/android",
-              "platforms/ios",
-              "platforms/digitalocean",
-              "platforms/oracle",
-              "platforms/raspberry-pi"
-            ]
-          },
-          {
-            "group": "macOS コンパニオンアプリ",
-            "pages": [
-              "platforms/mac/dev-setup",
-              "platforms/mac/menu-bar",
-              "platforms/mac/voicewake",
-              "platforms/mac/voice-overlay",
-              "platforms/mac/webchat",
-              "platforms/mac/canvas",
-              "platforms/mac/child-process",
-              "platforms/mac/health",
-              "platforms/mac/icon",
-              "platforms/mac/logging",
-              "platforms/mac/permissions",
-              "platforms/mac/remote",
-              "platforms/mac/signing",
-              "platforms/mac/release",
-              "platforms/mac/bundled-gateway",
-              "platforms/mac/xpc",
-              "platforms/mac/skills",
-              "platforms/mac/peekaboo"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Gateway と運用",
-        "groups": [
-          {
-            "group": "Gateway",
-            "pages": [
-              "gateway/index",
+            "tab": "はじめに",
+            "groups": [
               {
-                "group": "設定と運用",
+                "group": "ホーム",
                 "pages": [
-                  "gateway/configuration",
-                  "gateway/configuration-reference",
-                  "gateway/configuration-examples",
-                  "gateway/authentication",
-                  "auth-credential-semantics",
-                  "gateway/secrets",
-                  "gateway/secrets-plan-contract",
-                  "gateway/trusted-proxy-auth",
-                  "gateway/health",
-                  "gateway/heartbeat",
-                  "gateway/doctor",
-                  "gateway/logging",
-                  "gateway/gateway-lock",
-                  "gateway/background-process",
-                  "gateway/multiple-gateways",
-                  "gateway/troubleshooting"
+                  "index"
                 ]
               },
               {
-                "group": "セキュリティとサンドボックス",
+                "group": "概要",
                 "pages": [
-                  "gateway/security/index",
-                  "gateway/sandboxing",
-                  "gateway/sandbox-vs-tool-policy-vs-elevated"
+                  "start/showcase"
                 ]
               },
               {
-                "group": "プロトコルと API",
+                "group": "コアコンセプト",
                 "pages": [
-                  "gateway/protocol",
-                  "gateway/bridge-protocol",
-                  "gateway/openai-http-api",
-                  "gateway/openresponses-http-api",
-                  "gateway/tools-invoke-http-api",
-                  "gateway/cli-backends",
-                  "gateway/local-models"
+                  "concepts/features"
                 ]
               },
               {
-                "group": "ネットワークと検出",
+                "group": "最初のステップ",
                 "pages": [
-                  "gateway/network-model",
-                  "gateway/pairing",
-                  "gateway/discovery",
-                  "gateway/bonjour"
+                  "start/getting-started",
+                  "start/onboarding-overview",
+                  "start/wizard",
+                  "start/onboarding"
+                ]
+              },
+              {
+                "group": "ガイド",
+                "pages": [
+                  "start/openclaw",
+                  "start/wizard-cli-reference",
+                  "start/wizard-cli-automation"
                 ]
               }
             ]
           },
           {
-            "group": "リモートアクセス",
-            "pages": [
-              "gateway/remote",
-              "gateway/remote-gateway-readme",
-              "gateway/tailscale"
+            "tab": "インストール",
+            "groups": [
+              {
+                "group": "インストール概要",
+                "pages": [
+                  "install/index",
+                  "install/installer"
+                ]
+              },
+              {
+                "group": "その他のインストール方法",
+                "pages": [
+                  "install/docker",
+                  "install/podman",
+                  "install/nix",
+                  "install/ansible",
+                  "install/bun"
+                ]
+              },
+              {
+                "group": "メンテナンス",
+                "pages": [
+                  "install/updating",
+                  "install/migrating",
+                  "install/uninstall"
+                ]
+              },
+              {
+                "group": "ホスティングとデプロイ",
+                "pages": [
+                  "vps",
+                  "install/fly",
+                  "install/hetzner",
+                  "install/gcp",
+                  "install/macos-vm",
+                  "install/exe-dev",
+                  "install/railway",
+                  "install/render",
+                  "install/northflank"
+                ]
+              },
+              {
+                "group": "上級",
+                "pages": [
+                  "install/development-channels"
+                ]
+              }
             ]
           },
           {
-            "group": "セキュリティ",
-            "pages": [
-              "security/formal-verification",
-              "security/README",
-              "security/THREAT-MODEL-ATLAS",
-              "security/CONTRIBUTING-THREAT-MODEL"
+            "tab": "チャンネル",
+            "groups": [
+              {
+                "group": "概要",
+                "pages": [
+                  "channels/index"
+                ]
+              },
+              {
+                "group": "メッセージングプラットフォーム",
+                "pages": [
+                  "channels/bluebubbles",
+                  "channels/discord",
+                  "channels/feishu",
+                  "channels/googlechat",
+                  "channels/imessage",
+                  "channels/irc",
+                  "channels/line",
+                  "channels/matrix",
+                  "channels/mattermost",
+                  "channels/msteams",
+                  "channels/nextcloud-talk",
+                  "channels/nostr",
+                  "channels/signal",
+                  "channels/synology-chat",
+                  "channels/slack",
+                  "channels/telegram",
+                  "channels/tlon",
+                  "channels/twitch",
+                  "channels/whatsapp",
+                  "channels/zalo",
+                  "channels/zalouser"
+                ]
+              },
+              {
+                "group": "設定",
+                "pages": [
+                  "channels/pairing",
+                  "channels/group-messages",
+                  "channels/groups",
+                  "channels/broadcast-groups",
+                  "channels/channel-routing",
+                  "channels/location",
+                  "channels/troubleshooting"
+                ]
+              }
             ]
           },
           {
-            "group": "Web インターフェース",
-            "pages": [
-              "web/index",
-              "web/control-ui",
-              "web/dashboard",
-              "web/webchat",
-              "web/tui"
+            "tab": "エージェント",
+            "groups": [
+              {
+                "group": "基礎",
+                "pages": [
+                  "pi",
+                  "concepts/architecture",
+                  "concepts/agent",
+                  "concepts/agent-loop",
+                  "concepts/system-prompt",
+                  "concepts/context",
+                  "concepts/agent-workspace",
+                  "concepts/oauth"
+                ]
+              },
+              {
+                "group": "ブートストラップ",
+                "pages": [
+                  "start/bootstrapping"
+                ]
+              },
+              {
+                "group": "セッションとメモリ",
+                "pages": [
+                  "concepts/session",
+                  "concepts/session-pruning",
+                  "concepts/session-tool",
+                  "concepts/memory",
+                  "concepts/compaction"
+                ]
+              },
+              {
+                "group": "マルチエージェント",
+                "pages": [
+                  "concepts/multi-agent",
+                  "concepts/presence"
+                ]
+              },
+              {
+                "group": "メッセージと配信",
+                "pages": [
+                  "concepts/messages",
+                  "concepts/streaming",
+                  "concepts/retry",
+                  "concepts/queue"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "ツール",
+            "groups": [
+              {
+                "group": "概要",
+                "pages": [
+                  "tools/index"
+                ]
+              },
+              {
+                "group": "組み込みツール",
+                "pages": [
+                  "tools/apply-patch",
+                  "brave-search",
+                  "perplexity",
+                  "tools/diffs",
+                  "tools/pdf",
+                  "tools/elevated",
+                  "tools/exec",
+                  "tools/exec-approvals",
+                  "tools/firecrawl",
+                  "tools/llm-task",
+                  "tools/lobster",
+                  "tools/loop-detection",
+                  "tools/reactions",
+                  "tools/thinking",
+                  "tools/web"
+                ]
+              },
+              {
+                "group": "ブラウザ",
+                "pages": [
+                  "tools/browser",
+                  "tools/browser-login",
+                  "tools/chrome-extension",
+                  "tools/browser-linux-troubleshooting",
+                  "tools/browser-wsl2-windows-remote-cdp-troubleshooting"
+                ]
+              },
+              {
+                "group": "エージェント連携",
+                "pages": [
+                  "tools/agent-send",
+                  "tools/subagents",
+                  "tools/acp-agents",
+                  "tools/multi-agent-sandbox-tools"
+                ]
+              },
+              {
+                "group": "スキル",
+                "pages": [
+                  "tools/creating-skills",
+                  "tools/slash-commands",
+                  "tools/skills",
+                  "tools/skills-config",
+                  "tools/clawhub",
+                  "tools/plugin"
+                ]
+              },
+              {
+                "group": "拡張機能",
+                "pages": [
+                  "plugins/community",
+                  "plugins/voice-call",
+                  "plugins/zalouser",
+                  "plugins/manifest",
+                  "plugins/agent-tools",
+                  "prose"
+                ]
+              },
+              {
+                "group": "自動化",
+                "pages": [
+                  "automation/hooks",
+                  "automation/cron-jobs",
+                  "automation/cron-vs-heartbeat",
+                  "automation/troubleshooting",
+                  "automation/webhook",
+                  "automation/gmail-pubsub",
+                  "automation/poll",
+                  "automation/auth-monitoring"
+                ]
+              },
+              {
+                "group": "メディアとデバイス",
+                "pages": [
+                  "nodes/index",
+                  "nodes/troubleshooting",
+                  "nodes/media-understanding",
+                  "nodes/images",
+                  "nodes/audio",
+                  "nodes/camera",
+                  "nodes/talk",
+                  "nodes/voicewake",
+                  "nodes/location-command",
+                  "tts"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "モデル",
+            "groups": [
+              {
+                "group": "概要",
+                "pages": [
+                  "providers/index"
+                ]
+              },
+              {
+                "group": "モデルの概念",
+                "pages": [
+                  "concepts/models"
+                ]
+              },
+              {
+                "group": "設定",
+                "pages": [
+                  "concepts/model-providers",
+                  "concepts/model-failover"
+                ]
+              },
+              {
+                "group": "プロバイダー",
+                "pages": [
+                  "providers/anthropic",
+                  "providers/bedrock",
+                  "providers/cloudflare-ai-gateway",
+                  "providers/claude-max-api-proxy",
+                  "providers/deepgram",
+                  "providers/github-copilot",
+                  "providers/huggingface",
+                  "providers/kilocode",
+                  "providers/litellm",
+                  "providers/glm",
+                  "providers/minimax",
+                  "providers/moonshot",
+                  "providers/mistral",
+                  "providers/nvidia",
+                  "providers/ollama",
+                  "providers/openai",
+                  "providers/opencode",
+                  "providers/openrouter",
+                  "providers/qianfan",
+                  "providers/qwen",
+                  "providers/synthetic",
+                  "providers/together",
+                  "providers/vercel-ai-gateway",
+                  "providers/venice",
+                  "providers/vllm",
+                  "providers/xiaomi",
+                  "providers/zai"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "プラットフォーム",
+            "groups": [
+              {
+                "group": "プラットフォーム概要",
+                "pages": [
+                  "platforms/index",
+                  "platforms/macos",
+                  "platforms/linux",
+                  "platforms/windows",
+                  "platforms/android",
+                  "platforms/ios",
+                  "platforms/digitalocean",
+                  "platforms/oracle",
+                  "platforms/raspberry-pi"
+                ]
+              },
+              {
+                "group": "macOS コンパニオンアプリ",
+                "pages": [
+                  "platforms/mac/dev-setup",
+                  "platforms/mac/menu-bar",
+                  "platforms/mac/voicewake",
+                  "platforms/mac/voice-overlay",
+                  "platforms/mac/webchat",
+                  "platforms/mac/canvas",
+                  "platforms/mac/child-process",
+                  "platforms/mac/health",
+                  "platforms/mac/icon",
+                  "platforms/mac/logging",
+                  "platforms/mac/permissions",
+                  "platforms/mac/remote",
+                  "platforms/mac/signing",
+                  "platforms/mac/release",
+                  "platforms/mac/bundled-gateway",
+                  "platforms/mac/xpc",
+                  "platforms/mac/skills",
+                  "platforms/mac/peekaboo"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Gateway と運用",
+            "groups": [
+              {
+                "group": "Gateway",
+                "pages": [
+                  "gateway/index",
+                  {
+                    "group": "設定と運用",
+                    "pages": [
+                      "gateway/configuration",
+                      "gateway/configuration-reference",
+                      "gateway/configuration-examples",
+                      "gateway/authentication",
+                      "auth-credential-semantics",
+                      "gateway/secrets",
+                      "gateway/secrets-plan-contract",
+                      "gateway/trusted-proxy-auth",
+                      "gateway/health",
+                      "gateway/heartbeat",
+                      "gateway/doctor",
+                      "gateway/logging",
+                      "gateway/gateway-lock",
+                      "gateway/background-process",
+                      "gateway/multiple-gateways",
+                      "gateway/troubleshooting"
+                    ]
+                  },
+                  {
+                    "group": "セキュリティとサンドボックス",
+                    "pages": [
+                      "gateway/security/index",
+                      "gateway/sandboxing",
+                      "gateway/sandbox-vs-tool-policy-vs-elevated"
+                    ]
+                  },
+                  {
+                    "group": "プロトコルと API",
+                    "pages": [
+                      "gateway/protocol",
+                      "gateway/bridge-protocol",
+                      "gateway/openai-http-api",
+                      "gateway/openresponses-http-api",
+                      "gateway/tools-invoke-http-api",
+                      "gateway/cli-backends",
+                      "gateway/local-models"
+                    ]
+                  },
+                  {
+                    "group": "ネットワークと検出",
+                    "pages": [
+                      "gateway/network-model",
+                      "gateway/pairing",
+                      "gateway/discovery",
+                      "gateway/bonjour"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "リモートアクセス",
+                "pages": [
+                  "gateway/remote",
+                  "gateway/remote-gateway-readme",
+                  "gateway/tailscale"
+                ]
+              },
+              {
+                "group": "セキュリティ",
+                "pages": [
+                  "security/formal-verification",
+                  "security/THREAT-MODEL-ATLAS",
+                  "security/CONTRIBUTING-THREAT-MODEL"
+                ]
+              },
+              {
+                "group": "Web インターフェース",
+                "pages": [
+                  "web/index",
+                  "web/control-ui",
+                  "web/dashboard",
+                  "web/webchat",
+                  "web/tui"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "リファレンス",
+            "groups": [
+              {
+                "group": "CLI コマンド",
+                "pages": [
+                  "cli/index",
+                  "cli/acp",
+                  "cli/agent",
+                  "cli/agents",
+                  "cli/approvals",
+                  "cli/browser",
+                  "cli/channels",
+                  "cli/clawbot",
+                  "cli/completion",
+                  "cli/config",
+                  "cli/configure",
+                  "cli/cron",
+                  "cli/daemon",
+                  "cli/dashboard",
+                  "cli/devices",
+                  "cli/directory",
+                  "cli/dns",
+                  "cli/docs",
+                  "cli/doctor",
+                  "cli/gateway",
+                  "cli/health",
+                  "cli/hooks",
+                  "cli/logs",
+                  "cli/memory",
+                  "cli/message",
+                  "cli/models",
+                  "cli/node",
+                  "cli/nodes",
+                  "cli/onboard",
+                  "cli/pairing",
+                  "cli/plugins",
+                  "cli/qr",
+                  "cli/reset",
+                  "cli/sandbox",
+                  "cli/secrets",
+                  "cli/security",
+                  "cli/sessions",
+                  "cli/setup",
+                  "cli/skills",
+                  "cli/status",
+                  "cli/system",
+                  "cli/tui",
+                  "cli/uninstall",
+                  "cli/update",
+                  "cli/voicecall",
+                  "cli/webhooks"
+                ]
+              },
+              {
+                "group": "RPC と API",
+                "pages": [
+                  "reference/rpc",
+                  "reference/device-models"
+                ]
+              },
+              {
+                "group": "テンプレート",
+                "pages": [
+                  "reference/AGENTS.default",
+                  "reference/templates/AGENTS",
+                  "reference/templates/BOOT",
+                  "reference/templates/BOOTSTRAP",
+                  "reference/templates/HEARTBEAT",
+                  "reference/templates/SOUL",
+                  "reference/templates/TOOLS"
+                ]
+              },
+              {
+                "group": "技術リファレンス",
+                "pages": [
+                  "reference/wizard",
+                  "reference/token-use",
+                  "reference/secretref-credential-surface",
+                  "reference/prompt-caching",
+                  "reference/api-usage-costs",
+                  "reference/transcript-hygiene",
+                  "date-time"
+                ]
+              },
+              {
+                "group": "内部構造",
+                "pages": [
+                  "concepts/typebox",
+                  "concepts/markdown-formatting",
+                  "concepts/typing-indicators",
+                  "concepts/usage-tracking",
+                  "concepts/timezone"
+                ]
+              },
+              {
+                "group": "プロジェクト",
+                "pages": [
+                  "reference/credits"
+                ]
+              },
+              {
+                "group": "リリースノート",
+                "pages": [
+                  "reference/RELEASING",
+                  "reference/test"
+                ]
+              },
+              {
+                "group": "実験",
+                "pages": [
+                  "design/kilo-gateway-integration",
+                  "experiments/onboarding-config-protocol",
+                  "experiments/plans/acp-thread-bound-agents",
+                  "experiments/plans/acp-unified-streaming-refactor",
+                  "experiments/plans/browser-evaluate-cdp-refactor",
+                  "experiments/plans/openresponses-gateway",
+                  "experiments/plans/pty-process-supervision",
+                  "experiments/plans/session-binding-channel-agnostic",
+                  "experiments/research/memory",
+                  "experiments/proposals/model-config"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "ヘルプ",
+            "groups": [
+              {
+                "group": "ヘルプ",
+                "pages": [
+                  "help/index",
+                  "help/troubleshooting",
+                  "help/faq"
+                ]
+              },
+              {
+                "group": "コミュニティ",
+                "pages": [
+                  "start/lore"
+                ]
+              },
+              {
+                "group": "環境とデバッグ",
+                "pages": [
+                  "help/environment",
+                  "help/debugging",
+                  "help/testing",
+                  "help/scripts",
+                  "debug/node-issue",
+                  "diagnostics/flags"
+                ]
+              },
+              {
+                "group": "Node ランタイム",
+                "pages": [
+                  "install/node"
+                ]
+              },
+              {
+                "group": "コンパクション内部",
+                "pages": [
+                  "reference/session-management-compaction"
+                ]
+              },
+              {
+                "group": "開発者セットアップ",
+                "pages": [
+                  "start/setup",
+                  "pi-dev"
+                ]
+              },
+              {
+                "group": "コントリビュート",
+                "pages": [
+                  "ci"
+                ]
+              },
+              {
+                "group": "ドキュメントメタ",
+                "pages": [
+                  "start/hubs",
+                  "start/docs-directory"
+                ]
+              }
             ]
           }
         ]
       },
       {
-        "tab": "リファレンス",
-        "groups": [
+        "language": "ko",
+        "tabs": [
           {
-            "group": "CLI コマンド",
-            "pages": [
-              "cli/index",
-              "cli/acp",
-              "cli/agent",
-              "cli/agents",
-              "cli/approvals",
-              "cli/browser",
-              "cli/channels",
-              "cli/clawbot",
-              "cli/completion",
-              "cli/config",
-              "cli/configure",
-              "cli/cron",
-              "cli/daemon",
-              "cli/dashboard",
-              "cli/devices",
-              "cli/directory",
-              "cli/dns",
-              "cli/docs",
-              "cli/doctor",
-              "cli/gateway",
-              "cli/health",
-              "cli/hooks",
-              "cli/logs",
-              "cli/memory",
-              "cli/message",
-              "cli/models",
-              "cli/node",
-              "cli/nodes",
-              "cli/onboard",
-              "cli/pairing",
-              "cli/plugins",
-              "cli/qr",
-              "cli/reset",
-              "cli/sandbox",
-              "cli/secrets",
-              "cli/security",
-              "cli/sessions",
-              "cli/setup",
-              "cli/skills",
-              "cli/status",
-              "cli/system",
-              "cli/tui",
-              "cli/uninstall",
-              "cli/update",
-              "cli/voicecall",
-              "cli/webhooks"
+            "tab": "시작하기",
+            "groups": [
+              {
+                "group": "홈",
+                "pages": [
+                  "ko-KR/index"
+                ]
+              },
+              {
+                "group": "개요",
+                "pages": [
+                  "ko-KR/start/showcase"
+                ]
+              },
+              {
+                "group": "핵심 개념",
+                "pages": [
+                  "ko-KR/concepts/features"
+                ]
+              },
+              {
+                "group": "첫 단계",
+                "pages": [
+                  "ko-KR/start/getting-started",
+                  "ko-KR/start/onboarding-overview",
+                  "ko-KR/start/wizard",
+                  "ko-KR/start/onboarding"
+                ]
+              },
+              {
+                "group": "가이드",
+                "pages": [
+                  "ko-KR/start/openclaw",
+                  "ko-KR/start/wizard-cli-reference",
+                  "ko-KR/start/wizard-cli-automation"
+                ]
+              }
             ]
           },
           {
-            "group": "RPC と API",
-            "pages": [
-              "reference/rpc",
-              "reference/device-models"
+            "tab": "설치",
+            "groups": [
+              {
+                "group": "설치 개요",
+                "pages": [
+                  "ko-KR/install/index",
+                  "ko-KR/install/installer"
+                ]
+              },
+              {
+                "group": "기타 설치 방법",
+                "pages": [
+                  "ko-KR/install/docker",
+                  "ko-KR/install/podman",
+                  "ko-KR/install/nix",
+                  "ko-KR/install/ansible",
+                  "ko-KR/install/bun"
+                ]
+              },
+              {
+                "group": "유지보수",
+                "pages": [
+                  "ko-KR/install/updating",
+                  "ko-KR/install/migrating",
+                  "ko-KR/install/uninstall"
+                ]
+              },
+              {
+                "group": "호스팅 및 배포",
+                "pages": [
+                  "ko-KR/vps",
+                  "ko-KR/install/fly",
+                  "ko-KR/install/hetzner",
+                  "ko-KR/install/gcp",
+                  "ko-KR/install/macos-vm",
+                  "ko-KR/install/exe-dev",
+                  "ko-KR/install/railway",
+                  "ko-KR/install/render",
+                  "ko-KR/install/northflank"
+                ]
+              },
+              {
+                "group": "고급",
+                "pages": [
+                  "ko-KR/install/development-channels"
+                ]
+              }
             ]
           },
           {
-            "group": "テンプレート",
-            "pages": [
-              "reference/AGENTS.default",
-              "reference/templates/AGENTS",
-              "reference/templates/BOOT",
-              "reference/templates/BOOTSTRAP",
-              "reference/templates/HEARTBEAT",
-              "reference/templates/IDENTITY",
-              "reference/templates/SOUL",
-              "reference/templates/TOOLS",
-              "reference/templates/USER"
+            "tab": "채널",
+            "groups": [
+              {
+                "group": "개요",
+                "pages": [
+                  "ko-KR/channels/index"
+                ]
+              },
+              {
+                "group": "메시징 플랫폼",
+                "pages": [
+                  "ko-KR/channels/bluebubbles",
+                  "ko-KR/channels/discord",
+                  "ko-KR/channels/feishu",
+                  "ko-KR/channels/googlechat",
+                  "ko-KR/channels/imessage",
+                  "ko-KR/channels/irc",
+                  "ko-KR/channels/line",
+                  "ko-KR/channels/matrix",
+                  "ko-KR/channels/mattermost",
+                  "ko-KR/channels/msteams",
+                  "ko-KR/channels/nextcloud-talk",
+                  "ko-KR/channels/nostr",
+                  "ko-KR/channels/signal",
+                  "ko-KR/channels/synology-chat",
+                  "ko-KR/channels/slack",
+                  "ko-KR/channels/telegram",
+                  "ko-KR/channels/tlon",
+                  "ko-KR/channels/twitch",
+                  "ko-KR/channels/whatsapp",
+                  "ko-KR/channels/zalo",
+                  "ko-KR/channels/zalouser"
+                ]
+              },
+              {
+                "group": "설정",
+                "pages": [
+                  "ko-KR/channels/pairing",
+                  "ko-KR/channels/group-messages",
+                  "ko-KR/channels/groups",
+                  "ko-KR/channels/broadcast-groups",
+                  "ko-KR/channels/channel-routing",
+                  "ko-KR/channels/location",
+                  "ko-KR/channels/troubleshooting"
+                ]
+              }
             ]
           },
           {
-            "group": "技術リファレンス",
-            "pages": [
-              "reference/wizard",
-              "reference/token-use",
-              "reference/secretref-credential-surface",
-              "reference/prompt-caching",
-              "reference/api-usage-costs",
-              "reference/transcript-hygiene",
-              "date-time"
+            "tab": "에이전트",
+            "groups": [
+              {
+                "group": "기초",
+                "pages": [
+                  "ko-KR/pi",
+                  "ko-KR/concepts/architecture",
+                  "ko-KR/concepts/agent",
+                  "ko-KR/concepts/agent-loop",
+                  "ko-KR/concepts/system-prompt",
+                  "ko-KR/concepts/context",
+                  "ko-KR/concepts/agent-workspace",
+                  "ko-KR/concepts/oauth"
+                ]
+              },
+              {
+                "group": "부트스트랩",
+                "pages": [
+                  "ko-KR/start/bootstrapping"
+                ]
+              },
+              {
+                "group": "세션 및 메모리",
+                "pages": [
+                  "ko-KR/concepts/session",
+                  "ko-KR/concepts/session-pruning",
+                  "ko-KR/concepts/session-tool",
+                  "ko-KR/concepts/memory",
+                  "ko-KR/concepts/compaction"
+                ]
+              },
+              {
+                "group": "멀티 에이전트",
+                "pages": [
+                  "ko-KR/concepts/multi-agent",
+                  "ko-KR/concepts/presence"
+                ]
+              },
+              {
+                "group": "메시지 및 전송",
+                "pages": [
+                  "ko-KR/concepts/messages",
+                  "ko-KR/concepts/streaming",
+                  "ko-KR/concepts/retry",
+                  "ko-KR/concepts/queue"
+                ]
+              }
             ]
           },
           {
-            "group": "内部構造",
-            "pages": [
-              "concepts/typebox",
-              "concepts/markdown-formatting",
-              "concepts/typing-indicators",
-              "concepts/usage-tracking",
-              "concepts/timezone"
+            "tab": "도구",
+            "groups": [
+              {
+                "group": "개요",
+                "pages": [
+                  "ko-KR/tools/index"
+                ]
+              },
+              {
+                "group": "내장 도구",
+                "pages": [
+                  "ko-KR/tools/apply-patch",
+                  "ko-KR/brave-search",
+                  "ko-KR/perplexity",
+                  "ko-KR/tools/diffs",
+                  "ko-KR/tools/pdf",
+                  "ko-KR/tools/elevated",
+                  "ko-KR/tools/exec",
+                  "ko-KR/tools/exec-approvals",
+                  "ko-KR/tools/firecrawl",
+                  "ko-KR/tools/llm-task",
+                  "ko-KR/tools/lobster",
+                  "ko-KR/tools/loop-detection",
+                  "ko-KR/tools/reactions",
+                  "ko-KR/tools/thinking",
+                  "ko-KR/tools/web"
+                ]
+              },
+              {
+                "group": "브라우저",
+                "pages": [
+                  "ko-KR/tools/browser",
+                  "ko-KR/tools/browser-login",
+                  "ko-KR/tools/chrome-extension",
+                  "ko-KR/tools/browser-linux-troubleshooting",
+                  "ko-KR/tools/browser-wsl2-windows-remote-cdp-troubleshooting"
+                ]
+              },
+              {
+                "group": "에이전트 연동",
+                "pages": [
+                  "ko-KR/tools/agent-send",
+                  "ko-KR/tools/subagents",
+                  "ko-KR/tools/acp-agents",
+                  "ko-KR/tools/multi-agent-sandbox-tools"
+                ]
+              },
+              {
+                "group": "스킬",
+                "pages": [
+                  "ko-KR/tools/creating-skills",
+                  "ko-KR/tools/slash-commands",
+                  "ko-KR/tools/skills",
+                  "ko-KR/tools/skills-config",
+                  "ko-KR/tools/clawhub",
+                  "ko-KR/tools/plugin"
+                ]
+              },
+              {
+                "group": "확장 기능",
+                "pages": [
+                  "ko-KR/plugins/community",
+                  "ko-KR/plugins/voice-call",
+                  "ko-KR/plugins/zalouser",
+                  "ko-KR/plugins/manifest",
+                  "ko-KR/plugins/agent-tools",
+                  "ko-KR/prose"
+                ]
+              },
+              {
+                "group": "자동화",
+                "pages": [
+                  "ko-KR/automation/hooks",
+                  "ko-KR/automation/cron-jobs",
+                  "ko-KR/automation/cron-vs-heartbeat",
+                  "ko-KR/automation/troubleshooting",
+                  "ko-KR/automation/webhook",
+                  "ko-KR/automation/gmail-pubsub",
+                  "ko-KR/automation/poll",
+                  "ko-KR/automation/auth-monitoring"
+                ]
+              },
+              {
+                "group": "미디어 및 장치",
+                "pages": [
+                  "ko-KR/nodes/index",
+                  "ko-KR/nodes/troubleshooting",
+                  "ko-KR/nodes/media-understanding",
+                  "ko-KR/nodes/images",
+                  "ko-KR/nodes/audio",
+                  "ko-KR/nodes/camera",
+                  "ko-KR/nodes/talk",
+                  "ko-KR/nodes/voicewake",
+                  "ko-KR/nodes/location-command",
+                  "ko-KR/tts"
+                ]
+              }
             ]
           },
           {
-            "group": "プロジェクト",
-            "pages": [
-              "reference/credits"
+            "tab": "모델",
+            "groups": [
+              {
+                "group": "개요",
+                "pages": [
+                  "ko-KR/providers/index"
+                ]
+              },
+              {
+                "group": "모델 개념",
+                "pages": [
+                  "ko-KR/concepts/models"
+                ]
+              },
+              {
+                "group": "설정",
+                "pages": [
+                  "ko-KR/concepts/model-providers",
+                  "ko-KR/concepts/model-failover"
+                ]
+              },
+              {
+                "group": "프로바이더",
+                "pages": [
+                  "ko-KR/providers/anthropic",
+                  "ko-KR/providers/bedrock",
+                  "ko-KR/providers/cloudflare-ai-gateway",
+                  "ko-KR/providers/claude-max-api-proxy",
+                  "ko-KR/providers/deepgram",
+                  "ko-KR/providers/github-copilot",
+                  "ko-KR/providers/huggingface",
+                  "ko-KR/providers/kilocode",
+                  "ko-KR/providers/litellm",
+                  "ko-KR/providers/glm",
+                  "ko-KR/providers/minimax",
+                  "ko-KR/providers/moonshot",
+                  "ko-KR/providers/mistral",
+                  "ko-KR/providers/nvidia",
+                  "ko-KR/providers/ollama",
+                  "ko-KR/providers/openai",
+                  "ko-KR/providers/opencode",
+                  "ko-KR/providers/openrouter",
+                  "ko-KR/providers/qianfan",
+                  "ko-KR/providers/qwen",
+                  "ko-KR/providers/synthetic",
+                  "ko-KR/providers/together",
+                  "ko-KR/providers/vercel-ai-gateway",
+                  "ko-KR/providers/venice",
+                  "ko-KR/providers/vllm",
+                  "ko-KR/providers/xiaomi",
+                  "ko-KR/providers/zai"
+                ]
+              }
             ]
           },
           {
-            "group": "リリースノート",
-            "pages": [
-              "reference/RELEASING",
-              "reference/test"
+            "tab": "플랫폼",
+            "groups": [
+              {
+                "group": "플랫폼 개요",
+                "pages": [
+                  "ko-KR/platforms/index",
+                  "ko-KR/platforms/macos",
+                  "ko-KR/platforms/linux",
+                  "ko-KR/platforms/windows",
+                  "ko-KR/platforms/android",
+                  "ko-KR/platforms/ios",
+                  "ko-KR/platforms/digitalocean",
+                  "ko-KR/platforms/oracle",
+                  "ko-KR/platforms/raspberry-pi"
+                ]
+              },
+              {
+                "group": "macOS 컴패니언 앱",
+                "pages": [
+                  "ko-KR/platforms/mac/dev-setup",
+                  "ko-KR/platforms/mac/menu-bar",
+                  "ko-KR/platforms/mac/voicewake",
+                  "ko-KR/platforms/mac/voice-overlay",
+                  "ko-KR/platforms/mac/webchat",
+                  "ko-KR/platforms/mac/canvas",
+                  "ko-KR/platforms/mac/child-process",
+                  "ko-KR/platforms/mac/health",
+                  "ko-KR/platforms/mac/icon",
+                  "ko-KR/platforms/mac/logging",
+                  "ko-KR/platforms/mac/permissions",
+                  "ko-KR/platforms/mac/remote",
+                  "ko-KR/platforms/mac/signing",
+                  "ko-KR/platforms/mac/release",
+                  "ko-KR/platforms/mac/bundled-gateway",
+                  "ko-KR/platforms/mac/xpc",
+                  "ko-KR/platforms/mac/skills",
+                  "ko-KR/platforms/mac/peekaboo"
+                ]
+              }
             ]
           },
           {
-            "group": "実験",
-            "pages": [
-              "design/kilo-gateway-integration",
-              "experiments/onboarding-config-protocol",
-              "experiments/plans/acp-thread-bound-agents",
-              "experiments/plans/acp-unified-streaming-refactor",
-              "experiments/plans/browser-evaluate-cdp-refactor",
-              "experiments/plans/openresponses-gateway",
-              "experiments/plans/pty-process-supervision",
-              "experiments/plans/session-binding-channel-agnostic",
-              "experiments/research/memory",
-              "experiments/proposals/model-config"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "ヘルプ",
-        "groups": [
-          {
-            "group": "ヘルプ",
-            "pages": [
-              "help/index",
-              "help/troubleshooting",
-              "help/faq"
+            "tab": "게이트웨이 및 운영",
+            "groups": [
+              {
+                "group": "게이트웨이",
+                "pages": [
+                  "ko-KR/gateway/index",
+                  {
+                    "group": "설정 및 운영",
+                    "pages": [
+                      "ko-KR/gateway/configuration",
+                      "ko-KR/gateway/configuration-reference",
+                      "ko-KR/gateway/configuration-examples",
+                      "ko-KR/gateway/authentication",
+                      "ko-KR/auth-credential-semantics",
+                      "ko-KR/gateway/secrets",
+                      "ko-KR/gateway/secrets-plan-contract",
+                      "ko-KR/gateway/trusted-proxy-auth",
+                      "ko-KR/gateway/health",
+                      "ko-KR/gateway/heartbeat",
+                      "ko-KR/gateway/doctor",
+                      "ko-KR/gateway/logging",
+                      "ko-KR/gateway/gateway-lock",
+                      "ko-KR/gateway/background-process",
+                      "ko-KR/gateway/multiple-gateways",
+                      "ko-KR/gateway/troubleshooting"
+                    ]
+                  },
+                  {
+                    "group": "보안 및 샌드박스",
+                    "pages": [
+                      "ko-KR/gateway/security/index",
+                      "ko-KR/gateway/sandboxing",
+                      "ko-KR/gateway/sandbox-vs-tool-policy-vs-elevated"
+                    ]
+                  },
+                  {
+                    "group": "프로토콜 및 API",
+                    "pages": [
+                      "ko-KR/gateway/protocol",
+                      "ko-KR/gateway/bridge-protocol",
+                      "ko-KR/gateway/openai-http-api",
+                      "ko-KR/gateway/openresponses-http-api",
+                      "ko-KR/gateway/tools-invoke-http-api",
+                      "ko-KR/gateway/cli-backends",
+                      "ko-KR/gateway/local-models"
+                    ]
+                  },
+                  {
+                    "group": "네트워크 및 탐색",
+                    "pages": [
+                      "ko-KR/gateway/network-model",
+                      "ko-KR/gateway/pairing",
+                      "ko-KR/gateway/discovery",
+                      "ko-KR/gateway/bonjour"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "원격 액세스",
+                "pages": [
+                  "ko-KR/gateway/remote",
+                  "ko-KR/gateway/remote-gateway-readme",
+                  "ko-KR/gateway/tailscale"
+                ]
+              },
+              {
+                "group": "보안",
+                "pages": [
+                  "ko-KR/security/formal-verification",
+                  "ko-KR/security/THREAT-MODEL-ATLAS",
+                  "ko-KR/security/CONTRIBUTING-THREAT-MODEL"
+                ]
+              },
+              {
+                "group": "웹 인터페이스",
+                "pages": [
+                  "ko-KR/web/index",
+                  "ko-KR/web/control-ui",
+                  "ko-KR/web/dashboard",
+                  "ko-KR/web/webchat",
+                  "ko-KR/web/tui"
+                ]
+              }
             ]
           },
           {
-            "group": "コミュニティ",
-            "pages": [
-              "start/lore"
+            "tab": "참조",
+            "groups": [
+              {
+                "group": "CLI 명령",
+                "pages": [
+                  "ko-KR/cli/index",
+                  "ko-KR/cli/acp",
+                  "ko-KR/cli/agent",
+                  "ko-KR/cli/agents",
+                  "ko-KR/cli/approvals",
+                  "ko-KR/cli/browser",
+                  "ko-KR/cli/channels",
+                  "ko-KR/cli/clawbot",
+                  "ko-KR/cli/completion",
+                  "ko-KR/cli/config",
+                  "ko-KR/cli/configure",
+                  "ko-KR/cli/cron",
+                  "ko-KR/cli/daemon",
+                  "ko-KR/cli/dashboard",
+                  "ko-KR/cli/devices",
+                  "ko-KR/cli/directory",
+                  "ko-KR/cli/dns",
+                  "ko-KR/cli/docs",
+                  "ko-KR/cli/doctor",
+                  "ko-KR/cli/gateway",
+                  "ko-KR/cli/health",
+                  "ko-KR/cli/hooks",
+                  "ko-KR/cli/logs",
+                  "ko-KR/cli/memory",
+                  "ko-KR/cli/message",
+                  "ko-KR/cli/models",
+                  "ko-KR/cli/node",
+                  "ko-KR/cli/nodes",
+                  "ko-KR/cli/onboard",
+                  "ko-KR/cli/pairing",
+                  "ko-KR/cli/plugins",
+                  "ko-KR/cli/qr",
+                  "ko-KR/cli/reset",
+                  "ko-KR/cli/sandbox",
+                  "ko-KR/cli/secrets",
+                  "ko-KR/cli/security",
+                  "ko-KR/cli/sessions",
+                  "ko-KR/cli/setup",
+                  "ko-KR/cli/skills",
+                  "ko-KR/cli/status",
+                  "ko-KR/cli/system",
+                  "ko-KR/cli/tui",
+                  "ko-KR/cli/uninstall",
+                  "ko-KR/cli/update",
+                  "ko-KR/cli/voicecall",
+                  "ko-KR/cli/webhooks"
+                ]
+              },
+              {
+                "group": "RPC 및 API",
+                "pages": [
+                  "ko-KR/reference/rpc",
+                  "ko-KR/reference/device-models"
+                ]
+              },
+              {
+                "group": "템플릿",
+                "pages": [
+                  "ko-KR/reference/AGENTS.default",
+                  "ko-KR/reference/templates/AGENTS",
+                  "ko-KR/reference/templates/BOOT",
+                  "ko-KR/reference/templates/BOOTSTRAP",
+                  "ko-KR/reference/templates/HEARTBEAT",
+                  "ko-KR/reference/templates/SOUL",
+                  "ko-KR/reference/templates/TOOLS"
+                ]
+              },
+              {
+                "group": "기술 참조",
+                "pages": [
+                  "ko-KR/reference/wizard",
+                  "ko-KR/reference/token-use",
+                  "ko-KR/reference/secretref-credential-surface",
+                  "ko-KR/reference/prompt-caching",
+                  "ko-KR/reference/api-usage-costs",
+                  "ko-KR/reference/transcript-hygiene",
+                  "ko-KR/date-time"
+                ]
+              },
+              {
+                "group": "내부 구조",
+                "pages": [
+                  "ko-KR/concepts/typebox",
+                  "ko-KR/concepts/markdown-formatting",
+                  "ko-KR/concepts/typing-indicators",
+                  "ko-KR/concepts/usage-tracking",
+                  "ko-KR/concepts/timezone"
+                ]
+              },
+              {
+                "group": "프로젝트",
+                "pages": [
+                  "ko-KR/reference/credits"
+                ]
+              },
+              {
+                "group": "릴리스 노트",
+                "pages": [
+                  "ko-KR/reference/RELEASING",
+                  "ko-KR/reference/test"
+                ]
+              },
+              {
+                "group": "실험",
+                "pages": [
+                  "ko-KR/design/kilo-gateway-integration",
+                  "ko-KR/experiments/onboarding-config-protocol",
+                  "ko-KR/experiments/plans/acp-thread-bound-agents",
+                  "ko-KR/experiments/plans/acp-unified-streaming-refactor",
+                  "ko-KR/experiments/plans/browser-evaluate-cdp-refactor",
+                  "ko-KR/experiments/plans/openresponses-gateway",
+                  "ko-KR/experiments/plans/pty-process-supervision",
+                  "ko-KR/experiments/plans/session-binding-channel-agnostic",
+                  "ko-KR/experiments/research/memory",
+                  "ko-KR/experiments/proposals/model-config"
+                ]
+              }
             ]
           },
           {
-            "group": "環境とデバッグ",
-            "pages": [
-              "help/environment",
-              "help/debugging",
-              "help/testing",
-              "help/scripts",
-              "debug/node-issue",
-              "diagnostics/flags"
-            ]
-          },
-          {
-            "group": "Node ランタイム",
-            "pages": [
-              "install/node"
-            ]
-          },
-          {
-            "group": "コンパクション内部",
-            "pages": [
-              "reference/session-management-compaction"
-            ]
-          },
-          {
-            "group": "開発者セットアップ",
-            "pages": [
-              "start/setup",
-              "pi-dev"
-            ]
-          },
-          {
-            "group": "コントリビュート",
-            "pages": [
-              "ci"
-            ]
-          },
-          {
-            "group": "ドキュメントメタ",
-            "pages": [
-              "start/hubs",
-              "start/docs-directory"
+            "tab": "도움말",
+            "groups": [
+              {
+                "group": "도움말",
+                "pages": [
+                  "ko-KR/help/index",
+                  "ko-KR/help/troubleshooting",
+                  "ko-KR/help/faq"
+                ]
+              },
+              {
+                "group": "커뮤니티",
+                "pages": [
+                  "ko-KR/start/lore"
+                ]
+              },
+              {
+                "group": "환경 및 디버그",
+                "pages": [
+                  "ko-KR/help/environment",
+                  "ko-KR/help/debugging",
+                  "ko-KR/help/testing",
+                  "ko-KR/help/scripts",
+                  "ko-KR/debug/node-issue",
+                  "ko-KR/diagnostics/flags"
+                ]
+              },
+              {
+                "group": "Node 런타임",
+                "pages": [
+                  "ko-KR/install/node"
+                ]
+              },
+              {
+                "group": "컴팩션 내부",
+                "pages": [
+                  "ko-KR/reference/session-management-compaction"
+                ]
+              },
+              {
+                "group": "개발자 설정",
+                "pages": [
+                  "ko-KR/start/setup",
+                  "ko-KR/pi-dev"
+                ]
+              },
+              {
+                "group": "기여",
+                "pages": [
+                  "ko-KR/ci"
+                ]
+              },
+              {
+                "group": "문서 메타",
+                "pages": [
+                  "ko-KR/start/hubs",
+                  "ko-KR/start/docs-directory"
+                ]
+              }
             ]
           }
         ]

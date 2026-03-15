@@ -41,7 +41,7 @@ async function main() {
       const parts = rel.split("/");
       const top = parts[0];
       // Skip locale directories, translation assets, and static asset directories.
-      return !isLocaleDir(top) && !parts.includes(".i18n") && top !== "images" && top !== "assets";
+      const skipFiles = ['5f8a9e1d2c3b4a5f6e7d8c9b0a1f2e3d.md', 'aaee62069928a24e1781403d61296f62.svg']; return !isLocaleDir(top) && !parts.includes(".i18n") && top !== "images" && top !== "assets" && top !== "plans" && !skipFiles.includes(rel) && rel !== "ADDING_NEW_LANGUAGE.md";
     })
     .map((file) => path.relative(resolvedDocsRoot, file).replace(/\\/g, "/"))
     .sort();

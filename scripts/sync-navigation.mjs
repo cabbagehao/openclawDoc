@@ -66,9 +66,9 @@ async function main() {
 
   const config = JSON.parse(await fs.readFile(docsJsonPath, "utf8"));
   const languages = config?.navigation?.languages || [];
-  const english = languages.find((language) => language.language === "en");
+  const english = languages.find((language) => language.language === "en") || languages.find((language) => language.language === "ja");
   
-  if (!english) throw new Error("English navigation not found in docs.json");
+  if (!english) throw new Error("Source navigation (en or ja) not found in docs.json");
 
   const translateNestedPage = createNestedTranslator(mapping, langId);
 
