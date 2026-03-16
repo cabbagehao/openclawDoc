@@ -1,5 +1,5 @@
 ---
-summary: "OpenClaw의 고급 설정 및 개발 워크플로우"
+summary: "OpenClaw 고급 설정과 개발 워크플로우"
 read_when:
   - 새로운 머신을 설정할 때
   - 개인 설정을 망치지 않고 최신 기능을 쓰고 싶을 때
@@ -12,11 +12,11 @@ x-i18n:
 # 설정
 
 <Note>
-처음 설정하는 경우에는 [Getting Started](/start/getting-started)부터 시작하세요.
-마법사 세부 사항은 [Onboarding Wizard](/start/wizard)를 참고하세요.
+처음 설정하는 경우에는 [시작하기](/start/getting-started)부터 읽으세요.
+마법사 관련 세부 내용은 [Onboarding Wizard](/start/wizard)를 참고하세요.
 </Note>
 
-Last updated: 2026-01-01
+마지막 업데이트: 2026-01-01
 
 ## TL;DR
 

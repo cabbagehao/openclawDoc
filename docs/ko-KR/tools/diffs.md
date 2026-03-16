@@ -1,7 +1,7 @@
 ---
-title: "차이점"
-summary: "에이전트를 위한 읽기 전용 diff 뷰어 및 파일 렌더러(선택적 플러그인 도구)"
-description: "선택적 Diffs 플러그인을 사용해 변경 전후 텍스트 또는 unified patch를 게이트웨이 호스팅 diff 뷰, 파일(PNG 또는 PDF), 또는 둘 다로 렌더링합니다."
+title: "Diffs"
+summary: "에이전트를 위한 읽기 전용 diff 뷰어와 파일 렌더러를 설명하는 선택적 플러그인 도구 가이드"
+description: "Diffs 플러그인으로 변경 전후 텍스트나 unified patch를 게이트웨이 뷰어, PNG/PDF 파일, 또는 둘 다로 렌더링하는 방법을 설명합니다."
 read_when:
   - 에이전트가 코드나 마크다운 편집 내용을 diff로 보여주길 원할 때
   - 캔버스에 바로 표시할 수 있는 뷰어 URL 또는 렌더링된 diff 파일이 필요할 때

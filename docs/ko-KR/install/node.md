@@ -1,6 +1,7 @@
 ---
 title: "Node.js"
 summary: "OpenClaw용 Node.js 설치 및 구성 — 버전 요구 사항, 설치 옵션, PATH 문제 해결"
+description: "OpenClaw 설치 전 필요한 Node.js 버전, 설치 방법, PATH와 전역 npm 문제 해결 절차를 안내합니다."
 read_when:
   - OpenClaw 설치 전에 Node.js를 설치해야 합니다
   - OpenClaw를 설치했지만 `openclaw` 명령을 찾을 수 없습니다
@@ -9,7 +10,7 @@ read_when:
 
 # Node.js
 
-OpenClaw는 **Node 22 이상**이 필요합니다. [설치 스크립트](/install#install-methods)가 Node를 자동으로 감지하고 설치하지만, 이 페이지는 Node를 직접 설정하고 버전, PATH, 전역 설치가 올바르게 연결되었는지 확인하고 싶을 때를 위한 안내입니다.
+OpenClaw는 **Node 22 이상**이 필요합니다. [설치 스크립트](/install#install-methods)가 Node를 자동으로 감지하고 설치하지만, 이 문서는 Node를 직접 설치하고 버전, PATH, 전역 설치가 올바르게 연결되었는지 점검하려는 경우를 위한 가이드입니다.
 
 ## 버전 확인
 

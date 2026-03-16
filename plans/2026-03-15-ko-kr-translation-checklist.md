@@ -176,7 +176,7 @@ Completion rule for each file:
 - [x] gateway/gateway-lock.md
 - [x] gateway/health.md
 - [ ] gateway/heartbeat.md
-- [ ] gateway/index.md
+- [x] gateway/index.md
 - [ ] gateway/local-models.md
 - [x] gateway/logging.md
 - [ ] gateway/multiple-gateways.md
@@ -220,7 +220,7 @@ Completion rule for each file:
 - [ ] install/macos-vm.md
 - [ ] install/migrating.md
 - [x] install/nix.md
-- [ ] install/node.md
+- [x] install/node.md
 - [x] install/northflank.mdx
 - [ ] install/podman.md
 - [x] install/railway.mdx
@@ -229,10 +229,10 @@ Completion rule for each file:
 - [ ] install/updating.md
 
 ## nodes
-- [ ] nodes/audio.md
+- [x] nodes/audio.md
 - [ ] nodes/camera.md
 - [x] nodes/images.md
-- [ ] nodes/index.md
+- [x] nodes/index.md
 - [x] nodes/location-command.md
 - [ ] nodes/media-understanding.md
 - [x] nodes/talk.md
@@ -357,7 +357,7 @@ Completion rule for each file:
 - [x] start/onboarding.md
 - [ ] start/openclaw.md
 - [x] start/quickstart.md
-- [ ] start/setup.md
+- [x] start/setup.md
 - [ ] start/showcase.md
 - [ ] start/wizard-cli-automation.md
 - [ ] start/wizard-cli-reference.md
@@ -374,7 +374,7 @@ Completion rule for each file:
 - [ ] tools/chrome-extension.md
 - [ ] tools/clawhub.md
 - [x] tools/creating-skills.md
-- [ ] tools/diffs.md
+- [x] tools/diffs.md
 - [x] tools/elevated.md
 - [ ] tools/exec-approvals.md
 - [x] tools/exec.md

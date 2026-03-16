@@ -1,5 +1,6 @@
 ---
 summary: "인바운드 오디오/음성 메모가 다운로드, 전사, 응답에 주입되는 방식"
+description: "OpenClaw가 음성 메모를 전사하고 멘션 감지, 모델 fallback, 제한 처리에 연결하는 방식을 설명합니다."
 read_when:
   - 오디오 전사나 미디어 처리를 변경할 때
 title: "오디오와 음성 메모"
@@ -11,7 +12,7 @@ x-i18n:
 
 ## 동작하는 것
 
-- **미디어 이해(오디오)**: 오디오 이해가 활성화되어 있거나 자동 감지되면, OpenClaw는 다음을 수행합니다.
+- **미디어 이해(오디오)**: 오디오 이해가 활성화되어 있거나 자동 감지되면 OpenClaw는 다음 순서로 처리합니다.
   1. 첫 번째 오디오 첨부(local path 또는 URL)를 찾고 필요하면 다운로드합니다.
   2. 각 모델 엔트리에 보내기 전에 `maxBytes`를 적용합니다.
   3. 순서대로 첫 번째 사용 가능한 모델 엔트리(provider 또는 CLI)를 실행합니다.
@@ -33,7 +34,7 @@ x-i18n:
 
 자동 감지를 끄려면 `tools.media.audio.enabled: false`로 설정하세요.
 커스터마이즈하려면 `tools.media.audio.models`를 설정하세요.
-참고: 바이너리 감지는 macOS/Linux/Windows 전반에서 best-effort입니다. CLI가 `PATH`에 있어야 하며( `~` 확장 지원), 아니면 전체 명령 경로를 가진 명시적 CLI 모델을 설정하세요.
+참고: 바이너리 감지는 macOS/Linux/Windows 전반에서 best-effort 방식으로 수행됩니다. CLI가 `PATH`에 있어야 하며(`~` 확장 지원), 그렇지 않다면 전체 명령 경로를 포함한 명시적 CLI 모델을 설정하세요.
 
 ## 설정 예시
 
@@ -118,8 +119,8 @@ x-i18n:
     media: {
       audio: {
         enabled: true,
-        echoTranscript: true, // 기본값은 false
-        echoFormat: '📝 "{transcript}"', // 선택 사항, {transcript} 지원
+        echoTranscript: true, // default is false
+        echoFormat: '📝 "{transcript}"', // optional, supports {transcript}
         models: [{ provider: "openai", model: "gpt-4o-mini-transcribe" }],
       },
     },
