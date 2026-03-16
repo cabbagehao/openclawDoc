@@ -1,13 +1,16 @@
 ---
 title: "TOOLS.md 템플릿"
-summary: "TOOLS.md 용 워크스페이스 템플릿"
+summary: "workspace에서 TOOLS.md를 작성할 때 참고하는 템플릿입니다."
+description: "카메라, SSH host, TTS voice처럼 로컬 환경별 도구 메모를 `TOOLS.md`에 어떻게 정리할지 보여 주는 템플릿입니다."
 read_when:
-  - 워크스페이스를 수동으로 부트스트랩할 때
+  - workspace를 수동으로 bootstrap할 때
+x-i18n:
+  source_path: "reference/templates/TOOLS.md"
 ---
 
 # TOOLS.md - 로컬 메모
 
-Skills 는 도구가 _어떻게_ 동작하는지 정의합니다. 이 파일은 _당신의_ 구체적인 설정, 즉 당신 환경에만 있는 것들을 적는 곳입니다.
+Skills는 도구가 _어떻게_ 동작하는지 정의합니다. 이 파일은 _당신의_ 구체적인 설정, 즉 당신 환경에만 있는 것들을 적는 곳입니다.
 
 ## 여기에 들어갈 것
 
@@ -40,7 +43,7 @@ Skills 는 도구가 _어떻게_ 동작하는지 정의합니다. 이 파일은 
 
 ## 왜 분리하나?
 
-Skills 는 공유됩니다. 당신의 설정은 당신만의 것입니다. 둘을 분리해 두면 메모를 잃지 않고 skills 를 업데이트할 수 있고, 인프라를 노출하지 않고도 skills 를 공유할 수 있습니다.
+Skills는 공유됩니다. 당신의 설정은 당신만의 것입니다. 둘을 분리해 두면 메모를 잃지 않고 skill을 업데이트할 수 있고, 인프라를 노출하지 않고도 skill을 공유할 수 있습니다.
 
 ---
 

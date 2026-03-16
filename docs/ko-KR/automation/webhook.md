@@ -1,5 +1,6 @@
 ---
 summary: "에이전트 깨우기 및 격리된 실행을 위한 외부 웹훅(Webhook) 유입 설정 가이드"
+description: "외부 시스템에서 OpenClaw로 wake 또는 isolated agent run을 트리거하기 위한 webhook endpoint 설정, 인증, payload, 보안 원칙을 설명합니다."
 read_when:
   - 새로운 웹훅 엔드포인트를 추가하거나 설정을 변경하고자 할 때
   - 외부 시스템을 OpenClaw와 연동하여 자동화를 구축할 때
@@ -20,12 +21,11 @@ Gateway 서버는 외부 트리거를 수신하기 위한 가벼운 HTTP 웹훅(
     enabled: true,
     token: "shared-secret",
     path: "/hooks",
-    // 선택 사항: 명시적인 `agentId` 라우팅을 허용할 목록 지정.
-    // 생략하거나 "*" 포함 시 모든 에이전트 허용.
-    // [] 설정 시 모든 명시적 에이전트 라우팅 차단.
+    // Optional: restrict explicit `agentId` routing to this allowlist.
+    // Omit or include "*" to allow any agent.
+    // Set [] to deny all explicit `agentId` routing.
     allowedAgentIds: ["hooks", "main"],
   },
-}
 }
 ```
 
@@ -51,7 +51,7 @@ Gateway 서버는 외부 트리거를 수신하기 위한 가벼운 HTTP 웹훅(
 
 **페이로드 예시:**
 ```json
-{ "text": "시스템 메시지 내용", "mode": "now" }
+{ "text": "System line", "mode": "now" }
 ```
 
 - **`text`** (문자열, 필수): 이벤트에 대한 설명 (예: "새 이메일이 도착했습니다").
@@ -68,15 +68,15 @@ Gateway 서버는 외부 트리거를 수신하기 위한 가벼운 HTTP 웹훅(
 **페이로드 예시:**
 ```json
 {
-  "message": "수행할 작업 지시",
-  "name": "이메일 알림",
+  "message": "Run this",
+  "name": "Email",
   "agentId": "hooks",
   "sessionKey": "hook:email:msg-123",
   "wakeMode": "now",
   "deliver": true,
   "channel": "last",
-  "to": "+821012345678",
-  "model": "openai/gpt-4o-mini",
+  "to": "+15551234567",
+  "model": "openai/gpt-5.2-mini",
   "thinking": "low",
   "timeoutSeconds": 120
 }
@@ -118,6 +118,18 @@ Gateway 서버는 외부 트리거를 수신하기 위한 가벼운 HTTP 웹훅(
 }
 ```
 
+**호환 설정(레거시 동작):**
+```json5
+{
+  hooks: {
+    enabled: true,
+    token: "${OPENCLAW_HOOKS_TOKEN}",
+    allowRequestSessionKey: true,
+    allowedSessionKeyPrefixes: ["hook:"], // strongly recommended
+  },
+}
+```
+
 ---
 
 ### `POST /hooks/<name>` (커스텀 매핑)
@@ -146,17 +158,32 @@ Gateway 서버는 외부 트리거를 수신하기 위한 가벼운 HTTP 웹훅(
 **에이전트 깨우기:**
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/wake \
-  -H 'Authorization: Bearer YOUR_SECRET' \
+  -H 'Authorization: Bearer SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"text":"새로운 이메일이 수신되었습니다","mode":"now"}'
+  -d '{"text":"New email received","mode":"now"}'
 ```
 
 **격리된 에이전트 실행:**
 ```bash
 curl -X POST http://127.0.0.1:18789/hooks/agent \
-  -H 'x-openclaw-token: YOUR_SECRET' \
+  -H 'x-openclaw-token: SECRET' \
   -H 'Content-Type: application/json' \
-  -d '{"message":"받은 편지함 요약해줘","name":"Email","model":"openai/gpt-4o-mini"}'
+  -d '{"message":"Summarize inbox","name":"Email","wakeMode":"next-heartbeat"}'
+```
+
+**다른 모델 사용:**
+```bash
+curl -X POST http://127.0.0.1:18789/hooks/agent \
+  -H 'x-openclaw-token: SECRET' \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Summarize inbox","name":"Email","model":"openai/gpt-5.2-mini"}'
+```
+
+```bash
+curl -X POST http://127.0.0.1:18789/hooks/gmail \
+  -H 'Authorization: Bearer SECRET' \
+  -H 'Content-Type: application/json' \
+  -d '{"source":"gmail","messages":[{"from":"Ada","subject":"Hello","snippet":"Hi"}]}'
 ```
 
 ## 보안 가이드라인

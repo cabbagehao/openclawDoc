@@ -1,17 +1,20 @@
 ---
 summary: "Linux 지원 + companion app 상태"
+description: "Linux에서 Gateway를 실행하는 빠른 경로, service 설치 방식, companion app 지원 상태를 안내합니다."
 read_when:
-  - Linux companion app 상태를 확인할 때
-  - 플랫폼 커버리지나 기여를 계획할 때
+  - "Linux companion app 상태를 확인할 때"
+  - "플랫폼 커버리지나 기여를 계획할 때"
 title: "Linux App"
+x-i18n:
+  source_path: "platforms/linux.md"
 ---
 
 # Linux App
 
-Gateway 는 Linux 에서 완전히 지원됩니다. **Node 가 권장 런타임** 입니다.
-Bun 은 Gateway 용으로 권장되지 않습니다(WhatsApp/Telegram 버그).
+Gateway는 Linux에서 완전히 지원됩니다. **Node가 권장 runtime**입니다.
+Bun은 Gateway용으로 권장되지 않습니다. WhatsApp/Telegram bugs가 있기 때문입니다.
 
-네이티브 Linux companion app 은 계획 중입니다. 구축을 돕고 싶다면 기여를 환영합니다.
+native Linux companion apps는 계획 중입니다. 직접 만들고 싶다면 기여를 환영합니다.
 
 ## 초보자용 빠른 경로 (VPS)
 
@@ -19,7 +22,7 @@ Bun 은 Gateway 용으로 권장되지 않습니다(WhatsApp/Telegram 버그).
 2. `npm i -g openclaw@latest`
 3. `openclaw onboard --install-daemon`
 4. 노트북에서: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
-5. `http://127.0.0.1:18789/` 를 열고 token 붙여 넣기
+5. `http://127.0.0.1:18789/`를 열고 token을 붙여 넣기
 
 단계별 VPS 가이드: [exe.dev](/install/exe-dev)
 
@@ -27,14 +30,14 @@ Bun 은 Gateway 용으로 권장되지 않습니다(WhatsApp/Telegram 버그).
 
 - [Getting Started](/start/getting-started)
 - [Install & updates](/install/updating)
-- 선택 흐름: [Bun (experimental)](/install/bun), [Nix](/install/nix), [Docker](/install/docker)
+- optional flows: [Bun (experimental)](/install/bun), [Nix](/install/nix), [Docker](/install/docker)
 
 ## Gateway
 
 - [Gateway runbook](/gateway)
 - [Configuration](/gateway/configuration)
 
-## Gateway 서비스 설치(CLI)
+## Gateway service install (CLI)
 
 다음 중 하나를 사용하세요:
 
@@ -54,7 +57,7 @@ openclaw gateway install
 openclaw configure
 ```
 
-프롬프트가 나오면 **Gateway service** 를 선택하세요.
+프롬프트가 나오면 **Gateway service**를 선택하세요.
 
 Repair/migrate:
 
@@ -62,13 +65,13 @@ Repair/migrate:
 openclaw doctor
 ```
 
-## 시스템 제어 (systemd user unit)
+## System control (systemd user unit)
 
-OpenClaw 는 기본적으로 systemd **user** service 를 설치합니다. 공유되거나 항상 켜져 있어야 하는 서버에는 **system** service 를 사용하세요. 전체 unit 예시와 가이드는 [Gateway runbook](/gateway) 에 있습니다.
+OpenClaw는 기본적으로 systemd **user** service를 설치합니다. 공유되거나 항상 켜져 있어야 하는 서버에는 **system** service를 사용하세요. 전체 unit example과 guidance는 [Gateway runbook](/gateway)에 있습니다.
 
-최소 설정:
+Minimal setup:
 
-`~/.config/systemd/user/openclaw-gateway[-<profile>].service` 생성:
+`~/.config/systemd/user/openclaw-gateway[-<profile>].service`를 만드세요.
 
 ```
 [Unit]
@@ -85,7 +88,7 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-활성화:
+Enable it:
 
 ```
 systemctl --user enable --now openclaw-gateway[-<profile>].service

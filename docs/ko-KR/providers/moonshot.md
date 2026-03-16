@@ -1,15 +1,16 @@
 ---
-summary: "Moonshot K2와 Kimi Coding 설정(서로 다른 provider + key)"
+summary: "Moonshot K2와 Kimi Coding 설정(서로 다른 프로바이더 + key)"
+description: "Moonshot K2와 Kimi Coding 설정(서로 다른 프로바이더 + key)"
 read_when:
   - Moonshot K2(Moonshot Open Platform)와 Kimi Coding 설정 차이를 알고 싶을 때
-  - 서로 다른 endpoint, key, model ref를 이해해야 할 때
+  - 서로 다른 endpoint, key, 모델 ref를 이해해야 할 때
   - 둘 중 하나의 설정을 복사해 붙여넣고 싶을 때
 title: "Moonshot AI"
 ---
 
 # Moonshot AI (Kimi)
 
-Moonshot은 OpenAI 호환 endpoint를 갖춘 Kimi API를 제공합니다. provider를 설정하고 기본 모델을 `moonshot/kimi-k2.5`로 두거나, `kimi-coding/k2p5`로 Kimi Coding을 사용할 수 있습니다.
+Moonshot은 OpenAI 호환 endpoint를 갖춘 Kimi API를 제공합니다. 프로바이더를 설정하고 기본 모델을 `moonshot/kimi-k2.5`로 두거나, `kimi-coding/k2p5`로 Kimi Coding을 사용할 수 있습니다.
 
 현재 Kimi K2 model ID:
 
@@ -32,9 +33,9 @@ Kimi Coding:
 openclaw onboard --auth-choice kimi-code-api-key
 ```
 
-참고: Moonshot과 Kimi Coding은 서로 다른 provider입니다. key는 호환되지 않고, endpoint도 다르며, model ref도 다릅니다. Moonshot은 `moonshot/...`, Kimi Coding은 `kimi-coding/...`를 사용합니다.
+참고: Moonshot과 Kimi Coding은 서로 다른 프로바이더입니다. key는 호환되지 않고, endpoint도 다르며, 모델 ref도 다릅니다. Moonshot은 `moonshot/...`, Kimi Coding은 `kimi-coding/...`를 사용합니다.
 
-## Config snippet (Moonshot API)
+## 설정 예시 (Moonshot API)
 
 ```json5
 {
@@ -131,9 +132,9 @@ openclaw onboard --auth-choice kimi-code-api-key
 }
 ```
 
-## Notes
+## 참고 사항
 
-- Moonshot model ref는 `moonshot/<modelId>`를 사용합니다. Kimi Coding model ref는 `kimi-coding/<modelId>`입니다.
+- Moonshot 모델 ref는 `moonshot/<modelId>`를 사용합니다. Kimi Coding 모델 ref는 `kimi-coding/<modelId>`입니다.
 - 필요하면 `models.providers`에서 가격과 context metadata를 override하세요.
 - Moonshot이 특정 모델에 대해 다른 context limit를 발표하면, 그에 맞게 `contextWindow`를 조정하세요.
 - 국제 endpoint는 `https://api.moonshot.ai/v1`, 중국 endpoint는 `https://api.moonshot.cn/v1`를 사용하세요.

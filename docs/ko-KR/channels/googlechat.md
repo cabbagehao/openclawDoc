@@ -1,7 +1,8 @@
 ---
-summary: "Google Chat 앱 연동 상태, 지원 기능 및 세부 설정 가이드"
+summary: "Google Chat 앱 연동 상태, 지원 범위, 설정 흐름 요약"
+description: "OpenClaw를 Google Chat과 연결하는 방법, webhook 공개 방식, 주요 설정값과 문제 해결 절차를 간단히 안내합니다."
 read_when:
-  - Google Chat 채널 기능을 구축하거나 수정하고자 할 때
+  - Google Chat 채널 기능을 작업할 때
 title: "Google Chat"
 x-i18n:
   source_path: "channels/googlechat.md"
@@ -9,89 +10,160 @@ x-i18n:
 
 # Google Chat (Chat API)
 
-**상태**: Google Chat API 웹훅(HTTP 전용)을 통해 개인 대화(DM) 및 스페이스(Spaces) 연동 가능.
+Status: Google Chat API webhook(HTTP only)을 통한 DMs + spaces 지원 준비 완료.
 
-## 빠른 설정 가이드 (초보자용)
+## Quick setup (beginner)
 
-1. **Google Cloud 프로젝트 생성 및 API 활성화**:
-   - [Google Chat API 자격 증명 페이지](https://console.cloud.google.com/apis/api/chat.googleapis.com/credentials)로 이동함.
-   - API가 활성화되어 있지 않다면 활성화 버튼을 클릭함.
-2. **서비스 계정(Service Account) 생성**:
-   - **사용자 인증 정보 만들기** > **서비스 계정**을 클릭함.
-   - 이름은 자유롭게 지정함 (예: `openclaw-chat`).
-   - 권한 및 사용자 액세스 설정 단계는 생략하고 완료함.
-3. **JSON 키 생성 및 다운로드**:
-   - 생성된 서비스 계정 이름을 클릭하여 상세 페이지로 이동함.
-   - **키** 탭에서 **키 추가** > **새 키 만들기**를 선택함.
-   - **JSON** 형식을 선택하고 생성하여 파일을 다운로드함.
-4. **키 파일 저장**:
-   - 다운로드한 JSON 파일을 Gateway 호스트의 안전한 경로에 저장함 (예: `~/.openclaw/googlechat-service-account.json`).
-5. **Google Chat 앱 구성**:
-   - [Google Cloud 콘솔 Chat 구성 페이지](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat)에서 다음을 입력함:
-     - **앱 이름**: 에이전트 이름 (예: `OpenClaw`).
-     - **아바타 URL**: 앱 아이콘 이미지 주소.
-     - **대화형 기능**: 활성화함.
-     - **기능**: '스페이스 및 그룹 대화 참여' 체크.
-     - **연결 설정**: 'HTTP 엔드포인트 URL' 선택.
-     - **트리거**: '모든 트리거에 공통 HTTP 엔드포인트 URL 사용'을 선택하고, 본인의 Gateway 공개 URL 뒤에 `/googlechat`을 붙여 입력함.
-       - *팁: `openclaw status` 명령어로 현재 Gateway의 공개 URL을 확인 가능함.*
-     - **가시성**: '특정 사용자 및 그룹에게 공개' 체크 후 본인의 이메일 주소를 입력함.
-6. **앱 상태 활성화**:
-   - 저장 후 **페이지를 새로고침**함.
-   - **앱 상태(App status)** 섹션에서 **Live - 사용자에게 제공 가능**으로 상태를 변경하고 다시 저장함.
-7. **OpenClaw 설정**:
-   - 서비스 계정 경로 지정: `channels.googlechat.serviceAccountFile: "/path/to/service-account.json"`.
-8. **오디언스(Audience) 설정**:
-   - Chat 앱 설정과 일치하도록 오디언스 유형 및 값을 지정함.
-9. **Gateway 시작**: 서버가 가동되면 Google Chat으로부터 웹훅 요청을 수신하기 시작함.
+1. Google Cloud project를 만들고 **Google Chat API**를 활성화합니다.
+   - 이동: [Google Chat API Credentials](https://console.cloud.google.com/apis/api/chat.googleapis.com/credentials)
+   - 아직 API가 활성화되지 않았다면 활성화합니다.
+2. **Service Account**를 만듭니다.
+   - **Create Credentials** > **Service Account**를 누릅니다.
+   - 이름은 원하는 대로 지정합니다(예: `openclaw-chat`).
+   - 권한은 비워 둡니다(**Continue** 누름).
+   - access가 있는 principals도 비워 둡니다(**Done** 누름).
+3. **JSON Key**를 생성하고 다운로드합니다.
+   - service account 목록에서 방금 만든 account를 클릭합니다.
+   - **Keys** 탭으로 이동합니다.
+   - **Add Key** > **Create new key**를 클릭합니다.
+   - **JSON**을 선택하고 **Create**를 누릅니다.
+4. 다운로드한 JSON 파일을 gateway host에 저장합니다(예: `~/.openclaw/googlechat-service-account.json`).
+5. [Google Cloud Console Chat Configuration](https://console.cloud.google.com/apis/api/chat.googleapis.com/hangouts-chat)에서 Google Chat app을 만듭니다.
+   - **Application info**를 입력합니다.
+     - **App name**: (예: `OpenClaw`)
+     - **Avatar URL**: (예: `https://openclaw.ai/logo.png`)
+     - **Description**: (예: `Personal AI Assistant`)
+   - **Interactive features**를 활성화합니다.
+   - **Functionality**에서 **Join spaces and group conversations**를 체크합니다.
+   - **Connection settings**에서 **HTTP endpoint URL**을 선택합니다.
+   - **Triggers**에서 **Use a common HTTP endpoint URL for all triggers**를 선택하고, gateway의 public URL 뒤에 `/googlechat`을 붙여 설정합니다.
+     - _Tip: `openclaw status`를 실행하면 gateway의 public URL을 확인할 수 있습니다._
+   - **Visibility**에서 **Make this Chat app available to specific people and groups in &lt;Your Domain&gt;**를 체크합니다.
+   - 텍스트 상자에 자신의 이메일 주소를 입력합니다(예: `user@example.com`).
+   - 아래쪽의 **Save**를 클릭합니다.
+6. **app status를 활성화**합니다.
+   - 저장 후 **페이지를 새로고침**합니다.
+   - **App status** 섹션을 찾습니다(보통 저장 후 상단이나 하단에 보입니다).
+   - 상태를 **Live - available to users**로 바꿉니다.
+   - 다시 **Save**를 클릭합니다.
+7. OpenClaw에 service account path + webhook audience를 설정합니다.
+   - Env: `GOOGLE_CHAT_SERVICE_ACCOUNT_FILE=/path/to/service-account.json`
+   - 또는 config: `channels.googlechat.serviceAccountFile: "/path/to/service-account.json"`.
+8. webhook audience type과 value를 설정합니다(Chat app config와 일치해야 함).
+9. gateway를 시작합니다. 이후 Google Chat이 webhook path로 POST를 보냅니다.
 
-## Google Chat에서 봇 추가하기
+## Add to Google Chat
 
-1. [Google Chat](https://chat.google.com/)에 접속함.
-2. **새 대화** 아이콘을 클릭함.
-3. 검색창에 설정한 **앱 이름**을 입력함. (비공개 앱이므로 마켓플레이스 목록에는 나타나지 않으며 이름으로 직접 검색해야 함)
-4. 검색 결과에서 본인의 봇을 선택하고 **추가** 또는 **채팅**을 클릭하여 대화를 시작함.
+gateway가 실행 중이고 visibility list에 자신의 이메일이 추가되어 있다면:
 
-## 공개 URL 구성 (웹훅 전용)
+1. [Google Chat](https://chat.google.com/)으로 이동합니다.
+2. **Direct Messages** 옆의 **+** 아이콘을 클릭합니다.
+3. 검색창에 Google Cloud Console에서 설정한 **App name**을 입력합니다.
+   - **Note**: private app이므로 "Marketplace" browse list에는 나타나지 않습니다. 이름으로 직접 검색해야 합니다.
+4. 결과에서 bot을 선택합니다.
+5. **Add** 또는 **Chat**을 클릭해 1:1 대화를 시작합니다.
+6. "Hello"를 보내 assistant를 트리거합니다.
 
-Google Chat 웹훅은 공개 HTTPS 엔드포인트를 요구함. 보안을 위해 **`/googlechat` 경로만 외부로 노출**하고, 관리 대시보드 등 민감한 경로는 사설 네트워크에 유지할 것을 권장함.
+## Public URL (Webhook-only)
 
-### 방법 A: Tailscale Funnel (권장)
-Tailscale Serve로 대시보드를 보호하고, Funnel로 웹훅 경로만 공개함.
+Google Chat webhook은 public HTTPS endpoint를 요구합니다. 보안을 위해 **`/googlechat` path만 인터넷에 노출**하세요. OpenClaw dashboard와 다른 민감한 endpoint는 private network에 두어야 합니다.
 
-1. **포트 확인**: Gateway가 실행 중인 포트(기본 18789) 확인.
-2. **대시보드 노출 (Tailnet 전용)**:
+### Option A: Tailscale Funnel (Recommended)
+
+private dashboard에는 Tailscale Serve를, public webhook path에는 Funnel을 사용합니다. 이렇게 하면 `/`는 private로 유지하고 `/googlechat`만 노출할 수 있습니다.
+
+1. **gateway가 어떤 주소에 bind되어 있는지 확인합니다.**
+
    ```bash
+   ss -tlnp | grep 18789
+   ```
+
+   IP address를 기록합니다(예: `127.0.0.1`, `0.0.0.0`, 또는 `100.x.x.x` 같은 Tailscale IP).
+
+2. **dashboard를 tailnet 전용으로 노출합니다(port 8443).**
+
+   ```bash
+   # If bound to localhost (127.0.0.1 or 0.0.0.0):
    tailscale serve --bg --https 8443 http://127.0.0.1:18789
-   ```
-3. **웹훅 경로 공개 (인터넷)**:
-   ```bash
-   tailscale funnel --bg --set-path /googlechat http://127.0.0.1:18789/googlechat
-   ```
-최종 웹훅 URL 예시: `https://<node-name>.<tailnet>.ts.net/googlechat`
 
-### 방법 B: 리버스 프록시 (Caddy 등)
+   # If bound to Tailscale IP only (e.g., 100.106.161.80):
+   tailscale serve --bg --https 8443 http://100.106.161.80:18789
+   ```
+
+3. **webhook path만 public으로 노출합니다.**
+
+   ```bash
+   # If bound to localhost (127.0.0.1 or 0.0.0.0):
+   tailscale funnel --bg --set-path /googlechat http://127.0.0.1:18789/googlechat
+
+   # If bound to Tailscale IP only (e.g., 100.106.161.80):
+   tailscale funnel --bg --set-path /googlechat http://100.106.161.80:18789/googlechat
+   ```
+
+4. **해당 node에 Funnel access를 승인합니다.**
+   프롬프트가 나오면, 출력에 표시된 authorization URL로 이동해 tailnet policy에서 이 node에 대한 Funnel을 활성화합니다.
+
+5. **설정을 검증합니다.**
+
+   ```bash
+   tailscale serve status
+   tailscale funnel status
+   ```
+
+public webhook URL은 다음 형식이 됩니다:
+`https://<node-name>.<tailnet>.ts.net/googlechat`
+
+private dashboard는 tailnet 전용으로 유지됩니다:
+`https://<node-name>.<tailnet>.ts.net:8443/`
+
+Google Chat app config에는 public URL(`:8443` 제외)을 사용합니다.
+
+> Note: 이 설정은 재부팅 후에도 유지됩니다. 나중에 제거하려면 `tailscale funnel reset`과 `tailscale serve reset`을 실행하세요.
+
+### Option B: Reverse Proxy (Caddy)
+
+Caddy 같은 reverse proxy를 쓴다면, 해당 path만 proxy합니다.
+
 ```caddy
 your-domain.com {
     reverse_proxy /googlechat* localhost:18789
 }
 ```
-위와 같이 설정하면 루트(`/`) 접근은 차단되거나 404를 반환하며, `/googlechat` 요청만 안전하게 전달됨.
 
----
+이 설정이면 `your-domain.com/`으로 들어오는 요청은 무시되거나 404를 반환하고, `your-domain.com/googlechat`만 OpenClaw로 안전하게 전달됩니다.
 
-## 동작 원리
+### Option C: Cloudflare Tunnel
 
-1. **인증**: Google Chat은 요청 시 `Authorization: Bearer <token>` 헤더를 포함함. OpenClaw는 본문을 파싱하기 전 단계에서 이 베어러 토큰을 즉시 검증함.
-2. **오디언스 검증**: 설정된 `audienceType`에 따라 토큰의 유효성을 확인함.
-   - `app-url`: HTTPS 웹훅 URL 기준.
-   - `project-number`: Google Cloud 프로젝트 번호 기준.
-3. **라우팅**:
-   - 개인 대화(DM): `agent:<agentId>:googlechat:dm:<spaceId>`
-   - 스페이스(Spaces): `agent:<agentId>:googlechat:group:<spaceId>`
-4. **접근 제어**: DM은 기본적으로 페어링 모드로 작동하며, `openclaw pairing approve googlechat <code>` 명령어로 승인함.
+tunnel ingress rule이 webhook path만 라우팅하도록 구성합니다.
 
-## 주요 설정 요약
+- **Path**: `/googlechat` -> `http://localhost:18789/googlechat`
+- **Default Rule**: HTTP 404 (Not Found)
+
+## How it works
+
+1. Google Chat이 gateway로 webhook POST를 보냅니다. 각 요청에는 `Authorization: Bearer <token>` header가 포함됩니다.
+   - OpenClaw는 header가 있을 경우, 전체 webhook body를 읽고 파싱하기 전에 bearer auth를 검증합니다.
+   - body에 `authorizationEventObject.systemIdToken`이 들어 있는 Google Workspace Add-on 요청도 지원하며, 더 엄격한 pre-auth body budget이 적용됩니다.
+2. OpenClaw는 설정된 `audienceType` + `audience`에 대해 token을 검증합니다.
+   - `audienceType: "app-url"` -> audience는 HTTPS webhook URL입니다.
+   - `audienceType: "project-number"` -> audience는 Cloud project number입니다.
+3. 메시지는 space 기준으로 라우팅됩니다.
+   - DMs는 session key `agent:<agentId>:googlechat:dm:<spaceId>`를 사용합니다.
+   - Spaces는 session key `agent:<agentId>:googlechat:group:<spaceId>`를 사용합니다.
+4. DM access는 기본적으로 pairing입니다. 알 수 없는 sender는 pairing code를 받으며, 다음 명령으로 승인합니다.
+   - `openclaw pairing approve googlechat <code>`
+5. group spaces는 기본적으로 @-mention이 필요합니다. mention detection에 app의 user name이 필요하다면 `botUser`를 사용하세요.
+
+## Targets
+
+전송과 allowlist에는 다음 식별자를 사용합니다.
+
+- direct messages: `users/<userId>` (권장).
+- raw email `name@example.com`은 변경 가능하므로, `channels.googlechat.dangerouslyAllowNameMatching: true`일 때 direct allowlist matching에만 사용됩니다.
+- Deprecated: `users/<email>`은 email allowlist가 아니라 user id로 처리됩니다.
+- spaces: `spaces/<spaceId>`.
+
+## Config highlights
 
 ```json5
 {
@@ -99,10 +171,11 @@ your-domain.com {
     googlechat: {
       enabled: true,
       serviceAccountFile: "/path/to/service-account.json",
+      // or serviceAccountRef: { source: "file", provider: "filemain", id: "/channels/googlechat/serviceAccount" }
       audienceType: "app-url",
       audience: "https://gateway.example.com/googlechat",
       webhookPath: "/googlechat",
-      botUser: "users/1234567890", // 멘션 감지 도우미 (선택)
+      botUser: "users/1234567890", // optional; helps mention detection
       dm: {
         policy: "pairing",
         allowFrom: ["users/1234567890"],
@@ -113,6 +186,7 @@ your-domain.com {
           allow: true,
           requireMention: true,
           users: ["users/1234567890"],
+          systemPrompt: "Short answers only.",
         },
       },
       actions: { reactions: true },
@@ -123,19 +197,67 @@ your-domain.com {
 }
 ```
 
-- **`serviceAccountRef`**: 환경 변수나 외부 시크릿 관리 도구(SecretRef)를 통한 자격 증명 주입 지원.
-- **`typingIndicator`**: `none`, `message` (기본값), `reaction` 모드 지원.
-- **미디어 처리**: 첨부 파일은 Chat API를 통해 다운로드되며 `mediaMaxMb` 설정으로 용량을 제한함.
+참고:
 
-## 문제 해결 (Troubleshooting)
+- service account credential은 `serviceAccount`(JSON string)로 inline 전달할 수도 있습니다.
+- `serviceAccountRef`도 지원합니다(env/file SecretRef). `channels.googlechat.accounts.<id>.serviceAccountRef` 아래의 account별 ref도 가능합니다.
+- `webhookPath`를 설정하지 않으면 기본값은 `/googlechat`입니다.
+- `dangerouslyAllowNameMatching`은 변경 가능한 email principal matching을 allowlist용으로 다시 활성화합니다(break-glass compatibility mode).
+- `actions.reactions`를 켜면 `reactions` tool과 `channels action`을 통해 reaction을 사용할 수 있습니다.
+- `typingIndicator`는 `none`, `message`(기본값), `reaction`을 지원합니다(`reaction`은 user OAuth 필요).
+- attachment는 Chat API로 다운로드되어 media pipeline에 저장됩니다(크기는 `mediaMaxMb`로 제한).
+
+Secrets reference 세부사항: [Secrets Management](/gateway/secrets).
+
+## Troubleshooting
 
 ### 405 Method Not Allowed
-웹훅 핸들러가 정상적으로 등록되지 않은 경우 발생함:
-1. `channels.googlechat` 설정 섹션이 누락되지 않았는지 확인함.
-2. `googlechat` 플러그인이 활성화 상태인지 확인함 (`openclaw plugins list`).
-3. 설정을 변경한 후 반드시 Gateway 서버를 재시작함.
 
-### 기타 이슈
-- **인증 오류**: `openclaw channels status --probe` 명령어로 오디언스 설정 및 권한 상태를 점검함.
-- **메시지 미수신**: Google Cloud 콘솔에서 앱의 웹훅 URL 및 이벤트 구독 항목이 올바른지 확인함.
-- **로그 모니터링**: `openclaw logs --follow`를 실행한 상태에서 테스트 메시지를 보내 요청이 서버에 도달하는지 실시간으로 확인함.
+Google Cloud Logs Explorer에 다음과 같은 오류가 보인다면:
+
+```
+status code: 405, reason phrase: HTTP error response: HTTP/1.1 405 Method Not Allowed
+```
+
+이는 webhook handler가 등록되지 않았다는 뜻입니다. 흔한 원인은 다음과 같습니다.
+
+1. **Channel not configured**: config에 `channels.googlechat` 섹션이 없습니다. 다음으로 확인합니다.
+
+   ```bash
+   openclaw config get channels.googlechat
+   ```
+
+   "Config path not found"가 반환되면 설정을 추가하세요([Config highlights](#config-highlights) 참고).
+
+2. **Plugin not enabled**: plugin 상태를 확인합니다.
+
+   ```bash
+   openclaw plugins list | grep googlechat
+   ```
+
+   "disabled"로 나오면 config에 `plugins.entries.googlechat.enabled: true`를 추가하세요.
+
+3. **Gateway not restarted**: config를 추가한 뒤 gateway를 재시작합니다.
+
+   ```bash
+   openclaw gateway restart
+   ```
+
+channel이 실행 중인지 확인합니다.
+
+```bash
+openclaw channels status
+# Should show: Google Chat default: enabled, configured, ...
+```
+
+### Other issues
+
+- auth 오류나 audience config 누락은 `openclaw channels status --probe`로 확인하세요.
+- 메시지가 오지 않으면 Chat app의 webhook URL과 event subscription을 확인하세요.
+- mention gating 때문에 reply가 막히면 `botUser`를 app의 user resource name으로 설정하고 `requireMention`을 확인하세요.
+- 테스트 메시지를 보내면서 `openclaw logs --follow`를 실행해 요청이 gateway에 도달하는지 확인하세요.
+
+관련 문서:
+
+- [Gateway configuration](/gateway/configuration)
+- [Security](/gateway/security)

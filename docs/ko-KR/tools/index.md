@@ -1,5 +1,6 @@
 ---
-summary: "legacy `openclaw-*` skills를 대체하는 OpenClaw용 agent tool surface (browser, canvas, nodes, message, cron)"
+summary: "legacy `openclaw-*` skills를 대체하는 OpenClaw agent tool surface 가이드"
+description: "OpenClaw의 핵심 agent tool, 정책 제어, plugin tool, 권장 흐름을 한곳에서 정리한 문서입니다."
 read_when:
   - agent tool을 추가하거나 수정할 때
   - "`openclaw-*` skills를 폐기하거나 변경할 때"
@@ -9,8 +10,8 @@ title: "Tools"
 # Tools (OpenClaw)
 
 OpenClaw는 browser, canvas, nodes, cron을 위한 **first-class agent tools**를 제공합니다.
-이 도구들은 오래된 `openclaw-*` skills를 대체합니다. tool은 typed되어 있고 shelling이 필요 없으며,
-agent는 이들을 직접 사용해야 합니다.
+이 도구들은 오래된 `openclaw-*` skills를 대체합니다. 모든 tool은 typed되어 있으며 셸을 우회 호출할 필요가 없고,
+agent는 가능한 한 이들을 직접 사용해야 합니다.
 
 ## Disabling tools
 

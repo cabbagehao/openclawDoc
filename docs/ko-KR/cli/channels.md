@@ -1,8 +1,9 @@
 ---
-summary: "채팅 채널 계정 관리, 상태 확인, 로그인/로그아웃 및 로그 스트리밍을 위한 `openclaw channels` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw channels` (accounts, status, login/logout, logs)"
+description: "채팅 채널 계정을 추가·삭제·로그인하고, status·capabilities·resolve·logs를 점검하는 `openclaw channels` 명령의 핵심 흐름을 정리합니다."
 read_when:
-  - WhatsApp, Telegram, Discord, Slack 등 채팅 채널 계정을 추가하거나 삭제하고자 할 때
-  - 특정 채널의 연결 상태를 확인하거나 실시간 로그를 모니터링해야 할 때
+  - WhatsApp, Telegram, Discord, Google Chat, Slack, Mattermost, Signal, iMessage 계정을 추가하거나 제거할 때
+  - 채널 상태를 확인하거나 채널 로그를 따라가야 할 때
 title: "channels"
 x-i18n:
   source_path: "cli/channels.md"
@@ -10,99 +11,94 @@ x-i18n:
 
 # `openclaw channels`
 
-채팅 채널 계정 및 Gateway에서의 런타임 상태를 관리함.
+Gateway에서 chat channel account와 해당 runtime status를 관리합니다.
 
-**관련 문서:**
-- 채널 통합 가이드: [Channels](/channels/index)
-- Gateway 설정 레퍼런스: [Configuration](/gateway/configuration)
+Related docs:
 
-## 주요 명령어
+- Channel guides: [Channels](/channels/index)
+- Gateway configuration: [Configuration](/gateway/configuration)
+
+## Common commands
 
 ```bash
-# 설정된 전체 채널 및 계정 목록 조회
 openclaw channels list
-
-# 채널별 연결 상태 및 API 연동 확인
 openclaw channels status
-
-# 채널별 지원 기능 및 권한(Scopes) 확인
 openclaw channels capabilities
-
-# 특정 Discord 채널의 상세 권한 확인
 openclaw channels capabilities --channel discord --target channel:123
-
-# Slack 채널명이나 사용자명을 ID로 해석(Resolve)
 openclaw channels resolve --channel slack "#general" "@jane"
-
-# 모든 채널의 실시간 로그 스트리밍 (Tail)
 openclaw channels logs --channel all
 ```
 
-## 계정 추가 및 삭제
+## Add / remove accounts
 
 ```bash
-# 새로운 Telegram 봇 계정 추가
 openclaw channels add --channel telegram --token <bot-token>
-
-# 특정 Telegram 계정 삭제 및 관련 데이터 제거
 openclaw channels remove --channel telegram --delete
 ```
 
-**팁**: `openclaw channels add --help` 실행 시 각 채널별 전용 플래그(토큰, 앱 토큰, 실행 경로 등) 정보를 확인할 수 있음.
+Tip: `openclaw channels add --help`는 channel별 flag(token, app token, signal-cli path 등)를 보여줍니다.
 
-플래그 없이 `openclaw channels add` 명령어를 실행하면 다음과 같은 대화형 설정 마법사가 시작됨:
-- 채널별 계정 ID(`accountId`) 지정.
-- 해당 계정의 표시 이름(Display name) 설정.
-- **에이전트 바인딩**: 설정된 계정을 어떤 에이전트가 관리할지 즉시 지정 가능. 승인 시 계정 범위의 라우팅 바인딩이 자동 생성됨.
+flag 없이 `openclaw channels add`를 실행하면 interactive wizard가 다음을 물어볼 수 있습니다.
 
-라우팅 규칙은 나중에 `openclaw agents` 명령어를 통해 수정할 수도 있음. 상세 내용은 [에이전트 관리](/cli/agents) 참조.
+- 선택한 channel별 account id
+- 해당 account의 optional display name
+- `Bind configured channel accounts to agents now?`
 
-### 다중 계정 마이그레이션 동작
-기존에 단일 계정 전용 설정을 사용하던 채널에 새로운 계정을 추가할 경우, OpenClaw는 기존의 최상위 설정값들을 자동으로 `accounts.default` 하위로 이동시킨 후 새 계정 정보를 기록함. 이를 통해 기존 동작을 유지하면서 자연스럽게 다중 계정 구조로 전환됨.
+bind now를 확인하면 wizard는 각 configured channel account를 어떤 agent가 소유할지 묻고, account-scoped routing binding을 기록합니다.
 
-- 기존에 `accountId`가 없는 바인딩은 계속해서 `default` 계정과 매칭됨.
-- 비대화형 모드(`--non-interactive`)에서는 바인딩을 자동으로 생성하거나 수정하지 않음.
-- 설정 파일 상태가 복합적인 경우(이름 있는 계정은 있으나 `default`가 누락된 경우 등), `openclaw doctor --fix` 명령어를 통해 구조를 정규화할 수 있음.
+같은 routing rule은 나중에 `openclaw agents bindings`, `openclaw agents bind`, `openclaw agents unbind`로도 관리할 수 있습니다. ([agents](/cli/agents) 참고)
 
-## 로그인 및 로그아웃 (대화형)
+single-account top-level setting만 쓰고 있던 channel에 non-default account를 추가하면, OpenClaw는 기존 single-account top-level value를 `channels.<channel>.accounts.default`로 옮긴 뒤 새 account를 기록합니다. 이렇게 하면 multi-account shape로 전환하면서 기존 account 동작이 유지됩니다.
+
+routing behavior는 일관되게 유지됩니다.
+
+- 기존 channel-only binding (`accountId` 없음)은 계속 default account와 매칭됩니다.
+- `channels add`는 non-interactive mode에서 binding을 자동 생성하거나 수정하지 않습니다.
+- interactive setup은 account-scoped binding을 선택적으로 추가할 수 있습니다.
+
+config가 이미 혼합 상태였다면(예: named account는 있는데 `default`는 없고 top-level single-account value는 남아 있음), account-scoped value를 `accounts.default`로 옮기기 위해 `openclaw doctor --fix`를 실행하세요.
+
+## Login / logout (interactive)
 
 ```bash
-# WhatsApp QR 로그인 등 세션 연결 시작
 openclaw channels login --channel whatsapp
-
-# 특정 채널의 세션 연결 해제 및 로그아웃
 openclaw channels logout --channel whatsapp
 ```
 
-## 문제 해결 (Troubleshooting)
+## Troubleshooting
 
-- **상세 진단**: `openclaw status --deep` 명령어를 실행함.
-- **자동 수정**: `openclaw doctor` 명령어를 활용하여 발견된 설정 오류를 해결함.
-- **사용량 정보 오류**: `channels list` 실행 시 `HTTP 403` 에러가 발생하면 사용량 조회를 위해 `user:profile` 권한이 부족한 것이므로, `--no-usage` 플래그를 사용하거나 적절한 세션 키를 제공해야 함.
-- **Gateway 미접속 시**: 서버에 연결할 수 없는 경우 로컬 설정 파일 기반의 요약 정보만 출력함. 시크릿 참조(SecretRef)를 사용하는 계정의 경우, 자격 증명이 유효하지 않더라도 '설정됨(Configured)' 상태로 표시하며 기능 제한에 대한 안내 문구(Degraded notes)를 포함함.
+- 넓은 범위의 probe는 `openclaw status --deep`를 사용하세요.
+- guided fix는 `openclaw doctor`를 사용하세요.
+- `openclaw channels list`가 `Claude: HTTP 403 ... user:profile`를 출력하면, usage snapshot에 `user:profile` scope가 필요하다는 뜻입니다. `--no-usage`를 쓰거나, claude.ai session key (`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`)를 제공하거나, Claude Code CLI로 다시 auth하세요.
+- `openclaw channels status`는 gateway에 도달할 수 없으면 config-only summary로 fallback합니다. 지원되는 channel credential이 SecretRef로 구성되어 있지만 현재 command path에서 사용할 수 없는 경우, account는 not configured로 보이지 않고 configured 상태에 degraded note를 붙여 표시됩니다.
 
-## 기능 프로브 (Capabilities Probe)
+## Capabilities probe
 
-각 공급자가 지원하는 의도(Intents), 권한 범위(Scopes) 및 정적 기능 지원 여부를 확인함:
+provider capability hint(intents/scopes, 가능한 경우)와 static feature support를 가져옵니다.
 
 ```bash
 openclaw channels capabilities
 openclaw channels capabilities --channel discord --target channel:123
 ```
 
-- `--channel` 옵션 생략 시 플러그인을 포함한 모든 채널을 나열함.
-- **조사 항목**: Discord의 인텐트 및 채널별 권한, Slack의 봇 및 사용자 스코프, Telegram의 웹훅 설정 상태, MS Teams의 Graph API 역할 정보 등. 조사를 지원하지 않는 채널은 `Probe: unavailable`로 표시됨.
+Notes:
 
-## 이름 기반 ID 해석 (Resolve)
+- `--channel`은 optional입니다. 생략하면 extension을 포함한 모든 channel을 나열합니다.
+- `--target`은 `channel:<id>` 또는 raw numeric channel id를 받으며 Discord에만 적용됩니다.
+- probe는 provider-specific입니다. Discord intents + optional channel permission, Slack bot + user scope, Telegram bot flag + webhook, Signal daemon version, MS Teams app token + Graph role/scope(알 수 있는 경우 annotation 포함)를 보여줍니다. probe가 없는 channel은 `Probe: unavailable`로 표시됩니다.
 
-채널 이름이나 사용자 이름을 공급자 디렉터리를 검색하여 실제 ID값으로 변환함:
+## Resolve names to IDs
+
+provider directory를 사용해 channel/user name을 ID로 resolve합니다.
 
 ```bash
 openclaw channels resolve --channel slack "#general" "@jane"
-openclaw channels resolve --channel discord "서버명/#채널명" "@사용자"
-openclaw channels resolve --channel matrix "프로젝트 룸"
+openclaw channels resolve --channel discord "My Server/#support" "@someone"
+openclaw channels resolve --channel matrix "Project Room"
 ```
 
-- `--kind user|group|auto` 옵션으로 대상 유형을 강제 지정할 수 있음.
-- 동일한 이름이 여러 개 존재할 경우 현재 활성 상태인 항목을 우선적으로 반환함.
-- 이 기능은 읽기 전용 작업임. SecretRef 기반 자격 증명을 현재 환경에서 사용할 수 없는 경우 실행을 중단하지 않고 '해석 불가' 결과와 함께 사유를 안내함.
+Notes:
+
+- `--kind user|group|auto`로 target type을 강제할 수 있습니다.
+- 같은 이름이 여러 개일 경우 active match를 우선합니다.
+- `channels resolve`는 read-only입니다. 선택된 account가 SecretRef 기반이고 현재 command path에서 그 credential을 사용할 수 없더라도, command 전체를 abort하지 않고 degraded unresolved result와 note를 반환합니다.

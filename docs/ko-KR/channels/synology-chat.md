@@ -1,47 +1,52 @@
 ---
-summary: "Synology Chat 웹훅 설정 방법 및 OpenClaw 연동 가이드"
+summary: "Synology Chat webhook 설정과 OpenClaw 구성"
 read_when:
-  - Synology Chat을 OpenClaw와 연동하고자 할 때
-  - Synology Chat 웹훅 라우팅 관련 문제를 디버깅할 때
+  - Synology Chat을 OpenClaw와 설정할 때
+  - Synology Chat webhook 라우팅을 디버깅할 때
 title: "Synology Chat"
+description: "Synology Chat plugin의 webhook 설정, DM 접근 제어, outbound delivery, multi-account 구성과 보안 주의사항을 설명합니다."
 x-i18n:
   source_path: "channels/synology-chat.md"
 ---
 
-# Synology Chat (플러그인)
+# Synology Chat (plugin)
 
-**상태**: 시놀로지(Synology) Chat 웹훅을 활용한 개인 대화(DM) 채널용 플러그인으로 지원됨. 이 플러그인은 Synology Chat의 **발신 웹훅(Outgoing Webhook)**을 통해 메시지를 수신하고, **수신 웹훅(Incoming Webhook)**을 통해 답변을 전송함.
+상태: Synology Chat webhook을 사용하는 direct-message 채널 plugin으로
+지원됩니다. 이 plugin은 Synology Chat outgoing webhook에서 inbound message를
+받고, Synology Chat incoming webhook을 통해 reply를 보냅니다.
 
-## 플러그인 설치 안내
+## Plugin 필요
 
-Synology Chat 연동 기능은 플러그인 형태로 제공되며 코어 패키지에 포함되어 있지 않음.
+Synology Chat은 plugin 기반이며 기본 core channel install에는 포함되지 않습니다.
 
-**로컬 소스 환경 설치:**
+로컬 checkout에서 설치:
+
 ```bash
 openclaw plugins install ./extensions/synology-chat
 ```
 
-상세 내용은 [플러그인 가이드](/tools/plugin) 참조.
+자세한 내용: [Plugins](/tools/plugin)
 
-## 빠른 설정 가이드 (초보자용)
+## 빠른 설정
 
-1. **플러그인 설치**: 위 안내에 따라 Synology Chat 플러그인을 설치하고 활성화함.
-2. **Synology Chat 통합 설정**:
-   - **수신 웹훅(Incoming Webhook)**을 생성하고 해당 URL을 복사함.
-   - **발신 웹훅(Outgoing Webhook)**을 생성하고 발급된 시크릿 토큰을 복사함.
-3. **웹훅 대상 지정**: 발신 웹훅의 대상 URL을 본인의 OpenClaw Gateway 주소로 설정함.
-   - 기본 경로: `https://your-gateway-host/webhook/synology`
-   - 커스텀 경로가 필요한 경우 `channels.synology-chat.webhookPath` 설정을 사용함.
-4. **OpenClaw 구성**: `openclaw.json` 파일에 복사한 토큰과 URL 정보를 입력함.
-5. **Gateway 시작**: 서버를 재시작하고 Synology Chat 내의 봇에게 DM을 보내 연동 여부를 확인함.
+1. Synology Chat plugin을 설치하고 활성화합니다.
+2. Synology Chat integrations에서:
+   - incoming webhook을 만들고 URL을 복사합니다.
+   - secret token이 포함된 outgoing webhook을 만듭니다.
+3. outgoing webhook URL을 OpenClaw gateway로 지정합니다.
+   - 기본값: `https://gateway-host/webhook/synology`
+   - 또는 사용자 지정 `channels.synology-chat.webhookPath`
+4. OpenClaw에서 `channels.synology-chat`을 설정합니다.
+5. gateway를 재시작하고 Synology Chat bot에게 DM을 보냅니다.
 
-### 최소 설정 예시
+최소 구성:
+
 ```json5
 {
   channels: {
     "synology-chat": {
       enabled: true,
-      token: "your-outgoing-token",
+      token: "synology-outgoing-token",
       incomingUrl: "https://nas.example.com/webapi/entry.cgi?api=SYNO.Chat.External&method=incoming&version=2&token=...",
       webhookPath: "/webhook/synology",
       dmPolicy: "allowlist",
@@ -53,46 +58,51 @@ openclaw plugins install ./extensions/synology-chat
 }
 ```
 
-## 환경 변수 지원 (기본 계정 전용)
+## 환경 변수
 
-설정 파일 대신 다음 환경 변수를 사용할 수 있음:
+기본 account에는 env var를 사용할 수 있습니다.
+
 - `SYNOLOGY_CHAT_TOKEN`
 - `SYNOLOGY_CHAT_INCOMING_URL`
 - `SYNOLOGY_NAS_HOST`
-- `SYNOLOGY_ALLOWED_USER_IDS` (쉼표로 구분된 목록)
+- `SYNOLOGY_ALLOWED_USER_IDS` (comma-separated)
 - `SYNOLOGY_RATE_LIMIT`
 - `OPENCLAW_BOT_NAME`
 
-<Note>
-설정 파일(`openclaw.json`)의 값이 환경 변수 설정보다 우선적으로 적용됨.
-</Note>
+config 값이 env var보다 우선합니다.
 
-## 접근 제어 및 DM 정책
+## DM policy와 접근 제어
 
-- **`dmPolicy: "allowlist"`**: 권장되는 기본값임. `allowedUserIds`에 등록된 사용자만 에이전트와 대화할 수 있음.
-- **`allowedUserIds`**: Synology 사용자 ID 목록을 입력함. 이 목록이 비어 있으면 보안을 위해 웹훅 라우트가 시작되지 않음. (모든 사용자 허용 시 `"open"` 모드 사용)
-- **`dmPolicy: "open"`**: 모든 발신자의 메시지를 처리함.
-- **`dmPolicy: "disabled"`**: 모든 개인 대화를 차단함.
-- **페어링 승인**: `openclaw pairing approve synology-chat <CODE>` 명령어를 통해 대기 중인 사용자를 승인할 수 있음.
+- `dmPolicy: "allowlist"`가 권장 기본값입니다.
+- `allowedUserIds`는 Synology user ID list(또는 comma-separated string)를
+  받습니다.
+- `allowlist` 모드에서 비어 있는 `allowedUserIds`는 misconfiguration으로
+  간주되며 webhook route가 시작되지 않습니다(모두 허용하려면
+  `dmPolicy: "open"` 사용).
+- `dmPolicy: "open"`은 모든 sender를 허용합니다.
+- `dmPolicy: "disabled"`는 DM을 차단합니다.
+- pairing approval도 동작합니다:
+  - `openclaw pairing list synology-chat`
+  - `openclaw pairing approve synology-chat <CODE>`
 
-## 아웃바운드 대상 지정
+## Outbound delivery
 
-메시지 전송 시 대상 식별자로 숫자형 Synology Chat 사용자 ID를 사용함.
+대상에는 numeric Synology Chat user ID를 사용합니다.
 
-**사용 예시:**
+예시:
+
 ```bash
-# 특정 사용자에게 메시지 전송
-openclaw message send --channel synology-chat --target 123456 --message "OpenClaw에서 보낸 메시지입니다."
-
-# 채널 접두사를 포함한 대상 지정
-openclaw message send --channel synology-chat --target synology-chat:123456 --message "다시 확인 부탁드립니다."
+openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
+openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
 ```
 
-이미지 및 파일 전송은 URL 기반의 파일 전달 방식을 통해 지원됨.
+media send는 URL 기반 파일 전송으로 지원됩니다.
 
-## 다중 계정 설정 (Multi-account)
+## Multi-account
 
-`channels.synology-chat.accounts` 섹션을 통해 여러 개의 NAS 계정을 동시에 운영할 수 있음. 각 계정은 독립적인 토큰, 웹훅 경로 및 허용 목록을 가질 수 있음.
+여러 Synology Chat account를 `channels.synology-chat.accounts` 아래에서 지원합니다.
+각 account는 token, incoming URL, webhook path, DM policy, limit를 override할 수
+있습니다.
 
 ```json5
 {
@@ -102,11 +112,11 @@ openclaw message send --channel synology-chat --target synology-chat:123456 --me
       accounts: {
         default: {
           token: "token-a",
-          incomingUrl: "https://nas-a.example.com/..."
+          incomingUrl: "https://nas-a.example.com/...token=...",
         },
         alerts: {
           token: "token-b",
-          incomingUrl: "https://nas-b.example.com/...",
+          incomingUrl: "https://nas-b.example.com/...token=...",
           webhookPath: "/webhook/synology-alerts",
           dmPolicy: "allowlist",
           allowedUserIds: ["987654"],
@@ -117,9 +127,10 @@ openclaw message send --channel synology-chat --target synology-chat:123456 --me
 }
 ```
 
-## 보안 주의사항
+## 보안 참고
 
-- **토큰 보안**: `token` 값은 외부로 유출되지 않도록 주의하며, 유출 의심 시 즉시 로테이션함.
-- **SSL 검증**: 로컬 네트워크 내의 자가 서명 인증서(Self-signed cert)를 사용하는 경우가 아니라면, 보안을 위해 `allowInsecureSsl: false` 설정을 유지할 것을 권장함.
-- **웹훅 검증**: 수신되는 모든 웹훅 요청은 토큰 기반으로 인증되며, 발신자별로 속도 제한(Rate limit)이 적용됨.
-- **운영 권장**: 실제 서비스 환경에서는 가급적 `allowlist` 정책 사용을 권장함.
+- `token`은 비밀로 유지하고 유출되면 교체하세요.
+- self-signed local NAS cert를 명시적으로 신뢰하는 경우가 아니면
+  `allowInsecureSsl: false`를 유지하세요.
+- inbound webhook request는 token 검증과 sender별 rate limit가 적용됩니다.
+- 운영 환경에는 `dmPolicy: "allowlist"`를 권장합니다.

@@ -1,8 +1,9 @@
 ---
-summary: "네이티브 zca-js(QR 로그인)를 활용한 Zalo 개인 계정 연동 가이드 및 설정 안내"
+summary: "native zca-js 기반 Zalo Personal 지원 상태, 기능, 설정 방법 요약"
+description: "OpenClaw에서 비공식 Zalo 개인 계정을 연결하는 방법, QR 로그인 흐름, DM 및 그룹 접근 제어, 운영 시 주의할 제한 사항을 정리합니다."
 read_when:
-  - Zalo 개인 계정을 OpenClaw와 연동하고자 할 때
-  - Zalo Personal 로그인 또는 메시지 흐름 관련 문제를 디버깅할 때
+  - OpenClaw용 Zalo Personal을 설정할 때
+  - Zalo Personal 로그인이나 메시지 흐름을 디버깅할 때
 title: "Zalo Personal"
 x-i18n:
   source_path: "channels/zalouser.md"
@@ -10,35 +11,27 @@ x-i18n:
 
 # Zalo Personal (비공식)
 
-**상태**: 실험적 기능 (Experimental). 이 통합 방식은 네이티브 `zca-js` 라이브러리를 사용하여 **Zalo 개인 계정** 자동화를 지원함.
+상태: experimental. 이 통합은 OpenClaw 내부에서 native `zca-js`를 사용해 **개인 Zalo account**를 자동화합니다.
 
-<Warning>
-**주의**: 본 기능은 비공식 연동 방식이며, 사용 시 계정 정지 또는 차단 조치가 취해질 수 있음. 모든 사용에 대한 책임은 사용자 본인에게 있음.
-</Warning>
+> **Warning:** 이 통합은 비공식 방식이며 account suspension 또는 ban으로 이어질 수 있습니다. 사용 책임은 본인에게 있습니다.
 
-## 플러그인 설치 안내
+## 플러그인 필요
 
-Zalo Personal 연동 기능은 플러그인 형태로 제공되며 코어 패키지에 포함되어 있지 않음.
+Zalo Personal은 플러그인으로 제공되며 코어 설치에는 번들되지 않습니다.
 
-**CLI를 통한 설치 (npm):**
-```bash
-openclaw plugins install @openclaw/zalouser
-```
+- CLI 설치: `openclaw plugins install @openclaw/zalouser`
+- source checkout에서 설치: `openclaw plugins install ./extensions/zalouser`
+- 세부 내용: [Plugins](/tools/plugin)
 
-**로컬 소스 환경 설치:**
-```bash
-openclaw plugins install ./extensions/zalouser
-```
+외부 `zca`/`openzca` CLI binary는 필요하지 않습니다.
 
-별도의 외부 `zca` 또는 `openzca` CLI 바이너리 설치는 필요하지 않음. 상세 내용은 [플러그인 가이드](/tools/plugin) 참조.
+## 빠른 설정 (입문자용)
 
-## 빠른 설정 가이드 (초보자용)
-
-1. **플러그인 설치**: 위 안내에 따라 플러그인을 설치함.
-2. **QR 로그인**: Gateway가 실행 중인 기기에서 로그인을 수행함.
-   - `openclaw channels login --channel zalouser` 실행.
-   - 출력된 QR 코드를 모바일 Zalo 앱으로 스캔하여 로그인 승인.
-3. **채널 활성화**: `openclaw.json` 파일에 다음 설정을 추가함.
+1. 플러그인을 설치합니다. (위 참고)
+2. Gateway가 실행되는 장비에서 로그인합니다. (QR)
+   - `openclaw channels login --channel zalouser`
+   - Zalo mobile app으로 QR code를 스캔합니다.
+3. 채널을 활성화합니다.
 
 ```json5
 {
@@ -51,85 +44,104 @@ openclaw plugins install ./extensions/zalouser
 }
 ```
 
-4. **Gateway 시작**: 서버를 가동하거나 온보딩 과정을 완료함.
-5. **페어링 승인**: DM 접근 정책은 기본적으로 **페어링(Pairing)** 모드임. 봇에게 첫 메시지를 보낸 후 발급된 코드를 승인함.
+4. Gateway를 재시작합니다. 또는 onboarding을 마무리합니다.
+5. DM access 기본값은 pairing이며, 첫 접촉 시 pairing code를 승인해야 합니다.
 
----
+## 이 통합의 성격
 
-## 핵심 동작 방식
+- 전체가 `zca-js`를 통해 in-process로 동작합니다.
+- native event listener로 inbound message를 수신합니다.
+- JS API를 통해 text, media, link를 직접 전송합니다.
+- 공식 Zalo Bot API를 사용할 수 없는 개인 account 시나리오를 위한 설계입니다.
 
-- **통신 모델**: `zca-js`를 통해 Gateway 프로세스 내부에서 직접 작동함.
-- **메시지 수신**: 네이티브 이벤트 리스너를 사용하여 수신 메시지를 감지함.
-- **응답 전송**: JS API를 통해 텍스트, 미디어, 링크 등을 직접 전송함.
-- **용도**: 공식 Zalo 봇 API를 사용할 수 없는 환경에서 개인 계정을 활용하기 위해 설계됨.
+## 이름
 
-## 명칭 및 식별자
+channel id를 `zalouser`로 둔 이유는, 이것이 **개인 Zalo user account**를 자동화하는 비공식 통합임을 명확히 하기 위해서입니다. `zalo`는 향후 공식 Zalo API 통합을 위해 예약해 둡니다.
 
-채널 ID는 **`zalouser`**임. 이는 본 기능이 비공식적인 **Zalo 개인 사용자 계정** 자동화임을 명확히 구분하기 위함임. `zalo` ID는 향후 공식 API 연동을 위해 예약되어 있음.
+## ID 찾기 (directory)
 
-## ID 확인 방법 (디렉터리 조회)
-
-CLI 도구를 사용하여 대화 상대 및 그룹의 ID를 확인할 수 있음:
+directory CLI를 사용해 peer/group과 해당 ID를 찾을 수 있습니다.
 
 ```bash
-# 본인 계정 정보 확인
 openclaw directory self --channel zalouser
-
-# 이름으로 연락처 검색 및 ID 확인
-openclaw directory peers list --channel zalouser --query "이름"
-
-# 이름으로 그룹 목록 검색 및 ID 확인
-openclaw directory groups list --channel zalouser --query "업무"
+openclaw directory peers list --channel zalouser --query "name"
+openclaw directory groups list --channel zalouser --query "work"
 ```
 
-## 기능 제한 사항
+## 제한 사항
 
-- **메시지 길이**: 발신 텍스트는 Zalo 클라이언트 제한에 따라 약 2,000자 단위로 자동 분할(Chunking)됨.
-- **스트리밍**: 기술적 제약으로 인해 실시간 스트리밍 답변 기능은 기본적으로 차단됨.
+- outbound text는 Zalo client 제한 때문에 약 2000자 단위로 chunking됩니다.
+- streaming은 기본적으로 차단됩니다.
 
----
+## 접근 제어 (DMs)
 
-## 접근 제어 정책
+`channels.zalouser.dmPolicy`는 `pairing | allowlist | open | disabled`를 지원합니다. 기본값은 `pairing`입니다.
 
-### 개인 대화 (DM)
-- **정책 (`dmPolicy`)**: `pairing` (기본값), `allowlist`, `open`, `disabled` 중 선택.
-- **허용 목록**: `allowFrom`에 사용자 ID 또는 이름을 등록함. 이름 입력 시 온보딩 과정에서 플러그인이 자동으로 ID를 검색하여 매핑함.
-- **페어링 승인**:
-  ```bash
-  openclaw pairing list zalouser
-  openclaw pairing approve zalouser <CODE>
-  ```
+`channels.zalouser.allowFrom`은 user ID 또는 이름을 받을 수 있습니다. onboarding 중에는 플러그인의 in-process contact lookup을 이용해 이름을 ID로 resolve합니다.
 
-### 그룹 대화 (선택 사항)
-- **그룹 정책 (`groupPolicy`)**: `open` (모두 허용), `allowlist` (기본값), `disabled` (차단).
-- **ID 해석**: 서버 시작 시 허용 목록에 등록된 그룹/사용자 이름을 실제 ID로 해석하여 로그에 기록함. 해석되지 않은 항목은 입력된 원본 값을 그대로 유지함.
-- **발신자 필터링**: `groupAllowFrom`에 등록된 사용자만 그룹 내에서 에이전트를 호출할 수 있음. 미설정 시 DM 허용 목록을 상속함.
+승인 명령:
 
-**설정 예시:**
+- `openclaw pairing list zalouser`
+- `openclaw pairing approve zalouser <code>`
+
+## 그룹 접근 (선택 사항)
+
+- 기본값: `channels.zalouser.groupPolicy = "open"` 입니다. 그룹이 허용됩니다. unset일 때 기본값을 바꾸려면 `channels.defaults.groupPolicy`를 사용하세요.
+- allowlist로 제한하려면:
+  - `channels.zalouser.groupPolicy = "allowlist"`
+  - `channels.zalouser.groups` (key는 group ID 또는 이름이며, 어떤 그룹을 허용할지 제어)
+  - `channels.zalouser.groupAllowFrom` (허용된 그룹 안에서 어떤 sender가 bot을 트리거할지 제어)
+- 모든 그룹을 막으려면: `channels.zalouser.groupPolicy = "disabled"`
+- configure wizard는 group allowlist 입력을 물어볼 수 있습니다.
+- startup 시 OpenClaw는 allowlist의 group/user 이름을 ID로 resolve하고 매핑을 로그에 남깁니다. resolve되지 않은 항목은 입력값 그대로 유지됩니다.
+- `groupAllowFrom`이 unset이면, runtime은 group sender check에서 `allowFrom`으로 fallback합니다.
+- sender check는 일반 group message와 control command(예: `/new`, `/reset`) 모두에 적용됩니다.
+
+예시:
+
 ```json5
 {
   channels: {
     zalouser: {
       groupPolicy: "allowlist",
-      groupAllowFrom: ["1471383327500481391"], // 특정 사용자 ID
+      groupAllowFrom: ["1471383327500481391"],
       groups: {
-        "123456789": { allow: true }, // 그룹 ID
-        "업무용 채팅방": { allow: true }, // 그룹 이름
+        "123456789": { allow: true },
+        "Work Chat": { allow: true },
       },
     },
   },
 }
 ```
 
-### 그룹 멘션 게이팅 (Mention Gating)
-- `requireMention` 설정을 통해 멘션 시에만 응답할지 결정함 (기본값: `true`).
-- **이력 주입**: 멘션이 없어 응답하지 않은 이전 메시지들은 버퍼링되었다가, 다음 멘션 시 문맥 정보(`groupChat.historyLimit`, 기본 50개)로 포함되어 전달됨.
+### 그룹 mention gating
 
----
+- `channels.zalouser.groups.<group>.requireMention`은 그룹 답장에 mention이 필요한지 제어합니다.
+- resolution order: exact group id/name -> normalized group slug -> `*` -> default (`true`)
+- 이 규칙은 allowlisted group과 open group mode 모두에 적용됩니다.
+- 권한이 있는 control command(예: `/new`)는 mention gating을 우회할 수 있습니다.
+- mention이 필요해서 group message가 건너뛰어지면, OpenClaw는 이를 pending group history로 저장하고 다음에 처리되는 group message에 포함합니다.
+- group history limit 기본값은 `messages.groupChat.historyLimit`이며, fallback은 `50`입니다. account별 override는 `channels.zalouser.historyLimit`를 사용합니다.
 
-## 다중 계정 설정 (Multi-account)
+예시:
 
-`zalouser` 프로필 시스템을 통해 여러 계정을 동시에 관리할 수 있음:
+```json5
+{
+  channels: {
+    zalouser: {
+      groupPolicy: "allowlist",
+      groups: {
+        "*": { allow: true, requireMention: true },
+        "Work Chat": { allow: true, requireMention: false },
+      },
+    },
+  },
+}
+```
+
+## 멀티 계정
+
+accounts는 OpenClaw state 안의 `zalouser` profile과 매핑됩니다. 예시:
 
 ```json5
 {
@@ -145,15 +157,26 @@ openclaw directory groups list --channel zalouser --query "업무"
 }
 ```
 
-## 입력 알림 및 읽음 확인
+## typing, reactions, delivery acknowledgements
 
-- **입력 중 표시**: 답변 전송 전 최선 노력(Best-effort) 방식으로 입력 중 이벤트를 전송함.
-- **리액션 (`react`)**: 채널 액션 기능을 통해 메시지에 리액션을 추가하거나 제거할 수 있음. 상세 내용은 [리액션 가이드](/tools/reactions) 참조.
-- **읽음 확인**: 이벤트 메타데이터가 포함된 메시지 수신 시, '전달됨' 및 '읽음' 확인을 자동으로 전송함.
+- OpenClaw는 reply를 보내기 전에 typing event를 best-effort로 전송합니다.
+- channel actions에서 `zalouser`용 message reaction action `react`를 지원합니다.
+  - 특정 reaction emoji를 제거하려면 `remove: true`를 사용합니다.
+  - reaction 의미는 [Reactions](/tools/reactions)를 참고하세요.
+- event metadata가 포함된 inbound message의 경우, OpenClaw는 delivered + seen acknowledgement를 best-effort로 전송합니다.
 
-## 문제 해결 (Troubleshooting)
+## 문제 해결
 
-- **로그인 유지 안 됨**: `openclaw channels status --probe` 명령어로 상태를 확인하고, 문제가 있다면 로그아웃 후 다시 로그인을 진행함.
-  - `openclaw channels logout --channel zalouser && openclaw channels login --channel zalouser`
-- **허용 목록 매핑 실패**: 가급적 이름 대신 변하지 않는 숫자형 ID를 `allowFrom` 또는 `groups` 설정에 직접 입력할 것을 권장함.
-- **업그레이드 안내**: 이전 버전의 외부 CLI 기반 설정을 사용 중이었다면, 해당 프로세스 설정을 모두 제거해야 함. 현재는 OpenClaw 내부에서 모든 작업이 완결됨.
+**로그인이 유지되지 않음:**
+
+- `openclaw channels status --probe`
+- 다시 로그인: `openclaw channels logout --channel zalouser && openclaw channels login --channel zalouser`
+
+**Allowlist/group name이 resolve되지 않음:**
+
+- `allowFrom` / `groupAllowFrom` / `groups`에는 numeric ID 또는 정확한 friend/group 이름을 사용하세요.
+
+**오래된 CLI 기반 설정에서 업그레이드한 경우:**
+
+- 외부 `zca` process를 전제로 한 설정은 제거하세요.
+- 이제 이 채널은 외부 CLI binary 없이 OpenClaw 내부에서 완전히 동작합니다.

@@ -1,5 +1,6 @@
 ---
 summary: "OpenClaw에서 Venice AI의 프라이버시 중심 모델 사용하기"
+description: "OpenClaw에서 Venice AI의 프라이버시 중심 모델 사용하기"
 read_when:
   - OpenClaw에서 프라이버시 중심 추론을 원할 때
   - Venice AI 설정 가이드를 원할 때
@@ -22,15 +23,15 @@ Venice AI는 검열되지 않은 모델 지원과, 익명화된 프록시를 통
 - 품질이 중요할 때, 독점 모델(Opus/GPT/Gemini)에 대한 **익명화된 접근**
 - OpenAI 호환 `/v1` 엔드포인트
 
-## Privacy Modes
+## 프라이버시 모드
 
 Venice는 두 가지 프라이버시 수준을 제공합니다. 어떤 모델을 선택할지 결정할 때
 이를 이해하는 것이 중요합니다.
 
-| Mode           | Description                                                                                                                       | Models                                                        |
+| 모드 | 설명                                                                                                                       | Models                                                        |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
 | **Private**    | 완전한 비공개. 프롬프트/응답은 **절대로 저장되거나 로깅되지 않습니다**. 일시적입니다.                                              | Llama, Qwen, DeepSeek, Kimi, MiniMax, Venice Uncensored 등    |
-| **Anonymized** | Venice를 통해 프록시되며 메타데이터가 제거됩니다. 기본 provider(OpenAI, Anthropic, Google, xAI)는 익명화된 요청만 보게 됩니다. | Claude, GPT, Gemini, Grok                                     |
+| **Anonymized** | Venice를 통해 프록시되며 메타데이터가 제거됩니다. 기본 프로바이더(OpenAI, Anthropic, Google, xAI)는 익명화된 요청만 보게 됩니다. | Claude, GPT, Gemini, Grok                                     |
 
 ## 기능
 
@@ -49,7 +50,7 @@ Venice는 두 가지 프라이버시 수준을 제공합니다. 어떤 모델을
 
 1. [venice.ai](https://venice.ai)에서 가입합니다
 2. **Settings → API Keys → Create new key**로 이동합니다
-3. API key를 복사합니다(형식: `vapi_xxxxxxxxxxxx`)
+3. API 키를 복사합니다(형식: `vapi_xxxxxxxxxxxx`)
 
 ### 2. OpenClaw 설정
 
@@ -67,10 +68,10 @@ openclaw onboard --auth-choice venice-api-key
 
 이 과정에서 다음이 수행됩니다.
 
-1. API key 입력을 요청합니다(또는 기존 `VENICE_API_KEY` 사용)
+1. API 키 입력을 요청합니다(또는 기존 `VENICE_API_KEY` 사용)
 2. 사용 가능한 모든 Venice 모델을 보여줍니다
 3. 기본 모델을 선택하게 합니다
-4. provider를 자동으로 설정합니다
+4. 프로바이더를 자동으로 설정합니다
 
 **옵션 C: Non-interactive**
 
@@ -186,7 +187,7 @@ openclaw models list | grep venice
 탐색합니다. API에 접근할 수 없으면 정적 카탈로그로 폴백합니다.
 
 `/models` 엔드포인트는 공개되어 있어 모델 목록 조회에는 auth가 필요 없지만,
-추론에는 유효한 API key가 필요합니다.
+추론에는 유효한 API 키가 필요합니다.
 
 ## Streaming 및 Tool 지원
 
@@ -235,7 +236,7 @@ openclaw agent --model venice/qwen3-coder-480b-a35b-instruct --message "Refactor
 
 ## 문제 해결
 
-### API key를 인식하지 못함
+### API 키를 인식하지 못함
 
 ```bash
 echo $VENICE_API_KEY

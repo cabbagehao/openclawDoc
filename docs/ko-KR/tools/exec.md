@@ -1,16 +1,17 @@
 ---
 summary: "Exec tool 사용법, stdin mode, TTY 지원"
+description: "OpenClaw의 exec 도구 파라미터, 승인 모델, stdin/TTY 동작, 호스트별 실행 차이를 설명합니다."
 read_when:
   - exec tool을 사용하거나 수정할 때
-  - stdin 또는 TTY 동작을 디버깅할 때
+  - stdin, background session, TTY 동작을 디버깅할 때
 title: "Exec Tool"
 ---
 
 # Exec tool
 
-workspace에서 shell command를 실행합니다. `process`를 통한 foreground + background 실행을 지원합니다.
-`process`가 허용되지 않으면 `exec`는 동기식으로 실행되며 `yieldMs`/`background`를 무시합니다.
-background session은 agent별 scope를 가지며, `process`는 같은 agent의 session만 볼 수 있습니다.
+workspace에서 셸 명령을 실행합니다. `process`를 통한 foreground 및 background 실행을 지원합니다.
+`process`가 허용되지 않으면 `exec`는 동기식으로 실행되며 `yieldMs`와 `background`를 무시합니다.
+background session은 agent별 범위로 격리되며, `process`는 같은 agent의 session만 확인할 수 있습니다.
 
 ## Parameters
 

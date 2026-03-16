@@ -1,5 +1,6 @@
 ---
 summary: "크론(Cron) 및 하트비트(Heartbeat) 예약 실행과 메시지 전달 관련 문제 해결 가이드"
+description: "cron과 heartbeat 자동화가 실행되지 않거나 전달에 실패할 때 어떤 명령으로 상태를 확인하고 대표적인 원인을 해석해야 하는지 안내합니다."
 read_when:
   - 예약된 크론 작업이 실행되지 않았을 때
   - 크론은 실행되었으나 메시지가 전달되지 않았을 때
@@ -95,7 +96,7 @@ openclaw channels status --probe
 ```bash
 openclaw config get agents.defaults.heartbeat.activeHours
 openclaw config get agents.defaults.heartbeat.activeHours.timezone
-openclaw config get agents.defaults.userTimezone || echo "userTimezone 미설정"
+openclaw config get agents.defaults.userTimezone || echo "agents.defaults.userTimezone not set"
 openclaw cron list
 openclaw logs --follow
 ```

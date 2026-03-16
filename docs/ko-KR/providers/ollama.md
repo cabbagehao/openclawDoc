@@ -1,5 +1,6 @@
 ---
 summary: "OpenClaw를 Ollama(로컬 LLM 런타임)와 함께 실행하기"
+description: "OpenClaw를 Ollama(로컬 LLM 런타임)와 함께 실행하기"
 read_when:
   - Ollama를 통해 로컬 모델로 OpenClaw를 실행하고 싶을 때
   - Ollama 설정과 구성 가이드가 필요할 때
@@ -21,7 +22,7 @@ OpenClaw는 Ollama의 네이티브 API(`/api/chat`)와 통합되어 스트리밍
 대신 네이티브 Ollama API URL을 사용하세요: `baseUrl: "http://host:11434"` (`/v1` 없음).
 </Warning>
 
-## Quick start
+## 빠른 시작
 
 1. Ollama를 설치합니다: [https://ollama.ai](https://ollama.ai)
 
@@ -59,7 +60,7 @@ openclaw config set models.providers.ollama.apiKey "ollama-local"
 }
 ```
 
-## Model discovery (implicit provider)
+## Model discovery (implicit 프로바이더)
 
 `OLLAMA_API_KEY`(또는 auth profile)를 설정하고 `models.providers.ollama`를 **정의하지 않으면**,
 OpenClaw는 `http://127.0.0.1:11434`의 로컬 Ollama 인스턴스에서 모델을 탐지합니다.
@@ -91,7 +92,7 @@ ollama pull mistral
 `models.providers.ollama`를 명시적으로 설정하면 자동 탐지는 건너뛰며, 모델을 직접 정의해야 합니다
 (아래 참고).
 
-## Configuration
+## 설정
 
 ### Basic setup (implicit discovery)
 
@@ -134,7 +135,7 @@ export OLLAMA_API_KEY="ollama-local"
 }
 ```
 
-`OLLAMA_API_KEY`가 설정되어 있다면 provider 항목에서 `apiKey`를 생략해도 OpenClaw가
+`OLLAMA_API_KEY`가 설정되어 있다면 프로바이더 항목에서 `apiKey`를 생략해도 OpenClaw가
 가용성 확인용으로 자동 채웁니다.
 
 ### Custom base URL (explicit config)
@@ -249,7 +250,7 @@ Ollama가 조용히 4096 context window로 되돌아가지 않도록 합니다. 
 ### Context windows
 
 자동 탐지된 모델의 경우 OpenClaw는 가능하면 Ollama가 보고한 context window를 사용하고,
-없으면 기본값 `8192`를 사용합니다. 명시적 provider 설정에서는 `contextWindow`와 `maxTokens`를
+없으면 기본값 `8192`를 사용합니다. 명시적 프로바이더 설정에서는 `contextWindow`와 `maxTokens`를
 직접 재정의할 수 있습니다.
 
 ## Troubleshooting

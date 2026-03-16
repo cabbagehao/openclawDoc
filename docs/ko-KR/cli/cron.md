@@ -1,8 +1,9 @@
 ---
-summary: "백그라운드 작업 예약 및 실행을 위한 `openclaw cron` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw cron` (schedule and run background jobs)"
+description: "Gateway scheduler에서 cron job을 추가·수정·실행할 때 알아야 할 delivery, retry backoff, retention, `--light-context` 동작을 정리합니다."
 read_when:
-  - 예약된 작업이나 자동 실행(Wakeup) 기능을 설정하고자 할 때
-  - 크론 작업의 실행 이력 및 로그를 디버깅할 때
+  - scheduled job과 wakeup을 설정하려고 할 때
+  - cron 실행과 log를 디버깅할 때
 title: "cron"
 x-i18n:
   source_path: "cli/cron.md"
@@ -10,61 +11,65 @@ x-i18n:
 
 # `openclaw cron`
 
-Gateway 스케줄러를 통해 실행되는 크론(Cron) 작업을 관리함.
+Gateway scheduler용 cron job을 관리합니다.
 
-**관련 문서:**
-- 크론 작업 가이드: [Cron jobs](/automation/cron-jobs)
+Related:
 
-**팁**: 전체 명령어 및 옵션 목록을 확인하려면 `openclaw cron --help`를 실행함.
+- Cron jobs: [Cron jobs](/automation/cron-jobs)
 
-## 참고 사항
+Tip: 전체 command surface는 `openclaw cron --help`로 확인하세요.
 
-- **응답 전달**: 격리된(`isolated`) `cron add` 작업은 기본적으로 `--announce` 전달 방식을 사용함. 결과를 외부로 전송하지 않고 내부에만 유지하려면 `--no-deliver` 플래그를 사용함. (`--deliver`는 `--announce`와 동일한 레거시 별칭임)
-- **1회성 작업**: `--at` 옵션으로 설정된 1회성 작업은 성공적으로 실행된 후 자동 삭제됨. 작업 이력을 유지하려면 `--keep-after-run` 옵션을 사용함.
-- **재시도 정책**: 반복 작업 중 연속적인 오류가 발생할 경우 지수 백오프(Exponential backoff) 정책(30초 → 1분 → 5분 → 15분 → 60분)이 적용되며, 다음 성공 시 정상 스케줄로 복귀함.
-- **실행 방식**: `openclaw cron run` 명령어는 수동 실행 요청이 대기열에 추가되는 즉시 `{ ok: true, enqueued: true, runId }`를 반환함. 실제 최종 실행 결과는 `openclaw cron runs --id <job-id>` 명령어로 추적 가능함.
-- **보관 및 정리 (Pruning)**: 설정 파일의 다음 항목을 통해 관리됨:
-  - `cron.sessionRetention`: 완료된 격리 세션 보관 기간 (기본값: `24h`).
-  - `cron.runLog.maxBytes` / `keepLines`: 실행 로그 파일(`~/.openclaw/cron/runs/<jobId>.jsonl`)의 용량 및 라인 수 제한.
+참고: isolated `cron add` job은 기본적으로 `--announce` delivery를 사용합니다. 결과를 내부에만 남기려면 `--no-deliver`를 사용하세요. `--deliver`는 deprecated alias로 유지됩니다.
 
-**업그레이드 안내**: 이전 버전의 크론 작업 데이터 형식을 사용 중인 경우 `openclaw doctor --fix` 명령어를 실행하여 최신 규격으로 정규화 및 마이그레이션을 수행할 것을 권장함.
+참고: one-shot (`--at`) job은 기본적으로 성공 후 삭제됩니다. 유지하려면 `--keep-after-run`을 사용하세요.
 
-## 일반적인 수정 사례
+참고: recurring job은 연속 오류가 발생하면 exponential retry backoff를 사용합니다. (`30s → 1m → 5m → 15m → 60m`) 다음 성공 실행이 끝나면 다시 정상 schedule로 돌아갑니다.
 
-**메시지는 유지하고 응답 전송 설정만 변경:**
+참고: `openclaw cron run`은 수동 실행이 queue에 들어가면 즉시 반환합니다. 성공 응답에는 `{ ok: true, enqueued: true, runId }`가 포함되며, 실제 결과는 `openclaw cron runs --id <job-id>`로 추적할 수 있습니다.
+
+참고: retention/pruning은 config로 제어합니다.
+
+- `cron.sessionRetention` (default `24h`)은 완료된 isolated run session을 정리
+- `cron.runLog.maxBytes` + `cron.runLog.keepLines`는 `~/.openclaw/cron/runs/<jobId>.jsonl`을 정리
+
+Upgrade note: 현재 delivery/store format 이전의 오래된 cron job이 있으면 `openclaw doctor --fix`를 실행하세요. doctor는 legacy cron field (`jobId`, `schedule.cron`, top-level delivery field, payload `provider` delivery alias)를 normalize하고, `cron.webhook`이 설정된 경우 단순 `notify: true` webhook fallback job을 명시적 webhook delivery로 migrate합니다.
+
+## Common edits
+
+메시지는 그대로 두고 delivery setting만 바꾸기:
+
 ```bash
 openclaw cron edit <job-id> --announce --channel telegram --to "123456789"
 ```
 
-**격리된 작업의 결과 전송 비활성화:**
+isolated job의 delivery 비활성화:
+
 ```bash
 openclaw cron edit <job-id> --no-deliver
 ```
 
-**가벼운 컨텍스트(Lightweight Context) 활성화:**
+isolated job에 lightweight bootstrap context 활성화:
+
 ```bash
 openclaw cron edit <job-id> --light-context
 ```
 
-**특정 Slack 채널로 결과 알림 설정:**
+특정 channel로 announce:
+
 ```bash
 openclaw cron edit <job-id> --announce --channel slack --to "channel:C1234567890"
 ```
 
-## 신규 작업 생성 예시
-
-가벼운 부트스트랩 컨텍스트를 사용하는 격리된 예약 작업 생성:
+lightweight bootstrap context를 사용하는 isolated job 생성:
 
 ```bash
 openclaw cron add \
-  --name "가벼운 아침 요약" \
+  --name "Lightweight morning brief" \
   --cron "0 7 * * *" \
   --session isolated \
-  --message "어제 밤새 업데이트된 내용을 요약해줘." \
+  --message "Summarize overnight updates." \
   --light-context \
   --no-deliver
 ```
 
-<Note>
-`--light-context` 플래그는 격리된 에이전트 실행 작업에만 적용됨. 이 모드에서는 전체 워크스페이스 부트스트랩 파일을 주입하는 대신 컨텍스트를 비워두어 자원을 절약함.
-</Note>
+`--light-context`는 isolated agent-turn job에만 적용됩니다. cron run에서 lightweight mode는 전체 workspace bootstrap set을 주입하지 않고 bootstrap context를 비워 둡니다.

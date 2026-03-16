@@ -1,8 +1,9 @@
 ---
-summary: "보안 취약점 및 위험 요소를 점검하고 설정을 강화하는 `openclaw security` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw security` (audit and fix common security footguns)"
+description: "config와 state에서 흔한 보안 실수를 점검하고 안전한 자동 수정 범위를 확인하는 `openclaw security` 사용법을 설명합니다."
 read_when:
-  - 현재 설정 및 상태 데이터에 대해 빠른 보안 점검(Audit)을 수행하고자 할 때
-  - 파일 권한 조정 및 기본값 강화 등 안전한 자동 수정(Fix) 기능을 적용하고 싶을 때
+  - config와 state에 대해 빠른 security audit을 수행하고 싶을 때
+  - 안전한 fix suggestion을 적용하고 싶을 때
 title: "security"
 x-i18n:
   source_path: "cli/security.md"
@@ -10,70 +11,91 @@ x-i18n:
 
 # `openclaw security`
 
-Gateway 보안 진단 및 설정 강화 도구 (감사 및 자동 수정 지원).
+security 도구입니다. (audit + 선택적 fix)
 
-**관련 문서:**
-- 보안 가이드 전체: [Security](/gateway/security)
+Related:
 
-## 보안 감사 (Audit)
+- Security guide: [Security](/gateway/security)
+
+## Audit
 
 ```bash
-# 기본 보안 점검 실행
 openclaw security audit
-
-# 정밀 진단 및 실시간 프로브 실행
 openclaw security audit --deep
-
-# 발견된 문제 자동 수정 시도
 openclaw security audit --fix
-
-# 진단 결과를 JSON 형식으로 출력
 openclaw security audit --json
 ```
 
-### 주요 점검 항목 및 가이드라인
+audit는 여러 DM sender가 main session을 공유할 때 경고하고, shared inbox에는
+**secure DM mode**인 `session.dmScope="per-channel-peer"`를 권장합니다.
+(multi-account channel은 `per-account-channel-peer`)
+이 guidance는 cooperative/shared inbox hardening을 위한 것입니다. 서로 신뢰하지 않는 운영자가 하나의 Gateway를 공유하는 구조는 권장되지 않으며,
+그 경우에는 별도 gateway나 별도 OS user/host로 trust boundary를 분리해야 합니다.
 
-- **DM 세션 공유 방지**: 여러 명의 DM 발신자가 하나의 메인 세션을 공유하는 경우 경고를 발생시킴. 공유 인박스(Shared Inbox) 환경에서는 보안 강화를 위해 **보안 DM 모드**(`session.dmScope="per-channel-peer"`) 사용을 권장함.
-- **신뢰 모델(Trust Model)**: 설정 파일이 다중 사용자 환경을 시사하는 경우(예: 오픈 DM 정책, 와일드카드 발신자 규칙 등), OpenClaw의 기본 모델이 **개인용 비서**임을 안내함. 의도적인 공유 환경이라면 모든 세션을 샌드박스화하고 워크스페이스 외부 파일 접근을 차단하며, 개인용 자격 증명을 해당 런타임에서 제거할 것을 권고함.
-- **취약 모델 및 도구 조합**: 브라우저나 웹 도구가 활성화된 상태에서 상대적으로 추론 능력이 낮은 소형 모델(`<=300B`)을 사용할 경우 프롬프트 주입 공격 위험을 경고함.
-- **웹훅 보안**: `hooks.defaultSessionKey`가 설정되지 않았거나, 세션 키 오버라이드가 허용 목록(`hooks.allowedSessionKeyPrefixes`) 없이 활성화된 경우를 감지함.
-- **샌드박스 설정 오류**: 샌드박스 모드가 꺼져 있는데 Docker 설정이 포함된 경우, 혹은 `gateway.nodes.denyCommands` 설정이 명령어 이름 기반의 정확한 일치(Exact matching)가 아닌 유효하지 않은 패턴을 사용하는 경우 등을 점검함.
-- **네트워크 및 탐색 보안**: `gateway.allowRealIpFallback=true` 설정으로 인한 헤더 스푸핑 위험, `discovery.mdns.mode="full"`로 인한 메타데이터 유출 가능성 등을 식별함.
-- **Docker 및 인프라**: 샌드박스 브라우저의 위험한 네트워크 모드(Host 모드 등) 사용이나 컨테이너 해시 라벨이 누락되어 업데이트가 필요한 상태 등을 경고함.
-- **의존성 및 채널 관리**: npm 기반 플러그인 버전이 고정(Pin)되지 않았거나, 채널 허용 목록이 불변 ID 대신 변경 가능한 이름/이메일에 의존하는 경우를 경고함.
+또한 config가 shared-user ingress를 시사하면(`security.trust_model.multi_user_heuristic`),
+예를 들어 open DM/group policy, configured group target, wildcard sender rule 같은 경우
+OpenClaw의 기본 trust model이 personal-assistant 중심이라는 점을 다시 알립니다.
+의도적인 shared-user setup이라면 모든 session을 sandbox에 넣고, filesystem access를 workspace 범위로 제한하며,
+개인용 identity나 credential을 해당 runtime에서 분리하라고 안내합니다.
 
-<Note>
-`dangerous` 또는 `dangerously` 접두사가 붙은 설정은 운영자가 의도적으로 보안 제약을 해제한 것으로 간주함. 이러한 설정 자체가 취약점은 아니나, 신중한 사용이 필요함. 상세 목록은 [보안 가이드](/gateway/security)의 "Insecure or dangerous flags summary" 섹션을 참조함.
-</Note>
+또한 작은 model(`<=300B`)을 sandbox 없이 web/browser tool과 함께 쓸 때도 경고합니다.
 
-## JSON 형식 출력 및 자동화
+webhook ingress에 대해서는 `hooks.defaultSessionKey`가 비어 있거나, request `sessionKey` override가 켜져 있거나,
+override가 켜져 있는데 `hooks.allowedSessionKeyPrefixes`가 없는 경우를 경고합니다.
 
-CI 파이프라인이나 정책 준수 확인을 위해 `--json` 플래그를 활용할 수 있음:
+또한 sandbox mode가 꺼져 있는데 sandbox Docker setting이 있는 경우,
+`gateway.nodes.denyCommands`에 pattern처럼 보이지만 실제로는 효과 없는 항목이 있는 경우,
+`gateway.nodes.allowCommands`가 위험한 node command를 명시적으로 허용하는 경우,
+global `tools.profile="minimal"`이 agent tool profile에 의해 override되는 경우,
+open group이 sandbox/workspace guard 없이 runtime/filesystem tool을 노출하는 경우,
+설치된 extension plugin tool이 느슨한 tool policy 아래에서 도달 가능할 수 있는 경우도 경고합니다.
+
+그리고 `gateway.allowRealIpFallback=true`(proxy 오구성 시 header spoofing 위험),
+`discovery.mdns.mode="full"`(mDNS TXT record를 통한 metadata leakage),
+sandbox browser가 `sandbox.browser.cdpSourceRange` 없이 Docker `bridge` network를 사용하는 경우,
+dangerous한 sandbox Docker network mode(`host`, `container:*` namespace join 포함)를 함께 점검합니다.
+
+기존 sandbox browser Docker container에 hash label이 없거나 stale한 경우
+(예: `openclaw.browserConfigEpoch`가 없는 pre-migration container)에도 경고하고,
+`openclaw sandbox recreate --browser --all`을 권장합니다.
+
+또한 npm 기반 plugin/hook install record가 unpinned 상태이거나 integrity metadata가 없거나,
+현재 설치된 package version과 drift가 있는지도 확인합니다.
+channel allowlist가 stable ID 대신 mutable name/email/tag에 의존할 때도 경고합니다.
+(Discord, Slack, Google Chat, MS Teams, Mattermost, IRC scope 포함)
+
+`gateway.auth.mode="none"` 때문에 shared secret 없이 Gateway HTTP API(`\/tools\/invoke`와 활성화된 모든 `/v1/*` endpoint)에 접근 가능할 때도 플래그를 세웁니다.
+
+`dangerous` 또는 `dangerously` 접두사의 setting은 운영자가 의도적으로 제약을 푸는 break-glass override입니다.
+이 값이 켜져 있다는 사실만으로 security vulnerability report가 되지는 않습니다.
+전체 dangerous parameter 목록은 [Security](/gateway/security)의 "Insecure or dangerous flags summary"를 참고하세요.
+
+## JSON output
+
+CI나 policy check에는 `--json`을 사용하세요.
 
 ```bash
-# 보안 점검 요약 정보만 추출
 openclaw security audit --json | jq '.summary'
-
-# 심각도 'Critical'인 문제의 체크 ID 목록 확인
 openclaw security audit --deep --json | jq '.findings[] | select(.severity=="critical") | .checkId'
 ```
 
-`--fix`와 `--json`을 함께 사용하면 수정 작업 결과와 최종 리포트가 모두 포함됨:
+`--fix`와 `--json`을 함께 쓰면 output에는 fix action과 최종 report가 모두 포함됩니다.
 
 ```bash
 openclaw security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summary}'
 ```
 
-## `--fix` 명령어의 자동 수정 범위
+## What `--fix` changes
 
-`--fix` 옵션은 안전하고 결정론적인 조치를 즉시 적용함:
+`--fix`는 안전하고 결정적인 remediation만 적용합니다.
 
-- **정책 강화**: 일반적인 `groupPolicy="open"` 설정을 `"allowlist"`로 자동 변경함.
-- **로깅 보안**: `logging.redactSensitive` 설정을 `"off"`에서 `"tools"`로 변경하여 민감 정보 마스킹 활성화.
-- **권한 조정**: 상태 디렉터리, 설정 파일 및 민감한 데이터 파일(`credentials/*.json`, `auth-profiles.json`, 세션 기록 등)의 파일 시스템 권한을 엄격하게 제한함 (`chmod` 적용).
+- 흔한 `groupPolicy="open"`을 `groupPolicy="allowlist"`로 바꿉니다. (지원되는 channel의 account variant 포함)
+- `logging.redactSensitive`를 `"off"`에서 `"tools"`로 바꿉니다.
+- state/config와 일반적인 민감 파일(`credentials/*.json`, `auth-profiles.json`, `sessions.json`, session `*.jsonl`)의 permission을 더 엄격하게 만듭니다.
 
-**주의 사항: `--fix` 명령어로 처리되지 않는 항목**
-- 토큰, 비밀번호, API 키의 로테이션(갱신) 작업.
-- 특정 도구(`gateway`, `cron`, `exec` 등)의 비활성화 처리.
-- Gateway의 바인딩 주소나 네트워크 노출 설정 변경.
-- 설치된 플러그인이나 스킬의 코드 수정 및 삭제.
+`--fix`는 다음을 하지 않습니다.
+
+- token, password, API key rotation
+- `gateway`, `cron`, `exec` 같은 tool 비활성화
+- gateway bind/auth/network exposure 선택 변경
+- plugin이나 skill 제거 또는 재작성

@@ -1,52 +1,56 @@
 ---
-summary: "메시지 흐름 가이드: 세션 관리, 대기열(Queueing) 및 추론 과정(Reasoning) 노출 설정 안내"
+summary: "Message flow, sessions, queueing, and reasoning visibility"
+description: "수신 message가 session key와 queue를 거쳐 agent run과 outbound reply로 바뀌는 과정, 그리고 reasoning visibility 설정을 설명합니다."
 read_when:
-  - 수신 메시지가 응답으로 변환되는 처리 과정을 이해하고자 할 때
-  - 세션, 대기열 모드 또는 스트리밍 동작 방식을 파악해야 할 때
-  - 모델의 사고 과정 노출 여부 및 토큰 사용량 영향을 확인하고 싶을 때
-title: "메시지 처리"
+  - inbound message가 reply가 되는 과정을 설명할 때
+  - session, queue mode, streaming 동작을 정리할 때
+  - reasoning visibility와 usage 영향을 문서화할 때
+title: "Messages"
 x-i18n:
   source_path: "concepts/messages.md"
 ---
 
-# 메시지 처리 (Messages)
+# Messages
 
-이 페이지는 OpenClaw가 수신 메시지를 처리하는 방식과 세션 관리, 대기열(Queueing), 스트리밍 및 추론 과정의 가시성을 어떻게 제어하는지 종합적으로 설명함.
+이 페이지는 OpenClaw가 inbound message, session, queueing, streaming, reasoning visibility를 어떻게 다루는지 연결해서 설명합니다.
 
-## 메시지 처리 흐름 (상위 수준 개요)
+## Message flow (high level)
 
+```text
+Inbound message
+  -> routing/bindings -> session key
+  -> queue (if a run is active)
+  -> agent run (streaming + tools)
+  -> outbound replies (channel limits + chunking)
 ```
-수신 메시지 (Inbound)
-  -> 라우팅 및 바인딩 (Routing/Bindings) -> 세션 키(Session Key) 결정
-  -> 대기열 적재 (이미 실행 중인 작업이 있는 경우)
-  -> 에이전트 실행 (스트리밍 및 도구 호출)
-  -> 응답 발신 (채널별 용량 제한 및 청킹 적용)
-```
 
-주요 설정 항목:
-- `messages.*`: 접두사(Prefix), 대기열 방식, 그룹 대화 동작 설정.
-- `agents.defaults.*`: 블록 스트리밍 및 청킹(Chunking) 기본값 설정.
-- **채널별 오버라이드**: 각 채널(`channels.whatsapp.*` 등)의 용량 제한 및 스트리밍 활성화 여부 설정.
+주요 knob는 config에 있습니다.
 
-상세 스키마는 [Gateway 설정 레퍼런스](/gateway/configuration) 참조.
+- `messages.*`는 prefix, queueing, group behavior를 담당
+- `agents.defaults.*`는 block streaming과 chunking default를 담당
+- channel override(`channels.whatsapp.*`, `channels.telegram.*` 등)는 cap과 streaming toggle을 담당
 
-## 수신 메시지 중복 제거 (Deduplication)
+전체 schema는 [Configuration](/gateway/configuration)을 참고하세요.
 
-네트워크 재연결 등으로 인해 동일한 메시지가 중복 수신될 수 있음. OpenClaw는 채널, 계정, 발신자, 세션, 메시지 ID를 기반으로 단기 캐시를 운영하여 중복된 메시지가 에이전트를 중복 실행하지 않도록 방지함.
+## Inbound dedupe
 
-## 수신 메시지 디바운싱 (Debouncing)
+channel은 reconnect 뒤 같은 message를 다시 전달할 수 있습니다.
+OpenClaw는 channel/account/peer/session/message id 기반의 짧은 cache를 유지해 duplicate delivery가 agent run을 다시 트리거하지 않게 합니다.
 
-**동일한 발신자**가 짧은 시간 내에 여러 메시지를 연속해서 보낼 경우, 이를 하나의 에이전트 실행 단위(Turn)로 묶어서 처리할 수 있음. 디바운싱은 채널 및 대화 단위로 적용되며, 응답의 스레드 연결 시에는 가장 마지막 메시지를 기준으로 삼음.
+## Inbound debouncing
 
-**설정 예시 (전역 및 채널별 설정):**
+**같은 sender**의 빠른 연속 message는 `messages.inbound`를 통해 하나의 agent turn으로 batch될 수 있습니다.
+debouncing은 channel + conversation별로 적용되며, reply threading/ID에는 가장 최근 message를 사용합니다.
+
+Config 예시 (global default + per-channel override):
 
 ```json5
 {
   messages: {
     inbound: {
-      debounceMs: 2000, // 기본 2초
+      debounceMs: 2000,
       byChannel: {
-        whatsapp: 5000, // WhatsApp은 5초 적용
+        whatsapp: 5000,
         slack: 1500,
         discord: 1500,
       },
@@ -55,72 +59,93 @@ x-i18n:
 }
 ```
 
-**주의 사항:**
-- 디바운싱은 **텍스트 전용** 메시지에만 적용됨. 미디어 파일이나 첨부 파일이 포함된 경우 즉시 처리됨.
-- 시스템 제어 명령어(/...)는 디바운싱을 거치지 않고 즉시 독립적으로 실행됨.
+Notes:
 
-## 세션과 기기 간 연동
+- debounce는 **text-only** message에만 적용됩니다. media/attachment는 즉시 flush됩니다.
+- control command는 debounce를 우회하여 standalone으로 유지됩니다.
 
-세션의 소유권은 클라이언트가 아닌 **Gateway 서버**에 있음.
+## Sessions and devices
 
-- **개인 대화**: 에이전트의 메인 세션으로 통합됨.
-- **그룹/채널 대화**: 각 방(Room)마다 고유한 세션 키가 할당됨.
-- **데이터 저장**: 세션 저장소와 대화 이력(Transcript)은 Gateway 서버 호스트에 물리적으로 저장됨.
+session은 client가 아니라 gateway가 소유합니다.
 
-하나의 세션에 여러 기기나 채널이 연결될 수 있지만, 대화 이력이 모든 클라이언트에 완벽하게 실시간 동기화되지는 않을 수 있음. 따라서 긴 대화 시에는 맥락의 일관성을 위해 가급적 하나의 주 기기를 사용할 것을 권장함. **Control UI**와 **TUI**는 항상 서버의 원본 데이터를 보여주므로 데이터의 단일 소스(SSOT) 역할을 수행함.
+- direct chat은 agent main session key로 collapse됩니다.
+- group/channel은 각자의 session key를 가집니다.
+- session store와 transcript는 gateway host에 저장됩니다.
 
-상세 정보: [세션 관리 가이드](/concepts/session).
+여러 device/channel이 같은 session에 매핑될 수 있지만, history가 모든 client로 완전히 sync되지는 않습니다.
+긴 대화에서는 divergent context를 피하기 위해 하나의 primary device를 쓰는 것을 권장합니다.
+Control UI와 TUI는 항상 gateway-backed session transcript를 보여 주므로 source of truth 역할을 합니다.
 
-## 수신 데이터 구조 및 이력 맥락 (Context)
+자세한 내용은 [Session management](/concepts/session)을 참고하세요.
 
-OpenClaw는 에이전트에게 전달되는 **프롬프트 본문**과 명령어 해석용 **커맨드 본문**을 구분하여 관리함:
+## Inbound bodies and history context
 
-- **`Body`**: 에이전트(LLM)에게 실제로 전달되는 프롬프트 텍스트. 채널별 엔벨로프 정보와 이전 대화 이력 래퍼가 포함될 수 있음.
-- **`CommandBody`**: 지시어(/...)나 명령어를 파싱하기 위한 원본 사용자 텍스트.
-- **`RawBody`**: `CommandBody`의 이전 명칭 (호환성 유지용).
+OpenClaw는 **prompt body**와 **command body**를 분리합니다.
 
-그룹 대화 등에서 이력 데이터를 포함할 때는 다음과 같은 구조의 래퍼를 사용함:
-- `[Chat messages since your last reply - for context]` (이전 대화 맥락)
-- `[Current message - respond to this]` (현재 응답 대상 메시지)
+- `Body`: agent에 보내는 prompt text. channel envelope와 optional history wrapper가 포함될 수 있습니다.
+- `CommandBody`: directive/command parsing용 raw user text
+- `RawBody`: `CommandBody`의 legacy alias (호환성 유지용)
 
-**비공개 대화가 아닌 경우**(그룹, 채널 등)에는 현재 메시지 본문 앞에 발신자 정보가 포함되어 실시간 메시지와 과거 이력이 일관된 형식으로 모델에 전달됨. 지시어 제거(Directive stripping) 로직은 '현재 메시지' 섹션에만 적용되어 대화 이력의 원본성은 보존됨.
+channel이 history를 제공할 때는 공통 wrapper를 사용합니다.
 
-## 대기열 및 후속 작업 (Queueing)
+- `[Chat messages since your last reply - for context]`
+- `[Current message - respond to this]`
 
-에이전트가 이미 작업을 수행 중일 때 새로운 메시지가 도착하면, 해당 메시지를 대기열에 넣거나 현재 실행 중인 작업에 끼워넣거나(Steer), 다음 턴을 위해 수집할 수 있음.
+**non-direct chat**(group/channel/room)에서는 **current message body** 앞에 sender label을 붙입니다.
+이렇게 하면 실시간 message와 queued/history message가 agent prompt 안에서 같은 스타일을 유지합니다.
 
-- 설정 경로: `messages.queue`
-- 지원 모드: `interrupt`, `steer`, `followup`, `collect` 등.
+history buffer는 **pending-only**입니다.
+run을 트리거하지 않은 group message(예: mention-gated message)는 포함하지만,
+이미 session transcript에 있는 message는 제외합니다.
 
-상세 정보: [대기열(Queueing) 상세 가이드](/concepts/queue).
+directive stripping은 **current message** section에만 적용되어 history는 온전히 유지됩니다.
+history를 감싸는 channel은 `CommandBody`(또는 `RawBody`)에 원래 message text를 넣고,
+`Body`에는 결합된 prompt를 유지해야 합니다.
+history buffer는 `messages.groupChat.historyLimit`(global default)와
+`channels.slack.historyLimit` 또는 `channels.telegram.accounts.<id>.historyLimit` 같은 per-channel override로 조절합니다.
+`0`으로 설정하면 비활성화됩니다.
 
-## 스트리밍, 청킹 및 배칭 (Streaming)
+## Queueing and followups
 
-- **블록 스트리밍**: 모델이 응답을 생성하는 동안 의미 있는 텍스트 블록 단위로 부분 응답을 전송함.
-- **청킹**: 각 채널의 글자 수 제한을 준수하며, 코드 블록(` ``` `) 등이 중간에 잘리지 않도록 보호함.
+run이 이미 active 상태라면, inbound message는 queue에 쌓이거나 현재 run으로 steer되거나,
+followup turn을 위해 수집될 수 있습니다.
 
-**핵심 설정 필드:**
-- `agents.defaults.blockStreamingDefault`: 스트리밍 기본 활성화 여부.
-- `agents.defaults.blockStreamingBreak`: 부분 응답 전송 시점 (`text_end` 또는 `message_end`).
-- `agents.defaults.humanDelay`: 응답 간의 자연스러운 시간 차 부여.
+- `messages.queue`와 `messages.queue.byChannel`로 구성
+- mode: `interrupt`, `steer`, `followup`, `collect`와 backlog variant
 
-상세 정보: [스트리밍 및 청킹 가이드](/concepts/streaming).
+자세한 내용은 [Queueing](/concepts/queue)을 참고하세요.
 
-## 추론 과정 가시성 (Reasoning)
+## Streaming, chunking, and batching
 
-모델의 사고 과정(Reasoning/Thinking)을 사용자에게 보여주거나 숨길 수 있음:
+block streaming은 model이 text block을 생성하는 동안 partial reply를 보냅니다.
+chunking은 channel text limit를 존중하고 fenced code가 split되지 않게 합니다.
 
-- `/reasoning on|off|stream` 명령어로 실시간 제어 가능.
-- 추론 과정 텍스트 역시 모델에 의해 생성되므로 전체 토큰 사용량에 포함됨.
-- Telegram 등 일부 채널은 추론 과정을 전용 '작성 중' 버블에서 실시간으로 보여주는 기능을 지원함.
+주요 설정:
 
-상세 정보: [사고 및 추론 지시어](/tools/thinking), [토큰 사용량 안내](/reference/token-use).
+- `agents.defaults.blockStreamingDefault` (`on|off`, 기본 off)
+- `agents.defaults.blockStreamingBreak` (`text_end|message_end`)
+- `agents.defaults.blockStreamingChunk` (`minChars|maxChars|breakPreference`)
+- `agents.defaults.blockStreamingCoalesce` (idle 기반 batching)
+- `agents.defaults.humanDelay` (block reply 사이의 human-like pause)
+- channel override: `*.blockStreaming`, `*.blockStreamingCoalesce` (Telegram이 아닌 channel은 명시적 `*.blockStreaming: true` 필요)
 
-## 응답 접두사 및 스레딩 (Outbound)
+자세한 내용은 [Streaming + chunking](/concepts/streaming)을 참고하세요.
 
-발신 메시지의 형식은 `messages` 섹션에서 중앙 집중식으로 관리됨:
+## Reasoning visibility and tokens
 
-- **접두사(Prefix)**: 전역 설정 -> 채널 설정 -> 계정별 설정 순으로 우선순위가 적용됨.
-- **답장 스레딩**: `replyToMode` 설정을 통해 원본 메시지에 대한 답장 처리 방식을 결정함.
+OpenClaw는 model reasoning을 보이거나 숨길 수 있습니다.
 
-상세 정보: [Gateway 설정 레퍼런스](/gateway/configuration#messages).
+- `/reasoning on|off|stream`으로 visibility 제어
+- model이 reasoning을 생성했다면 reasoning content도 token usage에 포함
+- Telegram은 reasoning stream을 draft bubble에 표시할 수 있음
+
+자세한 내용은 [Thinking + reasoning directives](/tools/thinking)와 [Token use](/reference/token-use)를 참고하세요.
+
+## Prefixes, threading, and replies
+
+outbound message formatting은 `messages`에서 중앙 관리됩니다.
+
+- `messages.responsePrefix`, `channels.<channel>.responsePrefix`, `channels.<channel>.accounts.<id>.responsePrefix` (outbound prefix cascade), 그리고 `channels.whatsapp.messagePrefix` (WhatsApp inbound prefix)
+- `replyToMode`와 channel default를 통한 reply threading
+
+자세한 내용은 [Configuration](/gateway/configuration#messages)와 각 channel 문서를 참고하세요.

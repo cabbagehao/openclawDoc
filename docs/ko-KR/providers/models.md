@@ -1,5 +1,6 @@
 ---
 summary: "OpenClaw가 지원하는 모델 제공업체(LLM)"
+description: "OpenClaw가 지원하는 모델 제공업체(LLM)"
 read_when:
   - 모델 제공업체를 선택하고 싶을 때
   - LLM 인증과 모델 선택 예시를 빠르게 보고 싶을 때

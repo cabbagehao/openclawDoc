@@ -1,31 +1,34 @@
 ---
-summary: "macOS OpenClaw 메뉴 바 아이콘 상태와 애니메이션"
+summary: "macOS용 OpenClaw menu bar icon의 상태와 animation 규칙을 설명합니다."
+description: "Idle, paused, voice trigger, working 상태에서 macOS menu bar icon이 어떻게 바뀌는지와 연결 지점을 정리합니다."
 read_when:
-  - 메뉴 바 아이콘 동작을 변경할 때
+  - menu bar icon 동작을 바꿀 때
 title: "Menu Bar Icon"
+x-i18n:
+  source_path: "platforms/mac/icon.md"
 ---
 
 # 메뉴 바 아이콘 상태
 
-작성자: steipete · 업데이트: 2025-12-06 · 범위: macOS 앱 (`apps/macos`)
+작성자: steipete · 업데이트: 2025-12-06 · 범위: macOS app (`apps/macos`)
 
-- **Idle:** 일반 아이콘 애니메이션(눈 깜빡임, 가끔씩 흔들림)
-- **Paused:** 상태 아이템이 `appearsDisabled` 를 사용하며 움직임이 없음
-- **Voice trigger (big ears):** 음성 웨이크 감지기가 웨이크 워드를 들으면 `AppState.triggerVoiceEars(ttl: nil)` 을 호출하고, 발화 캡처 중에는 `earBoostActive=true` 를 유지합니다. 귀는 1.9배로 커지고 가독성을 위해 원형 귀 구멍이 생긴 뒤, 1초간 침묵하면 `stopVoiceEars()` 로 내려갑니다. 앱 내부 음성 파이프라인에서만 트리거됩니다.
-- **Working (agent running):** `AppState.isWorking=true` 이 "tail/leg scurry" 마이크로 모션을 구동합니다. 작업 중에는 다리 흔들림이 빨라지고 약간의 위치 이동이 생깁니다. 현재는 WebChat agent 실행 주변에서 토글되며, 다른 긴 작업에도 연결할 때 같은 토글을 추가하면 됩니다.
+- **Idle:** 기본 icon animation을 사용합니다. 눈을 깜빡이고 가끔 가볍게 흔들립니다.
+- **Paused:** status item이 `appearsDisabled`를 사용하며 움직임이 없습니다.
+- **Voice trigger (big ears):** voice wake detector가 wake word를 들으면 `AppState.triggerVoiceEars(ttl: nil)`를 호출하고, 발화 캡처가 끝날 때까지 `earBoostActive=true`를 유지합니다. 귀는 1.9배까지 커지고, 가독성을 위해 둥근 ear hole이 생깁니다. 이후 1초간 silence가 지나면 `stopVoiceEars()`로 원래 상태로 돌아갑니다. 이 동작은 app 내부 voice pipeline에서만 발생합니다.
+- **Working (agent running):** `AppState.isWorking=true`가 "tail/leg scurry" micro-motion을 켭니다. 작업 중에는 leg wiggle이 더 빨라지고 약간의 offset이 추가됩니다. 현재는 WebChat agent run 전후에서 토글되며, 다른 긴 작업에도 같은 토글을 연결하면 됩니다.
 
-연결 지점
+## 연결 지점
 
-- Voice wake: runtime/tester 가 트리거 시 `AppState.triggerVoiceEars(ttl: nil)` 을 호출하고, 캡처 창과 맞추기 위해 1초 침묵 후 `stopVoiceEars()` 를 호출합니다.
-- Agent activity: 작업 구간 전후로 `AppStateStore.shared.setWorking(true/false)` 를 설정합니다(WebChat agent 호출에서는 이미 적용됨). 애니메이션이 멈추지 않도록 구간은 짧게 유지하고 `defer` 블록에서 반드시 초기화하세요.
+- Voice wake: runtime/tester는 trigger 시 `AppState.triggerVoiceEars(ttl: nil)`를 호출하고, capture window에 맞춰 1초 침묵 뒤 `stopVoiceEars()`를 호출합니다.
+- Agent activity: 작업 span 전후에 `AppStateStore.shared.setWorking(true/false)`를 설정합니다. WebChat agent 호출에는 이미 적용되어 있습니다. stuck animation을 막기 위해 span은 짧게 유지하고 `defer` block에서 반드시 reset하세요.
 
-도형과 크기
+## 도형과 크기
 
-- 기본 아이콘은 `CritterIconRenderer.makeIcon(blink:legWiggle:earWiggle:earScale:earHoles:)` 에서 그립니다.
-- 귀 크기 기본값은 `1.0`; voice boost 는 전체 프레임을 바꾸지 않고 `earScale=1.9`, `earHoles=true` 를 적용합니다(18×18 pt 템플릿 이미지를 36×36 px Retina backing store 에 렌더링).
-- Scurry 는 작은 수평 흔들림과 함께 최대 약 1.0 의 leg wiggle 을 사용하며, 기존 idle wiggle 에 더해집니다.
+- 기본 icon은 `CritterIconRenderer.makeIcon(blink:legWiggle:earWiggle:earScale:earHoles:)`에서 렌더링합니다.
+- ear scale 기본값은 `1.0`입니다. voice boost는 전체 frame은 유지한 채 `earScale=1.9`, `earHoles=true`를 적용합니다. 템플릿 이미지는 `18×18 pt`에서 그리고, Retina backing store에서는 `36×36 px`로 렌더링합니다.
+- scurry는 작은 수평 jiggle과 함께 최대 약 `1.0`의 leg wiggle을 사용하며, 기존 idle wiggle에 더해집니다.
 
-동작 메모
+## 동작 메모
 
-- 귀/working 상태를 위한 외부 CLI/broker 토글은 두지 마세요. 실수로 요동치는 것을 막기 위해 앱 자체 신호에만 내부적으로 연결하세요.
-- TTL 은 짧게 유지하세요(&lt;10s). 작업이 멈췄을 때도 아이콘이 빨리 기본 상태로 돌아와야 합니다.
+- ear/working 상태를 바꾸는 외부 CLI 또는 broker toggle은 두지 마세요. 의도치 않은 flapping을 막기 위해 app 내부 signal에만 연결해야 합니다.
+- TTL은 짧게 유지하세요(`&lt;10s`). job이 hang되더라도 icon이 빠르게 baseline으로 돌아와야 합니다.

@@ -1,5 +1,6 @@
 ---
 summary: "증상 중심으로 빠르게 진입하는 OpenClaw 문제 해결 허브"
+description: "증상별로 OpenClaw 문제를 빠르게 분류하고 다음 진단 문서로 이동할 수 있는 문제 해결 허브입니다."
 read_when:
   - OpenClaw가 동작하지 않아 가장 빠른 해결 경로가 필요할 때
   - 자세한 런북으로 들어가기 전에 먼저 트리아지 흐름이 필요할 때
@@ -28,13 +29,13 @@ openclaw logs --follow
 
 한 줄 요약으로 좋은 출력은 다음과 같습니다.
 
-- `openclaw status` → 구성된 채널이 보이고 뚜렷한 인증 오류가 없습니다.
-- `openclaw status --all` → 전체 리포트가 생성되고 공유 가능한 상태입니다.
-- `openclaw gateway probe` → 기대하는 gateway 대상에 도달할 수 있습니다.
-- `openclaw gateway status` → `Runtime: running` 및 `RPC probe: ok`가 나옵니다.
-- `openclaw doctor` → config 또는 서비스 차원의 치명적인 오류가 없습니다.
-- `openclaw channels status --probe` → 채널이 `connected` 또는 `ready`로 보고됩니다.
-- `openclaw logs --follow` → 활동이 계속 보이고 반복되는 치명적 오류가 없습니다.
+- `openclaw status` -> 구성된 채널이 보이고 뚜렷한 auth 오류가 없습니다.
+- `openclaw status --all` -> 전체 리포트가 생성되고 공유 가능한 상태입니다.
+- `openclaw gateway probe` -> 기대하는 gateway 대상에 도달할 수 있습니다.
+- `openclaw gateway status` -> `Runtime: running` 및 `RPC probe: ok`가 나옵니다.
+- `openclaw doctor` -> config 또는 service 차원의 치명적인 오류가 없습니다.
+- `openclaw channels status --probe` -> 채널이 `connected` 또는 `ready`로 보고됩니다.
+- `openclaw logs --follow` -> 활동이 계속 보이고 반복되는 치명적 오류가 없습니다.
 
 ## Anthropic 장문 컨텍스트 429
 
@@ -44,7 +45,7 @@ openclaw logs --follow
 
 ## 플러그인 설치 실패: missing openclaw extensions
 
-설치가 `package.json missing openclaw.extensions` 오류로 실패한다면, 해당 플러그인 패키지가 OpenClaw가 더 이상 허용하지 않는 예전 형태를 사용하고 있다는 뜻입니다.
+설치가 `package.json missing openclaw.extensions` 오류로 실패한다면, 해당 플러그인 패키지가 OpenClaw가 더 이상 허용하지 않는 예전 구조를 사용하고 있다는 뜻입니다.
 
 플러그인 패키지에서 다음을 수정하세요.
 
@@ -107,9 +108,9 @@ flowchart TD
 
     자주 보이는 로그 시그니처:
 
-    - `drop guild message (mention required` → Discord에서 mention gating 때문에 메시지 처리가 막혔습니다.
-    - `pairing request` → 발신자가 승인되지 않아 DM pairing 승인을 기다리는 중입니다.
-    - 채널 로그의 `blocked` / `allowlist` → 발신자, 방, 그룹이 필터링되고 있습니다.
+    - `drop guild message (mention required` -> Discord에서 mention gating 때문에 메시지 처리가 막혔습니다.
+    - `pairing request` -> 발신자가 승인되지 않아 DM pairing 승인을 기다리는 중입니다.
+    - `blocked` / `allowlist` in channel logs -> 발신자, 방 또는 그룹이 필터링되고 있습니다.
 
     자세한 문서:
 
@@ -130,15 +131,16 @@ flowchart TD
 
     좋은 출력 예:
 
-    - `openclaw gateway status`에 `Dashboard: http://...`가 표시됨
+    - `openclaw gateway status`에 `Dashboard: http://...`가 표시됩니다.
     - `RPC probe: ok`
-    - 로그에 인증 루프가 없음
+    - 로그에 auth loop가 없습니다.
 
     자주 보이는 로그 시그니처:
 
-    - `device identity required` → HTTP 또는 비보안 컨텍스트에서는 device auth를 완료할 수 없습니다.
-    - `unauthorized` / 재연결 루프 → token/password가 잘못되었거나 auth mode가 맞지 않습니다.
-    - `gateway connect failed:` → UI가 잘못된 URL/포트의 gateway를 가리키거나 도달할 수 없습니다.
+    - `device identity required` -> HTTP 또는 비보안 컨텍스트에서는 device auth를 완료할 수 없습니다.
+    - `AUTH_TOKEN_MISMATCH`와 retry 힌트 (`canRetryWithDeviceToken=true`) -> 신뢰된 device-token 재시도가 한 번 자동으로 수행될 수 있습니다.
+    - 그 재시도 이후에도 `unauthorized`가 반복됨 -> token/password가 잘못되었거나 auth mode가 맞지 않거나 paired device token이 오래되었습니다.
+    - `gateway connect failed:` -> UI가 잘못된 URL/포트의 gateway를 가리키거나 gateway에 도달할 수 없습니다.
 
     자세한 문서:
 
@@ -165,9 +167,9 @@ flowchart TD
 
     자주 보이는 로그 시그니처:
 
-    - `Gateway start blocked: set gateway.mode=local` → gateway mode가 비어 있거나 remote로 되어 있습니다.
-    - `refusing to bind gateway ... without auth` → 비-loopback bind에 token/password가 없습니다.
-    - `another gateway instance is already listening` 또는 `EADDRINUSE` → 포트를 다른 프로세스가 사용 중입니다.
+    - `Gateway start blocked: set gateway.mode=local` -> gateway mode가 비어 있거나 remote로 설정되어 있습니다.
+    - `refusing to bind gateway ... without auth` -> non-loopback bind에 token/password가 없습니다.
+    - `another gateway instance is already listening` 또는 `EADDRINUSE` -> 포트를 다른 프로세스가 이미 사용 중입니다.
 
     자세한 문서:
 
@@ -188,15 +190,15 @@ flowchart TD
 
     좋은 출력 예:
 
-    - 채널 전송 계층이 연결되어 있습니다.
+    - 채널 transport가 연결되어 있습니다.
     - pairing/allowlist 검사를 통과합니다.
     - 필요한 곳에서 mention이 감지됩니다.
 
     자주 보이는 로그 시그니처:
 
-    - `mention required` → 그룹 mention gating 때문에 처리가 차단되었습니다.
-    - `pairing` / `pending` → DM 발신자가 아직 승인되지 않았습니다.
-    - `not_in_channel`, `missing_scope`, `Forbidden`, `401/403` → 채널 권한 또는 token 문제입니다.
+    - `mention required` -> 그룹 mention gating 때문에 처리가 차단되었습니다.
+    - `pairing` / `pending` -> DM 발신자가 아직 승인되지 않았습니다.
+    - `not_in_channel`, `missing_scope`, `Forbidden`, `401/403` -> 채널 권한 또는 token 문제입니다.
 
     자세한 문서:
 
@@ -217,16 +219,16 @@ flowchart TD
 
     좋은 출력 예:
 
-    - `cron.status`가 enabled 상태이며 다음 wake 시간이 표시됨
-    - `cron runs`에 최근 `ok` 항목이 있음
-    - heartbeat가 활성화되어 있고 active hours 밖이 아님
+    - `cron.status`가 enabled 상태이며 다음 wake 시간이 표시됩니다.
+    - `cron runs`에 최근 `ok` 항목이 있습니다.
+    - heartbeat가 활성화되어 있고 active hours 밖이 아닙니다.
 
     자주 보이는 로그 시그니처:
 
-    - `cron: scheduler disabled; jobs will not run automatically` → cron이 비활성화되어 있습니다.
-    - `heartbeat skipped`와 함께 `reason=quiet-hours` → 설정된 active hours 밖입니다.
-    - `requests-in-flight` → 메인 레인이 바빠서 heartbeat wake가 지연되었습니다.
-    - `unknown accountId` → heartbeat 전달 대상 account가 존재하지 않습니다.
+    - `cron: scheduler disabled; jobs will not run automatically` -> cron이 비활성화되어 있습니다.
+    - `heartbeat skipped`와 함께 `reason=quiet-hours` -> 설정된 active hours 밖입니다.
+    - `requests-in-flight` -> 메인 lane이 바빠서 heartbeat wake가 지연되었습니다.
+    - `unknown accountId` -> heartbeat 전달 대상 account가 존재하지 않습니다.
 
     자세한 문서:
 
@@ -253,10 +255,10 @@ flowchart TD
 
     자주 보이는 로그 시그니처:
 
-    - `NODE_BACKGROUND_UNAVAILABLE` → node 앱을 포그라운드로 가져오세요.
-    - `*_PERMISSION_REQUIRED` → OS permission이 거부되었거나 빠져 있습니다.
-    - `SYSTEM_RUN_DENIED: approval required` → exec 승인이 아직 대기 중입니다.
-    - `SYSTEM_RUN_DENIED: allowlist miss` → 명령이 exec allowlist에 없습니다.
+    - `NODE_BACKGROUND_UNAVAILABLE` -> node 앱을 foreground로 가져오세요.
+    - `*_PERMISSION_REQUIRED` -> OS permission이 거부되었거나 빠져 있습니다.
+    - `SYSTEM_RUN_DENIED: approval required` -> exec 승인이 아직 대기 중입니다.
+    - `SYSTEM_RUN_DENIED: allowlist miss` -> 명령이 exec allowlist에 없습니다.
 
     자세한 문서:
 
@@ -277,15 +279,15 @@ flowchart TD
 
     좋은 출력 예:
 
-    - browser status에 `running: true`와 선택된 browser/profile이 표시됩니다.
-    - `openclaw` profile이 시작되거나 `chrome` relay에 탭이 연결되어 있습니다.
+    - Browser status에 `running: true`와 선택된 browser/profile이 표시됩니다.
+    - `openclaw` profile이 시작되거나 `chrome` relay에 연결된 탭이 있습니다.
 
     자주 보이는 로그 시그니처:
 
-    - `Failed to start Chrome CDP on port` → 로컬 browser 실행에 실패했습니다.
-    - `browser.executablePath not found` → 설정된 바이너리 경로가 잘못되었습니다.
-    - `Chrome extension relay is running, but no tab is connected` → extension이 붙지 않았습니다.
-    - `Browser attachOnly is enabled ... not reachable` → attach-only profile에 연결 가능한 CDP 대상이 없습니다.
+    - `Failed to start Chrome CDP on port` -> 로컬 browser 실행에 실패했습니다.
+    - `browser.executablePath not found` -> 설정된 바이너리 경로가 잘못되었습니다.
+    - `Chrome extension relay is running, but no tab is connected` -> extension이 연결되지 않았습니다.
+    - `Browser attachOnly is enabled ... not reachable` -> attach-only profile에 살아 있는 CDP 대상이 없습니다.
 
     자세한 문서:
 

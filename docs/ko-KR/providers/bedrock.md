@@ -1,5 +1,6 @@
 ---
 summary: "OpenClaw에서 Amazon Bedrock(Converse API) 모델 사용하기"
+description: "OpenClaw에서 Amazon Bedrock Converse 모델을 AWS 자격 증명, 자동 discovery, EC2 role과 함께 설정하는 방법을 설명합니다."
 read_when:
   - OpenClaw에서 Amazon Bedrock 모델을 사용하고 싶을 때
   - 모델 호출을 위해 AWS 자격 증명/리전 설정이 필요할 때
@@ -8,15 +9,15 @@ title: "Amazon Bedrock"
 
 # Amazon Bedrock
 
-OpenClaw는 pi-ai의 **Bedrock Converse** 스트리밍 provider를 통해
+OpenClaw는 pi-ai의 **Bedrock Converse** 스트리밍 프로바이더를 통해
 **Amazon Bedrock** 모델을 사용할 수 있습니다. Bedrock 인증은 API 키가 아니라
 **AWS SDK 기본 자격 증명 체인**을 사용합니다.
 
-## pi-ai가 지원하는 항목
+## pi-ai 지원 범위
 
-- Provider: `amazon-bedrock`
+- provider: `amazon-bedrock`
 - API: `bedrock-converse-stream`
-- Auth: AWS 자격 증명(env vars, shared config, 또는 instance role)
+- 인증: AWS 자격 증명(환경 변수, 공유 설정, 또는 인스턴스 역할)
 - Region: `AWS_REGION` 또는 `AWS_DEFAULT_REGION` (기본값: `us-east-1`)
 
 ## 자동 모델 탐색
@@ -46,7 +47,7 @@ Bedrock 모델을 자동으로 탐색할 수 있습니다. 탐색에는
 
 - `enabled`는 AWS 자격 증명이 있으면 기본적으로 `true`입니다.
 - `region`은 기본적으로 `AWS_REGION` 또는 `AWS_DEFAULT_REGION`, 그다음 `us-east-1`을 사용합니다.
-- `providerFilter`는 Bedrock provider 이름과 매칭됩니다(예: `anthropic`).
+- `providerFilter`는 Bedrock 프로바이더 이름과 매칭됩니다(예: `anthropic`).
 - `refreshInterval`의 단위는 초이며, 캐시를 비활성화하려면 `0`으로 설정하세요.
 - `defaultContextWindow`(기본값: `32000`)와 `defaultMaxTokens`(기본값: `4096`)는
   탐색된 모델에 사용됩니다(모델 한계를 알고 있다면 재정의하세요).
@@ -66,7 +67,7 @@ export AWS_PROFILE="your-profile"
 export AWS_BEARER_TOKEN_BEDROCK="..."
 ```
 
-2. 설정에 Bedrock provider와 model을 추가하세요(`apiKey`는 필요 없음):
+2. 설정에 Bedrock 프로바이더와 model을 추가하세요(`apiKey`는 필요 없음):
 
 ```json5
 {
@@ -171,4 +172,4 @@ openclaw models list
   마지막으로 기본 AWS SDK 체인입니다.
 - reasoning 지원 여부는 모델에 따라 다르므로 현재 기능은 Bedrock 모델 카드에서 확인하세요.
 - 관리형 키 흐름을 선호한다면 OpenAI 호환 프록시를 Bedrock 앞에 두고,
-  대신 OpenAI provider로 구성할 수도 있습니다.
+  대신 OpenAI 프로바이더로 구성할 수도 있습니다.

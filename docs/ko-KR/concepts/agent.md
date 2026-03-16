@@ -1,105 +1,129 @@
 ---
-summary: "에이전트 런타임(내장 pi-mono), 워크스페이스 계약, 세션 부트스트랩"
+summary: "Agent runtime (embedded pi-mono), workspace contract, and session bootstrap"
+description: "OpenClaw의 단일 embedded agent runtime이 workspace, bootstrap file, tool, skill, session을 어떻게 구성하는지 설명합니다."
 read_when:
-  - 에이전트 런타임, 워크스페이스 부트스트랩, 세션 동작을 변경할 때
-title: "에이전트 런타임"
+  - agent runtime, workspace bootstrap, session 동작을 바꾸거나 이해할 때
+title: "Agent Runtime"
+x-i18n:
+  source_path: "concepts/agent.md"
 ---
 
-# 에이전트 런타임 🤖
+# Agent Runtime 🤖
 
-OpenClaw는 **pi-mono**에서 파생된 단일 내장 에이전트 런타임을 사용합니다.
+OpenClaw는 **pi-mono**에서 파생된 단일 embedded agent runtime을 실행합니다.
 
-## 워크스페이스 (필수)
+## Workspace (required)
 
-OpenClaw는 단일 에이전트 워크스페이스 디렉터리(`agents.defaults.workspace`)를 도구와 컨텍스트를 위한 **유일한** 작업 디렉터리(`cwd`)로 사용합니다.
+OpenClaw는 단일 agent workspace directory(`agents.defaults.workspace`)를
+tool과 context의 **유일한** working directory(`cwd`)로 사용합니다.
 
-권장 사항: `openclaw setup` 명령어를 사용하여 `~/.openclaw/openclaw.json` 파일이 없는 경우 생성하고 워크스페이스 파일을 초기화하세요.
+권장: `openclaw setup`을 사용해 `~/.openclaw/openclaw.json`이 없으면 생성하고,
+workspace file을 초기화하세요.
 
-전체 워크스페이스 구조와 백업 가이드는 [에이전트 워크스페이스](/concepts/agent-workspace)를 참조하세요.
+전체 workspace layout과 backup guide: [Agent workspace](/concepts/agent-workspace)
 
-`agents.defaults.sandbox` 기능이 활성화된 경우, 메인 세션이 아닌 개별 세션은 `agents.defaults.sandbox.workspaceRoot` 하위의 세션별 워크스페이스로 이를 재정의할 수 있습니다. 자세한 내용은 [게이트웨이 설정](/gateway/configuration)을 참고하세요.
+`agents.defaults.sandbox`가 활성화되어 있으면 non-main session은
+`agents.defaults.sandbox.workspaceRoot` 아래의 per-session workspace로 이를 override할 수 있습니다.
+자세한 내용은 [Gateway configuration](/gateway/configuration)을 참고하세요.
 
-## 부트스트랩 파일 (자동 주입)
+## Bootstrap files (injected)
 
-OpenClaw는 `agents.defaults.workspace` 내부에서 다음과 같은 사용자가 편집 가능한 파일들을 참조합니다.
+`agents.defaults.workspace` 안에서 OpenClaw는 다음 user-editable file을 기대합니다.
 
-- `AGENTS.md`: 운영 지침 및 "메모리"
-- `SOUL.md`: 페르소나, 규칙, 말투 정의
-- `TOOLS.md`: 사용자가 관리하는 도구 사용법 메모 (예: `imsg`, `sag`, 관례 등)
-- `BOOTSTRAP.md`: 최초 실행 시 1회 수행되는 절차 (완료 후 삭제됨)
-- `IDENTITY.md`: 에이전트 이름, 분위기, 이모지 설정
-- `USER.md`: 사용자 프로필 및 선호하는 호칭
+- `AGENTS.md` — operating instruction과 “memory”
+- `SOUL.md` — persona, boundary, tone
+- `TOOLS.md` — 사용자가 관리하는 tool note (예: `imsg`, `sag`, convention)
+- `BOOTSTRAP.md` — one-time first-run ritual (완료 후 삭제)
+- `IDENTITY.md` — agent name, vibe, emoji
+- `USER.md` — user profile과 preferred address
 
-새로운 세션의 첫 번째 턴에서 OpenClaw는 이 파일들의 내용을 에이전트 컨텍스트에 직접 주입합니다.
+새 session의 첫 turn에서 OpenClaw는 이 file의 내용을 agent context에 직접 inject합니다.
 
-내용이 없는 빈 파일은 무시됩니다. 파일 크기가 너무 큰 경우, 프롬프트를 가볍게 유지하기 위해 특정 표시자와 함께 내용을 축약합니다 (전체 내용은 파일 자체를 통해 확인할 수 있습니다).
+blank file은 건너뜁니다. 큰 file은 prompt를 가볍게 유지하기 위해 trim/truncate되며,
+전체 내용은 원본 file을 직접 읽으면 됩니다.
 
-파일이 존재하지 않는 경우 OpenClaw는 "missing file" 표시를 한 줄 주입하며, `openclaw setup` 실행 시 안전한 기본 템플릿이 생성됩니다.
+file이 없으면 OpenClaw는 단일 “missing file” marker line을 inject합니다.
+(`openclaw setup`은 안전한 기본 template도 만들어 줍니다)
 
-`BOOTSTRAP.md`는 **완전히 새로운 워크스페이스** (다른 부트스트랩 파일이 없는 상태)에서만 생성됩니다. 초기 절차를 마친 뒤 이 파일을 삭제하면, 이후 재시작 시 다시 생성되지 않습니다.
+`BOOTSTRAP.md`는 **brand new workspace**에서만 생성됩니다.
+(다른 bootstrap file이 하나도 없을 때)
+ritual을 마치고 삭제하면 이후 restart에서 다시 만들어지지 않아야 합니다.
 
-부트스트랩 파일 자동 생성을 완전히 비활성화하려면 (이미 준비된 워크스페이스를 사용하는 경우) 다음과 같이 설정하세요.
+bootstrap file 생성을 완전히 끄려면(이미 준비된 workspace용):
 
 ```json5
 { agent: { skipBootstrap: true } }
 ```
 
-## 내장 도구
+## Built-in tools
 
-핵심 도구(읽기/실행/편집/쓰기 및 관련 시스템 도구)는 설정된 정책에 따라 항상 사용할 수 있습니다. `apply_patch` 도구는 선택 사항이며 `tools.exec.applyPatch` 설정으로 사용 여부를 제어합니다. `TOOLS.md` 파일은 실제 도구의 존재 여부를 결정하지 않으며, 에이전트가 도구를 **어떻게** 사용해야 하는지에 대한 가이드를 제공합니다.
+core tool(read/exec/edit/write와 관련 system tool)은 tool policy에 따라 항상 available합니다.
+`apply_patch`는 optional이며 `tools.exec.applyPatch`로 gate됩니다.
+`TOOLS.md`는 어떤 tool이 존재하는지를 결정하지 않고, **어떻게 사용하길 원하는지**에 대한 guidance만 제공합니다.
 
-## 스킬 (Skills)
+## Skills
 
-OpenClaw는 다음 세 가지 위치에서 스킬을 로드합니다. 이름이 충돌하는 경우 워크스페이스 내의 스킬이 우선순위를 가집니다.
+OpenClaw는 세 위치에서 skill을 로드합니다. (이름 충돌 시 workspace 우선)
 
-- 기본 내장 스킬 (프로그램 설치 시 함께 제공됨)
-- 관리형/로컬 스킬: `~/.openclaw/skills`
-- 워크스페이스 전용 스킬: `<workspace>/skills`
+- Bundled (설치본에 포함)
+- Managed/local: `~/.openclaw/skills`
+- Workspace: `<workspace>/skills`
 
-스킬은 설정 또는 환경 변수를 통해 활성화 여부를 제어할 수 있습니다. 자세한 내용은 [게이트웨이 설정](/gateway/configuration)의 `skills` 항목을 참조하세요.
+skill은 config/env에 의해 gate될 수 있습니다. ([Gateway configuration](/gateway/configuration)의 `skills` 참고)
 
-## pi-mono 통합
+## pi-mono integration
 
-OpenClaw는 pi-mono 코드베이스의 일부(모델 및 도구 인터페이스)를 재사용하지만, **세션 관리, 도구 연결 및 연동은 OpenClaw가 직접 제어합니다.**
+OpenClaw는 pi-mono codebase의 일부(model/tool)를 재사용하지만,
+**session management, discovery, tool wiring은 OpenClaw가 소유**합니다.
 
-- pi-coding 에이전트 런타임은 사용되지 않습니다.
-- `~/.pi/agent` 또는 `<workspace>/.pi` 설정 파일은 참조하지 않습니다.
+- pi-coding agent runtime 없음
+- `~/.pi/agent` 또는 `<workspace>/.pi` 설정을 읽지 않음
 
-## 세션 (Sessions)
+## Sessions
 
-세션 기록은 다음 위치에 JSONL 형식으로 저장됩니다.
+session transcript는 다음 위치의 JSONL로 저장됩니다.
 
 - `~/.openclaw/agents/<agentId>/sessions/<SessionId>.jsonl`
 
-세션 ID는 고정된 값을 가지며 OpenClaw가 자동으로 할당합니다. 기존 Pi 또는 Tau의 세션 폴더는 읽어오지 않습니다.
+session id는 OpenClaw가 안정적으로 선택합니다.
+legacy Pi/Tau session folder는 읽지 않습니다.
 
-## 스트리밍 중 제어 (Steering)
+## Steering while streaming
 
-큐(Queue) 모드가 `steer`로 설정된 경우, 새로 들어오는 메시지는 현재 실행 중인 프로세스에 즉시 주입됩니다. **각 도구 호출이 끝날 때마다** 대기 중인 메시지가 있는지 확인하며, 메시지가 있는 경우 현재 어시스턴트 메시지의 남은 도구 호출을 건너뜁니다 (이때 도구 실행 결과에는 `"Skipped due to queued user message."`라는 메시지가 기록됩니다). 이후 다음 어시스턴트 응답이 시작되기 전에 대기 중이던 사용자 메시지를 주입합니다.
+queue mode가 `steer`이면 inbound message는 현재 run에 주입됩니다.
+queue는 **각 tool call 이후** 확인되며, queued message가 있으면 현재 assistant message의 남은 tool call을 skip합니다.
+(tool result에는 `"Skipped due to queued user message."` 오류 결과 기록)
+그 뒤 queued user message를 주입하고 다음 assistant response를 진행합니다.
 
-큐 모드가 `followup` 또는 `collect`인 경우, 현재 턴이 완전히 끝날 때까지 메시지 주입을 보류하며, 턴 종료 후 큐에 쌓인 데이터로 새로운 에이전트 턴을 시작합니다. 모드별 상세 동작 및 디바운스(Debounce) 설정은 [큐(Queue)](/concepts/queue) 문서를 참조하세요.
+queue mode가 `followup` 또는 `collect`이면 inbound message는 현재 turn이 끝날 때까지 보류되고,
+이후 queued payload로 새 agent turn이 시작됩니다.
+mode와 debounce/cap 동작은 [Queue](/concepts/queue)를 참고하세요.
 
-블록 스트리밍(Block streaming)은 어시스턴트가 생성한 블록 단위의 응답을 완료 즉시 전송하는 방식입니다. 이 기능은 기본적으로 비활성화되어 있습니다 (`agents.defaults.blockStreamingDefault: "off"`). 전송 경계는 `agents.defaults.blockStreamingBreak` 설정을 통해 `text_end` 또는 `message_end` (기본값: `text_end`) 중 선택할 수 있습니다.
+block streaming은 completed assistant block이 끝나는 즉시 전송되도록 합니다.
+기본값은 **off**입니다. (`agents.defaults.blockStreamingDefault: "off"`)
+경계는 `agents.defaults.blockStreamingBreak`로 조절합니다. (`text_end` vs `message_end`, 기본값 `text_end`)
+soft block chunking은 `agents.defaults.blockStreamingChunk`로 제어합니다.
+(기본 800–1200자, paragraph break 우선, 다음 newline, 마지막으로 sentence)
+`agents.defaults.blockStreamingCoalesce`로 streamed chunk를 병합해 single-line spam을 줄일 수 있습니다.
+Telegram이 아닌 channel은 block reply를 활성화하려면 명시적으로 `*.blockStreaming: true`가 필요합니다.
+verbose tool summary는 tool 시작 시 즉시 전송되며, Control UI는 가능하면 agent event로 tool output을 stream합니다.
+자세한 내용은 [Streaming + chunking](/concepts/streaming)을 참고하세요.
 
-청킹(Chunking) 제어는 `agents.defaults.blockStreamingChunk` 설정을 사용합니다 (기본값: 800~1200자. 문단 구분선을 우선하며, 그 다음 줄바꿈, 문장 마침표 순으로 분할 기준을 적용합니다). `agents.defaults.blockStreamingCoalesce` 설정을 통해 짧은 청크들을 병합하여 불필요한 메시지 전송 횟수를 줄일 수 있습니다. 텔레그램을 제외한 채널에서 블록 단위 응답을 사용하려면 각 채널 설정에 `*.blockStreaming: true`를 명시적으로 설정해야 합니다.
+## Model refs
 
-상세한 도구 실행 요약은 도구 실행 시작 시점에 즉시 전송됩니다. 제어 UI(Control UI)에서는 에이전트 이벤트를 통해 도구 출력을 실시간으로 스트리밍할 수 있습니다. 자세한 내용은 [스트리밍 및 청킹](/concepts/streaming) 문서를 참조하세요.
+config의 model ref(`agents.defaults.model`, `agents.defaults.models`)는 첫 번째 `/`를 기준으로 parse됩니다.
 
-## 모델 참조 (Model refs)
+- model 설정에는 `provider/model`을 사용하세요.
+- model ID 자체에 `/`가 포함되면(OpenRouter 스타일) provider prefix를 포함하세요. 예: `openrouter/moonshotai/kimi-k2`
+- provider를 생략하면 OpenClaw는 이를 alias 또는 **default provider**용 model로 처리합니다. (model ID에 `/`가 없을 때만 가능)
 
-설정 파일의 모델 참조(예: `agents.defaults.model`, `agents.defaults.models`)는 첫 번째 나타나는 `/` 기호를 기준으로 파싱됩니다.
+## Configuration (minimal)
 
-- 모델을 설정할 때는 `제공업체/모델명` 형식을 사용하세요.
-- 모델 ID 자체에 `/`가 포함된 경우(예: OpenRouter 스타일), 반드시 제공업체 접두사를 포함해야 합니다 (예: `openrouter/moonshotai/kimi-k2`).
-- 제공업체명을 생략하는 경우 OpenClaw는 이를 별칭(Alias)으로 간주하거나 **기본 제공업체**의 모델로 처리합니다 (이 방식은 모델 ID에 `/`가 없는 경우에만 유효합니다).
-
-## 최소 설정 사항
-
-최소한 다음 항목들은 설정되어 있어야 합니다.
+최소한 다음을 설정하세요.
 
 - `agents.defaults.workspace`
 - `channels.whatsapp.allowFrom` (강력 권장)
 
 ---
 
-_다음 읽어볼 거리: [그룹 채팅](/channels/group-messages)_ 🦞
+_Next: [Group Chats](/channels/group-messages)_ 🦞

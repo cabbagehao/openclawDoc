@@ -1,8 +1,9 @@
 ---
-summary: "전역 voice wake words(Gateway 소유)와 노드 간 동기화 방식"
+summary: "Gateway가 소유하는 전역 voice wake words와 node 동기화 방식을 설명합니다."
+description: "OpenClaw에서 voice wake trigger 목록이 gateway host에 저장되고 macOS, iOS, Android node로 어떻게 동기화되는지 설명합니다."
 read_when:
   - voice wake word 동작이나 기본값을 변경할 때
-  - wake word sync가 필요한 새 노드 플랫폼을 추가할 때
+  - wake word sync가 필요한 새 node platform을 추가할 때
 title: "음성 깨우기"
 x-i18n:
   source_path: "nodes/voicewake.md"

@@ -1,5 +1,6 @@
 ---
 summary: "vLLM(OpenAI 호환 로컬 서버)으로 OpenClaw 실행하기"
+description: "vLLM(OpenAI 호환 로컬 서버)으로 OpenClaw 실행하기"
 read_when:
   - 로컬 vLLM 서버에 OpenClaw 를 연결하고 싶을 때
   - 자체 모델로 OpenAI 호환 `/v1` 엔드포인트를 사용하고 싶을 때
@@ -8,13 +9,13 @@ title: "vLLM"
 
 # vLLM
 
-vLLM 은 **OpenAI-compatible** HTTP API 를 통해 오픈소스(및 일부 커스텀) 모델을 서비스할 수 있습니다. OpenClaw 는 `openai-completions` API 를 통해 vLLM 에 연결할 수 있습니다.
+vLLM 은 **OpenAI 호환** HTTP API 를 통해 오픈소스(및 일부 커스텀) 모델을 서비스할 수 있습니다. OpenClaw 는 `openai-completions` API 를 통해 vLLM 에 연결할 수 있습니다.
 
 또한 `VLLM_API_KEY` 로 opt-in 하고 명시적 `models.providers.vllm` 항목을 정의하지 않으면, OpenClaw 는 vLLM 의 사용 가능한 모델을 **자동 발견** 할 수도 있습니다(서버가 auth 를 강제하지 않는다면 어떤 값이든 동작).
 
 ## 빠른 시작
 
-1. OpenAI-compatible 서버로 vLLM 을 시작합니다.
+1. OpenAI 호환 서버로 vLLM 을 시작합니다.
 
 base URL 은 `/v1` 엔드포인트(예: `/v1/models`, `/v1/chat/completions`)를 노출해야 합니다. vLLM 은 흔히 다음에서 실행됩니다:
 
@@ -38,7 +39,7 @@ export VLLM_API_KEY="vllm-local"
 }
 ```
 
-## Model discovery (암묵적 provider)
+## Model discovery (암묵적 프로바이더)
 
 `VLLM_API_KEY` 가 설정되어 있거나(auth profile 이 존재) **그리고** `models.providers.vllm` 을 정의하지 않으면, OpenClaw 는 다음을 질의합니다:
 
@@ -54,7 +55,7 @@ export VLLM_API_KEY="vllm-local"
 
 - vLLM 이 다른 host/port 에서 실행될 때
 - `contextWindow`/`maxTokens` 값을 고정하고 싶을 때
-- 서버에 실제 API key 가 필요하거나 header 를 직접 제어하고 싶을 때
+- 서버에 실제 API 키 가 필요하거나 header 를 직접 제어하고 싶을 때
 
 ```json5
 {
@@ -89,4 +90,4 @@ export VLLM_API_KEY="vllm-local"
 curl http://127.0.0.1:8000/v1/models
 ```
 
-- 요청이 auth 오류로 실패하면, 서버 설정과 맞는 실제 `VLLM_API_KEY` 를 설정하거나 `models.providers.vllm` 아래에 provider 를 명시적으로 구성하세요.
+- 요청이 auth 오류로 실패하면, 서버 설정과 맞는 실제 `VLLM_API_KEY` 를 설정하거나 `models.providers.vllm` 아래에 프로바이더 를 명시적으로 구성하세요.

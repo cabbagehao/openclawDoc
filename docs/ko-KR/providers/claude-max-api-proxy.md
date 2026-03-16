@@ -1,9 +1,10 @@
 ---
 summary: "Claude 구독 자격 증명을 OpenAI 호환 엔드포인트로 노출하는 커뮤니티 프록시"
+description: "Claude 구독 자격 증명을 OpenAI 호환 엔드포인트로 노출하는 커뮤니티 프록시"
 read_when:
   - Claude Max 구독을 OpenAI 호환 도구와 함께 쓰고 싶을 때
   - Claude Code CLI를 감싸는 로컬 API 서버가 필요할 때
-  - 구독 기반 접근과 API key 기반 Anthropic 접근을 비교해 보고 싶을 때
+  - 구독 기반 접근과 API 키 기반 Anthropic 접근을 비교해 보고 싶을 때
 title: "Claude Max API Proxy"
 ---
 
@@ -22,7 +23,7 @@ title: "Claude Max API Proxy"
 | Anthropic API           | 토큰당 과금(Opus 기준 입력 약 $15/M, 출력 $75/M) | 운영 앱, 대량 사용           |
 | Claude Max subscription | 월 $200 정액                                     | 개인 사용, 개발, 무제한 사용 |
 
-Claude Max 구독이 있고 이를 OpenAI 호환 도구에 연결하고 싶다면, 이 프록시는 일부 워크플로우에서 비용을 줄일 수 있습니다. 다만 운영 환경에서는 API key가 더 명확한 정책 경로입니다.
+Claude Max 구독이 있고 이를 OpenAI 호환 도구에 연결하고 싶다면, 이 프록시는 일부 워크플로우에서 비용을 줄일 수 있습니다. 다만 운영 환경에서는 API 키가 더 명확한 정책 경로입니다.
 
 ## How It Works
 
@@ -40,10 +41,10 @@ Your App → claude-max-api-proxy → Claude Code CLI → Anthropic (via subscri
 ## Installation
 
 ```bash
-# Node.js 20+와 Claude Code CLI 필요
+# Requires Node.js 20+ and Claude Code CLI
 npm install -g claude-max-api-proxy
 
-# Claude CLI 인증 확인
+# Verify Claude CLI is authenticated
 claude --version
 ```
 
@@ -53,7 +54,7 @@ claude --version
 
 ```bash
 claude-max-api
-# 서버는 http://localhost:3456 에서 실행
+# Server runs at http://localhost:3456
 ```
 
 ### Test it
@@ -76,7 +77,7 @@ curl http://localhost:3456/v1/chat/completions \
 
 ### With OpenClaw
 
-OpenClaw를 이 프록시를 향하는 custom OpenAI-compatible endpoint로 설정할 수 있습니다.
+OpenClaw를 이 프록시를 향하는 custom OpenAI 호환 endpoint로 설정할 수 있습니다.
 
 ```json5
 {
@@ -139,7 +140,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude-max-api.plist
 - **GitHub:** [https://github.com/atalovesyou/claude-max-api-proxy](https://github.com/atalovesyou/claude-max-api-proxy)
 - **Issues:** [https://github.com/atalovesyou/claude-max-api-proxy/issues](https://github.com/atalovesyou/claude-max-api-proxy/issues)
 
-## Notes
+## 참고 사항
 
 - 이 도구는 **커뮤니티 도구**이며 Anthropic이나 OpenClaw가 공식 지원하지 않습니다.
 - Claude Code CLI 인증이 완료된 활성 Claude Max/Pro 구독이 필요합니다.
@@ -148,5 +149,5 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude-max-api.plist
 
 ## See Also
 
-- [Anthropic provider](/providers/anthropic) - setup-token 또는 API key를 사용하는 OpenClaw 기본 Claude 통합
+- [Anthropic provider](/providers/anthropic) - setup-token 또는 API 키를 사용하는 OpenClaw 기본 Claude 통합
 - [OpenAI provider](/providers/openai) - OpenAI/Codex 구독용

@@ -1,25 +1,26 @@
 ---
 title: "Cloudflare AI Gateway"
-summary: "Cloudflare AI Gateway 설정(auth + model selection)"
+summary: "Cloudflare AI Gateway 설정(auth + 모델 선택)"
+description: "OpenClaw에서 Cloudflare AI Gateway를 Anthropic 경유 프록시로 설정하고 auth header와 기본 모델을 지정하는 방법을 설명합니다."
 read_when:
   - OpenClaw 에서 Cloudflare AI Gateway 를 사용하고 싶을 때
-  - account ID, gateway ID, 또는 API key env var 가 필요할 때
+  - account ID, gateway ID, 또는 API 키 env var 가 필요할 때
 ---
 
 # Cloudflare AI Gateway
 
-Cloudflare AI Gateway 는 provider API 앞단에 위치해 analytics, caching, controls 를 추가할 수 있게 해 줍니다. Anthropic 의 경우 OpenClaw 는 Gateway 엔드포인트를 통해 Anthropic Messages API 를 사용합니다.
+Cloudflare AI Gateway 는 프로바이더 API 앞단에 위치해 analytics, caching, controls 를 추가할 수 있게 해 줍니다. Anthropic 의 경우 OpenClaw 는 Gateway 엔드포인트를 통해 Anthropic Messages API 를 사용합니다.
 
-- Provider: `cloudflare-ai-gateway`
+- provider: `cloudflare-ai-gateway`
 - Base URL: `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`
 - Default model: `cloudflare-ai-gateway/claude-sonnet-4-5`
-- API key: `CLOUDFLARE_AI_GATEWAY_API_KEY` (Gateway 를 통한 요청에 사용하는 provider API key)
+- API 키: `CLOUDFLARE_AI_GATEWAY_API_KEY` (Gateway 를 통한 요청에 사용하는 프로바이더 API 키)
 
-Anthropic 모델에는 Anthropic API key 를 사용하세요.
+Anthropic 모델에는 Anthropic API 키 를 사용하세요.
 
 ## 빠른 시작
 
-1. provider API key 와 Gateway 세부 정보를 설정합니다:
+1. 프로바이더 API 키 와 Gateway 세부 정보를 설정합니다:
 
 ```bash
 openclaw onboard --auth-choice cloudflare-ai-gateway-api-key
@@ -37,7 +38,7 @@ openclaw onboard --auth-choice cloudflare-ai-gateway-api-key
 }
 ```
 
-## Non-interactive 예시
+## 비대화형 예시
 
 ```bash
 openclaw onboard --non-interactive \
@@ -50,7 +51,7 @@ openclaw onboard --non-interactive \
 
 ## 인증된 Gateway
 
-Cloudflare 에서 Gateway authentication 을 활성화했다면, `cf-aig-authorization` 헤더를 추가하세요(이것은 provider API key 외에 추가로 필요합니다).
+Cloudflare 에서 Gateway authentication 을 활성화했다면, `cf-aig-authorization` 헤더를 추가하세요(이것은 프로바이더 API 키 외에 추가로 필요합니다).
 
 ```json5
 {

@@ -1,77 +1,148 @@
 ---
-summary: "Twitch 채팅 봇 설정 방법 및 연동 가이드 (IRC 연결 방식)"
+summary: "Twitch chat bot 설정과 초기 구성"
 read_when:
-  - OpenClaw에 Twitch 채팅 기능을 통합하고자 할 때
+  - OpenClaw에 Twitch chat integration을 설정할 때
 title: "Twitch"
+description: "Twitch plugin 설치, bot 계정 토큰 발급, access control, token refresh, multi-account 설정과 troubleshooting 방법을 정리합니다."
 x-i18n:
   source_path: "channels/twitch.md"
 ---
 
-# Twitch (플러그인)
+# Twitch (plugin)
 
-Twitch 채팅 기능을 IRC 연결 방식을 통해 지원함. OpenClaw는 일반 Twitch 사용자(봇 계정)로 로그인하여 지정된 채널에서 메시지를 송수신함.
+Twitch chat은 IRC 연결을 통해 지원됩니다. OpenClaw는 Twitch user(bot account)로
+연결되어 channel에서 메시지를 받고 보냅니다.
 
-## 플러그인 설치 안내
+## Plugin 필요
 
-Twitch 연동 기능은 플러그인 형태로 제공되며 코어 패키지에 포함되어 있지 않음.
+Twitch는 plugin으로 제공되며 core install에 번들되어 있지 않습니다.
 
-**CLI를 통한 설치 (npm):**
+CLI 설치(npm registry):
+
 ```bash
 openclaw plugins install @openclaw/twitch
 ```
 
-**로컬 소스 환경 설치:**
+로컬 checkout:
+
 ```bash
 openclaw plugins install ./extensions/twitch
 ```
 
-상세 내용은 [플러그인 가이드](/tools/plugin) 참조.
+자세한 내용: [Plugins](/tools/plugin)
 
-## 빠른 설정 가이드 (초보자용)
+## 빠른 설정(beginner)
 
-1. **전용 계정 생성**: 봇으로 사용할 별도의 Twitch 계정을 생성하거나 기존 계정을 준비함.
-2. **자격 증명 생성**: [Twitch Token Generator](https://twitchtokengenerator.com/)에 접속함.
-   - **Bot Token** 옵션을 선택함.
-   - 필수 권한인 `chat:read` 및 `chat:write`가 선택되어 있는지 확인하고 **Client ID**와 **Access Token**을 복사함.
-3. **사용자 ID 확인**: [ID 변환 도구](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)를 사용하여 봇의 숫자형 사용자 ID를 확인함.
-4. **토큰 구성**:
-   - 환경 변수: `OPENCLAW_TWITCH_ACCESS_TOKEN` (기본 계정 전용).
-   - 설정 파일: `channels.twitch.accessToken` 필드에 입력.
-   - *팁: 두 곳에 모두 설정된 경우 설정 파일의 값이 우선 적용됨.*
-5. **Gateway 시작**: 서버를 가동하여 연동 여부를 확인함.
+1. bot용 전용 Twitch 계정을 만들거나 기존 계정을 사용합니다.
+2. credential 생성: [Twitch Token Generator](https://twitchtokengenerator.com/)
+   - **Bot Token** 선택
+   - `chat:read`, `chat:write` scope가 선택됐는지 확인
+   - **Client ID**와 **Access Token** 복사
+3. Twitch user ID 찾기:
+   [https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)
+4. token 설정:
+   - Env: `OPENCLAW_TWITCH_ACCESS_TOKEN=...` (default account only)
+   - 또는 config: `channels.twitch.accessToken`
+   - 둘 다 있으면 config가 우선합니다(env fallback은 default account 전용).
+5. gateway 시작
 
-⚠️ **중요**: 보안을 위해 반드시 접근 제어(`allowFrom` 또는 `allowedRoles`) 설정을 추가하여 승인된 사용자만 봇을 호출할 수 있도록 함. 기본적으로 `requireMention: true` 설정이 적용됨.
+**⚠️ 중요:** 승인되지 않은 사용자가 bot을 트리거하지 못하게 access control
+(`allowFrom` 또는 `allowedRoles`)을 설정하세요. `requireMention` 기본값은
+`true`입니다.
 
-### 최소 설정 예시
+최소 구성:
+
 ```json5
 {
   channels: {
     twitch: {
       enabled: true,
-      username: "openclaw", // 봇의 Twitch 계정명
-      accessToken: "oauth:abc123...", // 'oauth:' 접두사를 포함한 액세스 토큰
-      clientId: "xyz789...", // 발급받은 클라이언트 ID
-      channel: "streamer_nick", // 참여할 스트리머 채널명 (필수)
-      allowFrom: ["123456789"], // (권장) 본인의 숫자형 사용자 ID만 허용
+      username: "openclaw", // Bot's Twitch account
+      accessToken: "oauth:abc123...", // OAuth Access Token (or use OPENCLAW_TWITCH_ACCESS_TOKEN env var)
+      clientId: "xyz789...", // Client ID from Token Generator
+      channel: "vevisk", // Which Twitch channel's chat to join (required)
+      allowFrom: ["123456789"], // (recommended) Your Twitch user ID only - get it from https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/
     },
   },
 }
 ```
 
-## 핵심 동작 방식
+## 이것이 의미하는 것
 
-- **통신 모델**: Gateway 프로세스가 IRC 방식으로 Twitch 서버에 상주함.
-- **결정론적 라우팅**: 모든 응답은 메시지가 수신된 원래 채널로 정확히 회신됨.
-- **세션 관리**: 각 계정은 `agent:<agentId>:twitch:<accountName>` 형식의 격리된 세션 키를 사용함.
-- **계정 및 채널**: `username`은 인증 주체(봇)이며, `channel`은 실제 활동할 채팅방을 의미함.
+- Gateway가 소유하는 Twitch channel integration
+- 결정론적 라우팅: reply는 항상 Twitch로 돌아감
+- 각 account는 격리된 session key `agent:<agentId>:twitch:<accountName>`에 매핑
+- `username`은 인증하는 bot account, `channel`은 join할 chat room
 
-## 설정 상세 가이드
+## 설정(상세)
 
-### 자격 증명 관리
-[Twitch Token Generator](https://twitchtokengenerator.com/)를 통한 간편 생성 방식은 수동 앱 등록이 필요 없으나, 발급된 토큰이 수 시간 내에 만료되므로 주기적인 재발급이 필요함.
+### Credential 생성
 
-### 자동 토큰 갱신 (선택 사항)
-토큰을 자동으로 갱신하려면 [Twitch Developer Console](https://dev.twitch.tv/console)에서 직접 애플리케이션을 생성하고 다음 설정을 추가함:
+[Twitch Token Generator](https://twitchtokengenerator.com/) 사용:
+
+- **Bot Token** 선택
+- `chat:read`, `chat:write` scope 확인
+- **Client ID**와 **Access Token** 복사
+
+수동 app 등록은 필요 없습니다. token은 몇 시간 후 만료됩니다.
+
+### bot 구성
+
+**Env var (default account only):**
+
+```bash
+OPENCLAW_TWITCH_ACCESS_TOKEN=oauth:abc123...
+```
+
+**또는 config:**
+
+```json5
+{
+  channels: {
+    twitch: {
+      enabled: true,
+      username: "openclaw",
+      accessToken: "oauth:abc123...",
+      clientId: "xyz789...",
+      channel: "vevisk",
+    },
+  },
+}
+```
+
+env와 config가 모두 있으면 config가 우선합니다.
+
+### 접근 제어(권장)
+
+```json5
+{
+  channels: {
+    twitch: {
+      allowFrom: ["123456789"], // (recommended) Your Twitch user ID only
+    },
+  },
+}
+```
+
+강한 allowlist가 필요하면 `allowFrom`을 권장합니다. role 기반 access가
+필요하면 대신 `allowedRoles`를 사용하세요.
+
+**가능한 역할:** `"moderator"`, `"owner"`, `"vip"`, `"subscriber"`, `"all"`.
+
+**왜 user ID인가?** username은 바뀔 수 있어 impersonation 위험이 있습니다.
+user ID는 영구적입니다.
+
+Twitch user ID 찾기:
+[https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/)
+
+## Token refresh (선택)
+
+[Twitch Token Generator](https://twitchtokengenerator.com/)에서 만든 token은
+자동 갱신할 수 없습니다. 만료되면 다시 생성하세요.
+
+자동 token refresh가 필요하면
+[Twitch Developer Console](https://dev.twitch.tv/console)에서 직접 app을 만들고
+config에 추가하세요.
 
 ```json5
 {
@@ -83,69 +154,244 @@ openclaw plugins install ./extensions/twitch
   },
 }
 ```
-설정 완료 시 봇은 만료 전 토큰을 자동 갱신하고 로그를 남김.
 
-## 접근 제어 정책
+bot은 만료 전에 token을 자동 갱신하고 refresh event를 로그에 남깁니다.
 
-### 역할 기반 제한 (Roles)
+## Multi-account 지원
+
+`channels.twitch.accounts`를 사용하면 account별 token을 설정할 수 있습니다.
+공통 패턴은 [`gateway/configuration`](/gateway/configuration)을 참고하세요.
+
+예시(하나의 bot account로 두 channel 참가):
+
 ```json5
 {
   channels: {
     twitch: {
       accounts: {
-        default: {
-          allowedRoles: ["moderator", "vip"], // 모더레이터와 VIP만 허용
+        channel1: {
+          username: "openclaw",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
+          channel: "vevisk",
+        },
+        channel2: {
+          username: "openclaw",
+          accessToken: "oauth:def456...",
+          clientId: "uvw012...",
+          channel: "secondchannel",
         },
       },
     },
   },
 }
 ```
-**지원 역할**: `"moderator"`, `"owner"` (채널 소유자), `"vip"`, `"subscriber"`, `"all"`.
 
-### 사용자 ID 기반 허용 (가장 안전)
-사용자명은 변경될 수 있으므로 영구적인 숫자 ID 기반의 허용 목록(`allowFrom`) 사용을 강력히 권장함.
-```json5
-{
-  channels: {
-    twitch: {
-      allowFrom: ["123456789", "987654321"],
-    },
-  },
-}
-```
+**참고:** 각 account는 자기 channel용 token이 필요합니다.
 
-### 멘션 필수 여부 설정
-기본값은 `true`임. 멘션 없이 모든 메시지에 응답하게 하려면 다음과 같이 설정함:
+## 접근 제어
+
+### Role-based restriction
+
 ```json5
 {
   channels: {
     twitch: {
       accounts: {
-        default: { requireMention: false },
+        default: {
+          allowedRoles: ["moderator", "vip"],
+        },
       },
     },
   },
 }
 ```
 
-## 문제 해결 (Troubleshooting)
+### User ID allowlist (가장 안전)
 
-진단 단계:
-1. `openclaw doctor` 실행.
-2. `openclaw channels status --probe`로 연결 상태 확인.
+```json5
+{
+  channels: {
+    twitch: {
+      accounts: {
+        default: {
+          allowFrom: ["123456789", "987654321"],
+        },
+      },
+    },
+  },
+}
+```
 
-**응답 없음**: 발신자의 사용자 ID가 `allowFrom`에 정확히 포함되어 있는지, 봇이 지정된 `channel`에 정상적으로 입장했는지 확인함.
-**인증 오류**: 액세스 토큰에 `chat:read`, `chat:write` 권한이 누락되었는지, 혹은 토큰이 만료되었는지 점검함. 자동 갱신 사용 시 `clientSecret`과 `refreshToken`이 정확한지 확인함.
+### Role-based access (대안)
 
-## 운영 및 보안 가이드라인
+`allowFrom`은 강한 allowlist입니다. 설정되면 그 user ID만 허용됩니다.
+role 기반 access가 필요하면 `allowFrom`을 비워 두고 `allowedRoles`만
+설정하세요.
 
-- **비밀 유지**: 액세스 토큰은 비밀번호와 같으므로 절대로 코드 저장소에 직접 커밋하지 말 것.
-- **최소 권한**: 토큰 생성 시 반드시 필요한 권한(`chat:read`, `chat:write`)만 요청할 것.
-- **로그 모니터링**: 실시간 로그를 통해 토큰 갱신 이벤트와 연결 상태를 주기적으로 모니터링함.
+```json5
+{
+  channels: {
+    twitch: {
+      accounts: {
+        default: {
+          allowedRoles: ["moderator"],
+        },
+      },
+    },
+  },
+}
+```
 
-## 기능 제한
+### @mention 요구 비활성화
 
-- **메시지 길이**: 최대 **500자** 제한 (단어 경계 기준으로 자동 분할됨).
-- **서식**: 전송 전 마크다운 서식은 자동으로 제거됨.
-- **속도 제한**: 별도의 OpenClaw 자체 제한은 없으나 Twitch 서버의 네이티브 속도 제한 정책을 따름.
+기본적으로 `requireMention`은 `true`입니다. 모든 메시지에 응답하게 하려면:
+
+```json5
+{
+  channels: {
+    twitch: {
+      accounts: {
+        default: {
+          requireMention: false,
+        },
+      },
+    },
+  },
+}
+```
+
+## 문제 해결
+
+먼저 진단 명령을 실행하세요.
+
+```bash
+openclaw doctor
+openclaw channels status --probe
+```
+
+### bot이 메시지에 응답하지 않을 때
+
+**접근 제어 확인:** user ID가 `allowFrom`에 있는지 확인하거나, 테스트를 위해
+일시적으로 `allowFrom`을 제거하고 `allowedRoles: ["all"]`을 설정하세요.
+
+**bot이 channel에 있는지 확인:** bot은 `channel`에 지정된 chat room에 join되어
+있어야 합니다.
+
+### Token 문제
+
+**"Failed to connect" 또는 authentication error:**
+
+- `accessToken`이 OAuth access token 값인지 확인
+  (보통 `oauth:` prefix 포함)
+- token에 `chat:read`, `chat:write` scope가 있는지 확인
+- token refresh를 쓴다면 `clientSecret`, `refreshToken`이 설정됐는지 확인
+
+### Token refresh가 동작하지 않을 때
+
+**refresh event 로그 확인:**
+
+```
+Using env token source for mybot
+Access token refreshed for user 123456 (expires in 14400s)
+```
+
+"token refresh disabled (no refresh token)"가 보인다면:
+
+- `clientSecret` 제공 여부 확인
+- `refreshToken` 제공 여부 확인
+
+## Config
+
+**Account config:**
+
+- `username` - Bot username
+- `accessToken` - `chat:read`, `chat:write`를 가진 OAuth access token
+- `clientId` - Twitch Client ID
+- `channel` - join할 channel (필수)
+- `enabled` - account 활성화 (기본 `true`)
+- `clientSecret` - 선택: 자동 token refresh
+- `refreshToken` - 선택: 자동 token refresh
+- `expiresIn` - token 만료까지 남은 초
+- `obtainmentTimestamp` - token 발급 시각
+- `allowFrom` - user ID allowlist
+- `allowedRoles` - role 기반 접근 제어
+  (`"moderator" | "owner" | "vip" | "subscriber" | "all"`)
+- `requireMention` - @mention 요구 (기본 `true`)
+
+**Provider option:**
+
+- `channels.twitch.enabled` - 채널 시작 활성화/비활성화
+- `channels.twitch.username` - Bot username (single-account 간소 구성)
+- `channels.twitch.accessToken` - OAuth access token
+- `channels.twitch.clientId` - Twitch Client ID
+- `channels.twitch.channel` - join할 channel
+- `channels.twitch.accounts.<accountName>` - multi-account 구성
+
+전체 예시:
+
+```json5
+{
+  channels: {
+    twitch: {
+      enabled: true,
+      username: "openclaw",
+      accessToken: "oauth:abc123...",
+      clientId: "xyz789...",
+      channel: "vevisk",
+      clientSecret: "secret123...",
+      refreshToken: "refresh456...",
+      allowFrom: ["123456789"],
+      allowedRoles: ["moderator", "vip"],
+      accounts: {
+        default: {
+          username: "mybot",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
+          channel: "your_channel",
+          enabled: true,
+          clientSecret: "secret123...",
+          refreshToken: "refresh456...",
+          expiresIn: 14400,
+          obtainmentTimestamp: 1706092800000,
+          allowFrom: ["123456789", "987654321"],
+          allowedRoles: ["moderator"],
+        },
+      },
+    },
+  },
+}
+```
+
+## Tool actions
+
+agent는 `twitch` action을 호출할 수 있습니다.
+
+- `send` - channel에 메시지 전송
+
+예시:
+
+```json5
+{
+  action: "twitch",
+  params: {
+    message: "Hello Twitch!",
+    to: "#mychannel",
+  },
+}
+```
+
+## Safety & ops
+
+- **token은 비밀번호처럼 취급** - git에 커밋하지 마세요
+- **장기 실행 bot에는 자동 token refresh 사용**
+- **접근 제어는 username보다 user ID allowlist 권장**
+- **token refresh event와 connection status를 logs로 모니터링**
+- **token scope 최소화** - `chat:read`, `chat:write`만 요청
+- **막혔을 때:** 다른 process가 session을 잡고 있지 않은지 확인한 뒤 gateway 재시작
+
+## Limits
+
+- 메시지당 **500자** (단어 경계에서 자동 chunking)
+- Markdown은 chunking 전에 제거
+- 별도 rate limiting 없음(Twitch 기본 rate limit 사용)

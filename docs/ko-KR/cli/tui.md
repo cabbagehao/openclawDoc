@@ -1,8 +1,9 @@
 ---
-summary: "Gateway 서버에 연결된 터미널 사용자 인터페이스(TUI)를 실행하는 `openclaw tui` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw tui` (terminal UI connected to the Gateway)"
+description: "Gateway에 연결되는 terminal UI를 실행하고 URL, token, session을 script에서 넘기는 `openclaw tui` 사용 흐름을 설명합니다."
 read_when:
-  - 원격 접속 환경에서도 사용 가능한 터미널 기반 채팅 UI를 실행하고자 할 때
-  - 스크립트를 통해 접속 URL, 토큰 또는 세션 정보를 전달하여 TUI를 구동할 때
+  - Gateway용 terminal UI가 필요할 때
+  - script에서 url, token, session을 넘기고 싶을 때
 title: "tui"
 x-i18n:
   source_path: "cli/tui.md"
@@ -10,28 +11,23 @@ x-i18n:
 
 # `openclaw tui`
 
-Gateway 서버에 연결된 터미널 기반의 사용자 인터페이스(TUI)를 실행함.
+Gateway에 연결되는 terminal UI를 엽니다.
 
-**관련 문서:**
-- TUI 상세 가이드: [TUI](/web/tui)
+Related:
 
-## 사용 예시
+- TUI guide: [TUI](/web/tui)
+
+Notes:
+
+- `tui`는 가능한 경우 token/password auth에 대해 configured gateway auth SecretRef를 resolve합니다. (`env`/`file`/`exec` provider)
+- configured agent workspace directory 안에서 실행되면, TUI는 session key 기본값으로 그 agent를 자동 선택합니다. (`--session`이 명시적으로 `agent:<id>:...`인 경우 제외)
+
+## Examples
 
 ```bash
-# 기본 설정으로 TUI 실행
 openclaw tui
-
-# 특정 URL 및 토큰을 지정하여 접속
-openclaw tui --url ws://127.0.0.1:18789 --token <값>
-
-# 메인 세션으로 즉시 연결하고 메시지 자동 전송 활성화
+openclaw tui --url ws://127.0.0.1:18789 --token <token>
 openclaw tui --session main --deliver
-
-# 특정 워크스페이스 내부에서 실행 시 해당 에이전트 자동 선택
+# when run inside an agent workspace, infers that agent automatically
 openclaw tui --session bugfix
 ```
-
-## 참고 사항
-
-- **인증 연동**: `tui` 명령어는 가능한 경우 토큰 및 비밀번호 인증을 위해 설정된 Gateway 시크릿 참조(SecretRef)를 자동으로 해석함.
-- **에이전트 자동 추론**: 에이전트 워크스페이스 디렉터리 내부에서 명령어를 실행할 경우, TUI는 해당 에이전트를 세션 키의 기본 대상으로 자동 선택함 (단, `--session agent:<id>:...`와 같이 명시적으로 지정한 경우는 제외).

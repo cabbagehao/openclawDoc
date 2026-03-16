@@ -1,9 +1,10 @@
 ---
 summary: "몇 분 안에 OpenClaw를 설치하고 첫 채팅을 실행하세요."
 read_when:
-  - 처음부터 시작하는 초기 설정
-  - 작동하는 채팅으로 가는 가장 빠른 경로를 원할 때
+  - 처음부터 설정을 시작할 때
+  - 작동하는 채팅까지 가장 빠르게 가고 싶을 때
 title: "시작하기"
+description: "OpenClaw를 설치하고 최소한의 설정으로 첫 채팅까지 빠르게 시작하는 절차를 안내합니다."
 x-i18n:
   source_path: "start/getting-started.md"
   source_hash: "4ec86bd0345cc7a70236e566da2ccb9ff17764cc5a7c3b23eab8d5d558251520"
@@ -16,11 +17,12 @@ x-i18n:
 
 # 시작하기
 
-목표: 최소한의 설정으로 아무것도 없는 상태에서 첫 번째 작동하는 채팅까지 완료합니다.
+목표: 최소한의 설정으로 아무것도 없는 상태에서 첫 번째 작동하는 채팅까지 가는 것입니다.
 
 <Info>
-가장 빠른 채팅: Control UI를 엽니다(채널 설정 불필요). `openclaw dashboard`를 실행하고 브라우저에서 채팅하거나, <Tooltip headline="게이트웨이 호스트" tip="OpenClaw 게이트웨이 서비스를 실행하는 머신입니다.">게이트웨이 호스트</Tooltip>에서 `http://127.0.0.1:18789/` 를 엽니다.
-문서: [대시보드](/web/dashboard) 및 [제어 UI](/web/control-ui).
+가장 빠른 시작 방법은 Control UI를 여는 것입니다(채널 설정 불필요). `openclaw dashboard`를 실행해 브라우저에서 채팅하거나,
+<Tooltip headline="게이트웨이 호스트" tip="OpenClaw Gateway 서비스가 실행 중인 머신입니다.">게이트웨이 호스트</Tooltip>에서 `http://127.0.0.1:18789/`를 여세요.
+관련 문서: [대시보드](/web/dashboard), [Control UI](/web/control-ui).
 </Info>
 
 ## 사전 요구사항
@@ -28,7 +30,7 @@ x-i18n:
 - Node 22 이상
 
 <Tip>
-확실하지 않다면 `node --version` 명령어로 Node 버전을 확인하세요.
+확실하지 않다면 `node --version`으로 Node 버전을 확인하세요.
 </Tip>
 
 ## 빠른 설정 (CLI)
@@ -54,7 +56,7 @@ x-i18n:
     </Tabs>
 
     <Note>
-    다른 설치 방법 및 요구사항은 [설치 가이드](/install)를 참조하세요.
+    다른 설치 방법과 요구사항은 [Install](/install)을 참고하세요.
     </Note>
 
   </Step>
@@ -63,19 +65,19 @@ x-i18n:
     openclaw onboard --install-daemon
     ```
 
-    마법사가 인증, 게이트웨이 설정 및 채널 구성을 안내합니다.
-    자세한 내용은 [온보딩 마법사](/start/wizard)를 참조하세요.
+    마법사가 인증, Gateway 설정, 선택적 채널 구성을 안내합니다.
+    자세한 내용은 [온보딩 마법사](/start/wizard)를 참고하세요.
 
   </Step>
-  <Step title="게이트웨이 상태 확인">
-    서비스를 설치했다면 이미 실행 중이어야 합니다:
+  <Step title="Gateway 상태 확인">
+    서비스를 설치했다면 이미 실행 중이어야 합니다.
 
     ```bash
     openclaw gateway status
     ```
 
   </Step>
-  <Step title="제어 UI 열기">
+  <Step title="Control UI 열기">
     ```bash
     openclaw dashboard
     ```
@@ -83,13 +85,13 @@ x-i18n:
 </Steps>
 
 <Check>
-제어 UI가 정상적으로 로드되면 게이트웨이를 사용할 준비가 된 것입니다.
+Control UI가 정상적으로 로드되면 Gateway를 사용할 준비가 된 것입니다.
 </Check>
 
 ## 선택적 확인 및 추가 사항
 
 <AccordionGroup>
-  <Accordion title="포그라운드에서 게이트웨이 실행">
+  <Accordion title="Gateway를 포그라운드에서 실행">
     빠른 테스트나 문제 해결이 필요한 경우 유용합니다.
 
     ```bash
@@ -109,33 +111,33 @@ x-i18n:
 
 ## 유용한 환경 변수
 
-서비스 계정으로 OpenClaw를 실행하거나 사용자 정의 구성/상태 위치를 지정하려는 경우:
+서비스 계정으로 OpenClaw를 실행하거나 config/state 위치를 직접 지정하려면 다음 환경 변수를 사용할 수 있습니다.
 
-- `OPENCLAW_HOME`: 내부 경로 확인에 사용되는 홈 디렉토리를 설정합니다.
-- `OPENCLAW_STATE_DIR`: 상태 디렉토리 위치를 변경합니다.
-- `OPENCLAW_CONFIG_PATH`: 구성 파일 경로를 변경합니다.
+- `OPENCLAW_HOME`은 내부 경로 해석에 사용할 홈 디렉터리를 설정합니다.
+- `OPENCLAW_STATE_DIR`은 상태 디렉터리를 재정의합니다.
+- `OPENCLAW_CONFIG_PATH`는 설정 파일 경로를 재정의합니다.
 
-전체 환경 변수 참조: [환경 변수](/help/environment).
+전체 환경 변수 목록: [Environment vars](/help/environment).
 
 ## 더 알아보기
 
 <Columns>
   <Card title="온보딩 마법사 (상세)" href="/start/wizard">
-    전체 CLI 마법사 참조 및 고급 옵션 안내.
+    전체 CLI 마법사 레퍼런스와 고급 옵션입니다.
   </Card>
   <Card title="macOS 앱 온보딩" href="/start/onboarding">
-    macOS 앱의 첫 실행 흐름 가이드.
+    macOS 앱의 첫 실행 흐름입니다.
   </Card>
 </Columns>
 
-## 준비되는 항목
+## 완료 후 갖추게 되는 것
 
-- 실행 중인 게이트웨이
-- 구성된 인증 설정
-- 제어 UI 액세스 또는 연결된 채널
+- 실행 중인 Gateway
+- 구성된 인증
+- Control UI 액세스 또는 연결된 채널
 
 ## 다음 단계
 
-- 메시지 보안 및 승인: [페어링](/channels/pairing)
-- 더 많은 채널 연결: [채널](/channels)
-- 고급 워크플로우 및 소스 설치: [설정](/start/setup)
+- DM 안전성과 승인: [페어링](/channels/pairing)
+- 채널 더 연결하기: [채널](/channels)
+- 고급 워크플로우와 소스 기준 설정: [설정](/start/setup)

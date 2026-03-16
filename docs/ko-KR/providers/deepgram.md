@@ -1,5 +1,6 @@
 ---
 summary: "인바운드 음성 메모용 Deepgram 전사"
+description: "OpenClaw에서 Deepgram으로 인바운드 음성 메모를 전사하고 audio 옵션과 provider setting을 구성하는 방법을 설명합니다."
 read_when:
   - 오디오 첨부 파일에 Deepgram speech-to-text 를 사용하고 싶을 때
   - 빠른 Deepgram 설정 예시가 필요할 때
@@ -17,13 +18,13 @@ Docs: [https://developers.deepgram.com](https://developers.deepgram.com)
 
 ## 빠른 시작
 
-1. API key 설정:
+1. API 키 설정:
 
 ```
 DEEPGRAM_API_KEY=dg_...
 ```
 
-2. provider 활성화:
+2. 프로바이더 활성화:
 
 ```json5
 {
@@ -85,6 +86,6 @@ Deepgram 옵션 예시:
 
 ## 메모
 
-- 인증은 표준 provider auth 순서를 따르며, 가장 간단한 방법은 `DEEPGRAM_API_KEY` 입니다.
+- 인증은 표준 프로바이더 auth 순서를 따르며, 가장 간단한 방법은 `DEEPGRAM_API_KEY` 입니다.
 - proxy 를 사용할 때는 `tools.media.audio.baseUrl` 과 `tools.media.audio.headers` 로 엔드포인트나 헤더를 재정의할 수 있습니다.
-- 출력은 다른 provider 와 같은 오디오 규칙(size cap, timeout, transcript injection)을 따릅니다.
+- 출력은 다른 프로바이더 와 같은 오디오 규칙(size cap, timeout, transcript injection)을 따릅니다.

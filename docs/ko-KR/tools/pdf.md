@@ -1,21 +1,22 @@
 ---
 title: "PDF Tool"
-summary: "native provider 지원과 extraction fallback으로 하나 이상의 PDF 문서를 분석"
+summary: "네이티브 provider 지원과 추출 fallback으로 하나 이상의 PDF 문서를 분석"
+description: "OpenClaw의 PDF 도구 동작 방식, 입력 파라미터, 실행 모드, 제한, 설정 방법을 정리한 가이드입니다."
 read_when:
-  - agent에서 PDF를 분석하고 싶을 때
-  - pdf tool의 정확한 파라미터와 한도가 필요할 때
-  - native PDF mode와 extraction fallback을 디버깅할 때
+  - agent에서 PDF를 분석해야 할 때
+  - PDF tool의 정확한 파라미터와 제한을 확인해야 할 때
+  - 네이티브 PDF mode와 extraction fallback 동작을 디버깅할 때
 ---
 
 # PDF tool
 
-`pdf`는 하나 이상의 PDF 문서를 분석하고 텍스트를 반환합니다.
+`pdf`는 하나 이상의 PDF 문서를 분석해 텍스트를 반환합니다.
 
-빠른 동작 요약:
+핵심 동작:
 
-- Anthropic 및 Google model provider에서는 native provider mode 사용
-- 그 외 provider는 extraction fallback mode 사용(먼저 텍스트 추출, 필요 시 page image 사용)
-- 단일 입력(`pdf`) 또는 다중 입력(`pdfs`)을 지원하며, 호출당 최대 10개 PDF 가능
+- Anthropic 및 Google model provider에서는 native provider mode를 사용합니다.
+- 그 외 provider에서는 extraction fallback mode를 사용하며, 먼저 텍스트를 추출하고 필요할 때만 page image를 추가합니다.
+- 단일 입력(`pdf`)과 다중 입력(`pdfs`)을 모두 지원하며, 호출당 최대 10개 PDF까지 처리할 수 있습니다.
 
 ## Availability
 

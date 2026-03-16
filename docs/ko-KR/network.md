@@ -1,54 +1,55 @@
 ---
-summary: "네트워크 허브: Gateway 인터페이스, 페어링, 탐색(Discovery), 보안 개요"
+summary: "네트워크 허브: Gateway 표면, 페어링, 탐색, 보안 개요"
 read_when:
-  - 네트워크 아키텍처 및 보안 체계에 대한 전반적인 이해가 필요할 때
-  - 로컬, Tailnet 접근 또는 페어링 관련 문제를 디버깅할 때
-  - 네트워크 관련 주요 문서 목록을 확인하고 싶을 때
-title: "네트워크 허브"
+  - 네트워크 아키텍처와 보안 개요를 확인해야 할 때
+  - 로컬 접근, tailnet 접근, 또는 페어링 문제를 디버깅할 때
+  - 네트워킹 관련 핵심 문서 목록이 필요할 때
+title: "네트워크"
+description: "OpenClaw가 localhost, LAN, tailnet 환경에서 연결, 페어링, 보안을 처리하는 방식과 관련 문서를 안내합니다."
 x-i18n:
   source_path: "network.md"
 ---
 
-# 네트워크 허브(Network Hub)
+# 네트워크 허브
 
-이 허브는 OpenClaw가 로컬 호스트(localhost), LAN, Tailnet 전반에서 기기들을 어떻게 연결하고 페어링하며 보호하는지를 설명하는 주요 문서들을 연결함.
+이 허브는 OpenClaw가 localhost, LAN, tailnet 전반에서 기기를 연결하고, 페어링하고, 보호하는 방식을 설명하는 핵심 문서로 연결됩니다.
 
-## 핵심 모델 및 아키텍처
+## 핵심 모델
 
-- [Gateway 아키텍처](/concepts/architecture)
-- [Gateway 프로토콜](/gateway/protocol)
-- [Gateway 실행 가이드(Runbook)](/gateway)
-- [웹 인터페이스 및 바인딩(Bind) 모드](/web)
+- [Gateway architecture](/concepts/architecture)
+- [Gateway protocol](/gateway/protocol)
+- [Gateway runbook](/gateway)
+- [Web surfaces + bind modes](/web)
 
-## 페어링 및 신원 인증
+## 페어링 + 신원
 
-- [페어링 개요 (DM 및 노드)](/channels/pairing)
-- [Gateway 노드 페어링 상세](/gateway/pairing)
-- [Devices CLI (페어링 및 토큰 로테이션)](/cli/devices)
-- [Pairing CLI (DM 승인)](/cli/pairing)
+- [Pairing overview (DM + nodes)](/channels/pairing)
+- [Gateway-owned node pairing](/gateway/pairing)
+- [Devices CLI (pairing + token rotation)](/cli/devices)
+- [Pairing CLI (DM approvals)](/cli/pairing)
 
-### 로컬 신뢰 모델(Local Trust)
+로컬 신뢰:
 
-- 로컬 연결(루프백 또는 Gateway 호스트 자체의 Tailnet 주소)은 원활한 사용자 경험을 위해 페어링이 자동으로 승인될 수 있음.
-- 로컬이 아닌 Tailnet 또는 LAN 클라이언트는 보안을 위해 여전히 명시적인 페어링 승인 절차가 필요함.
+- 로컬 연결(루프백 또는 gateway 호스트 자신의 tailnet 주소)은 동일 호스트 UX를 매끄럽게 유지하기 위해 페어링이 자동 승인될 수 있습니다.
+- 로컬이 아닌 tailnet/LAN 클라이언트는 여전히 명시적인 페어링 승인이 필요합니다.
 
-## 탐색(Discovery) 및 전송 계층
+## 탐색 + 전송
 
-- [탐색 및 전송 계층 상세](/gateway/discovery)
-- [Bonjour / mDNS 설정](/gateway/bonjour)
-- [원격 접속 가이드(SSH)](/gateway/remote)
-- [Tailscale 통합](/gateway/tailscale)
+- [Discovery & transports](/gateway/discovery)
+- [Bonjour / mDNS](/gateway/bonjour)
+- [Remote access (SSH)](/gateway/remote)
+- [Tailscale](/gateway/tailscale)
 
-## 노드 및 전송 인프라
+## 노드 + 전송
 
-- [노드(Nodes) 개요](/nodes)
-- [브리지 프로토콜 (레거시 노드 지원)](/gateway/bridge-protocol)
-- [노드 실행 가이드(Runbook): iOS](/platforms/ios)
-- [노드 실행 가이드(Runbook): Android](/platforms/android)
+- [Nodes overview](/nodes)
+- [Bridge protocol (legacy nodes)](/gateway/bridge-protocol)
+- [Node runbook: iOS](/platforms/ios)
+- [Node runbook: Android](/platforms/android)
 
-## 보안 및 진단
+## 보안
 
-- [보안 아키텍처 개요](/gateway/security)
-- [Gateway 설정 레퍼런스](/gateway/configuration)
-- [네트워크 문제 해결(Troubleshooting)](/gateway/troubleshooting)
-- [Doctor 진단 도구](/gateway/doctor)
+- [Security overview](/gateway/security)
+- [Gateway config reference](/gateway/configuration)
+- [Troubleshooting](/gateway/troubleshooting)
+- [Doctor](/gateway/doctor)

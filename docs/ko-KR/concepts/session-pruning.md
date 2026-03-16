@@ -1,119 +1,148 @@
 ---
-title: "세션 가지치기 (Session Pruning)"
-summary: "도구 실행 결과 데이터를 선별적으로 제거하여 컨텍스트 팽창을 방지하는 세션 가지치기 가이드"
+title: "Session Pruning"
+summary: "Session pruning: tool-result trimming to reduce context bloat"
+description: "오래된 tool result를 요청 시점에만 정리해 Anthropic cache 비용과 context 팽창을 줄이는 session pruning을 설명합니다."
 read_when:
-  - 도구 출력 데이터로 인한 LLM 컨텍스트 급증을 억제하고 싶을 때
-  - "`agents.defaults.contextPruning` 설정값을 조정하고자 할 때"
+  - "tool output 때문에 LLM context가 커지는 것을 줄이고 싶을 때"
+  - "agents.defaults.contextPruning을 조정해야 할 때"
 x-i18n:
   source_path: "concepts/session-pruning.md"
 ---
 
-# 세션 가지치기 (Session Pruning)
+# Session Pruning
 
-세션 가지치기는 매 LLM 호출 직전, 메모리 내 컨텍스트에서 **오래된 도구 실행 결과(tool_result)**를 선별적으로 잘라내는 기능임. 이 작업은 디스크에 저장된 실제 세션 이력 파일(`*.jsonl`)에는 영향을 주지 않으며, 오직 해당 시점의 메모리 상에서만 수행됨.
+session pruning은 각 LLM call 직전에 in-memory context에서 **오래된 tool result**를
+잘라냅니다. on-disk session history
+(`*.jsonl`)는 다시 쓰지 않습니다.
 
-## 실행 조건
+## When it runs
 
-- `mode: "cache-ttl"` 설정이 활성화되어 있고, 해당 세션의 마지막 Anthropic 호출 이후 경과 시간이 `ttl` 설정을 초과한 경우 실행됨.
-- 해당 요청에서 모델로 전달되는 메시지 뭉치에만 적용됨.
-- 현재 Anthropic API 호출(및 OpenRouter를 통한 Anthropic 모델 사용) 시에만 작동함.
-- 최적의 효율을 위해 `ttl` 값을 모델의 `cacheRetention` 정책(`short` = 5분, `long` = 1시간)과 일치시킬 것을 권장함.
-- 가지치기 실행 후에는 TTL 윈도우가 초기화되어, 다음 `ttl` 만료 전까지는 캐시된 상태를 유지함.
+- `mode: "cache-ttl"`이 켜져 있고, 해당 session의 마지막 Anthropic call이 `ttl`보다
+  오래됐을 때 실행됩니다
+- 그 요청에서 모델에 보내는 message에만 영향을 줍니다
+- Anthropic API call
+  (및 OpenRouter Anthropic model)에서만 active합니다
+- 가장 좋은 결과를 위해 `ttl`을 model의 `cacheRetention` 정책과 맞추세요
+  (`short` = 5m, `long` = 1h)
+- prune가 한 번 실행되면 TTL window가 reset되어, 이후 request는 다시 `ttl`이 만료될
+  때까지 cache를 유지합니다
 
-## 스마트 기본값 (Anthropic 기준)
+## Smart defaults (Anthropic)
 
-- **OAuth 또는 setup-token** 프로필: `cache-ttl` 가지치기가 활성화되며 하트비트(Heartbeat) 주기가 `1시간`으로 설정됨.
-- **API 키** 프로필: `cache-ttl` 가지치기가 활성화되며 하트비트 주기는 `30분`, Anthropic 모델의 기본값은 `cacheRetention: "short"`로 지정됨.
-- 사용자가 설정 파일에서 해당 값을 명시적으로 지정한 경우, 시스템 기본값은 무시됨.
+- **OAuth 또는 setup-token** profile:
+  `cache-ttl` pruning 활성화, heartbeat `1h`
+- **API key** profile:
+  `cache-ttl` pruning 활성화, heartbeat `30m`,
+  Anthropic model의 기본 `cacheRetention: "short"`
+- 사용자가 값을 명시적으로 설정하면 OpenClaw는 override하지 않습니다
 
-## 도입 효과 (비용 및 캐시 최적화)
+## What this improves (cost + cache behavior)
 
-- **배경**: Anthropic의 프롬프트 캐싱은 TTL 범위 내에서만 유효함. 세션이 유휴 상태로 TTL을 초과하면, 다음 요청 시 컨텍스트를 미리 정제하지 않을 경우 전체 이력을 다시 캐싱해야 함.
-- **비용 절감**: 가지치기를 통해 TTL 만료 후 첫 요청 시 발생하는 **캐시 기록(cacheWrite)** 데이터 크기를 대폭 줄일 수 있음.
-- **캐시 유지**: 가지치기 직후 캐시 윈도우가 새로 갱신되므로, 이어지는 후속 요청들은 전체 이력을 다시 읽는 대신 방금 캐싱된 프롬프트를 재사용할 수 있음.
-- **안전성**: 가지치기는 기존 토큰을 변형하거나 중복 비용을 발생시키지 않으며, 오직 캐싱 효율을 높이는 방향으로만 작동함.
+- **왜 prune하는가:** Anthropic prompt caching은 TTL 안에서만 적용됩니다. session이 TTL
+  이상 idle 상태가 되면 다음 request는 full prompt를 다시 cache write하게 되므로,
+  그 전에 trim하는 편이 유리합니다
+- **무엇이 더 저렴해지는가:** TTL 만료 후 첫 요청의 **cacheWrite** 크기가 줄어듭니다
+- **TTL reset이 중요한 이유:** pruning이 한 번 실행되면 cache window가 새로 시작되어,
+  뒤따르는 request는 새 prompt cache를 재사용할 수 있습니다
+- **하지 않는 일:** pruning은 token을 추가하거나 비용을 "두 배"로 만들지 않습니다.
+  첫 post-TTL request에서 cache 대상이 무엇인지 바꿀 뿐입니다
 
-## 가지치기 대상 및 예외 규칙
+## What can be pruned
 
-- **대상**: 오직 `toolResult` (도구 실행 결과) 메시지만 처리함.
-- **보호 대상**: 사용자의 질문(`user`)과 어시스턴트의 답변(`assistant`)은 **절대 수정되지 않음**.
-- **최신성 보존**: 마지막 `keepLastAssistants` 개수만큼의 답변은 보호되며, 이 시점 이후의 도구 결과는 가지치기 대상에서 제외됨. 보호할 답변 개수가 부족할 경우 작업을 건너뜀.
-- **미디어 보호**: **이미지 블록**이 포함된 도구 결과는 데이터 유실 방지를 위해 절대 잘라내거나 삭제하지 않음.
+- `toolResult` message만 대상입니다
+- user + assistant message는 **절대** 수정하지 않습니다
+- 마지막 `keepLastAssistants`개의 assistant message는 보호되며,
+  그 cutoff 이후의 tool result는 prune되지 않습니다
+- cutoff를 정할 만큼 assistant message가 충분하지 않으면 pruning을 건너뜁니다
+- **image block**이 포함된 tool result는 건너뜁니다
+  (trim/clear하지 않음)
 
-## 컨텍스트 창 용량 산정
+## Context window estimation
 
-가지치기 로직은 예측된 컨텍스트 창 크기(대략 1토큰 ≈ 4자)를 기준으로 작동함. 기준 용량은 다음 우선순위에 따라 결정됨:
+pruning은 예상 context window
+(chars ≈ tokens × 4)를 사용합니다.
+base window는 다음 순서로 결정됩니다.
 
-1. `models.providers.*.models[].contextWindow` 오버라이드 값.
-2. 모델 레지스트리에 정의된 해당 모델의 `contextWindow`.
-3. 시스템 기본값인 `200,000` 토큰.
+1. `models.providers.*.models[].contextWindow` override
+2. model registry의 `contextWindow`
+3. 기본값 `200000` token
 
-`agents.defaults.contextTokens` 설정이 있는 경우, 이를 최종 결정된 윈도우 크기의 상한(Min)으로 사용함.
+`agents.defaults.contextTokens`가 설정돼 있으면, resolved window에 대한 상한 cap처럼
+취급합니다
+(더 작은 값을 사용).
 
-## 가지치기 모드: cache-ttl
+## Mode
 
-- 마지막 Anthropic 호출 시점이 `ttl`(기본값 5분)보다 오래된 경우에만 작동함.
-- 실행 시 아래 설명된 소프트 트리밍과 하드 클리어 방식을 순차적으로 적용함.
+### cache-ttl
 
-## 소프트 트리밍 vs 하드 클리어
+- 마지막 Anthropic call이 `ttl`
+  (기본값 `5m`)보다 오래된 경우에만 pruning 실행
+- 실행 시에는 이전과 같은 soft-trim + hard-clear 동작을 적용
 
-- **소프트 트리밍 (Soft-trim)**: 용량이 과도하게 큰 도구 결과에 적용됨.
-  - 데이터의 앞부분과 뒷부분만 남기고 중간을 `...`로 대체하며, 원본 크기 정보를 주석으로 추가함.
-  - 이미지 데이터가 포함된 경우 건너뜀.
-- **하드 클리어 (Hard-clear)**: 오래된 도구 결과 전체를 지정된 문구(`hardClear.placeholder`)로 완전히 교체함.
+## Soft vs hard pruning
 
-## 대상 도구 필터링 (Tool Selection)
+- **Soft-trim:** oversized tool result에만 적용
+  - 앞부분과 뒷부분을 남기고, 중간에 `...`를 넣고, 원본 크기 note를 덧붙입니다
+  - image block이 있으면 건너뜁니다
+- **Hard-clear:** tool result 전체를 `hardClear.placeholder`로 교체합니다
 
-- `tools.allow` 및 `tools.deny`에서 와일드카드(`*`) 사용 가능.
-- 차단(`deny`) 설정이 허용(`allow`) 설정보다 우선함.
-- 대소문자를 구분하지 않으며, 허용 목록이 비어 있으면 모든 도구를 대상으로 함.
+## Tool selection
 
-## 다른 제한 사항과의 관계
+- `tools.allow` / `tools.deny`는 `*` wildcard를 지원합니다
+- deny가 우선합니다
+- case-insensitive matching입니다
+- allow list가 비어 있으면 모든 tool을 허용합니다
 
-- 개별 도구들은 이미 자체적으로 출력 길이를 제한하고 있음. 세션 가지치기는 긴 대화 과정에서 모델 컨텍스트에 누적되는 전체 도구 결과물을 관리하는 추가적인 보안 계층임.
-- **압축(Compaction)과의 차이**: 압축은 내용을 요약하여 세션 파일에 **영구 저장**하는 방식이며, 가지치기는 요청 시점에만 **일시적으로** 적용됨. 상세 내용은 [데이터 압축 가이드](/concepts/compaction) 참조.
+## Interaction with other limits
 
-## 기본 설정값 (활성화 시)
+- built-in tool도 자체적으로 output을 truncate하지만, session pruning은 긴 대화에서
+  model context에 tool output이 과도하게 누적되는 것을 막는 추가 계층입니다
+- compaction은 별도 기능입니다. compaction은 요약 후 저장하고, pruning은 요청마다
+  일시적으로 적용됩니다.
+  [/concepts/compaction](/concepts/compaction)을 참고하세요
+
+## Defaults (when enabled)
 
 - `ttl`: `"5m"`
-- `keepLastAssistants`: `3` (최신 답변 3개 보호)
+- `keepLastAssistants`: `3`
 - `softTrimRatio`: `0.3`
 - `hardClearRatio`: `0.5`
-- `minPrunableToolChars`: `50,000` (최소 5만 자 이상일 때만 처리)
+- `minPrunableToolChars`: `50000`
 - `softTrim`: `{ maxChars: 4000, headChars: 1500, tailChars: 1500 }`
-- `hardClear`: `{ enabled: true, placeholder: "[오래된 도구 실행 결과가 정리되었습니다]" }`
+- `hardClear`: `{ enabled: true, placeholder: "[Old tool result content cleared]" }`
 
-## 설정 예시
+## Examples
 
-**기본값 (비활성화):**
+Default (off):
+
 ```json5
 {
   agents: { defaults: { contextPruning: { mode: "off" } } },
 }
 ```
 
-**TTL 기반 가지치기 활성화:**
+Enable TTL-aware pruning:
+
 ```json5
 {
   agents: { defaults: { contextPruning: { mode: "cache-ttl", ttl: "5m" } } },
 }
 ```
 
-**특정 도구에 대해서만 제한적으로 적용:**
+Restrict pruning to specific tools:
+
 ```json5
 {
   agents: {
     defaults: {
       contextPruning: {
         mode: "cache-ttl",
-        tools: { 
-          allow: ["exec", "read"], 
-          deny: ["*image*"] 
-        },
+        tools: { allow: ["exec", "read"], deny: ["*image*"] },
       },
     },
   },
 }
 ```
 
-상세 설정 스키마: [Gateway 설정 레퍼런스](/gateway/configuration)
+설정 reference:
+[Gateway Configuration](/gateway/configuration)

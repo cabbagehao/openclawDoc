@@ -1,9 +1,10 @@
 ---
 summary: "대상형 디버그 로그를 위한 diagnostics 플래그"
+description: "전체 verbose logging을 켜지 않고 subsystem별 diagnostics flag로 targeted debug log를 수집하는 방법을 설명합니다."
 read_when:
   - 전체 로깅 레벨을 올리지 않고 특정 디버그 로그만 필요할 때
   - 지원용으로 서브시스템별 로그를 수집해야 할 때
-title: "Diagnostics 플래그"
+title: "Diagnostics Flags"
 x-i18n:
   source_path: "diagnostics/flags.md"
 ---

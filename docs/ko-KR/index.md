@@ -1,7 +1,8 @@
 ---
 summary: "OpenClaw는 모든 OS에서 실행되는 AI 에이전트용 멀티 채널 게이트웨이입니다."
+description: "OpenClaw가 어떤 문제를 해결하는지, 주요 기능이 무엇인지, WhatsApp·Telegram·Discord 등에서 AI 에이전트와 연결하는 방식을 한눈에 소개합니다."
 read_when:
-  - Introducing OpenClaw to newcomers
+  - OpenClaw를 처음 소개할 때
 title: "OpenClaw"
 x-i18n:
   source_path: "index.md"
@@ -11,7 +12,6 @@ x-i18n:
   workflow: 1
   generated_at: "2026-03-10T08:15:18.341Z"
 ---
-
 
 # OpenClaw 🦞
 
@@ -68,12 +68,12 @@ OpenClaw는 WhatsApp, Telegram, Discord, iMessage 등 평소 즐겨 사용하는
 
 ```mermaid
 flowchart LR
-  A["채팅 앱 + 플러그인"] --> B["게이트웨이"]
-  B --> C["Pi 에이전트"]
+  A["Chat apps + plugins"] --> B["Gateway"]
+  B --> C["Pi agent"]
   B --> D["CLI"]
-  B --> E["웹 제어 UI"]
-  B --> F["macOS 앱"]
-  B --> G["iOS 및 Android 노드"]
+  B --> E["Web Control UI"]
+  B --> F["macOS app"]
+  B --> G["iOS and Android nodes"]
 ```
 
 게이트웨이는 세션, 라우팅 및 채널 연결을 관리하는 단일 진실 공급원(Single Source of Truth) 역할을 합니다.

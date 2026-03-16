@@ -1,21 +1,22 @@
 ---
-summary: "Together AI 설정(auth + model selection)"
+summary: "Together AI 설정(auth + 모델 선택)"
+description: "Together AI 설정(auth + 모델 선택)"
 read_when:
   - OpenClaw 에서 Together AI 를 사용하고 싶을 때
-  - API key env var 또는 CLI auth choice 가 필요할 때
+  - API 키 env var 또는 CLI auth choice 가 필요할 때
 ---
 
 # Together AI
 
 [Together AI](https://together.ai) 는 Llama, DeepSeek, Kimi 등 주요 오픈소스 모델에 접근할 수 있는 통합 API 를 제공합니다.
 
-- Provider: `together`
-- Auth: `TOGETHER_API_KEY`
-- API: OpenAI-compatible
+- provider: `together`
+- 인증: `TOGETHER_API_KEY`
+- API: OpenAI 호환
 
 ## 빠른 시작
 
-1. API key 를 설정합니다(권장: Gateway 용으로 저장):
+1. API 키 를 설정합니다(권장: Gateway 용으로 저장):
 
 ```bash
 openclaw onboard --auth-choice together-api-key
@@ -33,7 +34,7 @@ openclaw onboard --auth-choice together-api-key
 }
 ```
 
-## Non-interactive 예시
+## 비대화형 예시
 
 ```bash
 openclaw onboard --non-interactive \

@@ -1,102 +1,173 @@
 ---
-summary: "OpenClaw의 인증 프로필 순환 및 모델 장애 조치(Failover) 메커니즘 안내"
+summary: "How OpenClaw rotates auth profiles and falls back across models"
+description: "OpenClaw가 인증 프로필을 순환하고 쿨다운·비활성화·모델 fallback을 적용하는 방식을 설명합니다."
 read_when:
-  - 인증 프로필의 자동 순환, 쿨다운(Cooldown) 또는 모델 폴백 동작을 분석할 때
-  - 인증 프로필 및 모델의 장애 조치 규칙을 업데이트하고자 할 때
-title: "모델 장애 조치"
+  - auth profile rotation, cooldown, model fallback 동작을 점검해야 할 때
+  - auth profile이나 model의 failover rule을 수정할 때
+title: "Model Failover"
 x-i18n:
   source_path: "concepts/model-failover.md"
 ---
 
-# 모델 장애 조치 (Model Failover)
+# Model failover
 
-OpenClaw는 실행 중 발생하는 실패 상황을 다음과 같은 2단계 절차를 통해 처리함:
+OpenClaw는 실패를 두 단계로 처리합니다.
 
-1. **인증 프로필 순환 (Rotation)**: 현재 사용 중인 공급자(Provider) 내에서 다른 인증 프로필로 전환함.
-2. **모델 폴백 (Fallback)**: 모든 프로필 시도가 실패할 경우, `agents.defaults.model.fallbacks`에 정의된 다음 모델로 전환함.
+1. 현재 provider 안에서의 **auth profile rotation**
+2. `agents.defaults.model.fallbacks`에 있는 다음 model로의 **model fallback**
 
-이 문서는 이러한 장애 조치 과정의 런타임 규칙과 데이터 구조를 설명함.
+이 문서는 runtime rule과 이를 뒷받침하는 data 구조를 설명합니다.
 
-## 자격 증명 저장소 (Keys + OAuth)
+## Auth storage (keys + OAuth)
 
-OpenClaw는 API 키와 OAuth 토큰 모두에 대해 **인증 프로필(Auth Profiles)** 시스템을 사용함.
+OpenClaw는 API key와 OAuth token 모두에 **auth profile**을 사용합니다.
 
-- **비밀 정보 저장**: 실제 키 데이터는 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` 파일에 저장됨.
-- **설정 파일 역할**: `openclaw.json`의 `auth.profiles` 및 `auth.order` 항목은 메타데이터와 라우팅 규칙만을 담고 있으며, 실제 시크릿 데이터는 포함하지 않음.
-- **레거시 데이터**: 이전 버전의 `oauth.json` 파일은 최초 실행 시 `auth-profiles.json`으로 자동 마이그레이션됨.
+- secret은 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`에 저장됩니다
+  (legacy 경로: `~/.openclaw/agent/auth-profiles.json`)
+- config의 `auth.profiles` / `auth.order`는 **metadata와 routing용**이며, secret을
+  저장하지 않습니다
+- legacy import-only OAuth file인 `~/.openclaw/credentials/oauth.json`은 처음 사용할 때
+  `auth-profiles.json`으로 import됩니다
 
-상세 정보: [OAuth 인증 가이드](/concepts/oauth)
+자세한 내용은 [/concepts/oauth](/concepts/oauth)를 참고하세요.
 
-### 자격 증명 유형 (Types)
-- `api_key`: 공급자 정보와 API 키 값.
-- `oauth`: 공급자 정보, 액세스/리프레시 토큰, 만료 시각 및 계정 정보.
+credential type:
 
-## 프로필 식별자 (Profile IDs)
+- `type: "api_key"` → `{ provider, key }`
+- `type: "oauth"` → `{ provider, access, refresh, expires, email? }`
+  (+ provider에 따라 `projectId`/`enterpriseUrl`)
 
-OAuth 로그인을 통해 생성되는 프로필은 여러 계정이 공존할 수 있도록 고유한 ID를 가짐:
+## Profile IDs
 
-- **기본값**: 이메일 정보가 없는 경우 `provider:default`.
-- **이메일 포함 시**: `provider:<email>` (예: `openai:user@example.com`).
+OAuth login은 여러 account를 함께 쓸 수 있도록 서로 다른 profile을 만듭니다.
 
-이 정보는 `auth-profiles.json` 파일의 `profiles` 섹션에서 관리됨.
+- email을 모르면 기본값은 `provider:default`
+- email이 있으면 `provider:<email>`
+  (예: `google-antigravity:user@gmail.com`)
 
-## 프로필 순환 순서 (Rotation Order)
+profile은 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`의 `profiles` 아래에
+저장됩니다.
 
-공급자별로 여러 프로필이 존재할 경우 다음 우선순위에 따라 순서를 결정함:
+## Rotation order
 
-1. **명시적 설정**: `auth.order[provider]`에 정의된 순서.
-2. **구성된 프로필**: `auth.profiles`에 등록된 목록 중 해당 공급자 필터링 결과.
-3. **저장된 데이터**: `auth-profiles.json`에 실제 존재하는 데이터 기반.
+provider에 여러 profile이 있으면 OpenClaw는 아래 순서로 order를 정합니다.
 
-별도의 명시적 순서가 없을 경우 **라운드 로빈(Round-robin)** 방식을 사용함:
-- **1차 정렬**: 인증 유형 (일반적으로 **OAuth 프로필을 API 키보다 우선** 사용).
-- **2차 정렬**: `lastUsed` 시각 (가장 오래전에 사용한 프로필 우선).
-- **예외**: 쿨다운(Cooldown) 상태이거나 비활성화된 프로필은 목록의 마지막으로 이동하며, 만료 예정 시간이 빠른 순서대로 배치됨.
+1. `auth.order[provider]`에 명시된 **explicit config**
+2. provider 기준으로 filtering한 `auth.profiles`
+3. 해당 provider의 `auth-profiles.json`에 저장된 profile
 
-### 세션 고정성 (Session Stickiness)
+명시적인 order가 없으면 OpenClaw는 round-robin order를 사용합니다.
 
-효율적인 캐시 활용과 일관성 유지를 위해 **세션별로 선택된 인증 프로필을 고정(Pinning)**하여 사용함. 매 요청마다 프로필을 바꾸지 않으며, 다음 상황에서만 고정이 해제됨:
+- **Primary key:** profile type
+  (**OAuth가 API key보다 먼저**)
+- **Secondary key:** `usageStats.lastUsed`
+  (각 type 안에서 가장 오래전에 사용한 항목이 먼저)
+- **Cooldown/disabled profile:** 뒤로 이동하며, 가장 빨리 만료되는 순서대로 정렬
 
-- 사용자가 세션을 초기화한 경우 (`/new`, `/reset`).
-- 대화 압축(Compaction)이 완료되어 압축 횟수가 증가한 경우.
-- 현재 고정된 프로필이 쿨다운 또는 비활성 상태가 된 경우.
+### Session stickiness (cache-friendly)
 
-`/model …@<profileId>` 명령어로 프로필을 직접 지정하면 해당 세션에 대해 **사용자 오버라이드**가 적용되며, 세션 종료 전까지 자동 순환 대상에서 제외됨.
+OpenClaw는 provider cache를 따뜻하게 유지하기 위해 **선택된 auth profile을 session별로
+pin**합니다. 요청마다 profile을 돌려 쓰지 않으며, 아래 경우에만 다른 profile을
+선택합니다.
 
-<Note>
-**OAuth 우선순위 주의**: 동일 공급자에 OAuth와 API 키 프로필이 혼재되어 있고 순서가 고정되지 않은 경우, 라운드 로빈 로직에 의해 메시지마다 프로필이 바뀔 수 있음. 특정 계정 사용을 강제하려면 `auth.order` 설정을 활용함.
-</Note>
+- session이 reset될 때 (`/new` / `/reset`)
+- compaction이 완료되어 compaction count가 증가할 때
+- 현재 profile이 cooldown 또는 disabled 상태일 때
 
-## 쿨다운 (Cooldowns)
+`/model …@<profileId>`로 직접 고르면 해당 session에서는 **user override**가 되며,
+새 session이 시작되기 전까지 자동 rotation 대상이 아닙니다.
 
-인증 오류, 속도 제한(Rate limit), 혹은 속도 제한으로 의심되는 타임아웃 발생 시 OpenClaw는 해당 프로필을 '쿨다운' 상태로 설정하고 다음 프로필로 전환함. OpenAI 호환 응답의 `Unhandled stop reason: error` 등도 장애 조치 신호로 간주함.
+session router가 자동으로 고른 pinned profile은 **preference**로 취급됩니다.
+먼저 시도되지만, rate limit이나 timeout이 발생하면 OpenClaw가 다른 profile로
+돌아갈 수 있습니다. 반면 user가 직접 pin한 profile은 그 profile에 고정되며, 해당
+profile이 실패하고 model fallback이 설정돼 있으면 OpenClaw는 profile을 바꾸지 않고
+다음 model로 이동합니다.
 
-쿨다운에는 **지수 백오프(Exponential Backoff)**가 적용됨:
-- 1분 → 5분 → 25분 → 최대 1시간.
+### Why OAuth can "look lost"
 
-상태 정보는 `auth-profiles.json`의 `usageStats` 하위에 기록됨.
+같은 provider에 OAuth profile과 API key profile이 함께 있으면, pin이 없는 상태에서
+round-robin에 따라 메시지 사이마다 서로 다른 profile이 선택될 수 있습니다.
+하나의 profile만 강제하고 싶다면:
 
-## 과금 관련 비활성화 (Billing Disables)
+- `auth.order[provider] = ["provider:profileId"]`로 고정하거나
+- UI/chat surface가 지원한다면 `/model …`의 profile override를 사용하세요
 
-"잔액 부족(Insufficient credits)"과 같은 과금 관련 오류는 일시적인 장애가 아닐 가능성이 높으므로, 일반 쿨다운보다 훨씬 긴 **비활성화(Disabled)** 상태로 전환함.
+## Cooldowns
 
-- **백오프 주기**: 5시간부터 시작하여 실패 반복 시마다 2배로 증가 (최대 24시간).
-- **초기화**: 해당 프로필이 24시간 동안 실패 없이 유지될 경우 백오프 카운터를 초기화함.
+auth error, rate-limit error, 또는 rate limiting처럼 보이는 timeout이 나면 OpenClaw는
+해당 profile을 cooldown 상태로 표시하고 다음 profile로 넘어갑니다.
+Cloud Code Assist의 tool call ID validation failure 같은 format/invalid-request error도
+failover-worthy error로 간주되어 같은 cooldown 규칙을 사용합니다.
+OpenAI-compatible stop reason 오류인 `Unhandled stop reason: error`,
+`stop reason: error`, `reason: error`도 timeout/failover signal로 분류됩니다.
 
-## 모델 폴백 (Model Fallback)
+cooldown은 exponential backoff를 사용합니다.
 
-특정 공급자의 모든 인증 프로필이 실패하거나 속도 제한에 걸린 경우, OpenClaw는 `agents.defaults.model.fallbacks` 목록에 정의된 다음 모델로 완전히 전환함.
+- 1 minute
+- 5 minutes
+- 25 minutes
+- 1 hour (cap)
 
-- **진행 조건**: 인증 실패, 속도 제한, 프로필 전체 순환 후에도 지속되는 타임아웃 시에만 다음 폴백 모델로 이동함 (기타 일반적인 모델 에러는 폴백을 트리거하지 않음).
-- **오버라이드 시 동작**: 명령어나 훅을 통해 특정 모델을 강제한 경우에도, 해당 모델이 실패하면 설정된 폴백 리스트를 따라가며 최종적으로는 기본 모델(`agents.defaults.model.primary`)로 수렴함.
+상태는 `auth-profiles.json`의 `usageStats`에 저장됩니다.
 
-## 관련 설정 항목
+```json
+{
+  "usageStats": {
+    "provider:profile": {
+      "lastUsed": 1736160000000,
+      "cooldownUntil": 1736160600000,
+      "errorCount": 2
+    }
+  }
+}
+```
 
-상세 스키마는 [Gateway 설정 레퍼런스](/gateway/configuration)를 참조함:
+## Billing disables
 
-- `auth.profiles` / `auth.order`: 인증 프로필 정의 및 순서 제어.
-- `auth.cooldowns.*`: 과금 백오프 및 실패 윈도우 시간 설정.
-- `agents.defaults.model.primary` / `fallbacks`: 기본 모델 및 장애 조치 대상 모델 리스트.
-- `agents.defaults.imageModel`: 이미지 생성용 모델 라우팅 설정.
+billing 또는 credit 관련 오류
+(예: `"insufficient credits"`, `"credit balance too low"`)는 failover-worthy이지만,
+보통 transient error가 아닙니다. 그래서 짧은 cooldown 대신 profile을 **disabled**로
+표시하고, 더 긴 backoff를 적용한 뒤 다음 profile/provider로 rotation합니다.
 
-전반적인 모델 선택 전략은 [모델 관리 가이드](/concepts/models) 참조.
+상태는 `auth-profiles.json`에 저장됩니다.
+
+```json
+{
+  "usageStats": {
+    "provider:profile": {
+      "disabledUntil": 1736178000000,
+      "disabledReason": "billing"
+    }
+  }
+}
+```
+
+기본값:
+
+- billing backoff는 **5 hours**에서 시작해 billing failure마다 두 배가 되며,
+  최대 **24 hours**까지 증가합니다
+- profile이 **24 hours** 동안 실패하지 않으면 backoff counter가 reset됩니다
+  (configurable)
+
+## Model fallback
+
+provider의 모든 profile이 실패하면 OpenClaw는
+`agents.defaults.model.fallbacks`의 다음 model로 이동합니다. 이 동작은 auth failure,
+rate limit, profile rotation으로 모두 소진된 timeout에 적용됩니다
+(그 외 error는 fallback을 진행하지 않음).
+
+run이 model override로 시작되더라도, configured fallback을 시도한 뒤에는 결국
+`agents.defaults.model.primary`에서 fallback chain이 끝납니다.
+
+## Related config
+
+[Gateway configuration](/gateway/configuration)에서 다음 설정을 확인하세요.
+
+- `auth.profiles` / `auth.order`
+- `auth.cooldowns.billingBackoffHours` / `auth.cooldowns.billingBackoffHoursByProvider`
+- `auth.cooldowns.billingMaxHours` / `auth.cooldowns.failureWindowHours`
+- `agents.defaults.model.primary` / `agents.defaults.model.fallbacks`
+- `agents.defaults.imageModel` routing
+
+전반적인 model selection과 fallback 개요는 [Models](/concepts/models) 문서를
+참고하세요.

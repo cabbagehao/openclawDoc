@@ -1,58 +1,62 @@
 ---
-summary: "수신된 채널 위치 정보(Telegram, WhatsApp 등)의 파싱 방식 및 컨텍스트 필드 안내"
+summary: "수신 채널 위치 파싱(Telegram + WhatsApp)과 컨텍스트 필드"
 read_when:
-  - 채팅 채널의 위치 정보 파싱 로직을 추가하거나 수정하고자 할 때
-  - 에이전트 프롬프트나 도구에서 위치 컨텍스트 필드를 활용할 때
-title: "위치 정보 파싱"
+  - 채널 위치 파싱을 추가하거나 수정할 때
+  - 에이전트 프롬프트나 tool에서 위치 컨텍스트 필드를 사용할 때
+title: "채널 위치 파싱"
+description: "OpenClaw가 Telegram, WhatsApp, Matrix에서 공유된 위치를 어떻게 본문 텍스트와 구조화된 컨텍스트 필드로 정규화하는지 설명합니다."
 x-i18n:
   source_path: "channels/location.md"
 ---
 
-# 위치 정보 파싱 (Location Parsing)
+# 채널 위치 파싱
 
-OpenClaw는 다양한 채팅 채널로부터 수신된 공유 위치 정보를 다음과 같이 표준화함:
+OpenClaw는 채팅 채널에서 공유된 위치를 다음 두 가지로 정규화합니다.
 
-- 수신 메시지 본문에 사람이 읽기 쉬운 텍스트 형식으로 추가.
-- 자동 응답용 컨텍스트(Context) 페이로드에 구조화된 데이터 필드로 주입.
+- inbound body에 추가되는 사람이 읽기 쉬운 텍스트
+- auto-reply context payload의 구조화된 필드
 
-## 지원 채널
+현재 지원:
 
-- **Telegram**: 위치 핀(Pin), 장소 정보(Venues), 실시간 위치(Live locations) 지원.
-- **WhatsApp**: 일반 위치(`locationMessage`) 및 실시간 위치(`liveLocationMessage`) 지원.
-- **Matrix**: `geo_uri`가 포함된 `m.location` 타입 지원.
+- **Telegram** (location pin + venue + live location)
+- **WhatsApp** (`locationMessage` + `liveLocationMessage`)
+- **Matrix** (`m.location` with `geo_uri`)
 
-## 텍스트 렌더링 형식
+## 텍스트 포맷
 
-위치 정보는 가독성을 고려하여 다음과 같이 변환되어 본문에 포함됨:
+위치는 괄호 없이 읽기 쉬운 줄로 렌더링됩니다.
 
-- **단순 핀 (Pin)**:
+- Pin:
   - `📍 48.858844, 2.294351 ±12m`
-- **명명된 장소 (Named place)**:
-  - `📍 에펠탑 — 프랑스 파리 (48.858844, 2.294351 ±12m)`
-- **실시간 위치 공유**:
-  - `🛰 실시간 위치: 48.858844, 2.294351 ±12m`
+- Named place:
+  - `📍 Eiffel Tower — Champ de Mars, Paris (48.858844, 2.294351 ±12m)`
+- Live share:
+  - `🛰 Live location: 48.858844, 2.294351 ±12m`
 
-메시지에 캡션(Caption)이나 코멘트가 포함된 경우 다음 줄에 자동으로 덧붙여짐:
+채널에 caption/comment가 포함되어 있으면 다음 줄에 추가됩니다.
 
 ```text
 📍 48.858844, 2.294351 ±12m
-여기서 만나요
+Meet here
 ```
 
-## 컨텍스트 필드 (Context Fields)
+## 컨텍스트 필드
 
-위치 정보가 포함된 메시지 수신 시, 에이전트의 `ctx` 객체에 다음 필드들이 추가됨:
+위치가 있으면 다음 필드가 `ctx`에 추가됩니다.
 
-- **`LocationLat`**: 위도 (숫자)
-- **`LocationLon`**: 경도 (숫자)
-- **`LocationAccuracy`**: 정확도 (미터 단위 숫자, 선택 사항)
-- **`LocationName`**: 장소 이름 (문자열, 선택 사항)
-- **`LocationAddress`**: 장소 주소 (문자열, 선택 사항)
-- **`LocationSource`**: 정보 소스 (`pin` | `place` | `live`)
-- **`LocationIsLive`**: 실시간 공유 여부 (불리언)
+- `LocationLat` (number)
+- `LocationLon` (number)
+- `LocationAccuracy` (number, meters; optional)
+- `LocationName` (string; optional)
+- `LocationAddress` (string; optional)
+- `LocationSource` (`pin | place | live`)
+- `LocationIsLive` (boolean)
 
-## 채널별 특이 사항
+## 채널별 참고
 
-- **Telegram**: 장소 정보는 `LocationName` 및 `LocationAddress` 필드에 매핑됨. 실시간 위치는 제공된 유효 기간(`live_period`) 정보를 활용함.
-- **WhatsApp**: `locationMessage.comment` 또는 `liveLocationMessage.caption` 필드 내용이 본문의 캡션 라인으로 사용됨.
-- **Matrix**: `geo_uri`를 분석하여 위치 핀 정보를 생성함. 고도(Altitude) 정보는 무시되며, `LocationIsLive` 값은 항상 `false`로 설정됨.
+- **Telegram**: venue는 `LocationName/LocationAddress`로 매핑되고, live
+  location은 `live_period`를 사용합니다.
+- **WhatsApp**: `locationMessage.comment`와 `liveLocationMessage.caption`은
+  caption line으로 추가됩니다.
+- **Matrix**: `geo_uri`는 pin location으로 파싱되며, altitude는 무시되고
+  `LocationIsLive`는 항상 false입니다.

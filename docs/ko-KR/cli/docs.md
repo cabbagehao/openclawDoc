@@ -1,7 +1,8 @@
 ---
-summary: "터미널에서 OpenClaw 공식 문서를 실시간으로 검색하는 `openclaw docs` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw docs` (search the live docs index)"
+description: "터미널에서 live OpenClaw docs index를 검색할 때 쓰는 `openclaw docs` 명령의 간단한 사용법을 안내합니다."
 read_when:
-  - 터미널을 떠나지 않고 OpenClaw 문서 내용을 빠르게 검색하고자 할 때
+  - 터미널에서 live OpenClaw docs를 검색하고 싶을 때
 title: "docs"
 x-i18n:
   source_path: "cli/docs.md"
@@ -9,14 +10,9 @@ x-i18n:
 
 # `openclaw docs`
 
-실시간 문서 인덱스를 대상으로 키워드 검색을 수행함.
-
-## 사용 예시
+live docs index를 검색합니다.
 
 ```bash
-# 브라우저 확장 프로그램 관련 문서 검색
 openclaw docs browser extension
-
-# 샌드박스 설정(allowHostControl) 관련 문서 검색
 openclaw docs sandbox allowHostControl
 ```

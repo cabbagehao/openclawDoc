@@ -1,102 +1,179 @@
 ---
-summary: "컨텍스트(Context) 가이드: 모델이 참조하는 데이터 구성 방식 및 점검 도구 안내"
+summary: "Context: what the model sees, how it is built, and how to inspect it"
+description: "모델이 실제로 보는 context와 system prompt 구성 방식, context 점검 방법을 설명합니다."
 read_when:
-  - OpenClaw에서 '컨텍스트'가 무엇을 의미하고 어떻게 구성되는지 궁금할 때
-  - 모델의 특정 답변이나 망각 현상의 원인을 디버깅하고자 할 때
-  - 컨텍스트 오버헤드를 줄이는 방법(/context, /status, /compact)을 알고 싶을 때
-title: "컨텍스트"
+  - OpenClaw에서 context가 정확히 무엇을 뜻하는지 이해하고 싶을 때
+  - 모델이 무엇을 알고 있거나 왜 잊었는지 디버깅할 때
+  - context overhead를 줄이고 싶을 때
+title: "Context"
 x-i18n:
   source_path: "concepts/context.md"
 ---
 
-# 컨텍스트 (Context)
+# Context
 
-**컨텍스트(Context)**는 OpenClaw가 1회 실행(Run)을 위해 모델에 전송하는 **모든 정보의 총합**임. 이는 각 모델이 가진 **컨텍스트 창(Context Window)**, 즉 처리 가능한 최대 토큰 수에 의해 제한됨.
+“Context”는 **한 번의 run을 위해 OpenClaw가 모델에 보내는 모든 것**입니다.
+이 양은 model의 **context window**(token limit)에 의해 제한됩니다.
 
-## 컨텍스트의 구성 요소
+초보자용 mental model:
 
-에이전트가 한 번의 요청을 처리할 때 참조하는 데이터는 크게 다음과 같음:
+- **System prompt** (OpenClaw가 구성): rule, tool, skill list, time/runtime, inject된 workspace file
+- **Conversation history**: 이 session의 사용자 message와 assistant message
+- **Tool call/result + attachment**: command output, file read, image/audio 등
 
-- **시스템 프롬프트 (System Prompt)**: OpenClaw가 자동으로 생성하는 데이터로, 에이전트의 운영 규칙, 사용 가능한 도구 및 스킬 목록, 현재 시간 및 실행 환경 정보, 주입된 워크스페이스 파일들을 포함함.
-- **대화 이력 (Conversation History)**: 현재 세션에서 사용자와 어시스턴트가 주고받은 이전 메시지들.
-- **도구 호출 및 결과 (Tool Calls/Results)**: 실행된 명령어의 출력값, 읽어온 파일 내용, 첨부된 이미지나 오디오 데이터 등.
+context는 “memory”와 같은 것이 아닙니다.
+memory는 disk에 저장되었다가 나중에 다시 로드될 수 있지만,
+context는 현재 모델 window 안에 들어 있는 데이터입니다.
 
-<Note>
-**컨텍스트 vs 기억(Memory)**: 기억은 디스크에 저장되어 나중에 다시 불러올 수 있는 영구적인 데이터인 반면, 컨텍스트는 모델이 현재 답변을 생성하기 위해 '보고 있는' 실시간 데이터를 의미함.
-</Note>
+## Quick start (inspect context)
 
-## 컨텍스트 상태 점검 도구
+- `/status` → “내 window가 얼마나 찼나?”를 빠르게 확인 + session setting 확인
+- `/context list` → 무엇이 inject되는지와 대략적인 size (file별 + total)
+- `/context detail` → file별, tool schema별, skill entry별, system prompt 크기까지 더 상세한 breakdown
+- `/usage tokens` → 일반 답변 하단에 reply별 usage footer 추가
+- `/compact` → 오래된 history를 compact entry로 요약해 window 공간 확보
 
-- `/status`: 현재 컨텍스트 창이 얼마나 찼는지 요약 정보와 세션 설정을 보여줌.
-- `/context list`: 주입된 각 파일의 정보와 대략적인 크기(원본 대비 주입량)를 나열함.
-- `/context detail`: 파일, 도구 스키마, 스킬 항목별 상세 크기와 전체 시스템 프롬프트 용량을 분석함.
-- `/usage tokens`: 답변 하단에 해당 응답에 소요된 토큰 사용량을 표시함.
-- `/compact`: 오래된 대화 내용을 요약하여 컨텍스트 창의 여유 공간을 확보함.
+참고: [Slash commands](/tools/slash-commands), [Token use & costs](/reference/token-use), [Compaction](/concepts/compaction)
 
-상세 정보: [슬래시 명령어](/tools/slash-commands), [토큰 사용 및 비용](/reference/token-use), [데이터 압축(Compaction)](/concepts/compaction).
+## Example output
 
-## 컨텍스트 창 용량 산정 기준
+값은 model, provider, tool policy, workspace 내용에 따라 달라집니다.
 
-모델이 수신하는 다음 모든 요소가 컨텍스트 용량에 포함됨:
+### `/context list`
 
-- 시스템 프롬프트 전체 섹션.
-- 전체 대화 기록.
-- 모든 도구 호출 파라미터 및 실행 결과.
-- 첨부된 미디어(이미지, 오디오) 및 파일의 전사 데이터.
-- 압축 요약본 및 가지치기(Pruning) 결과물.
-- 공급자 측에서 추가하는 숨겨진 헤더 정보.
+```text
+🧠 Context breakdown
+Workspace: <workspaceDir>
+Bootstrap max/file: 20,000 chars
+Sandbox: mode=non-main sandboxed=false
+System prompt (run): 38,412 chars (~9,603 tok) (Project Context 23,901 chars (~5,976 tok))
 
-## 시스템 프롬프트 빌드 프로세스
+Injected workspace files:
+- AGENTS.md: OK | raw 1,742 chars (~436 tok) | injected 1,742 chars (~436 tok)
+- SOUL.md: OK | raw 912 chars (~228 tok) | injected 912 chars (~228 tok)
+- TOOLS.md: TRUNCATED | raw 54,210 chars (~13,553 tok) | injected 20,962 chars (~5,241 tok)
+- IDENTITY.md: OK | raw 211 chars (~53 tok) | injected 211 chars (~53 tok)
+- USER.md: OK | raw 388 chars (~97 tok) | injected 388 chars (~97 tok)
+- HEARTBEAT.md: MISSING | raw 0 | injected 0
+- BOOTSTRAP.md: OK | raw 0 chars (~0 tok) | injected 0 chars (~0 tok)
 
-시스템 프롬프트는 OpenClaw가 직접 관리하며 매 실행 시점에 실시간으로 생성됨. 포함 항목:
+Skills list (system prompt text): 2,184 chars (~546 tok) (12 skills)
+Tools: read, edit, write, exec, process, browser, message, sessions_send, …
+Tool list (system prompt text): 1,032 chars (~258 tok)
+Tool schemas (JSON): 31,988 chars (~7,997 tok) (counts toward context; not shown as text)
+Tools: (same as above)
 
-- 도구 목록 및 요약 설명.
-- 스킬 메타데이터 (이름, 설명, 위치).
-- 워크스페이스 경로 정보.
-- 현재 시각 (설정에 따른 사용자 현지 시각 포함).
-- 실행 환경 정보 (호스트, OS, 모델 ID 등).
-- **프로젝트 컨텍스트 (Project Context)** 섹션에 주입된 워크스페이스 파일들.
+Session tokens (cached): 14,250 total / ctx=32,000
+```
 
-상세 분석: [시스템 프롬프트 구성](/concepts/system-prompt).
+### `/context detail`
 
-## 주입된 워크스페이스 파일 (Project Context)
+```text
+🧠 Context breakdown (detailed)
+…
+Top skills (prompt entry size):
+- frontend-design: 412 chars (~103 tok)
+- oracle: 401 chars (~101 tok)
+… (+10 more skills)
 
-기본적으로 다음 파일들이 존재할 경우 시스템 프롬프트에 자동으로 포함됨:
+Top tools (schema size):
+- browser: 9,812 chars (~2,453 tok)
+- exec: 6,240 chars (~1,560 tok)
+… (+N more tools)
+```
 
-- `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `BOOTSTRAP.md` (최초 실행 시).
+## What counts toward the context window
 
-파일별 주입 용량 제한은 `bootstrapMaxChars`(기본 20,000자), 전체 합계 제한은 `bootstrapTotalMaxChars`(기본 150,000자) 설정을 따름. `/context` 명령어로 원본 크기와 실제 주입된 크기를 비교해 볼 수 있음.
+모델이 받는 모든 것이 context window에 포함됩니다.
 
-## 스킬 및 도구의 컨텍스트 비용
+- system prompt (모든 section)
+- conversation history
+- tool call + tool result
+- attachment/transcript (image/audio/file)
+- compaction summary와 pruning artifact
+- provider wrapper나 숨겨진 header (보이지 않아도 count됨)
 
-- **스킬(Skills)**: 시스템 프롬프트에는 이름과 설명 등 최소한의 정보만 포함됨. 상세 지침이 담긴 `SKILL.md`는 모델이 필요할 때 직접 `read` 도구로 읽어오도록 설계됨.
-- **도구(Tools)**:
-  1. 시스템 프롬프트 내의 **텍스트 설명** 비용.
-  2. 모델이 도구를 호출할 수 있도록 전달되는 **JSON 스키마(Schema)** 비용.
+## How OpenClaw builds the system prompt
 
-용량이 큰 도구 스키마는 `/context detail` 명령어로 확인할 수 있음.
+system prompt는 **OpenClaw 소유**이며 run마다 다시 만들어집니다.
+포함 항목:
 
-## 명령어 및 지시어 처리
+- tool list와 짧은 description
+- skill list (metadata only, 아래 참고)
+- workspace location
+- time (UTC + 설정된 경우 user time)
+- runtime metadata (host/OS/model/thinking)
+- **Project Context** 아래에 주입된 workspace bootstrap file
 
-슬래시 명령어는 Gateway에서 먼저 가로채어 처리함:
+전체 breakdown: [System Prompt](/concepts/system-prompt)
 
-- **단독 명령어**: `/...`로 시작하는 메시지는 에이전트에게 전달되지 않고 즉시 실행됨.
-- **인라인 지시어**: `/think`, `/model`, `/queue` 등은 설정 변경을 위한 힌트로 작용하며, 모델에게 전달되기 전 텍스트에서 제거됨.
-- **인라인 단축키**: 허용된 사용자가 일반 대화 중 `/status` 등을 섞어 쓰면, 해당 부분만 추출하여 실행하고 나머지 텍스트만 모델에게 보냄.
+## Injected workspace files (Project Context)
 
-## 데이터 영속성 관리 (압축 및 가지치기)
+기본적으로 OpenClaw는 다음 workspace file을 inject합니다. (존재하는 경우)
 
-- **일반 기록**: 정책에 의해 압축되거나 제거되기 전까지 세션 파일에 유지됨.
-- **압축 (Compaction)**: 과거 이력을 요약하여 세션 파일에 영구 저장함.
-- **가지치기 (Pruning)**: 이전의 도구 실행 결과들을 이번 실행 시점에서만 **메모리 상에서만** 제외함 (세션 파일은 수정하지 않음).
+- `AGENTS.md`
+- `SOUL.md`
+- `TOOLS.md`
+- `IDENTITY.md`
+- `USER.md`
+- `HEARTBEAT.md`
+- `BOOTSTRAP.md` (first-run only)
 
-상세 정보: [세션 관리](/concepts/session), [데이터 압축](/concepts/compaction), [세션 가지치기](/concepts/session-pruning).
+큰 file은 `agents.defaults.bootstrapMaxChars`(기본값 `20000` chars)로 file별 truncate됩니다.
+또한 OpenClaw는 file 전체 합계에 대해 `agents.defaults.bootstrapTotalMaxChars`(기본값 `150000` chars)를 적용합니다.
+`/context`는 **raw vs injected** size와 truncation 여부를 보여 줍니다.
 
-## `/context` 보고 데이터의 특징
+truncation이 발생하면 runtime은 Project Context 아래에 warning block을 inject할 수 있습니다.
+이는 `agents.defaults.bootstrapPromptTruncationWarning` (`off`, `once`, `always`, 기본값 `once`)으로 조절합니다.
 
-`/context` 명령어는 가급적 실제 모델이 마지막으로 수신했던 **실행 시점의 리포트**를 기반으로 정보를 출력함:
+## Skills: what’s injected vs loaded on-demand
 
-- **`System prompt (run)`**: 마지막 실행 시 캡처된 실제 데이터.
-- **`System prompt (estimate)`**: 실행 기록이 없을 경우 현재 설정을 기반으로 예측한 데이터.
+system prompt에는 compact한 **skills list**만 포함됩니다. (name + description + location)
+이 목록도 실제 overhead를 차지합니다.
 
-이 도구는 용량 분석과 주요 요인 파악을 위한 것으로, 보안을 위해 전체 프롬프트 전문이나 도구 스키마 전문을 그대로 출력하지는 않음.
+skill instruction 본문은 기본적으로 포함되지 않습니다.
+모델은 필요할 때만 skill의 `SKILL.md`를 `read` 하도록 설계되어 있습니다.
+
+## Tools: there are two costs
+
+tool은 context에 두 방식으로 영향을 줍니다.
+
+1. system prompt 안의 **tool list text** (`Tooling`으로 보이는 부분)
+2. **tool schema** (JSON). 모델이 tool을 호출할 수 있도록 함께 전송되며, plain text로 보이지 않아도 context를 차지합니다.
+
+`/context detail`은 가장 큰 tool schema를 분해해서 무엇이 overhead를 지배하는지 보여 줍니다.
+
+## Commands, directives, and “inline shortcuts”
+
+slash command는 Gateway가 처리합니다. 동작 방식은 몇 가지로 나뉩니다.
+
+- **Standalone command**: message가 `/...`만으로 구성되면 command로 실행
+- **Directive**: `/think`, `/verbose`, `/reasoning`, `/elevated`, `/model`, `/queue`는 모델이 보기 전에 제거됨
+  - directive-only message는 session setting을 지속시킴
+  - 일반 message 안의 inline directive는 per-message hint로 동작
+- **Inline shortcut** (allowlisted sender만): 일반 message 안의 특정 `/...` token은 즉시 실행될 수 있으며(예: “hey /status”), 남은 text만 모델에 전달됨
+
+자세한 내용: [Slash commands](/tools/slash-commands)
+
+## Sessions, compaction, and pruning (what persists)
+
+무엇이 message 사이에 유지되는지는 메커니즘마다 다릅니다.
+
+- **Normal history**는 policy에 따라 compact/prune되기 전까지 transcript에 남습니다.
+- **Compaction**은 summary를 transcript에 영구 저장하고 recent message는 유지합니다.
+- **Pruning**은 한 run의 _in-memory_ prompt에서 오래된 tool result를 제거하지만 transcript를 다시 쓰지 않습니다.
+
+문서: [Session](/concepts/session), [Compaction](/concepts/compaction), [Session pruning](/concepts/session-pruning)
+
+기본적으로 OpenClaw는 조립과 compaction에 built-in `legacy` context engine을 사용합니다.
+`kind: "context-engine"`을 제공하는 plugin을 설치하고 `plugins.slots.contextEngine`으로 선택하면,
+OpenClaw는 context assembly, `/compact`, 그리고 관련 subagent context lifecycle hook을 그 engine에 위임합니다.
+
+## What `/context` actually reports
+
+`/context`는 가능하면 최신 **run-built** system prompt report를 사용합니다.
+
+- `System prompt (run)` = 마지막 embedded (tool-capable) run에서 캡처되어 session store에 저장된 값
+- `System prompt (estimate)` = run report가 없을 때, 또는 CLI backend처럼 report를 생성하지 않는 경로에서 즉석 계산한 값
+
+어느 경우든 size와 top contributor를 보고할 뿐, 전체 system prompt나 tool schema 전문을 덤프하지는 않습니다.

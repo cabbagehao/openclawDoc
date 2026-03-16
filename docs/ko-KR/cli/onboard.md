@@ -1,7 +1,8 @@
 ---
-summary: "Gateway, 워크스페이스, 인증, 채널 및 스킬 통합 설정을 위한 `openclaw onboard` 대화형 명령어 레퍼런스"
+summary: "CLI reference for `openclaw onboard` (interactive onboarding wizard)"
+description: "Gateway, workspace, auth, channel, skill 설정을 안내하는 `openclaw onboard` interactive wizard의 흐름과 비대화형 옵션을 설명합니다."
 read_when:
-  - 안내에 따라 OpenClaw 초기 환경(로컬 또는 원격)을 구축하고자 할 때
+  - Gateway, workspace, auth, channel, skill 설정을 안내형으로 진행하고 싶을 때
 title: "onboard"
 x-i18n:
   source_path: "cli/onboard.md"
@@ -9,35 +10,29 @@ x-i18n:
 
 # `openclaw onboard`
 
-로컬 또는 원격 Gateway 설정을 지원하는 대화형 온보딩 마법사를 실행함.
+interactive onboarding wizard입니다. (local 또는 remote Gateway setup)
 
-## 관련 가이드
+## Related guides
 
-- **CLI 온보딩 통합 허브**: [Onboarding Wizard (CLI)](/start/wizard)
-- **온보딩 전체 개요**: [Onboarding Overview](/start/onboarding-overview)
-- **상세 기술 레퍼런스**: [CLI Onboarding Reference](/start/wizard-cli-reference)
-- **자동화 가이드**: [CLI Automation](/start/wizard-cli-automation)
-- **macOS 앱 사용자 전용**: [Onboarding (macOS App)](/start/onboarding)
+- CLI onboarding hub: [Onboarding Wizard (CLI)](/start/wizard)
+- Onboarding overview: [Onboarding Overview](/start/onboarding-overview)
+- CLI onboarding reference: [CLI Onboarding Reference](/start/wizard-cli-reference)
+- CLI automation: [CLI Automation](/start/wizard-cli-automation)
+- macOS onboarding: [Onboarding (macOS App)](/start/onboarding)
 
-## 사용 예시
+## Examples
 
 ```bash
-# 기본 대화형 설정 시작
 openclaw onboard
-
-# 필수 항목만 묻는 빠른 설정 모드
 openclaw onboard --flow quickstart
-
-# 모든 세부 항목을 직접 설정하는 수동 모드
 openclaw onboard --flow manual
-
-# 이미 가동 중인 원격 Gateway에 연결 설정
 openclaw onboard --mode remote --remote-url wss://gateway-host:18789
 ```
 
-신뢰할 수 있는 사설 네트워크 내에서 보안되지 않은 `ws://` 주소를 사용해야 하는 경우, 온보딩 실행 전 환경 변수에 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`을 설정함.
+신뢰할 수 있는 private network에서만 `ws://` target을 써야 한다면, onboarding process environment에
+`OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`을 설정하세요.
 
-### 비대화형 커스텀 공급자 설정 예시
+Non-interactive custom provider:
 
 ```bash
 openclaw onboard --non-interactive \
@@ -48,9 +43,10 @@ openclaw onboard --non-interactive \
   --secret-input-mode plaintext \
   --custom-compatibility openai
 ```
-`--custom-api-key` 플래그 생략 시, 시스템은 환경 변수에서 `CUSTOM_API_KEY`를 자동으로 확인함.
 
-### 평문 대신 시크릿 참조(Ref)로 저장
+non-interactive mode에서 `--custom-api-key`는 선택 사항입니다. 생략하면 onboarding은 `CUSTOM_API_KEY`를 확인합니다.
+
+plaintext 대신 provider key를 ref로 저장:
 
 ```bash
 openclaw onboard --non-interactive \
@@ -58,20 +54,29 @@ openclaw onboard --non-interactive \
   --secret-input-mode ref \
   --accept-risk
 ```
-`--secret-input-mode ref` 옵션을 사용하면 실제 키 값 대신 환경 변수 기반의 참조 정보가 설정 파일에 기록됨.
 
-**비대화형 `ref` 모드 주의 사항:**
-- 대상 공급자의 환경 변수(예: `OPENAI_API_KEY`)가 온보딩 프로세스에 미리 설정되어 있어야 함.
-- 환경 변수가 없는 상태에서 인라인 키 플래그를 넘기면 오류와 함께 즉시 종료됨.
+`--secret-input-mode ref`를 쓰면 onboarding은 plaintext key 값 대신 env-backed ref를 기록합니다.
+auth-profile backed provider는 `keyRef` entry를 쓰고, custom provider는 `models.providers.<id>.apiKey`를 env ref로 기록합니다.
+(예: `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`)
 
-### 비대화형 Gateway 토큰 옵션
+Non-interactive `ref` mode contract:
 
-- `--gateway-auth token --gateway-token <값>`: 평문 토큰 저장.
-- `--gateway-auth token --gateway-token-ref-env <환경변수명>`: 해당 환경 변수를 참조하는 SecretRef 형식으로 저장.
-- 두 옵션은 동시에 사용할 수 없음.
-- 데몬(Daemon) 설치 시, 토큰이 SecretRef로 관리되면 참조의 유효성만 검증하고 실제 평문 값을 서비스 메타데이터에 기록하지 않음.
+- provider env var를 onboarding process environment에 설정하세요. (예: `OPENAI_API_KEY`)
+- inline key flag(예: `--openai-api-key`)는 해당 env var도 함께 설정된 경우에만 전달하세요.
+- 필요한 env var 없이 inline key flag를 넘기면 onboarding은 안내와 함께 즉시 실패합니다.
 
-**사용 예시:**
+non-interactive mode의 Gateway token option:
+
+- `--gateway-auth token --gateway-token <token>`은 plaintext token을 저장합니다.
+- `--gateway-auth token --gateway-token-ref-env <name>`은 `gateway.auth.token`을 env SecretRef로 저장합니다.
+- `--gateway-token`과 `--gateway-token-ref-env`는 함께 사용할 수 없습니다.
+- `--gateway-token-ref-env`는 onboarding process environment에 비어 있지 않은 env var가 필요합니다.
+- `--install-daemon`과 함께 쓸 때 token auth가 token을 요구하면, SecretRef-managed gateway token은 검증되지만 supervisor service environment metadata에 resolved plaintext로 저장되지는 않습니다.
+- `--install-daemon`과 함께 쓸 때 token mode가 token을 요구하고 configured token SecretRef가 unresolved 상태면, onboarding은 remediation guidance와 함께 fail-closed로 동작합니다.
+- `--install-daemon`과 함께 쓸 때 `gateway.auth.token`과 `gateway.auth.password`가 모두 configured되어 있고 `gateway.auth.mode`가 비어 있으면, mode를 명시하기 전까지 install이 차단됩니다.
+
+Example:
+
 ```bash
 export OPENCLAW_GATEWAY_TOKEN="your-token"
 openclaw onboard --non-interactive \
@@ -82,34 +87,55 @@ openclaw onboard --non-interactive \
   --accept-risk
 ```
 
-## 대화형 시크릿 참조 설정 동작
+interactive onboarding에서 reference mode를 사용할 때:
 
-- 마법사 진행 중 비밀 정보 입력 단계에서 **Use secret reference**를 선택함.
-- 이후 **Environment variable** (환경 변수) 또는 설정된 **Secret provider** (`file` 또는 `exec`) 중 하나를 선택함.
-- 시스템은 저장 전 즉시 유효성 검증(Preflight validation)을 수행하며, 실패 시 사유를 표시하고 재시도를 허용함.
+- prompt에서 **Use secret reference**를 선택합니다.
+- 다음 중 하나를 선택합니다.
+  - Environment variable
+  - Configured secret provider (`file` 또는 `exec`)
+- onboarding은 저장 전에 빠른 preflight validation을 수행합니다.
+  - validation이 실패하면 오류를 보여 주고 다시 시도할 수 있게 합니다.
 
-## 공급자별 특이 사항
+Non-interactive Z.AI endpoint choice:
 
-- **Z.AI (GLM)**: `--auth-choice zai-api-key`는 키 값을 분석하여 최적의 엔드포인트를 자동 감지함. 특정 플랜 사용 시 `zai-coding-global` 등의 세부 옵션 선택 가능.
-- **Mistral**: `--auth-choice mistral-api-key` 옵션을 통해 비대화형 설정 지원.
-
-## 설정 흐름(Flow) 안내
-
-- **`quickstart`**: 필수 질문만 표시하며, Gateway 토큰을 자동으로 생성함.
-- **`manual`**: 포트, 바인딩 주소, 인증 방식 등 모든 상세 설정을 사용자가 직접 지정함 (`advanced`와 동일).
-- **첫 대화 시작**: 별도의 채널 설정 없이 바로 대화하려면 `openclaw dashboard`를 통해 Control UI를 활용함.
-- **커스텀 공급자**: 목록에 없는 OpenAI/Anthropic 호환 엔드포인트를 연결할 때 사용함.
-
-## 설정 완료 후 주요 명령어
+참고: `--auth-choice zai-api-key`는 이제 key에 가장 맞는 Z.AI endpoint를 자동 감지합니다. (`zai/glm-5`가 있는 general API 선호)
+GLM Coding Plan endpoint를 명시적으로 원하면 `zai-coding-global` 또는 `zai-coding-cn`을 선택하세요.
 
 ```bash
-# 추가적인 세부 설정 변경
-openclaw configure
+# Promptless endpoint selection
+openclaw onboard --non-interactive \
+  --auth-choice zai-coding-global \
+  --zai-api-key "$ZAI_API_KEY"
 
-# 독립된 워크스페이스를 가진 에이전트 추가
-openclaw agents add <이름>
+# Other Z.AI endpoint choices:
+# --auth-choice zai-coding-cn
+# --auth-choice zai-global
+# --auth-choice zai-cn
+```
+
+Non-interactive Mistral example:
+
+```bash
+openclaw onboard --non-interactive \
+  --auth-choice mistral-api-key \
+  --mistral-api-key "$MISTRAL_API_KEY"
+```
+
+Flow notes:
+
+- `quickstart`: 최소 질문만 묻고, gateway token을 자동 생성합니다.
+- `manual`: port/bind/auth 전체 질문을 보여 줍니다. (`advanced`의 alias)
+- local onboarding DM scope behavior: [CLI Onboarding Reference](/start/wizard-cli-reference#outputs-and-internals)
+- 가장 빠른 첫 chat: `openclaw dashboard` (Control UI, channel setup 불필요)
+- Custom Provider: 목록에 없는 OpenAI 또는 Anthropic compatible endpoint를 연결할 수 있습니다. Unknown을 선택하면 auto-detect를 시도합니다.
+
+## Common follow-up commands
+
+```bash
+openclaw configure
+openclaw agents add <name>
 ```
 
 <Note>
-`--json` 플래그가 비대화형 모드를 보장하지는 않음. 스크립트 자동화 시에는 반드시 **`--non-interactive`** 플래그를 명시해야 함.
+`--json`은 non-interactive mode를 의미하지 않습니다. script에서는 `--non-interactive`를 사용하세요.
 </Note>

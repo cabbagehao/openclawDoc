@@ -1,5 +1,6 @@
 ---
 summary: "OpenClaw 업데이트 채널(Stable, Beta, Dev)의 의미, 전환 방법 및 태깅 규칙 안내"
+description: "`stable`, `beta`, `dev` 채널의 의미와 전환 방식, dist-tag 운영 원칙, 릴리스 태깅 규칙을 설명합니다."
 read_when:
   - Stable, Beta, Dev 채널 간의 전환이 필요할 때
   - 프리릴리스 태깅 또는 배포 작업을 수행할 때
@@ -8,32 +9,21 @@ x-i18n:
   source_path: "install/development-channels.md"
 ---
 
-# 개발 채널 (Development Channels)
+# Development channels
 
 최종 업데이트: 2026-01-21
 
-OpenClaw는 세 가지 업데이트 채널을 운영함:
+OpenClaw는 세 가지 업데이트 채널을 제공합니다.
 
-- **stable**: npm dist-tag `latest`에 대응함. 가장 안정적인 버전임.
-- **beta**: npm dist-tag `beta`에 대응함. 테스트 중인 신기능이 포함된 빌드임.
-- **dev**: Git 저장소의 `main` 브랜치 최신 상태임. 배포 시 npm dist-tag `dev`를 사용함.
+- **stable**: npm dist-tag `latest`
+- **beta**: npm dist-tag `beta` (테스트 중인 빌드)
+- **dev**: `main`의 이동하는 헤드(git). 게시될 때는 npm dist-tag `dev`
 
-새로운 빌드는 먼저 **beta**로 배포되어 검증 과정을 거친 후, 버전 번호 변경 없이 **`latest`로 승격**됨. npm 설치 시에는 항상 dist-tag가 최종 기준(SSOT)이 됨.
+새 빌드는 먼저 **beta**로 배포해 검증한 뒤, 버전 번호를 바꾸지 않고 **`latest`로 승격**합니다. npm 설치에서는 dist-tag가 기준입니다.
 
-## 채널 전환 방법
+## Switching channels
 
-### Git 체크아웃 방식
-
-```bash
-openclaw update --channel stable
-openclaw update --channel beta
-openclaw update --channel dev
-```
-
-- **`stable` / `beta`**: 각 채널 조건에 부합하는 최신 태그를 체크아웃함 (두 채널이 동일한 태그를 가리킬 때가 많음).
-- **`dev`**: `main` 브랜치로 전환하고 업스트림(Upstream) 소스 기반으로 리베이스(Rebase)를 수행함.
-
-### npm / pnpm 전역 설치 방식
+Git checkout:
 
 ```bash
 openclaw update --channel stable
@@ -41,36 +31,47 @@ openclaw update --channel beta
 openclaw update --channel dev
 ```
 
-대응하는 npm dist-tag(`latest`, `beta`, `dev`)를 통해 패키지를 업데이트함.
+- `stable`/`beta`는 조건에 맞는 최신 태그를 체크아웃합니다. 두 채널이 같은 태그를 가리키는 경우도 많습니다.
+- `dev`는 `main`으로 전환한 뒤 upstream 기준으로 rebase합니다.
 
-`--channel` 플래그를 사용하여 **명시적으로** 채널을 변경할 경우, OpenClaw는 설치 방식까지 해당 채널에 맞게 조정함:
+npm/pnpm global install:
 
-- **`dev`**: 로컬 Git 체크아웃 존재 여부를 확인하고(기본값 `~/openclaw`, `OPENCLAW_GIT_DIR`로 오버라이드 가능), 소스를 업데이트한 뒤 해당 체크아웃을 기반으로 전역 CLI를 재설치함.
-- **`stable` / `beta`**: npm 저장소에서 해당 채널의 dist-tag 빌드를 내려받아 설치함.
+```bash
+openclaw update --channel stable
+openclaw update --channel beta
+openclaw update --channel dev
+```
 
-*팁: Stable 버전과 Dev 버전을 병행하여 사용하고 싶다면, 두 개의 클론(Clone)을 생성한 뒤 주 Gateway가 Stable 클론을 바라보도록 설정함.*
+해당 npm dist-tag(`latest`, `beta`, `dev`)를 통해 패키지를 업데이트합니다.
 
-## 플러그인 동기화 동작
+`--channel`로 **명시적으로** 채널을 전환하면, OpenClaw는 설치 방식도 함께 맞춥니다.
 
-`openclaw update` 명령어로 채널을 전환하면 플러그인 소스도 해당 환경에 맞춰 동기화됨:
+- `dev`는 git checkout(기본값 `~/openclaw`, `OPENCLAW_GIT_DIR`로 변경 가능)을 준비하고 업데이트한 뒤, 그 checkout에서 전역 CLI를 다시 설치합니다.
+- `stable`/`beta`는 해당 dist-tag로 npm에서 설치합니다.
 
-- **`dev` 채널**: Git 체크아웃에 포함된 번들 플러그인을 우선적으로 사용함.
-- **`stable` / `beta` 채널**: npm을 통해 설치된 플러그인 패키지 상태를 복원함.
+Tip: stable과 dev를 병행해 쓰고 싶다면 clone을 두 개 유지하고, gateway는 stable 쪽을 보도록 두세요.
 
-## 태깅(Tagging) 모범 사례
+## Plugins and channels
 
-- Git 체크아웃의 타겟이 될 릴리스에는 반드시 태그를 부여함 (Stable: `vYYYY.M.D`, Beta: `vYYYY.M.D-beta.N`).
-- 하위 호환성을 위해 `vYYYY.M.D.beta.N` 형식도 지원하지만, `-beta.N` 형식을 권장함.
-- 레거시 형식인 `vYYYY.M.D-<patch>` 태그 역시 Stable 버전으로 간주함.
-- **불변성 유지**: 한 번 부여한 태그는 절대로 위치를 옮기거나 재사용해서는 안 됨.
-- npm dist-tag는 항상 최종 설치의 기준점이 됨:
-  - `latest` → 안정판 (Stable)
-  - `beta` → 출시 후보군 (Candidate)
-  - `dev` → 메인 브랜치 스냅샷 (선택 사항)
+`openclaw update`로 채널을 전환하면 플러그인 소스도 함께 동기화됩니다.
 
-## macOS 앱 배포 정책
+- `dev`는 git checkout에 포함된 bundled plugins를 우선 사용합니다.
+- `stable`과 `beta`는 npm으로 설치된 plugin packages를 복원합니다.
 
-Beta 및 Dev 빌드에는 macOS 전용 앱 파일(`.app` / `.dmg`)이 **포함되지 않을 수 있음.** 이는 정상적인 동작이며 다음 사항을 준수함:
+## Tagging best practices
 
-- Git 태그와 npm dist-tag는 앱 배포 여부와 관계없이 게시됨.
-- 앱 빌드가 제외된 경우, 릴리스 노트나 변경 로그에 "이번 Beta 버전은 macOS 앱 빌드를 포함하지 않음"을 명시하여 혼선을 방지함.
+- git checkout이 도달해야 하는 릴리스에는 태그를 붙이세요. stable은 `vYYYY.M.D`, beta는 `vYYYY.M.D-beta.N`을 사용합니다.
+- 호환성을 위해 `vYYYY.M.D.beta.N`도 인식하지만, `-beta.N` 형식을 권장합니다.
+- 기존 `vYYYY.M.D-<patch>` 태그도 stable(비 beta)로 인식합니다.
+- 태그는 불변으로 유지하세요. 이미 만든 태그를 이동하거나 재사용하지 마세요.
+- npm dist-tags는 npm 설치의 기준입니다.
+  - `latest` → stable
+  - `beta` → candidate build
+  - `dev` → main snapshot (선택 사항)
+
+## macOS app availability
+
+beta와 dev 빌드에는 macOS 앱 릴리스가 **없을 수도 있습니다.** 이는 정상입니다.
+
+- git tag와 npm dist-tag는 그대로 게시할 수 있습니다.
+- macOS 빌드가 빠졌다면 릴리스 노트나 changelog에 "no macOS build for this beta"라고 명시하세요.

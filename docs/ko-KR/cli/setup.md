@@ -1,8 +1,9 @@
 ---
-summary: "설정 파일 및 워크스페이스 초기화를 위한 `openclaw setup` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw setup` (initialize config + workspace)"
+description: "전체 onboarding wizard 없이 config 파일과 agent workspace를 초기화하는 `openclaw setup` 사용법을 간단히 설명합니다."
 read_when:
-  - 전체 온보딩 마법사 과정을 거치지 않고 초기 환경만 빠르게 구성하고자 할 때
-  - 기본 워크스페이스 저장 경로를 설정하고 싶을 때
+  - 전체 onboarding wizard 없이 초기 설정을 시작할 때
+  - 기본 workspace path를 정하고 싶을 때
 title: "setup"
 x-i18n:
   source_path: "cli/setup.md"
@@ -10,23 +11,21 @@ x-i18n:
 
 # `openclaw setup`
 
-`~/.openclaw/openclaw.json` 설정 파일과 에이전트 워크스페이스 디렉터리를 초기화함.
+`~/.openclaw/openclaw.json`과 agent workspace를 초기화합니다.
 
-**관련 문서:**
-- 시작 가이드: [Getting started](/start/getting-started)
-- 온보딩 마법사 안내: [Onboarding](/start/onboarding)
+Related:
 
-## 사용 예시
+- Getting started: [Getting started](/start/getting-started)
+- Wizard: [Onboarding](/start/onboarding)
+
+## Examples
 
 ```bash
-# 기본 설정으로 초기화 실행
 openclaw setup
-
-# 워크스페이스 경로를 직접 지정하여 초기화
 openclaw setup --workspace ~/.openclaw/workspace
 ```
 
-명령어를 통해 온보딩 마법사를 즉시 실행하려면:
+setup에서 wizard를 실행하려면:
 
 ```bash
 openclaw setup --wizard

@@ -1,42 +1,41 @@
 ---
-summary: "Zalo 봇 연동 상태, 지원 기능 및 세부 설정 가이드"
+summary: "Zalo bot 지원 상태, 기능, 구성 방법"
 read_when:
-  - Zalo 채널 기능을 구현하거나 웹훅 설정을 수정하고자 할 때
+  - Zalo 기능이나 webhook을 작업할 때
 title: "Zalo"
+description: "Zalo plugin 설치, bot token 설정, DM·group access policy, long-polling과 webhook 모드, 지원 기능과 configuration 옵션을 설명합니다."
 x-i18n:
   source_path: "channels/zalo.md"
 ---
 
-# Zalo (봇 API)
+# Zalo (Bot API)
 
-**상태**: 실험적 기능 (Experimental). 개인 대화(DM)를 지원하며, 명시적인 그룹 정책 설정을 통해 그룹 대화 처리도 가능함.
+상태: experimental. DM을 지원하며, 그룹 처리는 명시적인 group policy control과
+함께 사용할 수 있습니다.
 
-## 플러그인 설치 안내
+## Plugin 필요
 
-Zalo 연동 기능은 플러그인 형태로 제공되며 코어 패키지에 포함되어 있지 않음.
+Zalo는 plugin으로 제공되며 core install에 번들되어 있지 않습니다.
 
-**CLI를 통한 설치 (npm):**
-```bash
-openclaw plugins install @openclaw/zalo
-```
+- CLI 설치: `openclaw plugins install @openclaw/zalo`
+- 또는 onboarding 중 **Zalo**를 선택하고 설치 프롬프트를 승인
+- 자세한 내용: [Plugins](/tools/plugin)
 
-**로컬 소스 환경 설치:**
-```bash
-openclaw plugins install ./extensions/zalo
-```
+## 빠른 설정(beginner)
 
-상세 내용은 [플러그인 가이드](/tools/plugin) 참조.
+1. Zalo plugin을 설치합니다.
+   - source checkout: `openclaw plugins install ./extensions/zalo`
+   - npm(게시된 경우): `openclaw plugins install @openclaw/zalo`
+   - 또는 onboarding에서 **Zalo** 선택 후 설치 프롬프트 승인
+2. token 설정:
+   - Env: `ZALO_BOT_TOKEN=...`
+   - 또는 config: `channels.zalo.botToken: "..."`
+3. gateway 재시작(또는 onboarding 완료)
+4. DM access는 기본적으로 pairing입니다. 첫 contact에서 pairing code를
+   승인하세요.
 
-## 빠른 설정 가이드 (초보자용)
+최소 구성:
 
-1. **플러그인 설치**: 위 안내에 따라 Zalo 플러그인을 설치함.
-2. **토큰 설정**:
-   - 환경 변수: `ZALO_BOT_TOKEN` (기본 계정 전용).
-   - 설정 파일: `channels.zalo.botToken` 필드에 입력.
-3. **Gateway 시작**: 설정을 마친 후 서버를 가동하거나 온보딩 과정을 완료함.
-4. **페어링 승인**: DM 접근 정책은 기본적으로 **페어링(Pairing)** 모드임. 봇에게 첫 메시지를 보낸 후 발급된 코드를 승인함.
-
-### 최소 설정 예시
 ```json5
 {
   channels: {
@@ -49,72 +48,181 @@ openclaw plugins install ./extensions/zalo
 }
 ```
 
-## 핵심 동작 방식
+## 이것이 의미하는 것
 
-Zalo는 베트남 시장에 특화된 메시징 앱이며, OpenClaw는 봇 API를 통해 1:1 대화 환경을 구축함.
+Zalo는 베트남 중심 메시징 앱이며, Bot API를 통해 Gateway가 1:1 대화용 bot을
+실행할 수 있습니다. support나 notification처럼 Zalo로 결정론적으로 돌아가야
+하는 흐름에 적합합니다.
 
-- **결정론적 라우팅**: 모든 응답은 메시지가 수신된 원래 Zalo 채팅방으로 정확히 회신됨.
-- **세션 관리**: 개인 대화(DM)는 에이전트의 메인 세션을 공유함.
-- **그룹 지원**: `groupPolicy` 및 `groupAllowFrom` 설정을 통해 그룹 메시지를 수락할 수 있으며, 기본값은 안전을 위해 차단 상태(`allowlist`이나 목록이 비어 있음)임.
+- Gateway가 소유하는 Zalo Bot API 채널
+- 결정론적 라우팅: reply는 Zalo로 돌아가며 모델이 채널을 고르지 않음
+- DM은 agent의 main session을 공유
+- Groups는 policy control(`groupPolicy` + `groupAllowFrom`)과 함께 지원되며,
+  기본값은 fail-closed allowlist 동작
 
-## 설정 상세 가이드
+## 설정(fast path)
 
-### 1. 봇 토큰 생성 (Zalo Bot Platform)
-1. [Zalo Bot Platform](https://bot.zaloplatforms.com)에 접속하여 로그인함.
-2. 새로운 봇을 생성하고 필요한 환경 설정을 마침.
-3. 발급된 **봇 토큰** (형식: `12345689:abc-xyz`)을 복사함.
+### 1) bot token 생성(Zalo Bot Platform)
 
-### 2. 토큰 및 다중 계정 구성
-- **단일 계정**: `ZALO_BOT_TOKEN` 환경 변수 또는 `channels.zalo.botToken` 설정 사용.
-- **다중 계정**: `channels.zalo.accounts` 섹션을 활용하여 계정별 토큰과 이름을 지정함.
+1. [https://bot.zaloplatforms.com](https://bot.zaloplatforms.com)에 가서 로그인
+2. 새 bot을 만들고 설정
+3. bot token 복사(형식: `12345689:abc-xyz`)
 
----
+### 2) token 설정(env 또는 config)
 
-## 접근 제어 정책
+예시:
 
-### 개인 대화 (DM)
-- **기본값**: `"pairing"` 모드. 승인되지 않은 발신자에게는 페어링 코드가 전송되며, 승인 전까지 메시지는 무시됨. (코드는 1시간 동안 유효)
-- **승인 명령어**:
-  ```bash
-  openclaw pairing list zalo
-  openclaw pairing approve zalo <CODE>
-  ```
-- **사용자 식별**: `allowFrom` 목록에는 사용자명을 대신하여 숫자형 사용자 ID를 등록해야 함.
+```json5
+{
+  channels: {
+    zalo: {
+      enabled: true,
+      botToken: "12345689:abc-xyz",
+      dmPolicy: "pairing",
+    },
+  },
+}
+```
 
-### 그룹 대화
-- **정책 (`groupPolicy`)**: `open` (모두 허용), `allowlist` (기본값), `disabled` 중 선택.
-- **발신자 제한**: `groupAllowFrom`에 등록된 ID만 에이전트를 호출할 수 있음. 미설정 시 DM 허용 목록을 상속함.
-- **보안**: `channels.zalo` 설정 섹션이 통째로 누락된 경우에도 시스템은 안전을 위해 `"allowlist"` 정책을 기본 적용함.
+env 옵션: `ZALO_BOT_TOKEN=...` (default account 전용)
 
-## 통신 모드: 롱 폴링 vs 웹훅
+multi-account는 `channels.zalo.accounts`에 계정별 token과 선택적 `name`을
+설정합니다.
 
-- **롱 폴링 (Long polling)**: 기본 동작 방식이며 별도의 공개 URL이 필요 없음.
-- **웹훅 (Webhook) 모드**: `webhookUrl` 및 `webhookSecret` 설정 필요.
-  - **HTTPS 필수**: 웹훅 URL은 반드시 보안 프로토콜을 사용해야 함.
-  - **보안 검증**: `X-Bot-Api-Secret-Token` 헤더를 통해 요청의 유효성을 검증함.
-  - **상호 배타성**: Zalo API 제약상 롱 폴링과 웹훅은 동시에 사용할 수 없음.
+3. gateway 재시작. Zalo는 token이 해결되면(env 또는 config) 시작됩니다.
+4. DM access 기본값은 pairing입니다. bot에 처음 연락하면 code를 승인하세요.
 
-## 지원 메시지 유형
+## 동작 방식
 
-- **텍스트**: 최대 2,000자 단위로 자동 청킹(Chunking)하여 발송함.
-- **이미지**: 수신 이미지 분석 및 `sendPhoto`를 통한 발신 지원.
-- **스티커**: 수신 로그는 기록되나 에이전트의 직접적인 응답은 트리거하지 않음.
+- inbound message는 media placeholder를 포함한 공통 channel envelope로 정규화됨
+- reply는 항상 같은 Zalo chat으로 돌아감
+- 기본은 long-polling, `channels.zalo.webhookUrl`로 webhook 모드 사용 가능
 
-## 지원 기능 요약
+## Limits
 
-| 기능 | 지원 상태 |
-| :--- | :--- |
-| 개인 대화 (DM) | ✅ 지원 |
-| 그룹 대화 | ⚠️ 정책 설정 시 지원 (기본값: 차단) |
-| 이미지 전송 | ✅ 지원 |
-| 리액션 / 스레드 | ❌ 미지원 |
-| 투표 (Polls) | ❌ 미지원 |
-| 네이티브 명령어 | ❌ 미지원 |
-| 실시간 스트리밍 | ⚠️ 텍스트 길이 제한(2000자)으로 인해 차단됨 |
+- outbound text는 2000자(Zalo API 제한) 단위로 chunking
+- media download/upload는 `channels.zalo.mediaMaxMb`(기본 5)로 제한
+- 2000자 제한 때문에 streaming은 기본적으로 차단
 
-## 문제 해결 (Troubleshooting)
+## 접근 제어(DMs)
 
-- **응답 없음**: `openclaw channels status --probe` 명령어로 토큰 유효성을 확인하고, 발신자가 페어링 승인 상태인지 점검함.
-- **웹훅 수신 불가**: URL이 `https`인지, 시크릿 토큰의 길이가 규격(8~256자)에 맞는지 확인함. 또한 롱 폴링 기능이 중단된 상태인지 재점검함.
+### DM access
 
-상세한 설정 옵션은 [Gateway 설정 가이드](/gateway/configuration)를 참조함.
+- 기본값: `channels.zalo.dmPolicy = "pairing"`. 알 수 없는 sender는 pairing
+  code를 받고, 승인 전까지 메시지는 무시됩니다(code는 1시간 후 만료).
+- 승인:
+  - `openclaw pairing list zalo`
+  - `openclaw pairing approve zalo <CODE>`
+- pairing은 기본 token exchange 방식입니다. 자세한 내용:
+  [Pairing](/channels/pairing)
+- `channels.zalo.allowFrom`은 numeric user ID만 받습니다
+  (username lookup 없음).
+
+## 접근 제어(Groups)
+
+- `channels.zalo.groupPolicy`는 group inbound 처리 방식을 제어:
+  `open | allowlist | disabled`
+- 기본 동작은 fail-closed: `allowlist`
+- `channels.zalo.groupAllowFrom`은 group에서 bot을 트리거할 수 있는 sender ID를 제한
+- `groupAllowFrom`이 없으면 sender 검사는 `allowFrom`으로 fallback
+- `groupPolicy: "disabled"`는 모든 group message 차단
+- `groupPolicy: "open"`은 모든 group member를 허용(mention-gated)
+- runtime 참고: `channels.zalo`가 아예 없더라도 안전을 위해
+  `groupPolicy="allowlist"`로 fallback
+
+## Long-polling vs webhook
+
+- 기본값: long-polling (public URL 불필요)
+- webhook 모드: `channels.zalo.webhookUrl`과
+  `channels.zalo.webhookSecret` 설정
+  - webhook secret은 8-256자여야 함
+  - webhook URL은 HTTPS여야 함
+  - Zalo는 `X-Bot-Api-Secret-Token` header로 이벤트를 보냄
+  - Gateway HTTP는 `channels.zalo.webhookPath`에서 webhook request 처리
+    (기본값: webhook URL path)
+  - request는 `Content-Type: application/json`(또는 `+json`)이어야 함
+  - 중복 event(`event_name + message_id`)는 짧은 replay window 안에서 무시
+  - burst traffic은 path/source별로 rate limit되며 HTTP 429를 반환할 수 있음
+
+**참고:** Zalo API 문서 기준으로 getUpdates(polling)와 webhook은 동시에 사용할 수
+없습니다.
+
+## 지원 메시지 타입
+
+- **Text messages:** 2000자 chunking과 함께 완전 지원
+- **Image messages:** inbound image를 다운로드/처리하고 `sendPhoto`로 발신 가능
+- **Stickers:** 로그는 남기지만 agent response는 트리거하지 않음
+- **Unsupported types:** 로그만 남김(예: protected user message)
+
+## Capabilities
+
+| Feature         | Status                                                   |
+| --------------- | -------------------------------------------------------- |
+| Direct messages | Supported                                                |
+| Groups          | Supported with policy controls (allowlist by default)    |
+| Media (images)  | Supported                                                |
+| Reactions       | Not supported                                            |
+| Threads         | Not supported                                            |
+| Polls           | Not supported                                            |
+| Native commands | Not supported                                            |
+| Streaming       | Blocked (2000 char limit)                                |
+
+## Delivery targets (CLI/cron)
+
+- target에는 chat id 사용
+- 예시:
+  `openclaw message send --channel zalo --target 123456789 --message "hi"`
+
+## 문제 해결
+
+**bot이 응답하지 않을 때:**
+
+- token이 유효한지 확인: `openclaw channels status --probe`
+- sender가 승인되었는지 확인(pairing 또는 allowFrom)
+- gateway logs 확인: `openclaw logs --follow`
+
+**webhook이 event를 받지 못할 때:**
+
+- webhook URL이 HTTPS인지 확인
+- secret token이 8-256자인지 확인
+- gateway HTTP endpoint가 설정된 path에서 도달 가능한지 확인
+- getUpdates polling이 동시에 실행 중이 아닌지 확인(서로 배타적)
+
+## Configuration reference (Zalo)
+
+전체 구성: [Configuration](/gateway/configuration)
+
+Provider option:
+
+- `channels.zalo.enabled`: 채널 시작 활성화/비활성화
+- `channels.zalo.botToken`: Zalo Bot Platform의 bot token
+- `channels.zalo.tokenFile`: regular file에서 token 읽기. symlink는 거부
+- `channels.zalo.dmPolicy`: `pairing | allowlist | open | disabled`
+  (기본 pairing)
+- `channels.zalo.allowFrom`: DM allowlist(user IDs). `open`에는 `"*"` 필요.
+  wizard는 numeric ID를 묻습니다.
+- `channels.zalo.groupPolicy`: `open | allowlist | disabled`
+  (기본 allowlist)
+- `channels.zalo.groupAllowFrom`: group sender allowlist(user IDs).
+  비어 있으면 `allowFrom`으로 fallback
+- `channels.zalo.mediaMaxMb`: inbound/outbound media cap(MB, 기본 5)
+- `channels.zalo.webhookUrl`: webhook 모드 활성화(HTTPS 필요)
+- `channels.zalo.webhookSecret`: webhook secret(8-256자)
+- `channels.zalo.webhookPath`: gateway HTTP server의 webhook path
+- `channels.zalo.proxy`: API request용 proxy URL
+
+Multi-account option:
+
+- `channels.zalo.accounts.<id>.botToken`: account별 token
+- `channels.zalo.accounts.<id>.tokenFile`: account별 regular token file
+  (symlink 거부)
+- `channels.zalo.accounts.<id>.name`: 표시 이름
+- `channels.zalo.accounts.<id>.enabled`: account 활성화/비활성화
+- `channels.zalo.accounts.<id>.dmPolicy`: account별 DM policy
+- `channels.zalo.accounts.<id>.allowFrom`: account별 allowlist
+- `channels.zalo.accounts.<id>.groupPolicy`: account별 group policy
+- `channels.zalo.accounts.<id>.groupAllowFrom`: account별 group sender allowlist
+- `channels.zalo.accounts.<id>.webhookUrl`: account별 webhook URL
+- `channels.zalo.accounts.<id>.webhookSecret`: account별 webhook secret
+- `channels.zalo.accounts.<id>.webhookPath`: account별 webhook path
+- `channels.zalo.accounts.<id>.proxy`: account별 proxy URL

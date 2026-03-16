@@ -1,109 +1,118 @@
 ---
-summary: "페어링(Pairing) 개요: DM 발신자 승인 및 신규 노드 기기 연동 방법 안내"
+summary: "페어링 개요: 누가 DM을 보낼 수 있는지와 어떤 노드가 참여할 수 있는지 승인"
 read_when:
-  - DM 접근 제어 정책을 설정하고자 할 때
-  - 새로운 iOS/Android 노드를 페어링할 때
-  - OpenClaw의 전반적인 보안 체계를 검토할 때
+  - DM 접근 제어를 설정할 때
+  - 새 iOS/Android node를 페어링할 때
+  - OpenClaw 보안 구성을 검토할 때
 title: "페어링"
+description: "DM 발신자 승인과 node device 승인을 포함한 OpenClaw의 pairing 절차, 저장 위치, 승인 명령을 설명합니다."
 x-i18n:
   source_path: "channels/pairing.md"
 ---
 
-# 페어링 (Pairing)
+# 페어링
 
-**페어링(Pairing)**은 OpenClaw의 핵심적인 **소유자 명시적 승인** 단계임. 시스템은 다음 두 가지 상황에서 페어링 절차를 요구함:
+"페어링"은 OpenClaw의 명시적인 **owner approval** 단계입니다.
+이 과정은 두 곳에서 사용됩니다.
 
-1. **DM 페어링**: 에이전트와 대화할 수 있는 권한을 특정 사용자에게 부여.
-2. **노드 페어링**: Gateway 네트워크에 참여할 수 있는 기기(노드)를 승인.
+1. **DM pairing** (누가 bot과 대화할 수 있는지)
+2. **Node pairing** (어떤 device/node가 gateway network에 참여할 수 있는지)
 
-상세 보안 모델: [Security](/gateway/security)
+보안 맥락: [Security](/gateway/security)
 
----
+## 1) DM pairing (inbound chat access)
 
-## 1) DM 페어링 (수신 채팅 접근 제어)
+채널의 DM policy가 `pairing`으로 설정되어 있으면, 알 수 없는 sender는 짧은
+code를 받으며 승인 전까지 그 메시지는 **처리되지 않습니다**.
 
-채널의 DM 정책이 `pairing`으로 설정된 경우, 등록되지 않은 새로운 발신자가 메시지를 보내면 8자리의 인증 코드가 전송됨. 사용자가 이 코드를 통해 승인하기 전까지 에이전트는 해당 메시지를 **처리하지 않음**.
+기본 DM policy는 여기 문서화되어 있습니다: [Security](/gateway/security)
 
-채널별 기본 DM 정책은 [보안 가이드](/gateway/security)를 참조함.
+Pairing code:
 
-**인증 코드 규칙:**
-- 구성: 8자리 영문 대문자, 모호한 문자(`0O1I`) 제외.
-- **유효 기간**: 1시간. 새로운 요청이 생성될 때만 코드가 발송됨 (발신자당 약 1시간에 1회 제한).
-- **요청 제한**: 채널당 대기 중인 요청은 최대 **3개**까지만 유지됨. 초과 시 기존 요청이 만료되거나 승인될 때까지 추가 요청은 무시됨.
+- 8자, 대문자, 혼동되는 문자 없음 (`0O1I`).
+- **1시간 후 만료**됩니다. bot은 새 요청이 생성될 때만 pairing message를
+  보냅니다(대략 sender당 시간당 1회).
+- 대기 중인 DM pairing request는 기본적으로 **채널당 3개**로 제한됩니다.
+  하나가 만료되거나 승인되기 전까지 추가 요청은 무시됩니다.
 
-### 발신자 승인 방법
+### 발신자 승인
 
 ```bash
-# Telegram 채널의 대기 목록 확인
 openclaw pairing list telegram
-
-# 특정 코드를 사용하여 승인
 openclaw pairing approve telegram <CODE>
 ```
 
-**지원 채널**: `telegram`, `whatsapp`, `signal`, `imessage`, `discord`, `slack`, `feishu`.
+지원 채널: `telegram`, `whatsapp`, `signal`, `imessage`, `discord`, `slack`, `feishu`.
 
-### 데이터 저장 위치
+### 상태 저장 위치
 
-모든 상태 정보는 `~/.openclaw/credentials/` 디렉터리에 저장됨:
+`~/.openclaw/credentials/` 아래에 저장됩니다.
 
-- **대기 중인 요청**: `<channel>-pairing.json`
-- **승인된 허용 목록**:
-  - 기본 계정: `<channel>-allowFrom.json`
-  - 부계정: `<channel>-<accountId>-allowFrom.json`
+- Pending requests: `<channel>-pairing.json`
+- Approved allowlist store:
+  - Default account: `<channel>-allowFrom.json`
+  - Non-default account: `<channel>-<accountId>-allowFrom.json`
 
-이 파일들은 에이전트에 대한 접근 권한을 직접적으로 제어하므로 보안에 유의해야 함.
+Account 범위 동작:
 
----
+- non-default account는 자신의 scoped allowlist file만 읽고 씁니다.
+- default account는 채널 범위의 unscoped allowlist file을 사용합니다.
 
-## 2) 노드 기기 페어링 (iOS/Android/macOS/헤드리스 노드)
+이 파일들은 assistant 접근을 제어하므로 민감 정보로 취급하세요.
 
-노드(Nodes)는 `role: node`를 가진 **기기**로서 Gateway에 접속함. 보안을 위해 Gateway는 수신된 모든 노드 연결 시도에 대해 페어링 요청을 생성하며, 관리자의 최종 승인이 필요함.
+## 2) Node device pairing (iOS/Android/macOS/headless nodes)
 
-### Telegram을 통한 간편 페어링 (iOS 권장)
+Node는 `role: node`를 가진 **device**로 Gateway에 연결됩니다. Gateway는
+승인이 필요한 device pairing request를 생성합니다.
 
-`device-pair` 플러그인이 활성화된 경우, Telegram 채팅창에서 즉시 페어링을 진행할 수 있음:
+### Telegram으로 pair하기(iOS 권장)
 
-1. Telegram에서 봇에게 `/pair` 메시지를 보냄.
-2. 봇이 안내 문구와 함께 **설정 코드(Setup code)**를 전송함. (복사하기 쉬운 개별 메시지 형태)
-3. 휴대폰의 OpenClaw iOS 앱 실행 → **Settings** → **Gateway** 메뉴 진입.
-4. 전송받은 설정 코드를 붙여넣고 연결(Connect) 클릭.
-5. 다시 Telegram 창으로 돌아와 `/pair approve`를 입력하여 최종 승인.
+`device-pair` plugin을 사용하면 Telegram만으로 처음 device pairing을 진행할 수
+있습니다.
 
-**설정 코드 구성**: Base64 인코딩된 JSON 데이터로, Gateway 주소(`url`)와 수명이 짧은 일회성 토큰(`token`) 정보를 포함함. 유효 기간 동안에는 비밀번호와 동일하게 취급해야 함.
+1. Telegram에서 bot에게 `/pair`를 보냅니다.
+2. bot은 안내 메시지 하나와 별도의 **setup code** 메시지 하나를 답장합니다
+   (Telegram에서 복사/붙여넣기 쉽도록 분리됨).
+3. 휴대폰에서 OpenClaw iOS app → Settings → Gateway를 엽니다.
+4. setup code를 붙여넣고 연결합니다.
+5. 다시 Telegram으로 돌아가 `/pair approve`
 
-### 노드 승인 및 거부 명령어
+setup code는 다음을 포함한 base64 인코딩 JSON payload입니다.
+
+- `url`: Gateway WebSocket URL (`ws://...` 또는 `wss://...`)
+- `token`: 짧게 유지되는 pairing token
+
+유효한 동안 setup code는 비밀번호처럼 취급하세요.
+
+### Node device 승인
 
 ```bash
-# 대기 중인 기기 요청 목록 확인
 openclaw devices list
-
-# 특정 요청 ID 승인
 openclaw devices approve <requestId>
-
-# 특정 요청 ID 거부
 openclaw devices reject <requestId>
 ```
 
-### 노드 페어링 상태 저장소
+### Node pairing 상태 저장
 
-`~/.openclaw/devices/` 디렉터리에서 관리됨:
-- `pending.json`: 대기 중인 일시적 요청 정보.
-- `paired.json`: 승인 완료된 기기 정보 및 토큰 목록.
+`~/.openclaw/devices/` 아래에 저장됩니다.
 
-### 참고 사항
+- `pending.json` (short-lived; pending request는 만료됨)
+- `paired.json` (paired device + token)
 
-- 레거시 `node.pair.*` API (CLI: `openclaw nodes pending/approve`)는 Gateway 자체에서 관리하는 구형 저장소임. 최신 WebSocket 노드는 반드시 `openclaw devices` 명령어를 통한 기기 페어링 과정을 거쳐야 함.
+### 참고
 
-## 관련 문서 목록
+- 레거시 `node.pair.*` API(CLI: `openclaw nodes pending/approve`)는 별도의
+  gateway-owned pairing store입니다. WS node도 여전히 device pairing이 필요합니다.
 
-- **보안 모델 및 프롬프트 주입 방지**: [Security](/gateway/security)
-- **안전한 업데이트 (Doctor 실행)**: [Updating](/install/updating)
-- **채널별 설정 가이드**:
-  - [Telegram](/channels/telegram)
-  - [WhatsApp](/channels/whatsapp)
-  - [Signal](/channels/signal)
-  - [BlueBubbles (iMessage)](/channels/bluebubbles)
-  - [iMessage (레거시)](/channels/imessage)
-  - [Discord](/channels/discord)
-  - [Slack](/channels/slack)
+## 관련 문서
+
+- 보안 모델 + prompt injection: [Security](/gateway/security)
+- 안전한 업데이트(run doctor): [Updating](/install/updating)
+- 채널 설정:
+  - Telegram: [Telegram](/channels/telegram)
+  - WhatsApp: [WhatsApp](/channels/whatsapp)
+  - Signal: [Signal](/channels/signal)
+  - BlueBubbles (iMessage): [BlueBubbles](/channels/bluebubbles)
+  - iMessage (legacy): [iMessage](/channels/imessage)
+  - Discord: [Discord](/channels/discord)
+  - Slack: [Slack](/channels/slack)

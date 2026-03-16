@@ -1,34 +1,35 @@
 ---
-summary: "에이전트, 메시지 봉투(Envelope) 및 시스템 프롬프트의 시간대(Timezone) 처리 가이드"
+summary: "Timezone handling for agents, envelopes, and prompts"
+description: "OpenClaw가 message envelope, tool payload, system prompt에서 timezone을 어떻게 표준화하는지 설명합니다."
 read_when:
-  - 모델에 표시되는 타임스탬프 정규화 방식을 이해하고자 할 때
-  - 시스템 프롬프트용 사용자 시간대를 설정할 때
-title: "시간대 (Timezones)"
+  - 타임스탬프가 모델에 전달될 때 어떻게 정규화되는지 이해해야 할 때
+  - system prompt용 user timezone을 설정해야 할 때
+title: "Timezones"
 x-i18n:
   source_path: "concepts/timezone.md"
 ---
 
-# 시간대 (Timezones)
+# Timezones
 
-OpenClaw는 모델이 **단일 기준 시간**을 참조할 수 있도록 모든 타임스탬프를 표준화하여 처리함.
+OpenClaw는 모델이 **하나의 기준 시간**을 보도록 timestamp를 표준화합니다.
 
-## 메시지 봉투 (Envelope) (기본값: 로컬)
+## Message envelopes (local by default)
 
-수신되는 메시지는 다음과 같은 형식의 봉투(Envelope)로 감싸짐:
+inbound message는 다음과 같은 envelope로 감싸집니다.
 
-```
+```text
 [Provider ... 2026-01-05 16:26 PST] message text
 ```
 
-봉투에 포함되는 타임스탬프는 기본적으로 **호스트 로컬 시간** 기준이며, 분 단위 정밀도를 제공함.
+envelope의 timestamp는 기본적으로 **host local time**이며, 분 단위 정밀도를 가집니다.
 
-다음 설정을 통해 시간대 표시 방식을 변경할 수 있음:
+다음 설정으로 override할 수 있습니다.
 
 ```json5
 {
   agents: {
     defaults: {
-      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA 시간대 이름
+      envelopeTimezone: "local", // "utc" | "local" | "user" | IANA timezone
       envelopeTimestamp: "on", // "on" | "off"
       envelopeElapsed: "on", // "on" | "off"
     },
@@ -36,52 +37,65 @@ OpenClaw는 모델이 **단일 기준 시간**을 참조할 수 있도록 모든
 }
 ```
 
-- `envelopeTimezone: "utc"`: UTC 시간 기준 사용.
-- `envelopeTimezone: "user"`: `agents.defaults.userTimezone` 설정값 사용 (설정되지 않은 경우 호스트 시간대로 대체).
-- 고정 시간대 지정: IANA 시간대 이름(예: `"Asia/Seoul"`)을 직접 사용하여 고정된 오프셋 적용 가능.
-- `envelopeTimestamp: "off"`: 헤더에서 절대 타임스탬프 정보 제거.
-- `envelopeElapsed: "off"`: 경과 시간 접미사(`+2m` 형식) 제거.
+- `envelopeTimezone: "utc"`는 UTC를 사용합니다
+- `envelopeTimezone: "user"`는 `agents.defaults.userTimezone`을 사용하며,
+  없으면 host timezone으로 fallback합니다
+- `"Europe/Vienna"` 같은 명시적 IANA timezone을 쓰면 고정 timezone을 사용할 수
+  있습니다
+- `envelopeTimestamp: "off"`는 envelope header에서 absolute timestamp를 제거합니다
+- `envelopeElapsed: "off"`는 `+2m` 같은 elapsed suffix를 제거합니다
 
-### 표시 예시
+### Examples
 
-**로컬 시간 (기본값):**
-```
+**Local (default):**
+
+```text
 [Signal Alice +1555 2026-01-18 00:19 PST] hello
 ```
 
-**고정 시간대:**
-```
+**Fixed timezone:**
+
+```text
 [Signal Alice +1555 2026-01-18 06:19 GMT+1] hello
 ```
 
-**경과 시간 표시:**
-```
+**Elapsed time:**
+
+```text
 [Signal Alice +1555 +2m 2026-01-18T05:19Z] follow-up
 ```
 
-## 도구 페이로드 (공급자 원본 + 정규화 필드)
+## Tool payloads (raw provider data + normalized fields)
 
-메시지 읽기 도구(`channels.slack.readMessages` 등)는 **공급자 원본 타임스탬프**를 그대로 반환함. 데이터 일관성을 위해 시스템은 다음과 같은 정규화된 필드를 함께 제공함:
+tool call
+(`channels.discord.readMessages`, `channels.slack.readMessages` 등)은 **raw provider
+timestamp**를 반환합니다. 동시에 일관성을 위해 아래 normalized field도 함께 붙습니다.
 
-- `timestampMs`: UTC 기준 Epoch Milliseconds.
-- `timestampUtc`: ISO 8601 UTC 문자열.
+- `timestampMs`
+  (UTC epoch milliseconds)
+- `timestampUtc`
+  (ISO 8601 UTC string)
 
-원본 필드는 정보 유실 방지를 위해 그대로 유지됨.
+raw provider field는 그대로 보존됩니다.
 
-## 시스템 프롬프트용 사용자 시간대 설정
+## User timezone for the system prompt
 
-`agents.defaults.userTimezone` 설정을 통해 에이전트에게 사용자의 현재 로컬 시간대를 알려줄 수 있음. 설정되지 않은 경우 OpenClaw는 실행 시점의 **호스트 시간대**를 자동으로 해석함.
+`agents.defaults.userTimezone`을 설정하면 모델에 user의 local timezone을 알려줄 수
+있습니다. 설정하지 않으면 OpenClaw는 runtime에 **host timezone**을 해석해 사용합니다.
+(config file을 직접 쓰지는 않음)
 
 ```json5
 {
-  agents: { defaults: { userTimezone: "Asia/Seoul" } },
+  agents: { defaults: { userTimezone: "America/Chicago" } },
 }
 ```
 
-시스템 프롬프트 주입 항목:
-- **`Current Date & Time`** 섹션: 사용자의 현재 날짜, 시각 및 시간대 정보.
-- **`Time format`**: `12-hour` 또는 `24-hour` 표기 방식 정보.
+system prompt에는 다음이 포함됩니다.
 
-프롬프트 내 시간 표기 방식은 `agents.defaults.timeFormat` (`auto` | `12` | `24`) 설정을 통해 제어 가능함.
+- local time과 timezone을 담은 `Current Date & Time` section
+- `Time format: 12-hour` 또는 `24-hour`
 
-상세 동작 원리 및 추가 예시는 [날짜 및 시간 가이드](/date-time) 참조.
+prompt format은 `agents.defaults.timeFormat`
+(`auto` | `12` | `24`)으로 제어할 수 있습니다.
+
+전체 동작과 예시는 [Date & Time](/date-time) 문서를 참고하세요.

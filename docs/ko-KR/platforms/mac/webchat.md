@@ -1,43 +1,41 @@
 ---
-summary: "mac 앱이 gateway WebChat을 임베드하는 방식과 디버그 방법"
+summary: "macOS app이 gateway WebChat을 임베드하는 방식과 디버깅 포인트를 설명합니다."
+description: "macOS menu bar app에서 WebChat이 어떤 session과 data plane을 사용하고, remote mode에서 어떻게 SSH tunnel을 거치는지 정리합니다."
 read_when:
-  - mac WebChat 뷰 또는 루프백 포트를 디버깅할 때
+  - mac WebChat view 또는 loopback port를 디버깅할 때
 title: "WebChat"
+x-i18n:
+  source_path: "platforms/mac/webchat.md"
 ---
 
-# WebChat (macOS 앱)
+# WebChat (macOS app)
 
-macOS 메뉴 막대 앱은 WebChat UI를 네이티브 SwiftUI 뷰로 임베드합니다. 이
-뷰는 Gateway에 연결되며, 선택한 에이전트의 **메인 세션**을 기본값으로
-사용합니다(다른 세션을 위한 세션 전환기 포함).
+macOS menu bar app은 WebChat UI를 native SwiftUI view로 임베드합니다. 이 view는 Gateway에 연결되며, 선택한 agent의 **main session**을 기본값으로 사용합니다. 다른 session으로 바꾸는 session switcher도 함께 제공합니다.
 
-- **로컬 모드**: 로컬 Gateway WebSocket에 직접 연결합니다.
-- **원격 모드**: SSH를 통해 Gateway 제어 포트를 포워딩하고 그 터널을 데이터
-  플레인으로 사용합니다.
+- **Local mode**: local Gateway WebSocket에 직접 연결합니다.
+- **Remote mode**: SSH로 Gateway control port를 forward하고, 그 tunnel을 data plane으로 사용합니다.
 
 ## Launch & debugging
 
-- 수동: Lobster 메뉴 → “Open Chat”.
+- 수동 실행: Lobster menu -> `"Open Chat"`
 - 테스트용 자동 열기:
 
   ```bash
   dist/OpenClaw.app/Contents/MacOS/OpenClaw --webchat
   ```
 
-- 로그: `./scripts/clawlog.sh` (subsystem `ai.openclaw`, category `WebChatSwiftUI`).
+- log 확인: `./scripts/clawlog.sh` (subsystem `ai.openclaw`, category `WebChatSwiftUI`)
 
 ## How it’s wired
 
-- 데이터 플레인: Gateway WS 메서드 `chat.history`, `chat.send`, `chat.abort`,
-  `chat.inject` 및 이벤트 `chat`, `agent`, `presence`, `tick`, `health`.
-- 세션: 기본적으로 기본 세션(`main`, 또는 범위가 전역일 때는 `global`)을
-  사용합니다. UI에서 세션 간 전환이 가능합니다.
-- 온보딩은 전용 세션을 사용하여 첫 실행 설정을 분리해 둡니다.
+- data plane: Gateway WS method `chat.history`, `chat.send`, `chat.abort`, `chat.inject`와 event `chat`, `agent`, `presence`, `tick`, `health`
+- session: 기본값은 primary session(`main`, scope가 global이면 `global`)이며 UI에서 session 전환 가능
+- onboarding은 first-run setup을 분리하기 위해 dedicated session을 사용
 
 ## Security surface
 
-- 원격 모드는 SSH를 통해 Gateway WebSocket 제어 포트만 포워딩합니다.
+- remote mode는 SSH를 통해 Gateway WebSocket control port만 forward합니다.
 
 ## Known limitations
 
-- UI는 채팅 세션에 최적화되어 있습니다(완전한 브라우저 샌드박스는 아님).
+- UI는 chat session에 최적화되어 있으며, full browser sandbox는 아닙니다.

@@ -1,127 +1,174 @@
 ---
-summary: "IDE 연동을 위한 OpenClaw ACP 브리지 실행 가이드"
+summary: "Run the ACP bridge for IDE integrations"
+description: "OpenClaw Gateway와 연결되는 ACP bridge를 실행하는 방법, session mapping, `acpx`·Zed 연동, 보안 옵션과 flag 사용법을 정리합니다."
 read_when:
-  - ACP 기반의 IDE 통합 환경을 구축할 때
-  - ACP 세션의 Gateway 라우팅 문제를 디버깅할 때
+  - ACP 기반 IDE integration을 설정할 때
+  - ACP session routing을 Gateway로 디버깅할 때
 title: "acp"
 x-i18n:
   source_path: "cli/acp.md"
 ---
 
-# `acp`
+# acp
 
-OpenClaw Gateway와 통신하는 [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) 브리지를 실행함.
+OpenClaw Gateway와 통신하는 [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) bridge를 실행합니다.
 
-이 명령어는 IDE를 위해 표준 입출력(stdio)을 통해 ACP 프로토콜로 대화하고, 수신된 프롬프트를 WebSocket을 통해 Gateway로 전달함. ACP 세션은 Gateway의 세션 키와 일대일로 매핑되어 유지됨.
+이 명령은 IDE를 위해 stdio 위에서 ACP를 말하고, prompt는 WebSocket을 통해 Gateway로 전달합니다. ACP session은 Gateway session key와 매핑된 상태로 유지됩니다.
 
-`openclaw acp`는 Gateway 기반의 **브리지** 역할에 충실하며, 자체적인 편집기 런타임을 포함하지 않음. 세션 라우팅, 프롬프트 전달, 그리고 기본적인 스트리밍 업데이트 기능에 집중함.
+`openclaw acp`는 full ACP-native editor runtime이 아니라, Gateway-backed ACP bridge입니다. 핵심은 session routing, prompt delivery, 기본적인 streaming update에 있습니다.
 
-## 호환성 매트릭스 (Compatibility Matrix)
+## Compatibility Matrix
 
-| 구분 | 상태 | 비고 |
-| :--- | :--- | :--- |
-| `initialize`, `newSession`, `prompt`, `cancel` | **구현됨** | stdio 기반의 핵심 브리지 흐름. Gateway의 chat/send 및 중단(Abort) 기능과 연동됨. |
-| `listSessions`, 슬래시 명령어 | **구현됨** | Gateway 세션 상태를 기반으로 목록 제공. `available_commands_update`를 통해 명령어 광고. |
-| `loadSession` | **부분 지원** | ACP 세션을 특정 Gateway 세션 키에 다시 바인딩하고 텍스트 이력을 재생함. 도구/시스템 이력은 아직 복구되지 않음. |
-| 프롬프트 콘텐츠 (텍스트, 리소스, 이미지) | **부분 지원** | 텍스트와 리소스는 채팅 입력으로 평탄화되며, 이미지는 Gateway 첨부 파일로 처리됨. |
-| 세션 모드 (Session modes) | **부분 지원** | `session/set_mode`를 통해 사고 수준, 도구 상세도, 추론 가시성, 사용량 정보, 권한 상승 등 제어 가능. |
-| 세션 정보 및 사용량 업데이트 | **부분 지원** | 캐시된 세션 스냅샷을 기반으로 알림 전송. 사용량 정보는 근사치이며 토큰 정보 갱신 시에만 전송됨. |
-| 도구 스트리밍 | **부분 지원** | 도구 호출 시 I/O, 텍스트 내용, 파일 위치 정보를 포함함. 임베디드 터미널이나 정교한 Diff 출력은 미지원. |
-| 세션별 MCP 서버 (`mcpServers`) | **미지원** | 세션 단위의 MCP 요청은 거부됨. MCP 설정은 Gateway 또는 에이전트 레벨에서 구성해야 함. |
-| 클라이언트 파일 시스템 메서드 | **미지원** | 브리지가 클라이언트의 `fs/*` 메서드를 직접 호출하지 않음. |
-| 클라이언트 터미널 메서드 | **미지원** | ACP 클라이언트 터미널 생성이나 도구 호출을 통한 터미널 ID 스트리밍을 지원하지 않음. |
-| 세션 계획 및 사고 과정 스트리밍 | **미지원** | 현재 출력 텍스트와 도구 상태만 전송하며, ACP 전용 계획(Plan)이나 사고 업데이트는 내보내지 않음. |
+| ACP area                                                              | Status      | Notes                                                                                                                                                                                                                                            |
+| --------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `initialize`, `newSession`, `prompt`, `cancel`                        | Implemented | stdio 위의 core bridge flow와 Gateway chat/send + abort를 구현함.                                                                                                                                                                                |
+| `listSessions`, slash commands                                        | Implemented | session list는 Gateway session state를 기준으로 동작하며, command는 `available_commands_update`로 광고됨.                                                                                                                                      |
+| `loadSession`                                                         | Partial     | ACP session을 Gateway session key에 다시 바인딩하고 저장된 user/assistant text history를 재생함. tool/system history는 아직 복원하지 않음.                                                                                                   |
+| Prompt content (`text`, embedded `resource`, images)                  | Partial     | text/resource는 chat input으로 평탄화되고, image는 Gateway attachment로 변환됨.                                                                                                                                                                 |
+| Session modes                                                         | Partial     | `session/set_mode`는 지원되며, bridge는 thought level, tool verbosity, reasoning, usage detail, elevated actions용 Gateway-backed session control을 노출함. 더 넓은 ACP-native mode/config surface는 아직 범위 밖.                          |
+| Session info and usage updates                                        | Partial     | bridge는 cached Gateway session snapshot에서 `session_info_update`와 best-effort `usage_update` notification을 보냄. usage는 근사치이며, Gateway token total이 fresh로 표시될 때만 전송됨.                                                   |
+| Tool streaming                                                        | Partial     | `tool_call` / `tool_call_update` event는 raw I/O, text content, 그리고 Gateway tool arg/result에 file location이 드러날 경우 best-effort file location을 포함함. embedded terminal이나 richer diff-native output은 아직 노출되지 않음.        |
+| Per-session MCP servers (`mcpServers`)                                | Unsupported | bridge mode는 per-session MCP server request를 거부함. MCP는 OpenClaw gateway 또는 agent 쪽에 구성해야 함.                                                                                                                                      |
+| Client filesystem methods (`fs/read_text_file`, `fs/write_text_file`) | Unsupported | bridge는 ACP client filesystem method를 호출하지 않음.                                                                                                                                                                                           |
+| Client terminal methods (`terminal/*`)                                | Unsupported | bridge는 ACP client terminal을 만들지 않으며, tool call을 통해 terminal id도 스트리밍하지 않음.                                                                                                                                                 |
+| Session plans / thought streaming                                     | Unsupported | bridge는 현재 output text와 tool status만 내보내며, ACP plan/thought update는 내보내지 않음.                                                                                                                                                    |
 
-## 알려진 제한 사항
+## Known Limitations
 
-- `loadSession` 실행 시 사용자 및 어시스턴트의 텍스트 이력은 복구되나, 과거의 도구 호출 기록이나 시스템 알림 등은 재구성되지 않음.
-- 여러 ACP 클라이언트가 동일한 Gateway 세션 키를 공유할 경우, 이벤트 라우팅 및 중단 처리가 클라이언트별로 엄격히 분리되지 않을 수 있음. 깨끗한 편집기 환경을 원한다면 기본값인 격리된 `acp:<uuid>` 세션 사용을 권장함.
-- Gateway의 중단 상태는 ACP 정지 사유(Stop reason)로 변환되지만, 네이티브 런타임에 비해 표현력이 제한적일 수 있음.
-- 현재 지원되는 세션 제어 항목은 사고 수준, 도구 상세도, 추론 가시성, 사용량 정보 등으로 제한적임. 모델 선택이나 실행 호스트 제어 기능은 아직 노출되지 않음.
+- `loadSession`은 저장된 user/assistant text history만 재생합니다. 과거 tool call, system notice, richer ACP-native event는 복원하지 않습니다.
+- 여러 ACP client가 같은 Gateway session key를 공유하면 event 및 cancel routing은 strict isolation이 아니라 best-effort입니다. editor-local turn이 깔끔해야 하면 기본값인 isolated `acp:<uuid>` session을 사용하세요.
+- Gateway stop state는 ACP stop reason으로 번역되지만, fully ACP-native runtime만큼 표현력 있지는 않습니다.
+- 현재 session control은 Gateway knob 일부만 노출합니다. thought level, tool verbosity, reasoning, usage detail, elevated actions만 제공하며 model selection과 exec-host control은 아직 ACP config option으로 노출되지 않습니다.
+- `session_info_update`와 `usage_update`는 live ACP-native runtime accounting이 아니라 Gateway session snapshot에서 파생됩니다. usage는 근사치이며 cost data가 없고, Gateway가 total token data를 fresh로 표시할 때만 전송됩니다.
+- tool follow-along data는 best-effort입니다. 알려진 tool arg/result 안의 file path는 surface할 수 있지만, ACP terminal이나 structured file diff는 아직 내보내지 않습니다.
 
-## 사용법
+## Usage
 
 ```bash
-# 기본 실행
 openclaw acp
 
-# 원격 Gateway 연결
+# Remote Gateway
 openclaw acp --url wss://gateway-host:18789 --token <token>
 
-# 파일로부터 토큰 읽기 (권장)
+# Remote Gateway (token from file)
 openclaw acp --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
 
-# 기존 특정 세션 키에 연결
+# Attach to an existing session key
 openclaw acp --session agent:main:main
 
-# 라벨을 사용해 기존 세션 연결
-openclaw acp --session-label "업무용 보관함"
+# Attach by label (must already exist)
+openclaw acp --session-label "support inbox"
 
-# 첫 프롬프트 전 세션 키 초기화
+# Reset the session key before the first prompt
 openclaw acp --session agent:main:main --reset-session
 ```
 
-## ACP 클라이언트 (디버깅용)
+## ACP client (debug)
 
-IDE 없이 브리지의 동작을 수동으로 점검하고 싶을 때 사용함. 대화형 셸을 통해 직접 프롬프트를 입력할 수 있음.
+IDE 없이 bridge를 sanity-check하려면 built-in ACP client를 사용하세요.
+이 명령은 ACP bridge를 spawn하고 prompt를 interactive하게 입력할 수 있게 해줍니다.
 
 ```bash
 openclaw acp client
 
-# 원격 서버를 대상으로 브리지 실행 및 테스트
+# Point the spawned bridge at a remote Gateway
 openclaw acp client --server-args --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
+
+# Override the server command (default: openclaw)
+openclaw acp client --server "node" --server-args openclaw.mjs acp --url ws://127.0.0.1:19001
 ```
 
-**권한 모델 (디버그 모드):**
-- 신뢰할 수 있는 핵심 도구(Core tools)에 대해서만 자동 승인이 적용됨.
-- `read` 도구의 자동 승인 범위는 현재 작업 디렉터리(`--cwd`) 내로 한정됨.
-- 위험한 도구나 범위를 벗어난 읽기 작업은 항상 사용자에게 명시적인 승인 프롬프트를 표시함.
+Permission model (client debug mode):
 
-## 설정 가이드
+- auto-approval은 allowlist 기반이며 trusted core tool ID에만 적용됩니다.
+- `read` auto-approval은 현재 working directory 범위로 제한됩니다. (`--cwd`를 쓴 경우)
+- unknown/non-core tool, 범위를 벗어난 read, dangerous tool은 항상 명시적 승인 prompt가 필요합니다.
+- server가 제공하는 `toolCall.kind`는 untrusted metadata로 취급되며, authorization source로 쓰지 않습니다.
 
-IDE(또는 ACP를 지원하는 다른 클라이언트)에서 OpenClaw 에이전트를 제어하고자 할 때 사용함.
+## How to use this
 
-1. Gateway가 정상 실행 중인지 확인함 (로컬 또는 원격).
-2. 접속 정보를 구성함 (설정 파일 또는 플래그).
-3. IDE 설정에서 `openclaw acp` 명령어를 표준 입출력 브리지로 지정함.
+IDE 또는 다른 client가 Agent Client Protocol을 말하고, 그 client가 OpenClaw Gateway session을 구동하길 원할 때 ACP를 사용합니다.
 
-**설정 저장 예시:**
+1. Gateway가 실행 중인지 확인합니다. (local 또는 remote)
+2. Gateway target을 config 또는 flag로 지정합니다.
+3. IDE가 stdio 위에서 `openclaw acp`를 실행하도록 연결합니다.
+
+Example config (persisted):
+
 ```bash
 openclaw config set gateway.remote.url wss://gateway-host:18789
 openclaw config set gateway.remote.token <token>
 ```
 
-## 에이전트 선택 방법
+Example direct run (no config write):
 
-ACP는 에이전트를 직접 선택하는 대신 **Gateway 세션 키**를 기반으로 라우팅함. 특정 에이전트를 대상으로 하려면 해당 에이전트 범위의 세션 키를 지정함:
+```bash
+openclaw acp --url wss://gateway-host:18789 --token <token>
+# preferred for local process safety
+openclaw acp --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
+```
+
+## Selecting agents
+
+ACP는 agent를 직접 선택하지 않습니다. routing 단위는 Gateway session key입니다.
+
+특정 agent를 타기팅하려면 agent-scoped session key를 사용하세요.
 
 ```bash
 openclaw acp --session agent:main:main
 openclaw acp --session agent:design:main
+openclaw acp --session agent:qa:bug-123
 ```
 
-## 타 클라이언트 연동 (acpx)
+각 ACP session은 하나의 Gateway session key에 매핑됩니다. 하나의 agent는 여러 session을 가질 수 있으며, ACP는 기본적으로 key나 label을 override하지 않는 한 isolated `acp:<uuid>` session을 사용합니다.
 
-Claude Code나 Codex와 같은 코딩 에이전트가 OpenClaw와 통신하게 하려면 `acpx` 도구의 `openclaw` 타겟을 활용함.
+per-session `mcpServers`는 bridge mode에서 지원되지 않습니다. ACP client가 `newSession` 또는 `loadSession`에서 이를 보내면, bridge는 조용히 무시하지 않고 명확한 error를 반환합니다.
 
-**연동 흐름:**
-1. Gateway 실행 및 브리지 접속 가능 여부 확인.
-2. `acpx openclaw`가 `openclaw acp`를 바라보도록 설정.
-3. 대상 OpenClaw 세션 키 지정.
+## Use from `acpx` (Codex, Claude, other ACP clients)
 
-**사용 예시:**
+Codex나 Claude Code처럼 coding agent가 ACP를 통해 OpenClaw bot과 대화하도록 하려면, `acpx`의 built-in `openclaw` target을 사용하세요.
+
+Typical flow:
+
+1. Gateway를 실행하고 ACP bridge가 여기에 도달할 수 있는지 확인합니다.
+2. `acpx openclaw`가 `openclaw acp`를 가리키도록 합니다.
+3. coding agent가 사용할 OpenClaw session key를 지정합니다.
+
+Examples:
+
 ```bash
-# 일회성 상태 요약 요청
-acpx openclaw exec "현재 세션 상태 요약해줘."
+# One-shot request into your default OpenClaw ACP session
+acpx openclaw exec "Summarize the active OpenClaw session state."
 
-# 명명된 세션을 통한 지속적인 대화
+# Persistent named session for follow-up turns
 acpx openclaw sessions ensure --name codex-bridge
-acpx openclaw -s codex-bridge --cwd /path/to/repo "이 프로젝트 맥락에서 질문할게."
+acpx openclaw -s codex-bridge --cwd /path/to/repo \
+  "Ask my OpenClaw work agent for recent context relevant to this repo."
 ```
 
-## Zed 에디터 설정
+`acpx openclaw`이 항상 특정 Gateway와 session key를 사용하게 하려면 `~/.acpx/config.json`의 `openclaw` agent command를 override하세요.
 
-`~/.config/zed/settings.json` 파일에 커스텀 에이전트로 등록함:
+```json
+{
+  "agents": {
+    "openclaw": {
+      "command": "env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 openclaw acp --url ws://127.0.0.1:18789 --token-file ~/.openclaw/gateway.token --session agent:main:main"
+    }
+  }
+}
+```
+
+repo-local OpenClaw checkout에서는 ACP stream이 깨끗하게 유지되도록 dev runner가 아니라 direct CLI entrypoint를 사용하세요.
+
+```bash
+env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 node openclaw.mjs acp ...
+```
+
+이 방식이 Codex, Claude Code, 기타 ACP-aware client가 terminal scraping 없이 OpenClaw agent에서 contextual information을 가져오게 하는 가장 쉬운 방법입니다.
+
+## Zed editor setup
+
+`~/.config/zed/settings.json`에 custom ACP agent를 추가합니다. (또는 Zed Settings UI 사용)
 
 ```json
 {
@@ -129,31 +176,90 @@ acpx openclaw -s codex-bridge --cwd /path/to/repo "이 프로젝트 맥락에서
     "OpenClaw ACP": {
       "type": "custom",
       "command": "openclaw",
-      "args": ["acp"]
+      "args": ["acp"],
+      "env": {}
     }
   }
 }
 ```
 
-## 세션 매핑 (Mapping)
+특정 Gateway나 agent를 타기팅하려면:
 
-- 기본적으로 `acp:` 접두사가 붙은 독립된 세션 키가 할당됨.
-- **`--session <key>`**: 명시적인 세션 키 지정.
-- **`--session-label <label>`**: 라벨을 통한 기존 세션 조회.
-- **`--reset-session`**: 동일 키를 유지하되 대화 이력을 새로 시작하여 새 세션 ID를 발급받음.
+```json
+{
+  "agent_servers": {
+    "OpenClaw ACP": {
+      "type": "custom",
+      "command": "openclaw",
+      "args": [
+        "acp",
+        "--url",
+        "wss://gateway-host:18789",
+        "--token",
+        "<token>",
+        "--session",
+        "agent:design:main"
+      ],
+      "env": {}
+    }
+  }
+}
+```
 
-상세 내용은 [세션 관리 가이드](/concepts/session) 참조.
+Zed에서는 Agent panel을 열고 “OpenClaw ACP”를 선택해 thread를 시작하면 됩니다.
 
-## 주요 옵션 레퍼런스
+## Session mapping
 
-- `--url <url>`: Gateway WebSocket 주소.
-- `--token <token>` / `--token-file <path>`: Gateway 인증 토큰 정보.
-- `--password <password>` / `--password-file <path>`: Gateway 인증 비밀번호 정보.
-- `--session <key>`: 기본으로 사용할 세션 키.
-- `--require-existing`: 세션이 존재하지 않을 경우 실행 실패 처리.
-- `--reset-session`: 시작 전 세션 초기화 수행.
-- `--verbose, -v`: 상세 로그 출력.
+기본적으로 ACP session은 `acp:` prefix가 붙은 isolated Gateway session key를 받습니다.
+이미 아는 session을 재사용하려면 session key 또는 label을 넘기세요.
 
-<Warning>
-**보안 주의**: `--token` 및 `--password` 플래그는 시스템의 프로세스 목록에서 평문으로 노출될 수 있음. 가급적 파일(`-file`) 옵션이나 환경 변수(`OPENCLAW_GATEWAY_TOKEN` 등) 사용을 권장함.
-</Warning>
+- `--session <key>`: 특정 Gateway session key 사용
+- `--session-label <label>`: 기존 session을 label로 resolve
+- `--reset-session`: 첫 prompt 전에 해당 key의 새 session id를 발급
+
+ACP client가 metadata를 지원하면 session별 override도 가능합니다.
+
+```json
+{
+  "_meta": {
+    "sessionKey": "agent:main:main",
+    "sessionLabel": "support inbox",
+    "resetSession": true
+  }
+}
+```
+
+session key에 대한 자세한 내용은 [/concepts/session](/concepts/session)을 참고하세요.
+
+## Options
+
+- `--url <url>`: Gateway WebSocket URL (`gateway.remote.url`이 설정되어 있으면 기본값으로 사용)
+- `--token <token>`: Gateway auth token
+- `--token-file <path>`: file에서 Gateway auth token 읽기
+- `--password <password>`: Gateway auth password
+- `--password-file <path>`: file에서 Gateway auth password 읽기
+- `--session <key>`: 기본 session key
+- `--session-label <label>`: resolve할 기본 session label
+- `--require-existing`: session key/label이 없으면 실패
+- `--reset-session`: 첫 사용 전에 session key 초기화
+- `--no-prefix-cwd`: prompt 앞에 working directory를 붙이지 않음
+- `--verbose, -v`: verbose log를 stderr로 출력
+
+Security note:
+
+- 일부 시스템에서는 `--token`과 `--password`가 local process listing에 노출될 수 있습니다.
+- `--token-file`/`--password-file` 또는 env var (`OPENCLAW_GATEWAY_TOKEN`, `OPENCLAW_GATEWAY_PASSWORD`) 사용을 권장합니다.
+- Gateway auth resolution은 다른 Gateway client와 같은 공통 규약을 따릅니다.
+  - local mode: env (`OPENCLAW_GATEWAY_*`) -> `gateway.auth.*` -> `gateway.remote.*` fallback. 단, `gateway.auth.*`가 unset일 때만 fallback. configured-but-unresolved local SecretRef는 fail closed
+  - remote mode: `gateway.remote.*`를 사용하고, remote precedence rule에 따라 env/config fallback
+  - `--url`은 override-safe이며 implicit config/env credential을 재사용하지 않습니다. `--token`/`--password` 또는 file variant를 명시적으로 넘기세요.
+- ACP runtime backend child process에는 `OPENCLAW_SHELL=acp`가 주입됩니다. context-specific shell/profile rule에 활용할 수 있습니다.
+- `openclaw acp client`는 spawned bridge process에 `OPENCLAW_SHELL=acp-client`를 설정합니다.
+
+### `acp client` options
+
+- `--cwd <dir>`: ACP session의 working directory
+- `--server <command>`: ACP server command (default: `openclaw`)
+- `--server-args <args...>`: ACP server에 전달할 extra argument
+- `--server-verbose`: ACP server에서 verbose logging 활성화
+- `--verbose, -v`: verbose client logging

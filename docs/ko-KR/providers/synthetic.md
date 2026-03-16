@@ -1,15 +1,16 @@
 ---
 summary: "OpenClaw 에서 Synthetic 의 Anthropic 호환 API 사용하기"
+description: "OpenClaw 에서 Synthetic 의 Anthropic 호환 API 사용하기"
 read_when:
-  - Synthetic 를 모델 provider 로 사용하고 싶을 때
-  - Synthetic API key 또는 base URL 설정이 필요할 때
+  - Synthetic 를 모델 프로바이더 로 사용하고 싶을 때
+  - Synthetic API 키 또는 base URL 설정이 필요할 때
 title: "Synthetic"
 ---
 
 # Synthetic
 
 Synthetic 는 Anthropic-compatible endpoint 를 노출합니다. OpenClaw 는 이를
-`synthetic` provider 로 등록하고 Anthropic Messages API 를 사용합니다.
+`synthetic` 프로바이더 로 등록하고 Anthropic Messages API 를 사용합니다.
 
 ## 빠른 설정
 
@@ -64,7 +65,7 @@ synthetic/hf:MiniMaxAI/MiniMax-M2.5
 메모: OpenClaw 의 Anthropic client 는 base URL 뒤에 `/v1` 을 붙이므로
 `https://api.synthetic.new/anthropic` 를 사용하세요(`/anthropic/v1` 아님). Synthetic 가 base URL 을 바꾸면 `models.providers.synthetic.baseUrl` 로 재정의하세요.
 
-## Model catalog
+## 모델 카탈로그
 
 아래 모든 모델은 cost `0` (input/output/cache) 를 사용합니다.
 
@@ -92,6 +93,6 @@ synthetic/hf:MiniMaxAI/MiniMax-M2.5
 
 ## 메모
 
-- model ref 는 `synthetic/<modelId>` 형식을 사용합니다.
+- 모델 ref 는 `synthetic/<modelId>` 형식을 사용합니다.
 - 모델 allowlist(`agents.defaults.models`)를 활성화했다면, 사용할 모든 모델을 추가하세요.
-- provider 규칙은 [Model providers](/concepts/model-providers) 를 참고하세요.
+- 프로바이더 규칙은 [Model Providers](/concepts/model-providers) 를 참고하세요.

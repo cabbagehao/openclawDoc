@@ -1,8 +1,9 @@
 ---
-summary: "커뮤니티 플러그인: 품질 기준, 호스팅 요건, PR 제출 경로"
+summary: "커뮤니티 플러그인을 문서에 등재할 때 필요한 기준과 제출 방식을 설명합니다."
+description: "OpenClaw community plugin을 docs 목록에 추가하려면 어떤 품질 기준과 제출 형식을 따라야 하는지 안내합니다."
 read_when:
-  - 서드파티 OpenClaw 플러그인을 공개하고 싶을 때
-  - 문서 목록에 실을 플러그인을 제안하고 싶을 때
+  - 서드파티 OpenClaw plugin을 공개하고 싶을 때
+  - 문서 목록에 실을 plugin을 제안하고 싶을 때
 title: "커뮤니티 플러그인"
 x-i18n:
   source_path: "plugins/community.md"
@@ -10,22 +11,22 @@ x-i18n:
 
 # 커뮤니티 플러그인
 
-이 페이지는 OpenClaw용 **커뮤니티 유지보수 플러그인** 중 품질이 높은 항목을 추적합니다.
+이 페이지는 OpenClaw용 **community-maintained plugin** 중 품질이 높은 항목을 추적합니다.
 
-아래 품질 기준을 만족하는 커뮤니티 플러그인을 이 페이지에 추가하는 PR을 받습니다.
+아래 품질 기준을 만족하는 community plugin을 이 페이지에 추가하는 PR을 받습니다.
 
 ## 목록 등재 요건
 
-- 플러그인 패키지가 npmjs에 게시되어 있어야 함(`openclaw plugins install <npm-spec>`로 설치 가능)
+- plugin package가 npmjs에 게시되어 있어야 함(`openclaw plugins install <npm-spec>`로 설치 가능)
 - 소스 코드가 GitHub의 공개 저장소에 있어야 함
 - 저장소에 설정/사용 문서와 이슈 트래커가 포함되어 있어야 함
-- 플러그인에 명확한 유지보수 신호가 있어야 함(활성 maintainer, 최근 업데이트, 또는 이슈 대응)
+- plugin에 명확한 유지보수 신호가 있어야 함(active maintainer, 최근 update, 또는 issue 대응)
 
 ## 제출 방법
 
-다음 정보를 포함해 이 페이지에 플러그인을 추가하는 PR을 열어 주세요.
+다음 정보를 포함해 이 페이지에 plugin을 추가하는 PR을 열어 주세요.
 
-- 플러그인 이름
+- plugin 이름
 - npm 패키지 이름
 - GitHub 저장소 URL
 - 한 줄 설명
@@ -33,8 +34,8 @@ x-i18n:
 
 ## 검토 기준
 
-유용하고, 문서가 잘 되어 있고, 안전하게 운영할 수 있는 플러그인을 우선합니다.
-수고를 거의 들이지 않은 래퍼, 소유권이 불분명한 패키지, 유지보수되지 않는 패키지는 거절될 수 있습니다.
+유용하고, 문서가 잘 되어 있고, 안전하게 운영할 수 있는 plugin을 우선합니다.
+수고를 거의 들이지 않은 wrapper, ownership이 불분명한 package, 유지보수되지 않는 package는 거절될 수 있습니다.
 
 ## 후보 형식
 

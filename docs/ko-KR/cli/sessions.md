@@ -1,8 +1,8 @@
 ---
-summary: "저장된 세션 목록 조회 및 유지보수 관리를 위한 `openclaw sessions` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw sessions` (list stored sessions + usage)"
+description: "저장된 conversation session을 조회하고 cleanup 유지보수를 실행하는 `openclaw sessions` 사용법과 scope 옵션을 설명합니다."
 read_when:
-  - 저장된 대화 세션 목록을 확인하거나 최근 활동 내역을 파악하고자 할 때
-  - 세션 데이터를 정리하고 디스크 사용량을 최적화하고 싶을 때
+  - 저장된 session 목록과 최근 활동을 확인하고 싶을 때
 title: "sessions"
 x-i18n:
   source_path: "cli/sessions.md"
@@ -10,65 +10,97 @@ x-i18n:
 
 # `openclaw sessions`
 
-저장된 모든 대화 세션 목록을 조회함.
-
-## 사용법
+저장된 conversation session 목록을 조회합니다.
 
 ```bash
-# 기본 에이전트의 세션 목록 조회
 openclaw sessions
-
-# 특정 에이전트('work')의 세션 목록 조회
 openclaw sessions --agent work
-
-# 모든 에이전트의 세션 목록을 합쳐서 조회
 openclaw sessions --all-agents
-
-# 최근 120분 이내에 활동이 있었던 세션만 필터링
 openclaw sessions --active 120
-
-# 결과를 JSON 형식으로 출력
 openclaw sessions --json
 ```
 
-### 범위 선택 옵션
+Scope selection:
 
-- **기본값**: 설정된 기본 에이전트 저장소를 대상으로 함.
-- **`--agent <id>`**: 특정 에이전트 ID의 저장소만 대상으로 함.
-- **`--all-agents`**: 구성된 모든 에이전트의 저장소 데이터를 집계함.
-- **`--store <path>`**: 특정 `sessions.json` 파일 경로를 직접 지정함 (다른 에이전트 관련 플래그와 혼용 불가).
+- default: configured default agent store
+- `--agent <id>`: 하나의 configured agent store
+- `--all-agents`: 모든 configured agent store를 집계
+- `--store <path>`: 명시적 store path (`--agent`, `--all-agents`와 함께 사용 불가)
 
----
+JSON example:
 
-## 세션 정리 및 유지보수 (Cleanup)
+`openclaw sessions --all-agents --json`:
 
-주기적인 자동 정리 시점까지 기다리지 않고, 즉시 세션 유지보수 작업을 실행함.
+```json
+{
+  "path": null,
+  "stores": [
+    { "agentId": "main", "path": "/home/user/.openclaw/agents/main/sessions/sessions.json" },
+    { "agentId": "work", "path": "/home/user/.openclaw/agents/work/sessions/sessions.json" }
+  ],
+  "allAgents": true,
+  "count": 2,
+  "activeMinutes": null,
+  "sessions": [
+    { "agentId": "main", "key": "agent:main:main", "model": "gpt-5" },
+    { "agentId": "work", "key": "agent:work:main", "model": "claude-opus-4-5" }
+  ]
+}
+```
+
+## Cleanup maintenance
+
+다음 write cycle을 기다리지 않고 바로 maintenance를 실행할 수 있습니다.
 
 ```bash
-# 실제 삭제 없이 정리 대상만 미리 확인 (Dry-run)
 openclaw sessions cleanup --dry-run
-
-# 특정 에이전트의 세션 정리 시뮬레이션
 openclaw sessions cleanup --agent work --dry-run
-
-# 설정된 유지보수 모드가 'warn'이더라도 강제로 정리 수행
+openclaw sessions cleanup --all-agents --dry-run
 openclaw sessions cleanup --enforce
-
-# 특정 세션('agent:main:telegram:dm:123')은 디스크 용량 관리 대상에서 제외(보호)
 openclaw sessions cleanup --enforce --active-key "agent:main:telegram:dm:123"
-
-# 정리 결과를 JSON 형식으로 요약 출력
 openclaw sessions cleanup --json
 ```
 
-`openclaw sessions cleanup` 명령어는 설정 파일의 `session.maintenance` 섹션 정의를 따름.
+`openclaw sessions cleanup`은 config의 `session.maintenance` 설정을 사용합니다.
 
-### 참고 사항
+- Scope 참고: `openclaw sessions cleanup`은 session store와 transcript만 관리합니다. `cron/runs/<jobId>.jsonl` 같은 cron run log는 정리하지 않으며, 이는 [Cron configuration](/automation/cron-jobs#configuration)의 `cron.runLog.maxBytes`, `cron.runLog.keepLines`로 관리됩니다. 자세한 내용은 [Cron maintenance](/automation/cron-jobs#maintenance)를 참고하세요.
+- `--dry-run`: 실제 write 없이 얼마나 prune/cap될지 미리 봅니다.
+  - text mode에서는 `Action`, `Key`, `Age`, `Model`, `Flags` 컬럼의 per-session action table을 출력합니다.
+- `--enforce`: `session.maintenance.mode`가 `warn`이어도 maintenance를 적용합니다.
+- `--active-key <key>`: 특정 active key를 disk-budget eviction에서 보호합니다.
+- `--agent <id>`: 하나의 configured agent store만 cleanup합니다.
+- `--all-agents`: 모든 configured agent store를 cleanup합니다.
+- `--store <path>`: 특정 `sessions.json` 파일에 대해 실행합니다.
+- `--json`: JSON summary를 출력합니다. `--all-agents`와 함께 쓰면 store별 summary가 포함됩니다.
 
-- **범위 제한**: 이 명령어는 오직 **세션 저장소 및 대화 이력(Transcript)** 데이터만을 관리함. 크론 작업의 실행 로그(`cron/runs/*.jsonl`)는 포함되지 않으며, 해당 데이터는 [크론 설정 가이드](/automation/cron-jobs#configuration)의 별도 옵션에 의해 관리됨.
-- **`--dry-run`**: 실제 데이터 수정 없이 얼마나 많은 세션이 삭제되거나 제한될지 미리 보여줌. 텍스트 모드에서는 각 세션별 조치 테이블(`Action`, `Key`, `Age`, `Model`, `Flags`)을 출력하여 유지/삭제 여부를 한눈에 확인할 수 있게 함.
-- **`--active-key <key>`**: 디스크 용량 제한으로 인해 오래된 세션이 삭제될 때, 특정 세션은 최신 상태와 관계없이 삭제 대상에서 제외함.
+`openclaw sessions cleanup --all-agents --dry-run --json`:
 
-### 관련 문서
+```json
+{
+  "allAgents": true,
+  "mode": "warn",
+  "dryRun": true,
+  "stores": [
+    {
+      "agentId": "main",
+      "storePath": "/home/user/.openclaw/agents/main/sessions/sessions.json",
+      "beforeCount": 120,
+      "afterCount": 80,
+      "pruned": 40,
+      "capped": 0
+    },
+    {
+      "agentId": "work",
+      "storePath": "/home/user/.openclaw/agents/work/sessions/sessions.json",
+      "beforeCount": 18,
+      "afterCount": 18,
+      "pruned": 0,
+      "capped": 0
+    }
+  ]
+}
+```
 
-- 세션 관리 설정 상세: [Configuration reference](/gateway/configuration-reference#session)
+Related:
+
+- Session config: [Configuration reference](/gateway/configuration-reference#session)

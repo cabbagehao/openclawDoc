@@ -1,23 +1,24 @@
 ---
-summary: "하위 호환성을 위해 유지되는 레거시 별칭 명령어 `openclaw clawbot` 레퍼런스"
+summary: "CLI reference for `openclaw clawbot` (legacy alias namespace)"
+description: "openclaw clawbot 레거시 alias의 현재 용도와 권장 migration 경로를 설명합니다."
 read_when:
-  - "`openclaw clawbot ...` 형식을 사용하는 이전 스크립트를 유지보수해야 할 때"
-  - 최신 명령어로의 마이그레이션 가이드가 필요할 때
-title: "clawbot (Legacy)"
+  - 오래된 스크립트에서 openclaw clawbot 명령을 유지할 때
+  - 현재 명령 체계로 옮길 계획을 세울 때
+title: "clawbot"
 x-i18n:
-  source_path: "cli/clawbot.md"
+  source_path: 'cli/clawbot.md'
 ---
 
 # `openclaw clawbot`
 
-이 명령어는 하위 호환성 유지를 위해 제공되는 레거시 별칭(Alias) 네임스페이스임.
+backwards compatibility를 위해 유지되는 legacy alias namespace입니다.
 
-## 지원되는 별칭
+현재 지원되는 alias:
 
-- `openclaw clawbot qr`: [`openclaw qr`](/cli/qr) 명령어와 동일하게 동작함.
+- `openclaw clawbot qr` ([`openclaw qr`](/cli/qr)와 동일 동작)
 
-## 마이그레이션 권장 사항
+## Migration
 
-향후 버전에서의 지원 중단을 대비하여 가급적 최신 최상위 명령어를 직접 사용할 것을 권장함:
+가능하면 현대적인 top-level 명령을 직접 사용하세요.
 
-- `openclaw clawbot qr` → **`openclaw qr`** 사용 권장.
+- `openclaw clawbot qr` -> `openclaw qr`

@@ -1,105 +1,176 @@
 ---
-summary: "세션 목록 조회, 이력 확인 및 세션 간 메시지 전송을 위한 에이전트 전용 세션 도구 가이드"
+summary: "Agent session tools for listing sessions, fetching history, and sending cross-session messages"
+description: "session 목록 조회, transcript 확인, inter-session message 전송, sub-agent spawn에 사용하는 OpenClaw session tool을 설명합니다."
 read_when:
-  - 세션 관련 도구를 추가하거나 수정하고자 할 때
-  - 에이전트 간의 통신 및 세션 데이터 활용 방식을 이해하고 싶을 때
-title: "세션 도구"
+  - session tool을 추가하거나 수정할 때
+title: "Session Tools"
 x-i18n:
   source_path: "concepts/session-tool.md"
 ---
 
-# 세션 도구 (Session Tools)
+# Session Tools
 
-세션 도구의 목적은 에이전트가 세션 목록을 확인하고, 대화 이력을 조회하며, 다른 세션으로 메시지를 안전하게 보낼 수 있도록 오용 가능성이 낮은 도구 집합을 제공하는 것임.
+목표는 agent가 session을 나열하고, history를 가져오고, 다른 session으로 message를
+보낼 수 있게 하되, 오용하기 어렵고 작은 tool set을 제공하는 것입니다.
 
-## 도구 목록
+## Tool Names
 
-- `sessions_list`: 전체 또는 특정 유형의 세션 목록 조회.
-- `sessions_history`: 특정 세션의 대화 이력(Transcript) 조회.
-- `sessions_send`: 다른 세션으로 메시지 전송 및 상호작용.
-- `sessions_spawn`: 격리된 환경에서 하위 에이전트 실행 및 결과 보고.
+- `sessions_list`
+- `sessions_history`
+- `sessions_send`
+- `sessions_spawn`
 
-## 세션 키 모델 (Key Model)
+## Key Model
 
-- **메인 세션**: 에이전트의 기본 개인 대화는 항상 리터럴 키인 `"main"`으로 참조됨 (현재 에이전트의 실제 메인 키로 자동 해석됨).
-- **그룹 대화**: `agent:<agentId>:<channel>:group:<id>` 또는 `agent:<agentId>:<channel>:channel:<id>` 형식의 전체 키를 사용함.
-- **예약 작업**: 크론 작업은 `cron:<job.id>` 형식을 사용함.
-- **훅(Hooks)**: 명시적 설정이 없을 경우 `hook:<uuid>` 형식을 사용함.
-- **노드(Nodes)**: 명시적 설정이 없을 경우 `node-<nodeId>` 형식을 사용함.
+- main direct chat bucket은 항상 literal key `"main"`입니다
+  (현재 agent의 main key로 resolve됨)
+- group chat은
+  `agent:<agentId>:<channel>:group:<id>` 또는
+  `agent:<agentId>:<channel>:channel:<id>`를 사용합니다
+  (full key 전달)
+- cron job은 `cron:<job.id>`
+- hook은 명시적으로 설정하지 않으면 `hook:<uuid>`
+- node session은 명시적으로 설정하지 않으면 `node-<nodeId>`
 
-`global` 및 `unknown`은 시스템 예약어이며 목록에 나타나지 않음.
+`global`과 `unknown`은 reserved value라 절대 list되지 않습니다.
+`session.scope = "global"`이면 caller가 `global`을 보지 않도록, 모든 tool에서
+`main`으로 alias합니다.
 
 ## sessions_list
 
-세션 목록을 배열 형태로 반환함.
+session을 row array로 반환합니다.
 
-**주요 파라미터:**
-- `kinds`: `"main"`, `"group"`, `"cron"`, `"hook"`, `"node"`, `"other"` 중 필터링할 유형 목록.
-- `limit`: 반환할 최대 행 수 (서버 제한에 의해 조정될 수 있음).
-- `activeMinutes`: 지정된 시간(분) 이내에 업데이트된 세션만 포함.
-- `messageLimit`: 각 세션의 마지막 N개 메시지를 포함하여 반환 (0은 미포함).
+Parameters:
 
-**동작 특징:**
-- `messageLimit > 0`인 경우 각 세션의 최근 대화 내용을 함께 가져옴.
-- 보안을 위해 도구 실행 결과(toolResult)는 목록 출력에서 제외됨. 상세 내용이 필요하면 `sessions_history`를 사용함.
-- **샌드박스** 환경에서는 가시성 설정에 따라 자신이 생성한 세션만 보일 수 있음.
+- `kinds?: string[]`
+  filter:
+  `"main" | "group" | "cron" | "hook" | "node" | "other"` 중 하나 이상
+- `limit?: number`
+  최대 row 수
+  (기본값은 server default, 예: 200으로 clamp)
+- `activeMinutes?: number`
+  최근 N분 내 update된 session만 포함
+- `messageLimit?: number`
+  `0`이면 message 제외
+  (기본값 0), `>0`이면 최근 N개 message 포함
+
+Behavior:
+
+- `messageLimit > 0`이면 session별로 `chat.history`를 가져와 마지막 N개 message를 포함
+- list output에서는 tool result를 필터링합니다.
+  tool message가 필요하면 `sessions_history`를 사용하세요
+- **sandboxed** agent session에서는 session tool이 기본적으로
+  **spawned-only visibility**를 가집니다
+  (아래 설명 참고)
+
+Row shape (JSON):
+
+- `key`: session key
+- `kind`: `main | group | cron | hook | node | other`
+- `channel`: `whatsapp | telegram | discord | signal | imessage | webchat | internal | unknown`
+- `displayName`
+  (가능하면 group display label)
+- `updatedAt`
+  (ms)
+- `sessionId`
+- `model`, `contextTokens`, `totalTokens`
+- `thinkingLevel`, `verboseLevel`, `systemSent`, `abortedLastRun`
+- `sendPolicy`
+  (session override가 있으면)
+- `lastChannel`, `lastTo`
+- `deliveryContext`
+  (가능하면 normalized `{ channel, to, accountId }`)
+- `transcriptPath`
+  (store dir + sessionId에서 유도한 best-effort path)
+- `messages?`
+  (`messageLimit > 0`일 때만)
 
 ## sessions_history
 
-특정 세션의 대화 이력 전문 또는 일부를 가져옴.
+하나의 session transcript를 가져옵니다.
 
-**주요 파라미터:**
-- `sessionKey`: 대상 세션 키 또는 `sessionId`.
-- `limit`: 가져올 최대 메시지 수.
-- `includeTools`: 도구 실행 결과 포함 여부 (기본값: `false`).
+Parameters:
 
-**동작 특징:**
-- `includeTools=false`일 경우 `role: "toolResult"` 메시지를 필터링하여 가독성을 높임.
-- 원시 대화 이력(Raw transcript) 포맷으로 데이터를 반환함.
+- `sessionKey`
+  (required; session key 또는 `sessions_list`의 `sessionId`)
+- `limit?: number`
+  최대 message 수
+  (server clamp)
+- `includeTools?: boolean`
+  (기본값 false)
+
+Behavior:
+
+- `includeTools=false`이면 `role: "toolResult"` message를 필터링
+- raw transcript format의 messages array를 반환
+- `sessionId`를 주면 OpenClaw가 해당 session key로 resolve
+  (없으면 error)
 
 ## sessions_send
 
-다른 세션으로 메시지를 전송하고 응답을 수신함.
+다른 session으로 message를 보냅니다.
 
-**주요 파라미터:**
-- `sessionKey`: 메시지를 보낼 대상 세션.
-- `message`: 전달할 메시지 내용.
-- `timeoutSeconds`: 응답을 기다릴 시간 (0은 비동기 전송 후 즉시 종료).
+Parameters:
 
-**동작 특징:**
-- **비동기 모드 (timeout=0)**: 대기열에 추가하고 즉시 `runId`를 반환함.
-- **동기 모드 (timeout>0)**: 작업 완료 시까지 대기 후 상대 에이전트의 응답(`reply`)을 반환함.
-- **에이전트 간 핑퐁 (Ping-pong)**: 전송 후 두 에이전트 간에 최대 5회(기본값)까지 추가 대화를 주고받는 루프를 실행함. 대화를 중단하려면 `REPLY_SKIP`을 반환함.
-- **알림 (Announce)**: 루프가 종료되면 대상 채널에 최종 결과를 알림. 알림을 생략하려면 `ANNOUNCE_SKIP`을 반환함.
+- `sessionKey`
+  (required; session key 또는 `sessions_list`의 `sessionId`)
+- `message`
+  (required)
+- `timeoutSeconds?: number`
+  (기본값은 0보다 큼; `0`은 fire-and-forget)
 
-## sessions_spawn
+Behavior:
 
-격리된 신규 세션에서 하위 에이전트(Sub-agent)를 실행하고 결과를 현재 채널에 보고함.
+- `timeoutSeconds = 0`:
+  enqueue 후 `{ runId, status: "accepted" }` 반환
+- `timeoutSeconds > 0`:
+  N초까지 completion을 기다렸다가
+  `{ runId, status: "ok", reply }` 반환
+- wait가 timeout되면:
+  `{ runId, status: "timeout", error }`
+  run은 계속되므로 나중에 `sessions_history`로 확인 가능
+- run이 실패하면:
+  `{ runId, status: "error", error }`
+- announce delivery run은 primary run 완료 뒤에 best-effort로 실행되며,
+  `status: "ok"`라고 해서 announce delivery까지 보장되지는 않습니다
+- wait는 gateway `agent.wait`
+  (server-side)로 처리되므로 reconnect되어도 wait가 끊기지 않습니다
+- primary run에는 agent-to-agent message context가 inject됩니다
+- inter-session message는
+  `message.provenance.kind = "inter_session"`로 저장되어 transcript reader가
+  routed agent instruction과 외부 user input을 구분할 수 있습니다
+- primary run이 끝나면 OpenClaw는 **reply-back loop**를 실행합니다
+  - round 2+는 requester agent와 target agent가 번갈아가며 reply
+  - ping-pong을 멈추려면 정확히 `REPLY_SKIP`를 반환
+  - 최대 turn 수는 `session.agentToAgent.maxPingPongTurns`
+    (0–5, 기본값 5)
+- loop가 끝나면 OpenClaw는 **agent-to-agent announce step**
+  (target agent only)을 실행합니다
+  - 조용히 끝내려면 정확히 `ANNOUNCE_SKIP`를 반환
+  - 그 외 reply는 target channel로 전송
+  - announce step에는 original request, round-1 reply, latest ping-pong reply가 포함
 
-**주요 파라미터:**
-- `task`: 수행할 작업 지침.
-- `label`: 로그 및 UI 표시용 라벨.
-- `model` / `thinking`: 하위 에이전트의 모델 및 사고 수준 오버라이드.
-- `thread`: 지원되는 채널에서 스레드 기반 라우팅 사용 여부.
-- `sandbox`: 샌드박스 강제 여부 (`require` 시 대상이 샌드박스 미지원 시 실행 거부).
-- `attachments`: 하위 에이전트 워크스페이스에 주입할 파일 배열.
+## Channel Field
 
-**동작 특징:**
-- 새 `subagent:<uuid>` 세션을 생성하여 비동기로 실행함.
-- 하위 에이전트는 기본적으로 **세션 도구를 사용할 수 없음** (무한 증식 방지).
-- 실행 완료 후 `Status`, `Result`, `Notes`로 구성된 요약 리포트를 현재 채널에 게시함.
-- 결과 알림 시 실행 시간, 토큰 사용량, 이력 경로 등 통계 정보를 함께 제공함.
+- group은 session entry에 기록된 channel을 사용
+- direct chat은 `lastChannel`에서 channel을 매핑
+- cron/hook/node는 `internal`
+- 없으면 `unknown`
 
-## 세션 보안 및 전송 정책 (Send Policy)
+## Security / Send Policy
 
-채널 및 채팅 유형별로 메시지 발신 권한을 제어할 수 있음:
+channel/chat type 기준의 policy block을 적용합니다
+(session id 기준이 아님).
 
 ```json
 {
   "session": {
     "sendPolicy": {
       "rules": [
-        { "match": { "channel": "discord", "chatType": "group" }, "action": "deny" }
+        {
+          "match": { "channel": "discord", "chatType": "group" },
+          "action": "deny"
+        }
       ],
       "default": "allow"
     }
@@ -107,15 +178,136 @@ x-i18n:
 }
 ```
 
-- **실시간 변경**: 세션 내에서 `/send on|off|inherit` 명령어를 통해 해당 세션의 발신 권한을 즉시 조정할 수 있음.
+runtime override
+(session entry별):
 
-## 샌드박스 세션 가시성 (Visibility)
+- `sendPolicy: "allow" | "deny"`
+  (unset이면 config 상속)
+- `sessions.patch` 또는 owner-only `/send on|off|inherit`
+  (standalone message)로 설정 가능
 
-세션 도구가 접근할 수 있는 범위를 제한하여 보안을 강화함:
+enforcement point:
 
-- **`self`**: 현재 세션 정보만 접근 가능.
-- **`tree` (기본값)**: 현재 세션 및 해당 세션이 생성한 하위 세션들만 접근 가능.
-- **`agent`**: 동일한 에이전트 ID에 속한 모든 세션 접근 가능.
-- **`all`**: 시스템 내 모든 세션 접근 가능 (에이전트 간 통신 권한 필요).
+- `chat.send` / `agent`
+  (gateway)
+- auto-reply delivery logic
 
-**샌드박스 보안**: 세션이 샌드박스에서 실행 중이고 `sessionToolsVisibility` 설정이 `"spawned"`인 경우, 도구 설정을 `"all"`로 지정하더라도 시스템은 보안을 위해 `"tree"` 범위로 강제 제한함.
+## sessions_spawn
+
+isolated session에서 sub-agent run을 spawn하고, 결과를 requester chat channel에
+announce합니다.
+
+Parameters:
+
+- `task`
+  (required)
+- `label?`
+  (optional; log/UI용)
+- `agentId?`
+  (optional; 허용되면 다른 agent id 아래에서 spawn)
+- `model?`
+  (optional; sub-agent model override, invalid value는 error)
+- `thinking?`
+  (optional; sub-agent run thinking level override)
+- `runTimeoutSeconds?`
+  (`agents.defaults.subagents.runTimeoutSeconds`가 있으면 그 값을 기본값으로, 없으면 `0`;
+  설정되면 N초 후 sub-agent run abort)
+- `thread?`
+  (기본값 false; channel/plugin이 지원하면 thread-bound routing 요청)
+- `mode?`
+  (`run|session`; 기본값은 `run`, 단 `thread=true`이면 `session`;
+  `mode="session"`은 `thread=true` 필요)
+- `cleanup?`
+  (`delete|keep`, 기본값 `keep`)
+- `sandbox?`
+  (`inherit|require`, 기본값 `inherit`;
+  `require`는 target child runtime이 sandbox가 아니면 reject)
+- `attachments?`
+  (optional inline file array; subagent runtime only, ACP는 reject)
+  각 항목은
+  `{ name, content, encoding?: "utf8" | "base64", mimeType? }`
+  형식이고, child workspace의 `.openclaw/attachments/<uuid>/`에 materialize됩니다.
+  file별 sha256 receipt를 반환합니다
+- `attachAs?`
+  (optional; `{ mountPath? }`
+  형태의 향후 mount 구현용 hint)
+
+Allowlist:
+
+- `agents.list[].subagents.allowAgents`:
+  `agentId`로 spawn 가능한 agent id 목록
+  (`["*"]`면 모두 허용). 기본값은 requester agent만 허용
+- sandbox inheritance guard:
+  requester session이 sandboxed면, unsandboxed target은 reject
+
+Discovery:
+
+- `sessions_spawn`에 허용된 agent id는 `agents_list`로 찾습니다
+
+Behavior:
+
+- `deliver: false`인 새 `agent:<agentId>:subagent:<uuid>` session을 시작
+- sub-agent는 기본적으로 전체 tool set에서 **session tool만 제외**된 상태로 시작
+  (`tools.subagents.tools`로 설정 가능)
+- sub-agent는 `sessions_spawn`을 다시 호출할 수 없습니다
+  (sub-agent → sub-agent spawn 금지)
+- 항상 non-blocking:
+  즉시 `{ status: "accepted", runId, childSessionKey }` 반환
+- `thread=true`이면 channel plugin이 delivery/routing을 thread target에 bind할 수 있음
+  (Discord support는 `session.threadBindings.*`,
+  `channels.discord.threadBindings.*`로 제어)
+- completion 후 OpenClaw는 sub-agent **announce step**을 실행해 requester chat channel에
+  결과를 올립니다
+  - assistant final reply가 비어 있으면 sub-agent history의 최신 `toolResult`를
+    `Result`로 포함
+- announce step에서 정확히 `ANNOUNCE_SKIP`를 reply하면 조용히 종료
+- announce reply는 `Status` / `Result` / `Notes`로 normalize되며,
+  `Status`는 model text가 아니라 runtime outcome에서 결정
+- sub-agent session은
+  `agents.defaults.subagents.archiveAfterMinutes`
+  (기본값 60) 후 auto-archive
+- announce reply에는 runtime, tokens, sessionKey/sessionId, transcript path,
+  optional cost를 담은 stats line이 포함
+
+## Sandbox Session Visibility
+
+session tool은 cross-session access를 줄이기 위해 scope를 제한할 수 있습니다.
+
+기본 동작:
+
+- `tools.sessions.visibility` 기본값은 `tree`
+  (현재 session + spawned subagent session)
+- sandboxed session에서는
+  `agents.defaults.sandbox.sessionToolsVisibility`가 visibility를 강하게 clamp할 수 있음
+
+Config:
+
+```json5
+{
+  tools: {
+    sessions: {
+      // "self" | "tree" | "agent" | "all"
+      // default: "tree"
+      visibility: "tree",
+    },
+  },
+  agents: {
+    defaults: {
+      sandbox: {
+        // default: "spawned"
+        sessionToolsVisibility: "spawned", // or "all"
+      },
+    },
+  },
+}
+```
+
+Notes:
+
+- `self`: 현재 session key만
+- `tree`: 현재 session + 현재 session이 spawn한 session
+- `agent`: 현재 agent id에 속한 어떤 session이든
+- `all`: 어떤 session이든
+  (cross-agent access에는 여전히 `tools.agentToAgent` 필요)
+- session이 sandboxed이고 `sessionToolsVisibility="spawned"`이면,
+  `tools.sessions.visibility="all"`이어도 OpenClaw는 `tree`로 clamp합니다

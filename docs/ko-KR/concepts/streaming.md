@@ -1,101 +1,204 @@
 ---
-summary: "스트리밍 및 청킹(Chunking) 가이드: 블록 응답, 채널별 미리보기 스트리밍 및 모드 매핑 안내"
+summary: "Streaming + chunking behavior (block replies, channel preview streaming, mode mapping)"
+description: "OpenClaw의 block streaming과 preview streaming이 어떻게 다르고, chunking·coalescing·channel mode가 어떻게 동작하는지 설명합니다."
 read_when:
-  - 채팅 채널별 스트리밍 또는 청킹 동작 원리를 이해하고자 할 때
-  - 블록 스트리밍이나 채널별 청킹 설정을 변경할 때
-  - 중복 응답이나 미리보기 스트리밍 관련 문제를 디버깅할 때
-title: "스트리밍 및 청킹"
+  - channel에서 streaming이나 chunking이 어떻게 동작하는지 설명해야 할 때
+  - block streaming이나 channel chunking 동작을 바꿔야 할 때
+  - duplicate/early block reply나 preview streaming을 디버깅할 때
+title: "Streaming and Chunking"
 x-i18n:
   source_path: "concepts/streaming.md"
 ---
 
-# 스트리밍 및 청킹 (Streaming + Chunking)
+# Streaming + chunking
 
-OpenClaw는 두 가지 독립적인 스트리밍 계층을 제공함:
+OpenClaw에는 서로 다른 두 개의 streaming layer가 있습니다.
 
-- **블록 스트리밍 (Block Streaming)**: 에이전트가 답변을 작성하는 동안 완성된 **텍스트 블록** 단위로 실제 메시지를 발송함. 이는 토큰 단위의 실시간 변화량(Delta)이 아닌, 일반적인 채널 메시지 형식임.
-- **미리보기 스트리밍 (Preview Streaming)**: 생성 중인 내용을 임시 **미리보기 메시지**에 실시간으로 업데이트함 (Telegram, Discord, Slack 지원).
+- **Block streaming (channels):** assistant가 작성하는 동안 완성된 **block**을 보냄.
+  이것은 일반 channel message이지 token delta가 아닙니다
+- **Preview streaming (Telegram/Discord/Slack):** 생성 중 임시 **preview message**를
+  update함
 
-현재 일반 채팅 채널의 메시지 규격상 진정한 의미의 '토큰 단위 스트리밍'은 불가능하므로, 미리보기 스트리밍은 기존 메시지를 수정하거나 덧붙이는(Send + Edit/Append) 방식으로 구현됨.
+현재 channel message에는 **true token-delta streaming**이 없습니다.
+preview streaming도 message 기반
+(send + edit/append)입니다.
 
-## 블록 스트리밍 (채널 메시지)
+## Block streaming (channel messages)
 
-에이전트의 출력을 의미 있는 덩어리(Chunk)로 나누어 실시간으로 전송함.
+block streaming은 assistant output이 준비되는 대로 비교적 큰 chunk로 나눠 보냅니다.
 
-```
-모델 출력 (Model output)
-  └─ 텍스트 델타/이벤트
+```text
+Model output
+  └─ text_delta/events
        ├─ (blockStreamingBreak=text_end)
-       │    └─ 청커(Chunker)가 버퍼가 찰 때마다 블록 발송
+       │    └─ chunker emits blocks as buffer grows
        └─ (blockStreamingBreak=message_end)
-            └─ 메시지 종료 시점에 모든 버퍼 데이터 발송
-                   └─ 채널 메시지 전송 (블록 응답)
+            └─ chunker flushes at message_end
+                   └─ channel send (block replies)
 ```
 
-**주요 제어 항목:**
+legend:
 
-- `agents.defaults.blockStreamingDefault`: `"on"` / `"off"` (기본값: `off`).
-- **채널별 오버라이드**: `*.blockStreaming` 설정을 통해 특정 채널에서만 강제로 활성화 가능.
-- `blockStreamingBreak`: 블록을 끊는 기준 (`text_end` 또는 `message_end`).
-- `blockStreamingChunk`: 최소/최대 글자 수 및 분할 우선순위(`breakPreference`) 설정.
-- `blockStreamingCoalesce`: 전송 전 짧은 스트리밍 블록들을 하나로 병합하는 설정.
-- **용량 제한**: `*.textChunkLimit` (예: WhatsApp의 글자 수 제한).
-- **분할 모드**: `*.chunkMode` (길이 기준 또는 빈 줄 기준 분할).
+- `text_delta/events`: model stream event
+  (non-streaming model에서는 sparse할 수 있음)
+- `chunker`: min/max bound와 break preference를 적용하는 `EmbeddedBlockChunker`
+- `channel send`: 실제 outbound message
 
-## 청킹 알고리즘 및 경계 처리
+**Controls:**
 
-`EmbeddedBlockChunker`를 통해 다음과 같이 블록을 분할함:
+- `agents.defaults.blockStreamingDefault`:
+  `"on"` / `"off"` (기본값 off)
+- channel override:
+  `*.blockStreaming`
+  (account별 variant 포함)으로 channel마다 `"on"` / `"off"` 강제 가능
+- `agents.defaults.blockStreamingBreak`:
+  `"text_end"` 또는 `"message_end"`
+- `agents.defaults.blockStreamingChunk`:
+  `{ minChars, maxChars, breakPreference? }`
+- `agents.defaults.blockStreamingCoalesce`:
+  `{ minChars?, maxChars?, idleMs? }`
+  (send 전에 streamed block 병합)
+- channel hard cap:
+  `*.textChunkLimit`
+  (예: `channels.whatsapp.textChunkLimit`)
+- channel chunk mode:
+  `*.chunkMode`
+  (`length` 기본값, `newline`은 빈 줄 단위로 먼저 자른 뒤 길이 기준 적용)
+- Discord soft cap:
+  `channels.discord.maxLinesPerMessage`
+  (기본값 17)
+  너무 높은 reply가 UI에서 잘리는 것을 막기 위해 분할
 
-- **최소 제한 (Low bound)**: 버퍼 내용이 `minChars` 이상 쌓이기 전에는 전송하지 않음 (단, 강제 플러시 시점 제외).
-- **최대 제한 (High bound)**: 가급적 `maxChars` 이전에 자연스럽게 끊으며, 필요 시 해당 위치에서 강제 분할함.
-- **분할 우선순위**: 단락(`paragraph`) → 줄바꿈(`newline`) → 문장(`sentence`) → 공백(`whitespace`) → 강제 분할 순으로 적용함.
-- **코드 블록 보호**: 코드 펜스(` ``` `) 내부에서는 절대 끊지 않음. 강제로 끊어야 할 경우 마크다운 문법이 깨지지 않도록 펜스를 닫고 다음 블록에서 다시 열어줌.
+**Boundary semantics:**
 
-## 병합 (Coalescing) 처리
+- `text_end`: chunker가 emit하는 즉시 stream하고, 각 `text_end`마다 flush
+- `message_end`: assistant message가 끝날 때까지 기다렸다가 buffered output을 flush
 
-연속된 스트리밍 블록들을 전송 전 하나로 뭉쳐서 '한 줄씩 끊어 보내는 현상'을 방지함.
+`message_end`여도 buffered text가 `maxChars`를 넘으면 chunker를 사용하므로 끝에서 여러
+chunk가 나갈 수 있습니다.
 
-- **유휴 대기**: 지정된 시간(`idleMs`) 동안 추가 입력이 없을 때까지 기다린 후 전송함.
-- **용량 관리**: 병합된 내용이 `maxChars`를 초과하면 즉시 전송함.
-- **연결 문자**: 분할 우선순위 설정에 따라 적절한 구분자(줄바꿈, 공백 등)를 삽입함.
+## Chunking algorithm (low/high bounds)
 
-## 블록 간 자연스러운 시간 차 (Human-like Delay)
+block chunking은 `EmbeddedBlockChunker`로 구현됩니다.
 
-여러 개의 메시지 버블이 전송될 때 사람이 직접 타이핑하는 듯한 느낌을 주도록 블록 사이에 **무작위 지연 시간**을 추가할 수 있음.
+- **Low bound:** buffer가 `minChars` 이상이 되기 전에는 emit하지 않음
+  (강제 flush 제외)
+- **High bound:** 가능하면 `maxChars` 이전에서 split하고, 강제 시 `maxChars`에서 split
+- **Break preference:**
+  `paragraph` → `newline` → `sentence` → `whitespace` → hard break
+- **Code fence:** code fence 안에서는 split하지 않음.
+  `maxChars`에서 강제로 잘라야 할 때는 Markdown이 깨지지 않도록 fence를 닫고 다시 엽니다
 
-- **설정**: `agents.defaults.humanDelay`.
-- **모드**: `off` (기본값), `natural` (800~2500ms 사이 자동), `custom` (직접 지정).
-- 이 지연은 실시간 블록 응답에만 적용되며, 최종 응답이나 도구 실행 요약에는 적용되지 않음.
+`maxChars`는 channel `textChunkLimit`으로 clamp되므로, channel cap을 넘길 수 없습니다.
 
-## 설정 조합에 따른 동작 차이
+## Coalescing (merge streamed blocks)
 
-- **실시간 블록 전송**: `blockStreamingDefault: "on"` + `blockStreamingBreak: "text_end"`. (Telegram 외 채널은 개별 활성화 필요)
-- **종료 시 일괄 전송**: `blockStreamingBreak: "message_end"`. (메시지가 매우 길 경우 여러 개의 블록으로 나뉘어 전송될 수 있음)
-- **스트리밍 미사용**: `blockStreamingDefault: "off"`. (최종 결과물만 한 번에 전송)
+block streaming이 켜져 있으면, OpenClaw는 연속된 block chunk를 **하나로 merge**한 뒤
+보낼 수 있습니다. 한 줄짜리 message가 계속 나가는 현상을 줄이면서도 progress output은
+유지할 수 있습니다.
 
-<Note>
-**채널별 참고**: `*.blockStreaming` 설정이 `true`가 아니면 기본적으로 블록 스트리밍은 작동하지 않음. 단, 실시간 미리보기 기능(`streaming` 모드)은 이와 별개로 작동할 수 있음.
-</Note>
+- coalescing은 **idle gap**(`idleMs`)이 생길 때까지 기다렸다가 flush합니다
+- buffer가 `maxChars`를 넘으면 즉시 flush합니다
+- `minChars`는 너무 작은 fragment가 바로 전송되지 않도록 막습니다
+  (최종 flush는 남은 내용을 항상 전송)
+- joiner는 `blockStreamingChunk.breakPreference`에서 파생됩니다
+  (`paragraph` → `\n\n`, `newline` → `\n`, `sentence` → space)
+- `*.blockStreamingCoalesce`로 channel override도 가능합니다
+  (account별 config 포함)
+- Signal/Slack/Discord는 override가 없으면 기본 coalesce `minChars`를 1500으로 높입니다
 
-## 미리보기 스트리밍 모드 (Preview Streaming)
+## Human-like pacing between blocks
 
-설정 키: `channels.<channel>.streaming`
+block streaming이 켜져 있을 때, block reply 사이
+(첫 block 이후)에 **랜덤 지연**을 넣을 수 있습니다.
+multi-bubble response를 더 자연스럽게 보이게 하는 기능입니다.
 
-- **`off`**: 미리보기 기능을 사용하지 않음.
-- **`partial`**: 하나의 메시지를 생성하고 최신 내용으로 계속 덮어씀.
-- **`block`**: 내용을 점진적으로 덧붙여가며 미리보기를 업데이트함.
-- **`progress`**: 생성 중에는 진행 상태나 요약 문구를 보여주고, 완료 시 최종 답변으로 교체함.
+- config:
+  `agents.defaults.humanDelay`
+  (agent별 `agents.list[].humanDelay`로 override 가능)
+- mode:
+  `off` (기본값),
+  `natural` (800–2500ms),
+  `custom` (`minMs` / `maxMs`)
+- **block reply**에만 적용되며, final reply나 tool summary에는 적용되지 않습니다
 
-### 채널별 지원 현황
+## "Stream chunks or everything"
 
-| 채널 | `off` | `partial` | `block` | `progress` |
-| :--- | :---: | :---: | :---: | :---: |
-| **Telegram** | ✅ | ✅ | ✅ | (`partial`로 매핑) |
-| **Discord** | ✅ | ✅ | ✅ | (`partial`로 매핑) |
-| **Slack** | ✅ | ✅ | ✅ | ✅ |
+이 선택은 다음 설정으로 대응됩니다.
 
-### 런타임 세부 동작
+- **Stream chunks:**
+  `blockStreamingDefault: "on"` +
+  `blockStreamingBreak: "text_end"`
+  (생성되는 대로 emit).
+  Telegram 외 channel은 `*.blockStreaming: true`도 필요
+- **Stream everything at end:**
+  `blockStreamingBreak: "message_end"`
+  (끝에서 한 번 flush, 너무 길면 여러 chunk 가능)
+- **No block streaming:**
+  `blockStreamingDefault: "off"`
+  (final reply만 전송)
 
-- **Telegram**: `sendMessage`와 `editMessageText`를 조합하여 미리보기를 구현함. 블록 스트리밍이 활성화된 경우 중복 표시 방지를 위해 미리보기는 자동으로 비활성화됨.
-- **Discord**: 메시지 수정(Edit) 기능을 사용함. `block` 모드에서는 초안 청킹(`draftChunk`) 기술을 적용함.
-- **Slack**: 가능한 경우 Slack 네이티브 스트리밍 API를 활용하여 가장 부드러운 미리보기를 제공함.
+**Channel note:** block streaming은 `*.blockStreaming`이 명시적으로 `true`일 때만
+동작합니다. 대신 channel은 live preview
+(`channels.<channel>.streaming`)를 block reply 없이 사용할 수 있습니다.
+
+참고로 `blockStreaming*` 기본값은 root config가 아니라 `agents.defaults` 아래에
+있습니다.
+
+## Preview streaming modes
+
+canonical key:
+`channels.<channel>.streaming`
+
+mode:
+
+- `off`: preview streaming 비활성화
+- `partial`: single preview를 최신 text로 계속 교체
+- `block`: preview를 chunked/appended step으로 갱신
+- `progress`: 생성 중에는 progress/status preview, 완료 후 최종 answer 전송
+
+### Channel mapping
+
+| Channel  | `off` | `partial` | `block` | `progress`        |
+| -------- | ----- | --------- | ------- | ----------------- |
+| Telegram | ✅    | ✅        | ✅      | maps to `partial` |
+| Discord  | ✅    | ✅        | ✅      | maps to `partial` |
+| Slack    | ✅    | ✅        | ✅      | ✅                |
+
+Slack 전용:
+
+- `channels.slack.nativeStreaming`은 `streaming=partial`일 때 Slack native streaming API
+  call 사용 여부를 제어합니다
+  (기본값 `true`)
+
+legacy key migration:
+
+- Telegram:
+  `streamMode` + boolean `streaming` → `streaming` enum으로 자동 migration
+- Discord:
+  `streamMode` + boolean `streaming` → `streaming` enum으로 자동 migration
+- Slack:
+  `streamMode` → `streaming` enum으로 자동 migration,
+  boolean `streaming` → `nativeStreaming`으로 자동 migration
+
+### Runtime behavior
+
+Telegram:
+
+- DM과 group/topic에서 `sendMessage` + `editMessageText`로 preview를 갱신
+- Telegram block streaming이 명시적으로 켜져 있으면 preview streaming은 skip
+  (double-streaming 방지)
+- `/reasoning stream`은 preview에 reasoning을 쓸 수 있음
+
+Discord:
+
+- send + edit preview message 사용
+- `block` mode는 `draftChunk`를 사용
+- Discord block streaming이 명시적으로 켜져 있으면 preview streaming은 skip
+
+Slack:
+
+- `partial`은 가능하면 Slack native streaming
+  (`chat.startStream` / `append` / `stop`)을 사용
+- `block`은 append-style draft preview 사용
+- `progress`는 status preview text 후 최종 answer 전송

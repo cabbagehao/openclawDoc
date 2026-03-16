@@ -1,20 +1,21 @@
 ---
-summary: "Gateway 서비스 관리 명령의 레거시 별칭인 `openclaw daemon` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw daemon` (legacy alias for gateway service management)"
+description: "openclaw daemon 레거시 alias가 Gateway service 명령에 어떻게 매핑되는지 설명합니다."
 read_when:
-  - 기존 스크립트에서 `openclaw daemon ...` 형식을 사용 중일 때
-  - 서비스 생명주기(설치, 시작, 중지, 재시작, 상태 확인) 명령어가 필요할 때
-title: "daemon (Legacy)"
+  - 오래된 스크립트에서 openclaw daemon 명령을 유지할 때
+  - Gateway service 명령 흐름을 확인할 때
+title: "daemon"
 x-i18n:
-  source_path: "cli/daemon.md"
+  source_path: 'cli/daemon.md'
 ---
 
 # `openclaw daemon`
 
-이 명령어는 Gateway 서비스 관리 명령을 위한 레거시 별칭(Alias)임.
+Gateway service management command의 legacy alias입니다.
 
-`openclaw daemon ...`은 `openclaw gateway` 하위의 서비스 제어 명령어들과 동일한 기능을 수행함.
+`openclaw daemon ...`은 `openclaw gateway ...` service command와 같은 control surface에 매핑됩니다.
 
-## 사용법
+## Usage
 
 ```bash
 openclaw daemon status
@@ -25,28 +26,29 @@ openclaw daemon restart
 openclaw daemon uninstall
 ```
 
-## 주요 하위 명령어
+## Subcommands
 
-- **`status`**: 서비스 설치 상태를 확인하고 Gateway 서버의 헬스 체크를 수행함.
-- **`install`**: 운영체제별 서비스(`launchd`, `systemd`, `schtasks`)로 등록함.
-- **`uninstall`**: 등록된 서비스를 제거함.
-- **`start`**: 서비스를 시작함.
-- **`stop`**: 서비스를 중지함.
-- **`restart`**: 서비스를 재시작함.
+- `status`: service install state를 보여주고 Gateway health를 probe
+- `install`: service 설치 (`launchd`/`systemd`/`schtasks`)
+- `uninstall`: service 제거
+- `start`: service 시작
+- `stop`: service 중지
+- `restart`: service 재시작
 
-## 주요 옵션
+## Common options
 
-- **`status`**: `--url`, `--token`, `--password`, `--timeout`, `--no-probe`, `--deep`, `--json`
-- **`install`**: `--port`, `--runtime <node|bun>`, `--token`, `--force`, `--json`
-- **생명주기 관리**: `--json`
+- `status`: `--url`, `--token`, `--password`, `--timeout`, `--no-probe`, `--deep`, `--json`
+- `install`: `--port`, `--runtime <node|bun>`, `--token`, `--force`, `--json`
+- lifecycle (`uninstall|start|stop|restart`): `--json`
 
-## 참고 사항
+Notes:
 
-- **인증 연동**: `status` 명령어 실행 시, 가능한 경우 설정된 시크릿 참조(SecretRef)를 해석하여 인증을 시도함.
-- **Linux(systemd)**: `status` 확인 시 `Environment=` 및 `EnvironmentFile=` 유닛 설정에 포함된 토큰 정보의 일치 여부(Drift)를 검사함.
-- **시크릿 관리**: `gateway.auth.token`이 SecretRef로 관리되는 경우, `install` 과정에서 해당 참조의 해석 가능 여부를 검증함. 단, 보안을 위해 해석된 평문 토큰값을 서비스 환경 메타데이터에 직접 저장하지는 않음.
-- **보안 제어**: 토큰 인증이 필수임에도 SecretRef 해석에 실패하거나, 토큰과 비밀번호가 모두 설정되었음에도 인증 모드(`gateway.auth.mode`)가 지정되지 않은 경우 서비스 설치가 차단됨.
+- `status`는 가능하면 probe auth를 위해 configured auth SecretRef를 resolve합니다.
+- Linux systemd install에서는 `status`의 token drift check가 `Environment=`와 `EnvironmentFile=` unit source를 모두 포함합니다.
+- token auth에 token이 필요하고 `gateway.auth.token`이 SecretRef-managed이면, `install`은 SecretRef가 resolvable한지 검증하지만 resolved token 자체를 service environment metadata에 저장하지는 않습니다.
+- token auth에 token이 필요한데 configured token SecretRef가 unresolved라면 install은 fail closed합니다.
+- `gateway.auth.token`과 `gateway.auth.password`가 모두 설정되어 있고 `gateway.auth.mode`가 unset이면, install은 mode를 명시할 때까지 차단됩니다.
 
-## 권장 사항
+## Prefer
 
-향후 버전에서의 지원 중단을 대비하여 가급적 최신 명령어인 [**`openclaw gateway`**](/cli/gateway)를 사용할 것을 권장함.
+현재 문서와 예시는 [`openclaw gateway`](/cli/gateway)를 사용하는 편이 좋습니다.

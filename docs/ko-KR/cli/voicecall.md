@@ -1,8 +1,9 @@
 ---
-summary: "Voice-call 플러그인 기능 제어를 위한 `openclaw voicecall` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw voicecall` (voice-call plugin command surface)"
+description: "voice-call plugin 환경에서 통화 시작, 이어가기, 상태 확인, webhook 노출 흐름을 설명합니다."
 read_when:
-  - Voice-call 플러그인을 활성화하고 CLI 진입점을 확인하고자 할 때
-  - 전화 발신, 상태 확인 및 웹훅 노출 등의 명령어 예시가 필요할 때
+  - voice-call plugin의 CLI entry point가 필요할 때
+  - voicecall call, continue, status, tail, expose 예시가 필요할 때
 title: "voicecall"
 x-i18n:
   source_path: "cli/voicecall.md"
@@ -10,40 +11,27 @@ x-i18n:
 
 # `openclaw voicecall`
 
-`voicecall`은 플러그인을 통해 제공되는 명령어로, **Voice-call 플러그인**이 설치되어 있고 활성화된 상태에서만 사용 가능함.
+`voicecall`은 plugin이 제공하는 명령입니다. voice-call plugin이 설치되고 활성화된 경우에만 나타납니다.
 
-**관련 문서:**
-- Voice-call 플러그인 가이드: [Voice Call](/plugins/voice-call)
+Primary doc:
 
-## 주요 명령어
+- Voice-call plugin: [Voice Call](/plugins/voice-call)
+
+## Common commands
 
 ```bash
-# 특정 통화의 상태 확인
 openclaw voicecall status --call-id <id>
-
-# 특정 번호로 전화를 걸고 메시지 전달 (알림 모드)
-openclaw voicecall call --to "+821012345678" --message "안녕하세요" --mode notify
-
-# 진행 중인 통화에 메시지 추가 전달
-openclaw voicecall continue --call-id <id> --message "다른 궁금한 점이 있으신가요?"
-
-# 통화 강제 종료
-openclaw voicecall voicecall end --call-id <id>
+openclaw voicecall call --to "+15555550123" --message "Hello" --mode notify
+openclaw voicecall continue --call-id <id> --message "Any questions?"
+openclaw voicecall end --call-id <id>
 ```
 
-## 웹훅 노출 설정 (Tailscale)
+## Exposing webhooks (Tailscale)
 
 ```bash
-# Tailscale Serve를 통해 웹훅 노출
 openclaw voicecall expose --mode serve
-
-# Tailscale Funnel(공개 인터넷)을 통해 웹훅 노출
 openclaw voicecall expose --mode funnel
-
-# 웹훅 노출 비활성화
 openclaw voicecall expose --mode off
 ```
 
-<Warning>
-**보안 주의**: 웹훅 엔드포인트는 신뢰할 수 있는 네트워크 환경에만 노출해야 함. 보안을 위해 가급적 Funnel보다는 **Tailscale Serve** 사용을 권장함.
-</Warning>
+보안 참고: webhook endpoint는 신뢰하는 network에만 노출하세요. 가능하면 Funnel보다 Tailscale Serve를 우선하세요.

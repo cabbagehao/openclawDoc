@@ -1,5 +1,6 @@
 ---
 summary: "`web_search` 기능을 위한 Brave Search API 설정 방법"
+description: "OpenClaw에서 Brave Search API를 `web_search` provider로 구성하는 방법과 주요 파라미터, 요금제 관련 주의사항을 안내합니다."
 read_when:
   - "`web_search` 도구에 Brave Search를 사용하고자 할 때"
   - "`BRAVE_API_KEY` 발급 또는 요금제 정보를 확인하고 싶을 때"
@@ -51,22 +52,22 @@ OpenClaw는 웹 검색(`web_search`) 기능을 위해 Brave Search API를 지원
 **사용 예시:**
 
 ```javascript
-// 국가 및 언어별 검색 실행
+// Country and language-specific search
 await web_search({
-  query: "신재생 에너지",
-  country: "KR",
-  language: "ko",
+  query: "renewable energy",
+  country: "DE",
+  language: "de",
 });
 
-// 지난 1주일간의 최신 결과 검색
+// Recent results (past week)
 await web_search({
-  query: "AI 뉴스",
+  query: "AI news",
   freshness: "week",
 });
 
-// 특정 날짜 범위 검색
+// Date range search
 await web_search({
-  query: "AI 발전 현황",
+  query: "AI developments",
   date_after: "2024-01-01",
   date_before: "2024-06-30",
 });

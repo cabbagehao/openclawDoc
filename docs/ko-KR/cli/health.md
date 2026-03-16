@@ -1,7 +1,8 @@
 ---
-summary: "RPC를 통한 Gateway 서버 헬스 체크 및 상태 조회를 위한 `openclaw health` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw health` (gateway health endpoint via RPC)"
+description: "실행 중인 Gateway의 health 정보를 빠르게 조회하는 `openclaw health` 명령과 `--verbose` 출력 차이를 안내합니다."
 read_when:
-  - 현재 실행 중인 Gateway 서버의 가동 상태를 빠르게 확인하고자 할 때
+  - 실행 중인 Gateway의 health를 빠르게 확인하고 싶을 때
 title: "health"
 x-i18n:
   source_path: "cli/health.md"
@@ -9,22 +10,15 @@ x-i18n:
 
 # `openclaw health`
 
-현재 실행 중인 Gateway 서버로부터 상태(Health) 정보를 가져옴.
-
-## 사용 예시
+실행 중인 Gateway에서 health 정보를 가져옵니다.
 
 ```bash
-# 기본 헬스 체크 정보 출력
 openclaw health
-
-# 상태 정보를 JSON 형식으로 출력
 openclaw health --json
-
-# 실시간 프로브 결과 및 상세 정보 포함
 openclaw health --verbose
 ```
 
-## 참고 사항
+Notes:
 
-- **상세 출력 (`--verbose`)**: 실시간 프로브를 수행하며, 여러 개의 채널 계정이 설정된 경우 각 계정별 응답 시간(Timing) 정보를 상세히 출력함.
-- **멀티 에이전트 지원**: 여러 에이전트가 운영 중인 경우, 각 에이전트별 세션 저장소 상태 정보가 결과에 포함됨.
+- `--verbose`는 live probe를 실행하며, 여러 account가 설정된 경우 per-account timing을 출력합니다.
+- 여러 agent가 설정된 경우 output에는 per-agent session store 정보도 포함됩니다.

@@ -1,3 +1,13 @@
+---
+summary: "Kilo Gateway provider integration design for OpenClaw"
+description: "Kilo Gateway를 OpenClaw의 first-class provider로 통합하기 위한 provider naming, auth flow, config wiring, 테스트 계획을 정리한 설계 문서입니다."
+read_when:
+  - Kilo Gateway provider integration 설계를 검토하거나 구현할 때
+title: "Kilo Gateway Provider Integration Design"
+x-i18n:
+  source_path: "design/kilo-gateway-integration.md"
+---
+
 # Kilo Gateway Provider 통합 설계
 
 ## 개요
@@ -499,7 +509,8 @@ const needsNonImageSanitize =
    - `kilocode/` 접두사를 사용하는 모델 선택 테스트
 
 3. **E2E 테스트:**
-   - Kilo Gateway를 통한 실제 API 호출 테스트(live tests)
+   - Kilo Gateway를 통한 실제 API 호출 테스트
+     (live test)
 
 ## 마이그레이션 참고
 
@@ -518,19 +529,3 @@ const needsNonImageSanitize =
 4. **문서화:** 설정 및 사용법을 설명하는 `docs/providers/kilocode.md` 문서 추가
 
 ## 변경 요약
-
-| File                                                        | Change Type | Description                                                             |
-| ----------------------------------------------------------- | ----------- | ----------------------------------------------------------------------- |
-| `src/commands/onboard-auth.credentials.ts`                  | Add         | `KILOCODE_DEFAULT_MODEL_REF`, `setKilocodeApiKey()`                     |
-| `src/agents/model-auth.ts`                                  | Modify      | `envMap`에 `kilocode` 추가                                              |
-| `src/config/io.ts`                                          | Modify      | shell env key에 `KILOCODE_API_KEY` 추가                                 |
-| `src/commands/onboard-auth.config-core.ts`                  | Add         | `applyKilocodeProviderConfig()`, `applyKilocodeConfig()`                |
-| `src/commands/onboard-types.ts`                             | Modify      | `AuthChoice`에 `kilocode-api-key` 추가, options에 `kilocodeApiKey` 추가 |
-| `src/commands/auth-choice-options.ts`                       | Modify      | `kilocode` 그룹 및 옵션 추가                                            |
-| `src/commands/auth-choice.preferred-provider.ts`            | Modify      | `kilocode-api-key` 매핑 추가                                            |
-| `src/commands/auth-choice.apply.api-providers.ts`           | Modify      | `kilocode-api-key` 처리 추가                                            |
-| `src/cli/program/register.onboard.ts`                       | Modify      | `--kilocode-api-key` 옵션 추가                                          |
-| `src/commands/onboard-non-interactive/local/auth-choice.ts` | Modify      | 비대화형 처리 추가                                                      |
-| `src/commands/onboard-auth.ts`                              | Modify      | 새 함수 export                                                          |
-| `src/agents/pi-embedded-runner/cache-ttl.ts`                | Modify      | kilocode 지원 추가                                                      |
-| `src/agents/transcript-policy.ts`                           | Modify      | kilocode Gemini 처리 추가                                               |

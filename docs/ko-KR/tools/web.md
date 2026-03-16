@@ -1,18 +1,19 @@
 ---
-summary: "Web search + fetch 도구(Brave, Gemini, Grok, Kimi, Perplexity provider)"
+summary: "Brave, Gemini, Grok, Kimi, Perplexity를 지원하는 web_search 및 web_fetch 가이드"
+description: "OpenClaw의 웹 검색과 fetch 도구 설정, provider 선택, API key 구성, fetch 제한을 설명합니다."
 read_when:
   - "`web_search` 또는 `web_fetch`를 활성화하려고 할 때"
-  - Brave 또는 Perplexity Search API key 설정이 필요할 때
+  - provider API key와 설정 경로를 확인해야 할 때
   - Google Search grounding과 함께 Gemini를 사용하려고 할 때
 title: "Web Tools"
 ---
 
 # Web tools
 
-OpenClaw는 두 가지 경량 web 도구를 제공합니다.
+OpenClaw는 두 가지 경량 웹 도구를 제공합니다.
 
-- `web_search` — Brave Search API, Google Search grounding이 포함된 Gemini, Grok, Kimi, 또는 Perplexity Search API를 사용해 web을 검색합니다.
-- `web_fetch` — HTTP fetch + 읽기 쉬운 추출(HTML → markdown/text)
+- `web_search` — Brave Search API, Google Search grounding이 포함된 Gemini, Grok, Kimi, 또는 Perplexity Search API를 사용해 웹을 검색합니다.
+- `web_fetch` — HTTP fetch와 읽기 쉬운 콘텐츠 추출(HTML → markdown/text)을 수행합니다.
 
 이 도구들은 browser automation이 **아닙니다**. JS 비중이 큰 사이트나 로그인 처리가 필요하면
 [Browser tool](/tools/browser)을 사용하세요.
@@ -47,7 +48,13 @@ Provider별 세부사항은 [Brave Search setup](/brave-search)와 [Perplexity S
 4. **Kimi** — `KIMI_API_KEY` / `MOONSHOT_API_KEY` env var 또는 `tools.web.search.kimi.apiKey` config
 5. **Perplexity** — `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, 또는 `tools.web.search.perplexity.apiKey` config
 
-어떤 key도 찾지 못하면 Brave로 fallback됩니다(key를 구성하라는 missing-key 오류가 표시됩니다).
+어떤 key도 찾지 못하면 Brave로 fallback되며, 필요한 key를 구성하라는 missing-key 오류가 표시됩니다.
+
+Runtime SecretRef 동작:
+
+- Web tool의 SecretRef는 gateway 시작 또는 reload 시점에 원자적으로 해석됩니다.
+- auto-detect mode에서는 선택된 provider key만 해석하며, 선택되지 않은 provider의 SecretRef는 실제로 선택되기 전까지 비활성 상태로 남습니다.
+- 선택된 provider의 SecretRef를 해석할 수 없고 provider env fallback도 없으면, 시작 또는 reload가 즉시 실패합니다.
 
 ## Web search 설정
 
@@ -76,9 +83,25 @@ Search plan은 요청 1,000건당 $5이므로, 이 크레딧으로 월 1,000 que
 
 ### Key 저장 위치
 
-**Config로 저장:** `openclaw configure --section web`을 실행하세요. Provider에 따라 key를 `tools.web.search.apiKey` 또는 `tools.web.search.perplexity.apiKey` 아래에 저장합니다.
+**Config로 저장:** `openclaw configure --section web`을 실행하면 provider별 config 경로에 key를 저장합니다.
 
-**Environment로 저장:** Gateway process environment에 `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, 또는 `BRAVE_API_KEY`를 설정하세요. Gateway 설치의 경우 `~/.openclaw/.env`(또는 service environment)에 넣으면 됩니다. [Env vars](/help/faq#how-does-openclaw-load-environment-variables)를 참고하세요.
+- Brave: `tools.web.search.apiKey`
+- Gemini: `tools.web.search.gemini.apiKey`
+- Grok: `tools.web.search.grok.apiKey`
+- Kimi: `tools.web.search.kimi.apiKey`
+- Perplexity: `tools.web.search.perplexity.apiKey`
+
+위 필드는 모두 SecretRef object도 지원합니다.
+
+**Environment로 저장:** Gateway process environment에 provider별 env var를 설정하세요.
+
+- Brave: `BRAVE_API_KEY`
+- Gemini: `GEMINI_API_KEY`
+- Grok: `XAI_API_KEY`
+- Kimi: `KIMI_API_KEY` 또는 `MOONSHOT_API_KEY`
+- Perplexity: `PERPLEXITY_API_KEY` 또는 `OPENROUTER_API_KEY`
+
+Gateway 설치의 경우 `~/.openclaw/.env`(또는 service environment)에 넣으면 됩니다. [Env vars](/help/faq#how-does-openclaw-load-environment-variables)를 참고하세요.
 
 ### Config 예시
 
@@ -214,6 +237,7 @@ Gateway 설치의 경우 `~/.openclaw/.env`에 넣으면 됩니다.
   - **Grok**: `XAI_API_KEY` 또는 `tools.web.search.grok.apiKey`
   - **Kimi**: `KIMI_API_KEY`, `MOONSHOT_API_KEY`, 또는 `tools.web.search.kimi.apiKey`
   - **Perplexity**: `PERPLEXITY_API_KEY`, `OPENROUTER_API_KEY`, 또는 `tools.web.search.perplexity.apiKey`
+- 위 provider key 필드는 모두 SecretRef object를 지원합니다.
 
 ### Config
 
@@ -308,6 +332,7 @@ URL을 fetch하고 읽기 쉬운 content를 추출합니다.
 
 - `tools.web.fetch.enabled`가 `false`가 아니어야 합니다(기본값: enabled)
 - 선택적 Firecrawl fallback: `tools.web.fetch.firecrawl.apiKey` 또는 `FIRECRAWL_API_KEY`를 설정하세요.
+- `tools.web.fetch.firecrawl.apiKey`는 SecretRef object를 지원합니다.
 
 ### web_fetch config
 
@@ -349,6 +374,8 @@ URL을 fetch하고 읽기 쉬운 content를 추출합니다.
 
 - `web_fetch`는 먼저 Readability(main-content extraction)를 사용하고, 그다음 Firecrawl(구성된 경우)을 사용합니다. 둘 다 실패하면 도구는 오류를 반환합니다.
 - Firecrawl 요청은 기본적으로 bot-circumvention mode를 사용하며 결과를 캐시합니다.
+- Firecrawl SecretRef는 Firecrawl이 활성 상태일 때만 해석됩니다 (`tools.web.fetch.enabled !== false` 이고 `tools.web.fetch.firecrawl.enabled !== false`).
+- Firecrawl이 활성 상태인데 SecretRef를 해석할 수 없고 `FIRECRAWL_API_KEY` fallback도 없으면, 시작 또는 reload가 즉시 실패합니다.
 - `web_fetch`는 기본적으로 Chrome과 유사한 User-Agent와 `Accept-Language`를 보냅니다. 필요하면 `userAgent`를 override하세요.
 - `web_fetch`는 private/internal hostname을 차단하고 redirect도 다시 검사합니다(`maxRedirects`로 제한).
 - `maxChars`는 `tools.web.fetch.maxCharsCap`을 넘지 못하도록 clamp됩니다.

@@ -1,136 +1,153 @@
 ---
-summary: "에이전트 루프의 수명주기(Lifecycle), 이벤트 스트림 및 대기(Wait) 시맨틱 안내"
+summary: "Agent loop lifecycle, streams, and wait semantics"
+description: "수신 요청이 실제 agent run으로 이어지고 lifecycle, tool, assistant stream으로 흘러가는 OpenClaw agent loop의 end-to-end 경로를 설명합니다."
 read_when:
-  - 에이전트 루프의 동작 과정이나 수명주기 이벤트를 상세히 파악해야 할 때
-  - 시스템 내부의 메시지 처리 흐름을 이해하고자 할 때
-title: "에이전트 루프"
+  - agent loop와 lifecycle event를 정확히 이해해야 할 때
+title: "Agent Loop"
 x-i18n:
   source_path: "concepts/agent-loop.md"
 ---
 
-# 에이전트 루프 (Agent Loop)
+# Agent Loop (OpenClaw)
 
-에이전트 루프는 에이전트가 실행되는 전체 과정을 의미함: 입력 수집 → 컨텍스트 구성 → 모델 추론 → 도구 실행 → 응답 스트리밍 → 데이터 영속화. 이는 메시지를 분석하여 실제 행동을 취하고 최종 응답을 생성하는 결정적인 경로이며, 동시에 세션 상태의 일관성을 유지하는 핵심 메커니즘임.
+agentic loop는 agent의 전체 “실제” 실행 경로입니다.
+입력 수집 → context assembly → model inference → tool execution → streaming reply → persistence까지 포함합니다.
+이 경로가 message를 action과 최종 reply로 바꾸면서 session state를 일관되게 유지합니다.
 
-OpenClaw에서 루프는 세션당 하나의 직렬화된 실행 단위로 작동하며, 모델이 사고하고 도구를 호출하며 결과를 출력하는 과정에서 수명주기 및 스트림 이벤트를 발생시킴. 이 문서는 이러한 루프가 엔드투엔드로 어떻게 연결되어 작동하는지 설명함.
+OpenClaw에서 loop는 session당 하나의 직렬화된 run이며,
+모델이 생각하고 tool을 호출하고 output을 stream하는 동안 lifecycle과 stream event를 emit합니다.
+이 문서는 그 authentic loop가 end-to-end로 어떻게 연결되는지 설명합니다.
 
-## 주요 진입점 (Entry Points)
+## Entry points
 
-- **Gateway RPC**: `agent` 및 `agent.wait` 메서드.
-- **CLI**: `openclaw agent` 명령어.
+- Gateway RPC: `agent`, `agent.wait`
+- CLI: `agent` command
 
-## 동작 방식 (상위 수준 개요)
+## How it works (high-level)
 
-1. **요청 접수**: `agent` RPC가 파라미터를 검증하고 세션(sessionKey/sessionId)을 해석함. 세션 메타데이터를 저장한 후 `{ runId, acceptedAt }` 정보를 즉시 반환함.
-2. **에이전트 실행**: `agentCommand`가 에이전트 로직을 수행함.
-   - 모델 정보 및 사고(Thinking)/상세 출력(Verbose) 설정값 해석.
-   - 스킬(Skills) 스냅샷 로드.
-   - `runEmbeddedPiAgent` (pi-agent-core 런타임) 호출.
-   - 내장 루프가 이벤트를 발생시키지 않을 경우를 대비해 **수명주기 종료/오류** 이벤트를 보장함.
-3. **런타임 처리 (`runEmbeddedPiAgent`)**:
-   - 세션별 및 전역 큐를 통한 실행 직렬화.
-   - 모델 및 인증 프로필 해석 후 Pi 세션 구축.
-   - Pi 이벤트를 구독하여 어시스턴트 및 도구의 변화량(Delta)을 스트리밍함.
-   - 타임아웃을 감시하고 초과 시 실행을 강제 중단(Abort)함.
-   - 최종 페이로드 및 사용량 메타데이터 반환.
-4. **이벤트 브리지**: `subscribeEmbeddedPiSession` 함수가 `pi-agent-core` 이벤트를 OpenClaw `agent` 스트림으로 연결함.
-   - 도구 관련 이벤트 => `stream: "tool"`
-   - 어시스턴트 변화량 => `stream: "assistant"`
-   - 수명주기 이벤트 => `stream: "lifecycle"` (단계: `start` | `end` | `error`)
-5. **결과 대기**: `agent.wait` 메서드는 `waitForAgentJob`을 호출함.
-   - 특정 `runId`의 **수명주기 종료/오류** 시점까지 대기함.
-   - `{ status: ok|error|timeout, startedAt, endedAt, error? }` 구조의 결과를 반환함.
+1. `agent` RPC가 param을 validate하고, session(sessionKey/sessionId)을 resolve하고, session metadata를 persist한 뒤 `{ runId, acceptedAt }`를 즉시 반환합니다.
+2. `agentCommand`가 agent를 실행합니다.
+   - model과 thinking/verbose default를 resolve
+   - skill snapshot 로드
+   - `runEmbeddedPiAgent` 호출 (pi-agent-core runtime)
+   - embedded loop가 emit하지 않더라도 **lifecycle end/error**를 보장
+3. `runEmbeddedPiAgent`
+   - per-session queue와 global queue로 run을 직렬화
+   - model + auth profile을 resolve하고 pi session 구성
+   - pi event를 구독해 assistant/tool delta를 stream
+   - timeout을 강제하고 초과 시 run abort
+   - payload와 usage metadata 반환
+4. `subscribeEmbeddedPiSession`이 pi-agent-core event를 OpenClaw `agent` stream에 bridge합니다.
+   - tool event => `stream: "tool"`
+   - assistant delta => `stream: "assistant"`
+   - lifecycle event => `stream: "lifecycle"` (`phase: "start" | "end" | "error"`)
+5. `agent.wait`는 `waitForAgentJob`을 사용합니다.
+   - 특정 `runId`의 **lifecycle end/error**까지 대기
+   - `{ status: ok|error|timeout, startedAt, endedAt, error? }` 반환
 
-## 큐잉 및 동시성 제어 (Queueing)
+## Queueing + concurrency
 
-- 모든 실행은 세션 키(Session Lane) 단위로 직렬화되며, 필요한 경우 전역 레인(Global Lane)을 거침.
-- 이는 도구 실행이나 세션 데이터의 경쟁 상태(Race condition)를 방지하고 이력의 일관성을 보장하기 위함임.
-- 메시징 채널은 상황에 따라 적절한 큐 모드(collect, steer, followup)를 선택하여 이 시스템에 요청을 전달함. 상세 내용은 [명령어 대기열(Queue)](/concepts/queue) 참조.
+- run은 session key별(session lane)로 직렬화되며, 필요 시 global lane도 통과합니다.
+- 이것은 tool/session race를 막고 session history 일관성을 유지합니다.
+- messaging channel은 `collect`, `steer`, `followup` 같은 queue mode를 통해 이 lane system에 message를 넣습니다.
+  자세한 내용은 [Command Queue](/concepts/queue)를 참고하세요.
 
-## 세션 및 워크스페이스 준비
+## Session + workspace preparation
 
-- 워크스페이스 경로를 해석하고 필요 시 생성함. 샌드박스 실행 시 별도의 격리된 워크스페이스 루트로 리디렉션될 수 있음.
-- 스킬 데이터를 로드(또는 스냅샷 재사용)하여 환경 변수 및 프롬프트에 주입함.
-- 부트스트랩 및 컨텍스트 파일을 확인하여 시스템 프롬프트에 포함시킴.
-- 세션 쓰기 잠금(Lock)을 획득하고, 스트리밍 시작 전 `SessionManager`를 초기화함.
+- workspace를 resolve하고 생성합니다. sandbox run은 sandbox workspace root로 리디렉션될 수 있습니다.
+- skill을 로드하거나 snapshot에서 재사용하고, env와 prompt에 주입합니다.
+- bootstrap/context file을 resolve하고 system prompt report에 포함합니다.
+- session write lock을 잡고, streaming 전에 `SessionManager`를 열어 준비합니다.
 
-## 프롬프트 조립 및 시스템 프롬프트
+## Prompt assembly + system prompt
 
-- 시스템 프롬프트는 OpenClaw 기본 프롬프트, 스킬별 지침, 부트스트랩 컨텍스트, 그리고 실행 시점의 오버라이드 정보를 합쳐서 생성됨.
-- 모델별 토큰 제한 및 압축을 위한 예약 토큰(Compaction reserve) 규정이 적용됨.
-- 상세 내용은 [시스템 프롬프트 구성](/concepts/system-prompt) 참조.
+- system prompt는 OpenClaw base prompt, skills prompt, bootstrap context, per-run override로 구성됩니다.
+- model별 limit과 compaction reserve token을 적용합니다.
+- 모델이 실제로 보는 내용은 [System prompt](/concepts/system-prompt)를 참고하세요.
 
-## 훅(Hook) 포인트: 동작 가로채기
+## Hook points (where you can intercept)
 
-OpenClaw는 두 가지 형태의 확장 포인트를 제공함:
+OpenClaw에는 두 종류의 hook system이 있습니다.
 
-- **내부 훅 (Gateway Hooks)**: 명령어 및 수명주기 이벤트에 반응하는 이벤트 기반 스크립트.
-- **플러그인 훅 (Plugin Hooks)**: 에이전트/도구 수명주기 및 Gateway 파이프라인 내부의 세밀한 제어 지점.
+- **Internal hook** (Gateway hook): command와 lifecycle event에 반응하는 script
+- **Plugin hook**: agent/tool lifecycle과 gateway pipeline 안의 extension point
 
-### 내부 훅 (Gateway Hooks)
+### Internal hooks (Gateway hooks)
 
-- **`agent:bootstrap`**: 시스템 프롬프트가 확정되기 전, 부트스트랩 파일을 구성하는 단계에서 실행됨. 컨텍스트 파일을 동적으로 추가하거나 제거할 때 사용함.
-- **명령어 훅**: `/new`, `/reset`, `/stop` 등 슬래시 명령어 발생 시 실행됨.
+- **`agent:bootstrap`**: system prompt가 finalize되기 전에 bootstrap file을 구성하는 동안 실행됩니다.
+  bootstrap context file을 추가하거나 제거할 때 사용합니다.
+- **Command hooks**: `/new`, `/reset`, `/stop` 등 command event에 반응합니다.
 
-상세 설정 및 예시는 [훅(Hooks) 가이드](/automation/hooks) 참조.
+설정과 예시는 [Hooks](/automation/hooks)를 참고하세요.
 
-### 플러그인 훅 (수명주기 확장)
+### Plugin hooks (agent + gateway lifecycle)
 
-- **`before_model_resolve`**: 세션 로드 전 실행됨. 모델 해석 전 공급자나 모델 ID를 결정론적으로 변경 가능함.
-- **`before_prompt_build`**: 세션 로드 후, 프롬프트 제출 직전에 실행됨. `prependContext` 등을 통해 동적 텍스트를 주입할 수 있음.
-- **`agent_end`**: 실행 완료 후 최종 메시지 목록과 메타데이터를 확인하는 시점임.
-- **`before_compaction` / `after_compaction`**: 대화 압축 주기를 모니터링하거나 개입함.
-- **`before_tool_call` / `after_tool_call`**: 도구의 파라미터나 실행 결과를 가로채어 수정 가능함.
-- **`tool_result_persist`**: 도구 결과가 세션 이력에 기록되기 직전에 동기적으로 변환함.
-- **`message_received` / `message_sending` / `message_sent`**: 메시지의 수발신 전후 시점 제어.
+이 hook은 agent loop 또는 gateway pipeline 안에서 실행됩니다.
 
-상세 API 명세는 [플러그인 훅 레퍼런스](/tools/plugin#plugin-hooks) 참조.
+- **`before_model_resolve`**: pre-session 단계에서 실행됩니다. (`messages` 없음) model resolution 전에 provider/model을 결정론적으로 override할 수 있습니다.
+- **`before_prompt_build`**: session load 후 실행됩니다. (`messages` 있음) prompt 제출 전에 `prependContext`, `systemPrompt`, `prependSystemContext`, `appendSystemContext`를 inject할 수 있습니다. per-turn 동적 text에는 `prependContext`, system prompt 공간에 남아야 하는 안정적 guidance에는 system-context field를 사용하세요.
+- **`before_agent_start`**: legacy compatibility hook으로 두 단계 중 어느 쪽에서든 실행될 수 있습니다. 명시적 hook을 우선하세요.
+- **`agent_end`**: 완료 후 최종 message list와 run metadata를 검사합니다.
+- **`before_compaction` / `after_compaction`**: compaction cycle을 관찰하거나 annotate합니다.
+- **`before_tool_call` / `after_tool_call`**: tool param/result를 가로챕니다.
+- **`tool_result_persist`**: tool result가 session transcript에 기록되기 전에 동기적으로 변환합니다.
+- **`message_received` / `message_sending` / `message_sent`**: inbound와 outbound message hook
+- **`session_start` / `session_end`**: session lifecycle boundary
+- **`gateway_start` / `gateway_stop`**: gateway lifecycle event
 
-## 스트리밍 및 부분 응답 (Streaming)
+hook API와 registration detail은 [Plugins](/tools/plugin#plugin-hooks)를 참고하세요.
 
-- 어시스턴트의 생성 결과가 실시간으로 스트리밍되어 `assistant` 이벤트로 전달됨.
-- 블록 스트리밍 모드에서는 텍스트 종료(`text_end`) 또는 메시지 종료(`message_end`) 시점에 부분 응답을 내보낼 수 있음.
-- 모델의 사고 과정(Reasoning)은 별도의 스트림이나 블록 응답 형태로 전송 가능함.
-- 상세 동작은 [스트리밍 가이드](/concepts/streaming) 참조.
+## Streaming + partial replies
 
-## 도구 실행 및 메시징 도구 처리
+- assistant delta는 pi-agent-core에서 stream되고 `assistant` event로 emit됩니다.
+- block streaming은 `text_end` 또는 `message_end` 시점에 partial reply를 보낼 수 있습니다.
+- reasoning streaming은 별도 stream이나 block reply로 보낼 수 있습니다.
+- chunking과 block reply 동작은 [Streaming](/concepts/streaming)을 참고하세요.
 
-- 도구의 시작, 업데이트, 종료 이벤트는 `tool` 스트림을 통해 전달됨.
-- 결과 데이터는 보안 및 가독성을 위해 크기 제한 및 이미지 데이터 정제 과정을 거친 후 로그에 기록되거나 출력됨.
-- 메시징 도구를 통한 중복 전송을 방지하기 위해 별도의 추적 로직이 작동함.
+## Tool execution + messaging tools
 
-## 응답 정제 및 억제 (Reply Shaping)
+- tool start/update/end event는 `tool` stream으로 emit됩니다.
+- tool result는 log/emit 전에 size와 image payload 측면에서 sanitize됩니다.
+- messaging tool send는 중복된 assistant confirmation을 막기 위해 추적됩니다.
 
-- 최종 결과물은 어시스턴트 텍스트, 사고 과정, 도구 실행 요약(활성화 시), 오류 메시지 등을 조합하여 구성됨.
-- `NO_REPLY` 토큰은 무음 응답으로 간주되어 발신 목록에서 제외됨.
-- 메시징 도구가 이미 결과를 전송한 경우, 어시스턴트의 중복 확인 텍스트를 제거함.
-- 표시할 내용이 없고 도구 실행 중 오류가 발생한 경우, 폴백(Fallback) 오류 메시지를 생성하여 사용자에게 알림.
+## Reply shaping + suppression
 
-## 압축 및 재시도 (Compaction)
+최종 payload는 다음을 조합해 구성됩니다.
 
-- 자동 압축 수행 시 `compaction` 이벤트를 발생시키며, 필요에 따라 실행을 재시도할 수 있음.
-- 재시도 시에는 중복 출력을 방지하기 위해 메모리 버퍼와 요약 정보를 초기화함.
-- 상세 파이프라인은 [데이터 압축(Compaction)](/concepts/compaction) 참조.
+- assistant text (필요하면 reasoning 포함)
+- inline tool summary (verbose + 허용된 경우)
+- model error가 있을 때 assistant error text
 
-## 현재 지원되는 이벤트 스트림
+`NO_REPLY`는 silent token으로 취급되어 outgoing payload에서 제거됩니다.
+messaging tool이 만든 duplicate는 final payload list에서 제거됩니다.
+표시 가능한 payload가 남지 않았고 tool error가 있었다면, fallback tool error reply를 emit합니다.
+(단, messaging tool이 이미 user-visible reply를 보낸 경우는 제외)
 
-- `lifecycle`: 전체적인 진행 단계 및 성공/실패 여부.
-- `assistant`: 에이전트가 생성한 실시간 응답 조각.
-- `tool`: 실행 중인 도구의 상태 및 결과 정보.
+## Compaction + retries
 
-## 채팅 채널 처리 로직
+- auto-compaction은 `compaction` stream event를 emit하고 retry를 트리거할 수 있습니다.
+- retry 시 duplicate output을 막기 위해 in-memory buffer와 tool summary를 reset합니다.
+- compaction pipeline은 [Compaction](/concepts/compaction)을 참고하세요.
 
-- 실시간 변화량(Delta)은 채팅 창에서 `delta` 메시지로 누적되어 표시됨.
-- **수명주기 종료 또는 오류** 시점에 최종(`final`) 메시지로 확정되어 전송됨.
+## Event streams (today)
 
-## 타임아웃 (Timeouts)
+- `lifecycle`: `subscribeEmbeddedPiSession`이 emit (필요 시 `agentCommand` fallback도 있음)
+- `assistant`: pi-agent-core의 streamed delta
+- `tool`: pi-agent-core의 streamed tool event
 
-- **`agent.wait` 기본값**: 30초 (대기 작업 자체에 대한 시간 제한).
-- **에이전트 런타임**: `agents.defaults.timeoutSeconds` (기본 600초). `runEmbeddedPiAgent` 내부의 중단 타이머에 의해 강제됨.
+## Chat channel handling
 
-## 중도 종료 시나리오
+- assistant delta는 chat `delta` message로 buffer됩니다.
+- chat `final`은 **lifecycle end/error** 시점에 emit됩니다.
 
-- 에이전트 실행 시간 초과 (Abort).
-- 명시적인 중단 신호 수신 (Cancel/AbortSignal).
-- Gateway 서버 연결 끊김 또는 RPC 타임아웃 발생.
-- `agent.wait` 대기 시간 만료 (대기만 중단되며 에이전트 실행은 계속될 수 있음).
+## Timeouts
+
+- `agent.wait` 기본값: 30초 (대기만 해당). `timeoutMs`로 override 가능
+- agent runtime: `agents.defaults.timeoutSeconds` 기본값 600초, `runEmbeddedPiAgent`의 abort timer에서 강제
+
+## Where things can end early
+
+- agent timeout (abort)
+- AbortSignal (cancel)
+- Gateway disconnect 또는 RPC timeout
+- `agent.wait` timeout (대기만 종료하며 agent 자체는 멈추지 않음)

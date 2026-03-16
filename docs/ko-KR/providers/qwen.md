@@ -1,5 +1,6 @@
 ---
 summary: "OpenClaw에서 Qwen OAuth(무료 티어) 사용하기"
+description: "OpenClaw에서 Qwen OAuth(무료 티어) 사용하기"
 read_when:
   - OpenClaw에서 Qwen을 사용하고 싶을 때
   - Qwen Coder에 무료 티어 OAuth 액세스를 사용하고 싶을 때
@@ -25,7 +26,7 @@ openclaw plugins enable qwen-portal-auth
 openclaw models auth login --provider qwen-portal --set-default
 ```
 
-이 명령은 Qwen device-code OAuth 흐름을 실행하고 `models.json`에 provider 항목을
+이 명령은 Qwen device-code OAuth 흐름을 실행하고 `models.json`에 프로바이더 항목을
 기록합니다(빠르게 전환할 수 있도록 `qwen` 별칭도 함께 추가됨).
 
 ## 모델 ID
@@ -50,4 +51,4 @@ openclaw models set qwen-portal/coder-model
 - 토큰은 자동으로 갱신됩니다. 갱신에 실패하거나 액세스가 취소되면 로그인 명령을 다시 실행하세요.
 - 기본 base URL은 `https://portal.qwen.ai/v1`입니다(Qwen이 다른 엔드포인트를 제공하면
   `models.providers.qwen-portal.baseUrl`로 재정의하세요).
-- provider 전체 규칙은 [모델 제공업체](/concepts/model-providers)를 참고하세요.
+- 프로바이더 전체 규칙은 [모델 제공업체](/concepts/model-providers)를 참고하세요.

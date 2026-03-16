@@ -1,8 +1,9 @@
 ---
-summary: "에이전트 훅(Hooks) 관리, 설치 및 업데이트를 위한 `openclaw hooks` 명령어 레퍼런스"
+summary: "CLI reference for `openclaw hooks` (agent hooks)"
+description: "agent hook을 조회·활성화·비활성화·설치·업데이트하는 `openclaw hooks` 명령과 bundled hook의 역할을 정리합니다."
 read_when:
-  - 에이전트 훅을 조회, 활성화 또는 비활성화하고자 할 때
-  - 새로운 훅 팩을 설치하거나 최신 버전으로 업데이트해야 할 때
+  - agent hook을 관리하고 싶을 때
+  - hook을 설치하거나 업데이트하려고 할 때
 title: "hooks"
 x-i18n:
   source_path: "cli/hooks.md"
@@ -10,109 +11,304 @@ x-i18n:
 
 # `openclaw hooks`
 
-에이전트 훅(Agent Hooks)을 관리함. 훅은 `/new`, `/reset` 명령어 발생 시 또는 Gateway 시작 시와 같은 특정 이벤트에 반응하여 실행되는 자동화 스크립트임.
+agent hook을 관리합니다. hook은 `/new`, `/reset`, gateway startup 같은 command/event에 반응하는 event-driven automation입니다.
 
-**관련 문서:**
-- 훅 개요 및 설정 가이드: [Hooks](/automation/hooks)
-- 플러그인 훅 가이드: [Plugins](/tools/plugin#plugin-hooks)
+Related:
 
-## 전체 훅 목록 조회
+- Hooks: [Hooks](/automation/hooks)
+- Plugin hooks: [Plugins](/tools/plugin#plugin-hooks)
+
+## List All Hooks
 
 ```bash
 openclaw hooks list
 ```
 
-워크스페이스, 관리형(Managed) 및 내장(Bundled) 디렉터리에서 감지된 모든 훅을 나열함.
+workspace, managed, bundled directory에서 발견된 모든 hook을 나열합니다.
 
-**주요 옵션:**
-- **`--eligible`**: 실행 요구 사항을 충족하는 훅만 표시.
-- **`--json`**: 결과를 JSON 형식으로 출력.
-- **`-v, --verbose`**: 미충족 요구 사항을 포함한 상세 정보 표시.
+**Options:**
 
-## 훅 상세 정보 조회
+- `--eligible`: 요구 사항을 충족한 eligible hook만 표시
+- `--json`: JSON 출력
+- `-v, --verbose`: missing requirement를 포함한 상세 정보 표시
+
+**Example output:**
+
+```text
+Hooks (4/4 ready)
+
+Ready:
+  🚀 boot-md ✓ - Run BOOT.md on gateway startup
+  📎 bootstrap-extra-files ✓ - Inject extra workspace bootstrap files during agent bootstrap
+  📝 command-logger ✓ - Log all command events to a centralized audit file
+  💾 session-memory ✓ - Save session context to memory when /new command is issued
+```
+
+**Example (verbose):**
+
+```bash
+openclaw hooks list --verbose
+```
+
+eligible하지 않은 hook의 missing requirement도 보여줍니다.
+
+**Example (JSON):**
+
+```bash
+openclaw hooks list --json
+```
+
+programmatic use를 위한 structured JSON을 반환합니다.
+
+## Get Hook Information
 
 ```bash
 openclaw hooks info <name>
 ```
 
-특정 훅의 소스 위치, 핸들러 경로, 트리거 이벤트 및 요구 사항 정보를 확인함.
+특정 hook의 상세 정보를 보여줍니다.
 
-**인자:**
-- **`<name>`**: 조회할 훅의 이름 (예: `session-memory`).
+**Arguments:**
 
-## 훅 준비 상태 점검
+- `<name>`: hook 이름 (예: `session-memory`)
+
+**Options:**
+
+- `--json`: JSON 출력
+
+**Example:**
+
+```bash
+openclaw hooks info session-memory
+```
+
+**Output:**
+
+```text
+💾 session-memory ✓ Ready
+
+Save session context to memory when /new command is issued
+
+Details:
+  Source: openclaw-bundled
+  Path: /path/to/openclaw/hooks/bundled/session-memory/HOOK.md
+  Handler: /path/to/openclaw/hooks/bundled/session-memory/handler.ts
+  Homepage: https://docs.openclaw.ai/automation/hooks#session-memory
+  Events: command:new
+
+Requirements:
+  Config: ✓ workspace.dir
+```
+
+## Check Hooks Eligibility
 
 ```bash
 openclaw hooks check
 ```
 
-현재 시스템에서 사용 가능한 훅과 설정 오류 등으로 인해 준비되지 않은 훅의 수량을 요약하여 표시함.
+hook eligibility 상태의 요약을 보여줍니다. (ready / not ready 개수)
 
-## 훅 활성화 (Enable)
+**Options:**
+
+- `--json`: JSON 출력
+
+**Example output:**
+
+```text
+Hooks Status
+
+Total hooks: 4
+Ready: 4
+Not ready: 0
+```
+
+## Enable a Hook
 
 ```bash
 openclaw hooks enable <name>
 ```
 
-지정된 훅을 설정 파일(`~/.openclaw/openclaw.json`)에 등록하고 활성화함.
+특정 hook을 config (`~/.openclaw/config.json`)에 추가해 활성화합니다.
 
-<Note>
-플러그인에 의해 관리되는 훅(`plugin:<id>`)은 여기서 직접 활성화/비활성화할 수 없음. 해당 플러그인을 활성화하거나 비활성화해야 함.
-</Note>
+**Note:** plugin이 관리하는 hook은 `openclaw hooks list`에서 `plugin:<id>`로 보이며, 여기서 enable/disable할 수 없습니다. 대신 plugin을 enable/disable해야 합니다.
 
-**수행 작업:**
-- 훅의 존재 여부 및 요구 사항 충족 여부 확인.
-- 설정 파일의 `hooks.internal.entries.<name>.enabled` 값을 `true`로 업데이트.
-- 설정을 디스크에 저장.
+**Arguments:**
 
-**활성화 이후**: 변경 사항을 적용하려면 **Gateway 서버를 재시작**해야 함.
+- `<name>`: hook 이름 (예: `session-memory`)
 
-## 훅 비활성화 (Disable)
+**Example:**
+
+```bash
+openclaw hooks enable session-memory
+```
+
+**Output:**
+
+```text
+✓ Enabled hook: 💾 session-memory
+```
+
+**What it does:**
+
+- hook이 존재하고 eligible한지 확인
+- config의 `hooks.internal.entries.<name>.enabled = true`로 업데이트
+- config를 디스크에 저장
+
+**After enabling:**
+
+- hook이 다시 로드되도록 gateway를 재시작하세요. (macOS에서는 menu bar app restart, dev에서는 gateway process restart)
+
+## Disable a Hook
 
 ```bash
 openclaw hooks disable <name>
 ```
 
-설정 파일을 업데이트하여 특정 훅의 실행을 중단함.
+config를 업데이트해 특정 hook을 비활성화합니다.
 
-## 훅 설치 (Install)
+**Arguments:**
+
+- `<name>`: hook 이름 (예: `command-logger`)
+
+**Example:**
+
+```bash
+openclaw hooks disable command-logger
+```
+
+**Output:**
+
+```text
+⏸ Disabled hook: 📝 command-logger
+```
+
+**After disabling:**
+
+- hook이 다시 로드되도록 gateway를 재시작하세요.
+
+## Install Hooks
 
 ```bash
 openclaw hooks install <path-or-spec>
 openclaw hooks install <npm-spec> --pin
 ```
 
-로컬 폴더, 압축 파일(`.zip`, `.tar.gz` 등) 또는 npm 패키지로부터 훅 팩(Hook Pack)을 설치함.
+local folder/archive 또는 npm에서 hook pack을 설치합니다.
 
-**보안 및 규칙:**
-- **npm 설치**: 패키지 이름과 정확한 버전 또는 태그만 허용하며, 보안을 위해 `--ignore-scripts` 옵션으로 실행됨.
-- **복사 및 기록**: 설치된 팩은 `~/.openclaw/hooks/<id>` 경로로 복사되며, 설치 이력은 설정 파일에 기록됨.
+npm spec은 **registry-only**입니다. (package name + optional exact version 또는 dist-tag) Git/URL/file spec과 semver range는 거부됩니다. dependency install은 안전을 위해 `--ignore-scripts`로 실행됩니다.
 
-**주요 옵션:**
-- **`-l, --link`**: 파일을 복사하지 않고 로컬 디렉터리를 심볼릭 링크로 연결함.
-- **`--pin`**: npm 설치 시 현재 해석된 정확한 버전을 고정하여 기록함.
+bare spec이나 `@latest`는 stable track으로 간주합니다. npm이 이를 prerelease로 resolve하면 OpenClaw는 진행을 멈추고 `@beta`, `@rc`, 또는 exact prerelease version처럼 명시적 prerelease opt-in을 요구합니다.
 
-## 훅 업데이트 (Update)
+**What it does:**
+
+- hook pack을 `~/.openclaw/hooks/<id>`로 복사
+- 설치된 hook을 `hooks.internal.entries.*`에 활성화
+- 설치 정보를 `hooks.internal.installs`에 기록
+
+**Options:**
+
+- `-l, --link`: local directory를 복사하지 않고 link (`hooks.internal.load.extraDirs`에 추가)
+- `--pin`: npm install을 resolved exact `name@version` 형태로 기록
+
+**Supported archives:** `.zip`, `.tgz`, `.tar.gz`, `.tar`
+
+**Examples:**
+
+```bash
+# Local directory
+openclaw hooks install ./my-hook-pack
+
+# Local archive
+openclaw hooks install ./my-hook-pack.zip
+
+# NPM package
+openclaw hooks install @openclaw/my-hook-pack
+
+# Link a local directory without copying
+openclaw hooks install -l ./my-hook-pack
+```
+
+## Update Hooks
 
 ```bash
 openclaw hooks update <id>
 openclaw hooks update --all
 ```
 
-설치된 훅 팩(주로 npm 기반)을 최신 버전으로 업데이트함. `--dry-run` 옵션을 사용하여 실제 변경 전 내역을 미리 확인할 수 있음.
+설치된 hook pack을 업데이트합니다. (npm install만 지원)
 
----
+**Options:**
 
-## 주요 내장 훅 (Bundled Hooks)
+- `--all`: 추적 중인 hook pack 전체 업데이트
+- `--dry-run`: 쓰기 없이 변경 예정만 표시
 
-### `session-memory`
-`/new` 명령어 실행 시 현재 세션의 맥락을 워크스페이스의 일일 기억 파일(`memory/YYYY-MM-DD-slug.md`)에 자동으로 저장함.
+저장된 integrity hash가 있고, 새로 가져온 artifact hash가 달라지면 OpenClaw는 진행 전에 경고를 출력하고 확인을 요구합니다. CI나 non-interactive run에서는 global `--yes`로 prompt를 건너뛸 수 있습니다.
 
-### `bootstrap-extra-files`
-에이전트 부트스트랩 단계에서 추가적인 워크스페이스 지침 파일(예: 모노레포 전용 `AGENTS.md`)을 동적으로 주입함.
+## Bundled Hooks
 
-### `command-logger`
-발생하는 모든 명령어 이벤트를 중앙 로그 파일(`~/.openclaw/logs/commands.log`)에 기록함. 감사(Audit) 목적으로 활용 가능함.
+### session-memory
 
-### `boot-md`
-Gateway 서버가 시작될 때 워크스페이스 루트의 `BOOT.md` 파일을 읽어 지정된 작업을 자동으로 수행함.
+`/new`를 실행할 때 session context를 memory에 저장합니다.
+
+**Enable:**
+
+```bash
+openclaw hooks enable session-memory
+```
+
+**Output:** `~/.openclaw/workspace/memory/YYYY-MM-DD-slug.md`
+
+**See:** [session-memory documentation](/automation/hooks#session-memory)
+
+### bootstrap-extra-files
+
+`agent:bootstrap` 동안 monorepo-local `AGENTS.md`, `TOOLS.md` 같은 추가 bootstrap file을 주입합니다.
+
+**Enable:**
+
+```bash
+openclaw hooks enable bootstrap-extra-files
+```
+
+**See:** [bootstrap-extra-files documentation](/automation/hooks#bootstrap-extra-files)
+
+### command-logger
+
+모든 command event를 중앙 audit file에 기록합니다.
+
+**Enable:**
+
+```bash
+openclaw hooks enable command-logger
+```
+
+**Output:** `~/.openclaw/logs/commands.log`
+
+**View logs:**
+
+```bash
+# Recent commands
+tail -n 20 ~/.openclaw/logs/commands.log
+
+# Pretty-print
+cat ~/.openclaw/logs/commands.log | jq .
+
+# Filter by action
+grep '"action":"new"' ~/.openclaw/logs/commands.log | jq .
+```
+
+**See:** [command-logger documentation](/automation/hooks#command-logger)
+
+### boot-md
+
+gateway가 시작될 때 (`channels` 시작 이후) `BOOT.md`를 실행합니다.
+
+**Events**: `gateway:startup`
+
+**Enable:**
+
+```bash
+openclaw hooks enable boot-md
+```
+
+**See:** [boot-md documentation](/automation/hooks#boot-md)

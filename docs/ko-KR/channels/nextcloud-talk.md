@@ -1,107 +1,149 @@
 ---
-summary: "Nextcloud Talk 연동 상태, 지원 기능 및 세부 설정 가이드"
+summary: "Nextcloud Talk 지원 상태, 기능, 구성 방법"
 read_when:
-  - Nextcloud Talk 채널 기능을 구축하거나 수정하고자 할 때
+  - Nextcloud Talk 채널 기능을 작업할 때
 title: "Nextcloud Talk"
+description: "Nextcloud Talk plugin 설치, webhook bot 설정, DM·room 접근 제어, capability와 configuration 옵션을 설명합니다."
 x-i18n:
   source_path: "channels/nextcloud-talk.md"
 ---
 
-# Nextcloud Talk (플러그인)
+# Nextcloud Talk (plugin)
 
-**상태**: 웹훅(Webhook) 봇 방식의 플러그인을 통해 지원됨. 개인 대화(DM), 룸(Rooms), 리액션 및 마크다운 메시지 형식을 지원함.
+상태: plugin(webhook bot)으로 지원됩니다. direct messages, rooms, reactions,
+markdown messages를 지원합니다.
 
-## 플러그인 설치 안내
+## Plugin 필요
 
-Nextcloud Talk 연동 기능은 플러그인 형태로 제공되며 코어 패키지에 포함되어 있지 않음.
+Nextcloud Talk는 plugin으로 제공되며 core install에 번들되어 있지 않습니다.
 
-**CLI를 통한 설치 (npm):**
+CLI 설치(npm registry):
+
 ```bash
 openclaw plugins install @openclaw/nextcloud-talk
 ```
 
-**로컬 소스 환경 설치:**
+로컬 checkout:
+
 ```bash
 openclaw plugins install ./extensions/nextcloud-talk
 ```
 
-상세 내용은 [플러그인 가이드](/tools/plugin) 참조.
+configure/onboarding 중 Nextcloud Talk를 선택하고 git checkout이 감지되면,
+OpenClaw는 로컬 install path를 자동으로 제안합니다.
 
-## 빠른 설정 가이드 (초보자용)
+자세한 내용: [Plugins](/tools/plugin)
 
-1. **플러그인 설치**: 위 안내에 따라 설치를 완료함.
-2. **Nextcloud 서버 봇 생성**: Nextcloud 서버 터미널에서 `occ` 명령어를 사용하여 봇을 등록함.
+## 빠른 설정(beginner)
+
+1. Nextcloud Talk plugin을 설치합니다.
+2. Nextcloud server에서 bot을 만듭니다.
+
    ```bash
-   ./occ talk:bot:install "OpenClaw" "<공유-시크릿>" "<웹훅-URL>" --feature reaction
+   ./occ talk:bot:install "OpenClaw" "<shared-secret>" "<webhook-url>" --feature reaction
    ```
-3. **룸 활성화**: 대상 대화방 설정에서 생성한 봇을 활성화함.
-4. **OpenClaw 구성**:
-   - 설정 파일: `channels.nextcloud-talk.baseUrl` 및 `botSecret` 입력.
-   - 환경 변수: `NEXTCLOUD_TALK_BOT_SECRET` (기본 계정 전용).
-5. **Gateway 시작**: 설정을 마친 후 서버를 가동함.
 
-### 최소 설정 예시
+3. 대상 room 설정에서 bot을 활성화합니다.
+4. OpenClaw를 설정합니다.
+   - Config: `channels.nextcloud-talk.baseUrl` + `channels.nextcloud-talk.botSecret`
+   - 또는 env: `NEXTCLOUD_TALK_BOT_SECRET` (default account only)
+5. gateway를 재시작합니다(또는 onboarding을 끝냅니다).
+
+최소 구성:
+
 ```json5
 {
   channels: {
     "nextcloud-talk": {
       enabled: true,
       baseUrl: "https://cloud.example.com",
-      botSecret: "your-shared-secret",
+      botSecret: "shared-secret",
       dmPolicy: "pairing",
     },
   },
 }
 ```
 
-## 참고 사항
+## 참고
 
-- **발신 제약**: 봇이 먼저 사용자에게 DM을 시작할 수 없음. 사용자가 봇에게 먼저 메시지를 보내야 대화가 시작됨.
-- **웹훅 도달 가능성**: 웹훅 URL은 외부(Nextcloud 서버)에서 Gateway로 접근 가능해야 함. 프록시 환경인 경우 `webhookPublicUrl`을 정확히 설정함.
-- **미디어 처리**: 봇 API 제약으로 인해 파일 업로드는 지원하지 않음. 미디어 전송 시 파일 URL 링크 형식으로 전달됨.
-- **세션 구분**: 기본 웹훅 페이로드는 DM과 룸을 구분하지 않음. 정확한 구분이 필요한 경우 `apiUser` 및 `apiPassword`를 설정하여 룸 유형 조회 기능을 활성화해야 함. 그렇지 않으면 모든 대화가 룸 세션으로 취급될 수 있음.
+- bot은 DM을 먼저 시작할 수 없습니다. 사용자가 먼저 bot에게 메시지를 보내야
+  합니다.
+- webhook URL은 Gateway에서 도달 가능해야 합니다. proxy 뒤에 있다면
+  `webhookPublicUrl`을 설정하세요.
+- bot API는 media upload를 지원하지 않으므로 media는 URL로 전송됩니다.
+- webhook payload는 DM과 room을 구분하지 못합니다. `apiUser` +
+  `apiPassword`를 설정하면 room type lookup을 활성화할 수 있습니다
+  (그렇지 않으면 DM도 room으로 취급).
 
-## 접근 제어 정책
+## 접근 제어(DM)
 
-### 개인 대화 (DM)
-- **기본값**: `"pairing"` 모드. 승인되지 않은 발신자에게는 페어링 코드가 전송됨.
-- **허용 목록**: `allowFrom`에 Nextcloud 사용자 ID를 등록하여 관리함. 표시 이름은 매칭 대상에서 제외됨.
+- 기본값: `channels.nextcloud-talk.dmPolicy = "pairing"`. 알 수 없는 sender는
+  pairing code를 받습니다.
+- 승인 방법:
+  - `openclaw pairing list nextcloud-talk`
+  - `openclaw pairing approve nextcloud-talk <CODE>`
+- 공개 DM: `channels.nextcloud-talk.dmPolicy="open"` +
+  `channels.nextcloud-talk.allowFrom=["*"]`
+- `allowFrom`은 Nextcloud user ID만 매칭합니다. display name은 무시됩니다.
 
-### 룸 (그룹)
-- **기본값**: `"allowlist"` 모드 (멘션 게이팅 적용).
-- **룸 허용 목록**: `channels.nextcloud-talk.rooms` 섹션에 룸 토큰을 등록하여 관리함.
+## Rooms(groups)
+
+- 기본값: `channels.nextcloud-talk.groupPolicy = "allowlist"` (mention-gated)
+- `channels.nextcloud-talk.rooms`로 room allowlist를 설정합니다.
 
 ```json5
 {
   channels: {
     "nextcloud-talk": {
       rooms: {
-        "room-token-xyz": { requireMention: true },
+        "room-token": { requireMention: true },
       },
     },
   },
 }
 ```
 
-## 지원 기능 요약
+- room을 하나도 허용하지 않으려면 allowlist를 비워 두거나
+  `channels.nextcloud-talk.groupPolicy="disabled"`를 사용하세요.
 
-| 기능 | 지원 상태 |
-| :--- | :--- |
-| 개인 대화 (DM) | ✅ 지원 |
-| 룸 (Groups) | ✅ 지원 |
-| 스레드 (Threads) | ❌ 미지원 |
-| 미디어 전송 | ⚠️ URL 링크만 지원 |
-| 리액션 | ✅ 지원 |
-| 네이티브 명령어 | ❌ 미지원 |
+## Capabilities
 
-## 주요 설정 레퍼런스
+| Feature         | Status        |
+| --------------- | ------------- |
+| Direct messages | Supported     |
+| Rooms           | Supported     |
+| Threads         | Not supported |
+| Media           | URL-only      |
+| Reactions       | Supported     |
+| Native commands | Not supported |
 
-- **`baseUrl`**: Nextcloud 인스턴스 주소.
-- **`botSecret`**: 봇 생성 시 설정한 공유 시크릿.
-- **`apiUser` / **`apiPassword`**: 룸 정보 조회 및 DM 판별을 위한 API 계정 정보.
-- **`webhookPort`**: 웹훅 리스너 포트 (기본값: 8788).
-- **`webhookPath`**: 웹훅 엔드포인트 경로 (기본값: `/nextcloud-talk-webhook`).
-- **`dmPolicy`**: `pairing`, `allowlist`, `open`, `disabled` 중 선택.
-- **`chunkMode`**: 긴 응답 전송 시 `length` (글자 수) 또는 `newline` (문단 단위) 분할 방식 선택.
+## Configuration reference (Nextcloud Talk)
 
-상세 설정 스키마는 [Gateway 설정 가이드](/gateway/configuration)를 참조함.
+전체 구성: [Configuration](/gateway/configuration)
+
+Provider option:
+
+- `channels.nextcloud-talk.enabled`: 채널 시작 활성화/비활성화
+- `channels.nextcloud-talk.baseUrl`: Nextcloud instance URL
+- `channels.nextcloud-talk.botSecret`: bot shared secret
+- `channels.nextcloud-talk.botSecretFile`: regular-file secret path. symlink는 거부
+- `channels.nextcloud-talk.apiUser`: room lookup용 API user(DM detection)
+- `channels.nextcloud-talk.apiPassword`: room lookup용 API/app password
+- `channels.nextcloud-talk.apiPasswordFile`: API password file path
+- `channels.nextcloud-talk.webhookPort`: webhook listener port (기본 8788)
+- `channels.nextcloud-talk.webhookHost`: webhook host (기본 0.0.0.0)
+- `channels.nextcloud-talk.webhookPath`: webhook path (기본 `/nextcloud-talk-webhook`)
+- `channels.nextcloud-talk.webhookPublicUrl`: 외부에서 도달 가능한 webhook URL
+- `channels.nextcloud-talk.dmPolicy`: `pairing | allowlist | open | disabled`
+- `channels.nextcloud-talk.allowFrom`: DM allowlist(user IDs). `open`에는 `"*"` 필요
+- `channels.nextcloud-talk.groupPolicy`: `allowlist | open | disabled`
+- `channels.nextcloud-talk.groupAllowFrom`: group allowlist(user IDs)
+- `channels.nextcloud-talk.rooms`: room별 설정과 allowlist
+- `channels.nextcloud-talk.historyLimit`: group history limit (`0`이면 비활성화)
+- `channels.nextcloud-talk.dmHistoryLimit`: DM history limit (`0`이면 비활성화)
+- `channels.nextcloud-talk.dms`: DM별 override (`historyLimit`)
+- `channels.nextcloud-talk.textChunkLimit`: outbound text chunk size(chars)
+- `channels.nextcloud-talk.chunkMode`: `length`(기본) 또는 `newline`
+- `channels.nextcloud-talk.blockStreaming`: 이 채널의 block streaming 비활성화
+- `channels.nextcloud-talk.blockStreamingCoalesce`: block streaming coalesce tuning
+- `channels.nextcloud-talk.mediaMaxMb`: inbound media cap(MB)

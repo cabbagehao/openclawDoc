@@ -1,151 +1,219 @@
 ---
-summary: "OpenClaw를 개인 비서로 활용하기 위한 엔드투엔드 설정 및 보안 주의사항 안내"
+summary: "안전 주의사항을 포함한 OpenClaw 개인 비서 운영 종합 가이드"
 read_when:
-  - 새로운 비서 인스턴스를 연동하고 구축할 때
-  - 보안 설정 및 권한 부여의 영향도를 검토할 때
-title: "개인 비서 설정 가이드"
+  - 새로운 비서 인스턴스를 온보딩할 때
+  - 보안 및 권한 영향도를 검토할 때
+title: "개인 비서 설정"
+description: "안전 주의사항을 포함한 OpenClaw 개인 비서 운영 종합 가이드"
 x-i18n:
   source_path: "start/openclaw.md"
 ---
 
-# OpenClaw로 개인 비서 구축하기
+# OpenClaw로 개인 비서 만들기
 
-OpenClaw는 WhatsApp, Telegram, Discord, iMessage를 지원하는 **Pi** 에이전트용 통합 게이트웨이임 (플러그인 추가 시 Mattermost 지원). 이 가이드는 하나의 전용 WhatsApp 번호를 사용하여 24시간 작동하는 개인용 인공지능 비서를 구축하는 방법을 설명함.
+OpenClaw는 **Pi** 에이전트를 위한 WhatsApp + Telegram + Discord + iMessage gateway입니다. 플러그인을 추가하면 Mattermost도 사용할 수 있습니다. 이 가이드는 "개인 비서" 구성, 즉 전용 WhatsApp 번호 하나를 항상 켜져 있는 에이전트처럼 운용하는 방법을 설명합니다.
 
-## ⚠️ 보안 및 안전 주의사항
+## ⚠️ 먼저 안전부터
 
-에이전트에게 권한을 부여한다는 것은 다음과 같은 위험 요소를 포함함:
+이 구성에서는 에이전트가 다음과 같은 위치에 놓입니다.
 
-- **시스템 명령어 실행**: Pi 도구 설정에 따라 사용자의 PC에서 직접 명령을 내릴 수 있음.
-- **파일 접근**: 워크스페이스 내의 파일을 읽거나 수정할 수 있음.
-- **메시지 발신**: 사용자를 대신하여 WhatsApp, Telegram 등 연결된 채널로 메시지를 전송할 수 있음.
+- 사용 중인 Pi tool 설정에 따라 사용자의 머신에서 명령을 실행할 수 있음
+- 워크스페이스의 파일을 읽고 쓸 수 있음
+- WhatsApp/Telegram/Discord/Mattermost (plugin)를 통해 메시지를 다시 외부로 보낼 수 있음
 
-안전한 운영을 위한 권장 사항:
+처음에는 보수적으로 시작하세요.
 
-- **접근 제한**: 반드시 `channels.whatsapp.allowFrom`을 설정하여 승인된 번호만 접근할 수 있게 함 (개인용 PC에서 누구나 접근 가능하게 설정하는 것은 위험함).
-- **전용 번호 사용**: 개인용 계정과 분리된 비서 전용 WhatsApp 번호를 사용할 것을 권장함.
-- **하트비트 신중 설정**: 하트비트 기능은 기본 30분 주기로 설정됨. 시스템이 안정화되기 전까지는 `agents.defaults.heartbeat.every: "0m"`로 설정하여 비활성화하는 것이 안전함.
+- 항상 `channels.whatsapp.allowFrom`을 설정하세요. 개인 Mac에서 누구나 접근 가능한 상태로 운영하면 안 됩니다.
+- 비서용 WhatsApp 번호는 전용 번호를 사용하세요.
+- Heartbeat는 이제 기본적으로 30분마다 실행됩니다. 구성을 신뢰하기 전까지는 `agents.defaults.heartbeat.every: "0m"`로 비활성화하세요.
 
-## 사전 준비 사항
+## 사전 준비
 
-- OpenClaw 설치 및 온보딩 완료 ([시작하기 가이드](/start/getting-started) 참조).
-- 비서용으로 사용할 별도의 전화번호 (SIM, eSIM 또는 선불폰).
+- OpenClaw를 설치하고 온보딩을 마쳐야 합니다. 아직이라면 [Getting Started](/start/getting-started)를 먼저 참고하세요.
+- 비서용 두 번째 전화번호가 필요합니다 (SIM/eSIM/선불폰)
 
-## 권장 시스템 구성 (투폰 설정)
+## 투폰 구성(권장)
 
-아래와 같은 구성을 추천함:
+권장 구성은 다음과 같습니다.
 
 ```mermaid
 flowchart TB
-    A["<b>사용자 메인 폰 (개인용)<br></b><br>개인 WhatsApp 계정<br>+1-555-YOU"] -- 메시지 전송 --> B["<b>비서 전용 폰 (업무용)<br></b><br>비서 전용 WhatsApp<br>+1-555-ASSIST"]
-    B -- QR 코드로 연결 --> C["<b>서버/PC (OpenClaw 실행 중)<br></b><br>Pi 에이전트 구동"]
+    A["<b>Your Phone (personal)<br></b><br>Your WhatsApp<br>+1-555-YOU"] -- message --> B["<b>Second Phone (assistant)<br></b><br>Assistant WA<br>+1-555-ASSIST"]
+    B -- linked via QR --> C["<b>Your Mac (openclaw)<br></b><br>Pi agent"]
 ```
 
-개인용 계정을 OpenClaw에 직접 연결하면 수신되는 모든 개인 메시지가 에이전트의 입력값으로 처리되어 의도치 않은 동작이 발생할 수 있음.
+개인 WhatsApp 계정을 OpenClaw에 연결하면, 나에게 오는 모든 메시지가 "agent input"이 됩니다. 대부분의 경우 원하는 동작이 아닙니다.
 
-## 5분 빠른 시작 가이드
+## 5분 빠른 시작
 
-1. **WhatsApp Web 페어링**: 비서용 폰의 WhatsApp 앱으로 화면의 QR 코드를 스캔함.
-   ```bash
-   openclaw channels login
-   ```
+1. WhatsApp Web을 페어링합니다(QR이 표시되면 비서용 폰으로 스캔).
 
-2. **Gateway 서버 실행**: 터미널을 열어 서버를 구동함 (실행 상태 유지).
-   ```bash
-   openclaw gateway --port 18789
-   ```
+```bash
+openclaw channels login
+```
 
-3. **최소 설정 적용**: `~/.openclaw/openclaw.json` 파일에 허용할 번호를 등록함.
-   ```json5
-   {
-     channels: { 
-       whatsapp: { 
-         allowFrom: ["+15555550123"] // 본인의 메인 폰 번호
-       } 
-     },
-   }
-   ```
+2. Gateway를 시작합니다(계속 실행된 상태로 둡니다).
 
-이제 허용된 번호로 비서용 번호에 메시지를 보내 대화를 시작함. 온보딩이 완료되면 대시보드 링크가 출력됨. 인증 요청 시 `gateway.auth.token`의 값을 입력함. 이후 대시보드 재접속은 `openclaw dashboard` 명령어를 사용함.
+```bash
+openclaw gateway --port 18789
+```
 
-## 에이전트 워크스페이스 (AGENTS) 설정
+3. `~/.openclaw/openclaw.json`에 최소 설정을 넣습니다.
 
-OpenClaw는 지정된 워크스페이스 디렉터리에서 운영 지침과 기억(Memory) 데이터를 읽어옴.
+```json5
+{
+  channels: { whatsapp: { allowFrom: ["+15555550123"] } },
+}
+```
 
-기본 경로는 `~/.openclaw/workspace`이며, 최초 실행 시 다음의 기본 파일들이 자동 생성됨: `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`. 
+이제 allowlist에 등록한 폰에서 비서 번호로 메시지를 보내면 됩니다.
 
-**팁:** 이 폴더는 에이전트의 '두뇌'와 같으므로, (비공개) Git 저장소로 관리하여 지침과 기억 데이터를 안전하게 백업하는 것이 좋음.
+온보딩이 끝나면 dashboard가 자동으로 열리고 깔끔한(non-tokenized) 링크가 출력됩니다. 인증을 요구하면 Control UI 설정에 `gateway.auth.token` 값을 붙여 넣으세요. 나중에 다시 열려면 `openclaw dashboard`를 사용하면 됩니다.
+
+## 에이전트에 워크스페이스 제공하기 (AGENTS)
+
+OpenClaw는 워크스페이스 디렉터리에서 운영 지침과 "기억"을 읽습니다.
+
+기본적으로 OpenClaw는 에이전트 워크스페이스로 `~/.openclaw/workspace`를 사용하며, setup/첫 agent run 시 이 디렉터리와 시작용 `AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`를 자동 생성합니다. `BOOTSTRAP.md`는 워크스페이스가 완전히 새로 만들어질 때만 생성되며(삭제한 뒤 다시 생기면 안 됩니다), `MEMORY.md`는 선택 사항이라 자동 생성되지 않습니다. 하지만 파일이 있으면 일반 세션에서 로드됩니다. subagent 세션에는 `AGENTS.md`와 `TOOLS.md`만 주입됩니다.
+
+팁: 이 폴더를 OpenClaw의 "기억"처럼 취급하고 git 저장소(가급적 비공개)로 관리해 `AGENTS.md`와 기억 파일을 백업하세요. git이 설치되어 있으면 완전히 새 워크스페이스는 자동으로 git 초기화됩니다.
 
 ```bash
 openclaw setup
 ```
 
-상세 구조 및 백업 방법: [에이전트 워크스페이스](/concepts/agent-workspace)
-기억 시스템 활용: [메모리 시스템 가이드](/concepts/memory)
+워크스페이스 전체 구조와 백업 가이드: [Agent workspace](/concepts/agent-workspace)
+기억 워크플로우: [Memory](/concepts/memory)
 
-## 비서 최적화 설정
+선택 사항으로 `agents.defaults.workspace`를 사용해 다른 워크스페이스를 지정할 수 있습니다(`~` 지원).
 
-기본 설정으로도 충분히 작동하지만, 상황에 맞게 다음 항목을 조정할 수 있음:
+```json5
+{
+  agent: {
+    workspace: "~/.openclaw/workspace",
+  },
+}
+```
 
-- `SOUL.md`: 에이전트의 성격 및 상세 행동 지침.
-- **사고 수준(Thinking Level)**: 에이전트의 추론 깊이 기본값 설정.
-- **하트비트**: 능동적인 작업 수행을 위한 주기 설정.
+이미 저장소에서 자체 워크스페이스 파일을 배포하고 있다면 bootstrap 파일 생성을 완전히 끌 수 있습니다.
 
-**설정 예시:**
+```json5
+{
+  agent: {
+    skipBootstrap: true,
+  },
+}
+```
+
+## "비서"처럼 동작하게 만드는 설정
+
+OpenClaw의 기본값은 좋은 비서 구성이지만, 보통은 다음 항목을 조정하게 됩니다.
+
+- `SOUL.md`의 페르소나/지침
+- 필요하다면 thinking 기본값
+- 충분히 신뢰한 뒤 heartbeat
+
+예시:
 
 ```json5
 {
   logging: { level: "info" },
   agent: {
-    model: "anthropic/claude-3-5-sonnet-latest",
+    model: "anthropic/claude-opus-4-6",
     workspace: "~/.openclaw/workspace",
     thinkingDefault: "high",
-    heartbeat: { every: "30m" },
+    timeoutSeconds: 1800,
+    // Start with 0; enable later.
+    heartbeat: { every: "0m" },
   },
   channels: {
     whatsapp: {
       allowFrom: ["+15555550123"],
-      groups: { "*": { requireMention: true } }
-    }
+      groups: {
+        "*": { requireMention: true },
+      },
+    },
+  },
+  routing: {
+    groupChat: {
+      mentionPatterns: ["@openclaw", "openclaw"],
+    },
   },
   session: {
+    scope: "per-sender",
     resetTriggers: ["/new", "/reset"],
-    reset: { mode: "daily", atHour: 4 }
-  }
+    reset: {
+      mode: "daily",
+      atHour: 4,
+      idleMinutes: 10080,
+    },
+  },
 }
 ```
 
-## 세션 관리 및 초기화
+## 세션과 메모리
 
-- **데이터 저장**: 각 세션의 상세 대화 내용은 JSONL 파일로 저장됨.
-- **세션 초기화**: 채팅 창에 `/new` 또는 `/reset`을 입력하여 대화 맥락을 새로 고칠 수 있음.
-- **컨텍스트 압축**: `/compact` 명령어를 통해 대화 이력을 요약하고 사용 가능한 토큰 용량을 확보함.
+- Session 파일: `~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
+- Session 메타데이터(token 사용량, 마지막 route 등): `~/.openclaw/agents/<agentId>/sessions/sessions.json` (legacy: `~/.openclaw/sessions/sessions.json`)
+- `/new` 또는 `/reset`은 해당 채팅에 새 세션을 시작합니다(`resetTriggers`로 설정 가능). 이 명령만 단독으로 보내면, reset이 적용되었음을 짧게 확인하는 인사 메시지를 반환합니다.
+- `/compact [instructions]`는 세션 컨텍스트를 압축하고 남은 컨텍스트 예산을 알려줍니다.
 
-## 하트비트 (Proactive Mode)
+## Heartbeats (proactive mode)
 
-OpenClaw는 주기적으로 `HEARTBEAT.md`를 읽어 스스로 할 일을 찾아 수행함.
-- `HEARTBEAT.md`가 비어 있으면 리소스 절약을 위해 실행을 건너뜀.
-- 특별한 이슈가 없을 때 에이전트가 `HEARTBEAT_OK`로 답하면 불필요한 알림 발송이 억제됨.
+기본적으로 OpenClaw는 30분마다 다음 프롬프트로 heartbeat를 실행합니다.
+`Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
+비활성화하려면 `agents.defaults.heartbeat.every: "0m"`로 설정하세요.
 
-## 미디어 데이터 처리
+- `HEARTBEAT.md`가 사실상 비어 있으면(빈 줄과 `# Heading` 같은 markdown header만 있는 경우) API 호출을 아끼기 위해 heartbeat run을 건너뜁니다.
+- 파일이 없더라도 heartbeat는 실행되며, 무엇을 할지는 모델이 판단합니다.
+- 에이전트가 `HEARTBEAT_OK`로 응답하면(선택적으로 짧은 패딩 포함, `agents.defaults.heartbeat.ackMaxChars` 참고) 해당 heartbeat의 외부 전송은 억제됩니다.
+- 기본적으로 DM 스타일 `user:<id>` 대상에는 heartbeat 전송이 허용됩니다. 실행은 유지하되 직접 대상 전달만 막고 싶다면 `agents.defaults.heartbeat.directPolicy: "block"`을 설정하세요.
+- Heartbeat는 전체 agent turn을 수행하므로, 간격이 짧을수록 더 많은 토큰을 사용합니다.
 
-- **수신 미디어**: `{{MediaPath}}`, `{{Transcript}}` 등의 템플릿 변수를 통해 이미지나 음성 전사 데이터를 명령에 활용함.
-- **발신 미디어**: 에이전트 응답에 `MEDIA:<경로 또는 URL>` 형식을 한 줄에 입력하면 파일이 자동으로 첨부됨.
-
-## 시스템 운영 점검
-
-```bash
-openclaw status          # 로컬 인증 및 세션 상태 확인
-openclaw status --all    # 상세 진단 결과 출력
-openclaw health --json   # Gateway 서버 상태 스냅샷 조회
+```json5
+{
+  agent: {
+    heartbeat: { every: "30m" },
+  },
+}
 ```
 
-로그 파일 위치: `/tmp/openclaw/openclaw-YYYY-MM-DD.log`
+## 미디어 입력과 출력
+
+들어오는 첨부파일(images/audio/docs)은 템플릿을 통해 명령에 노출할 수 있습니다.
+
+- `{{MediaPath}}` (로컬 임시 파일 경로)
+- `{{MediaUrl}}` (pseudo-URL)
+- `{{Transcript}}` (audio transcription이 활성화된 경우)
+
+에이전트가 첨부파일을 보낼 때는 줄 하나를 단독으로 `MEDIA:<path-or-url>` 형식으로 넣으면 됩니다(공백 없음). 예시:
+
+```
+Here’s the screenshot.
+MEDIA:https://example.com/screenshot.png
+```
+
+OpenClaw는 이를 추출해 텍스트와 함께 미디어로 전송합니다.
+
+## 운영 체크리스트
+
+```bash
+openclaw status          # local status (creds, sessions, queued events)
+openclaw status --all    # full diagnosis (read-only, pasteable)
+openclaw status --deep   # adds gateway health probes (Telegram + Discord)
+openclaw health --json   # gateway health snapshot (WS)
+```
+
+로그는 `/tmp/openclaw/` 아래에 저장됩니다(기본값: `openclaw-YYYY-MM-DD.log`).
 
 ## 다음 단계
 
-- **웹 제어**: [WebChat 인터페이스](/web/webchat)
-- **고급 운영**: [Gateway 실행 가이드](/gateway)
-- **작업 예약**: [크론(Cron) 작업 설정](/automation/cron-jobs)
-- **플랫폼별 앱**: [macOS](/platforms/macos), [iOS](/platforms/ios), [Android](/platforms/android)
-- **보안 강화**: [보안 아키텍처](/gateway/security)
+- WebChat: [WebChat](/web/webchat)
+- Gateway 운영: [Gateway runbook](/gateway)
+- Cron + wakeups: [Cron jobs](/automation/cron-jobs)
+- macOS 메뉴 막대 컴패니언: [OpenClaw macOS app](/platforms/macos)
+- iOS node 앱: [iOS app](/platforms/ios)
+- Android node 앱: [Android app](/platforms/android)
+- Windows 현황: [Windows (WSL2)](/platforms/windows)
+- Linux 현황: [Linux app](/platforms/linux)
+- 보안: [Security](/gateway/security)

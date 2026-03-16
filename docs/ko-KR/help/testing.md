@@ -1,5 +1,6 @@
 ---
 summary: "테스트 스위트, Docker runner, 그리고 각 테스트가 무엇을 검증하는지 정리한 가이드"
+description: "OpenClaw의 unit, e2e, live 테스트 스위트와 Docker runner의 역할, 실행 명령, 회귀 테스트 작성 흐름을 설명합니다."
 read_when:
   - 로컬 또는 CI에서 테스트를 실행할 때
   - model/provider 버그에 대한 회귀 테스트를 추가할 때

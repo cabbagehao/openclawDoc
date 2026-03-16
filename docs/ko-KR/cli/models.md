@@ -1,5 +1,6 @@
 ---
 summary: "모델 검색, 스캔 및 기본 모델, 폴백(Fallback), 인증 프로필 설정을 위한 `openclaw models` 명령어 레퍼런스"
+description: "기본 model 확인, provider auth 점검, alias와 fallback 관리까지 `openclaw models` CLI의 핵심 작업을 정리합니다."
 read_when:
   - 기본 사용 모델을 변경하거나 공급자별 인증 상태를 확인하고자 할 때
   - 사용 가능한 모델을 스캔하고 인증 프로필의 오류를 디버깅할 때
@@ -10,76 +11,71 @@ x-i18n:
 
 # `openclaw models`
 
-모델 탐색, 자동 스캔 및 관련 설정(기본 모델, 장애 조치용 폴백, 인증 프로필)을 관리함.
+model discovery, scan, configuration(default model, fallback, auth profile)을 관리합니다.
 
-**관련 문서:**
-- 공급자 및 모델 상세 가이드: [Models](/providers/models)
-- 인증 설정 방법: [시작하기](/start/getting-started)
+Related:
+
+- Providers + models: [Models](/providers/models)
+- Provider auth setup: [Getting started](/start/getting-started)
 
 ## 주요 명령어
 
 ```bash
-# 현재 설정된 기본 모델 및 인증 요약 정보 확인
 openclaw models status
-
-# 사용 가능한 전체 모델 목록 조회
 openclaw models list
-
-# 기본 사용 모델 즉시 변경 (별칭 지원)
-openclaw models set <모델명-또는-별칭>
-
-# 공급자별 사용 가능한 모델 자동 스캔 및 등록
+openclaw models set <model-or-alias>
 openclaw models scan
 ```
 
-`openclaw models status` 명령어는 현재 활성화된 기본 모델과 폴백 모델 리스트, 그리고 각 인증 프로필의 상태를 요약하여 보여줌. 사용량 정보(Usage snapshots)가 있는 경우 해당 정보도 함께 표시됨.
+`openclaw models status`는 해석된 default/fallback model과 auth overview를 보여줍니다.
+provider usage snapshot이 있으면 OAuth/token 상태 섹션에 provider usage header도 포함됩니다.
+`--probe`를 추가하면 configured된 각 provider profile에 대해 live auth probe를 실행합니다.
+probe는 실제 요청이므로 token을 소모하거나 rate limit를 유발할 수 있습니다.
+`--agent <id>`를 사용하면 특정 configured agent의 model/auth 상태를 확인합니다. 생략하면 `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR`를 우선 사용하고, 없으면 configured된 default agent를 사용합니다.
 
-**상태 확인 옵션:**
-- **`--probe`**: 설정된 모든 인증 프로필에 대해 실제 API 요청을 보내 유효성을 검증함. (주의: 실제 토큰이 소비되며 속도 제한이 발생할 수 있음)
-- **`--agent <id>`**: 특정 에이전트 인스턴스의 모델 및 인증 상태를 점검함. (미지정 시 기본 에이전트 정보 출력)
+Notes:
 
-### 참고 사항
+- `models set <model-or-alias>`는 `provider/model` 또는 alias를 받습니다.
+- model ref는 첫 번째 `/`를 기준으로 parsing합니다. model ID 안에 `/`가 들어가는 경우(OpenRouter 스타일) provider prefix를 포함해야 합니다. 예: `openrouter/moonshotai/kimi-k2`
+- provider를 생략하면 OpenClaw는 이를 alias 또는 default provider용 model로 처리합니다. (model ID에 `/`가 없을 때만 가능)
+- `models status`의 auth 출력에는 secret masking 대신 `marker(<value>)`가 보일 수 있습니다. 이는 `OPENAI_API_KEY`, `secretref-managed`, `minimax-oauth`, `qwen-oauth`, `ollama-local` 같은 non-secret placeholder용입니다.
 
-- **모델 표기법**: `공급자/모델ID` 형식 또는 사전에 정의된 별칭(Alias)을 사용함.
-- **파싱 규칙**: 첫 번째 `/` 문자를 기준으로 공급자와 모델을 구분함. 만약 모델 ID 자체에 `/`가 포함된 경우(예: OpenRouter 모델) 반드시 공급자 접두사를 명시해야 함 (예: `openrouter/moonshotai/kimi-k2`).
-- **마스킹 정책**: 비밀번호나 키가 아닌 공개 가능한 식별자(예: `OPENAI_API_KEY`, `ollama-local`, `secretref-managed`)는 `marker(<값>)` 형식으로 표시되어 실제 비밀 정보와 구분됨.
+### `models status`
 
-### `models status` 상세 옵션
+Options:
 
-- `--json` / `--plain`: 출력 형식 지정.
-- `--check`: 자동화 스크립트용 상태 체크 (종료 코드 1: 만료/누락, 2: 만료 예정).
-- `--probe-provider <name>`: 특정 공급자만 정밀 점검.
-- `--probe-profile <id>`: 특정 프로필 ID만 정밀 점검 (쉼표로 구분하여 다수 지정 가능).
-- `--probe-concurrency <n>`: 프로브 실행 시의 병렬 요청 수 제한.
+- `--json`
+- `--plain`
+- `--check` (exit 1=expired/missing, 2=expiring)
+- `--probe` (configured된 auth profile에 대해 live probe 실행)
+- `--probe-provider <name>` (하나의 provider만 probe)
+- `--probe-profile <id>` (repeat 또는 comma-separated profile id)
+- `--probe-timeout <ms>`
+- `--probe-concurrency <n>`
+- `--probe-max-tokens <n>`
+- `--agent <id>` (configured agent id, `OPENCLAW_AGENT_DIR`/`PI_CODING_AGENT_DIR`보다 우선)
 
 ## 별칭 및 폴백 관리
 
 ```bash
-# 등록된 모든 모델 별칭 목록 확인
 openclaw models aliases list
-
-# 장애 조치(Failover)용 폴백 모델 리스트 확인
 openclaw models fallbacks list
 ```
 
 ## 인증 프로필 (Auth Profiles)
 
 ```bash
-# 새로운 인증 정보 수동 추가
 openclaw models auth add
-
-# 공급자별 전용 인증 흐름(OAuth/API 키) 시작
 openclaw models auth login --provider <id>
-
-# Anthropic 설정 토큰(setup-token) 등록
 openclaw models auth setup-token
-
-# 외부에서 생성된 토큰 문자열 직접 입력
 openclaw models auth paste-token
 ```
 
-`models auth login` 명령어는 각 공급자 플러그인에서 제공하는 고유한 인증 방식을 실행함. 설치된 공급자 목록은 `openclaw plugins list` 명령어로 확인 가능함.
+`models auth login`은 provider plugin의 auth flow(OAuth/API key)를 실행합니다.
+설치된 provider는 `openclaw plugins list`에서 확인할 수 있습니다.
 
-**주의 사항:**
-- **`setup-token`**: `claude setup-token` 명령어로 생성된 값을 사용함.
-- **Anthropic 정책**: Anthropic의 setup-token 지원은 기술적 호환성 제공을 목적으로 함. 과거 Claude Code 이외의 환경에서 구독 계정 사용이 제한된 사례가 있으므로, 사용 전 최신 약관을 반드시 확인해야 함.
+Notes:
+
+- `setup-token`은 setup-token 값을 프롬프트로 입력받습니다. 값은 다른 기기에서 `claude setup-token`으로 생성할 수 있습니다.
+- `paste-token`은 다른 곳이나 automation에서 생성한 token string을 직접 받습니다.
+- Anthropic policy note: setup-token 지원은 기술적 호환성 목적입니다. Anthropic은 과거 Claude Code 외 환경에서 일부 subscription 사용을 차단한 적이 있으므로, 넓게 사용하기 전에 최신 약관을 확인하세요.
