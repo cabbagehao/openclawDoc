@@ -1,6 +1,9 @@
 ---
+title: "Multi-Agent Sandbox & Tools"
+description: "멀티 에이전트 환경에서 agent별 sandbox, tool 제한, precedence와 구성 예시를 설명합니다."
 summary: "에이전트별 sandbox + tool 제한, precedence, 예시"
-title: Multi-Agent Sandbox & Tools
+x-i18n:
+  source_path: "tools/multi-agent-sandbox-tools.md"
 read_when: "멀티 에이전트 gateway에서 에이전트별 sandboxing 또는 에이전트별 tool allow/deny 정책이 필요할 때."
 status: active
 ---

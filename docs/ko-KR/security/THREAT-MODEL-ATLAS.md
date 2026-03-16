@@ -1,3 +1,14 @@
+---
+title: OpenClaw Threat Model v1.0
+description: MITRE ATLAS를 기반으로 OpenClaw와 ClawHub의 신뢰 경계, 공격 경로, 위험도와 완화책을 정리한 위협 모델입니다.
+summary: MITRE ATLAS 기반 OpenClaw 위협 모델과 공급망 위험 분석
+read_when:
+  - OpenClaw의 보안 위협, 공격 체인, 완화 전략을 체계적으로 검토할 때
+  - ClawHub 공급망 위험과 우선순위별 보안 권고를 확인할 때
+x-i18n:
+  source_path: "security/THREAT-MODEL-ATLAS.md"
+---
+
 # OpenClaw 위협 모델 v1.0
 
 ## MITRE ATLAS 프레임워크

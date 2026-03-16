@@ -1,10 +1,12 @@
 ---
 title: Lobster
-summary: "재개 가능한 승인 게이트를 갖춘 OpenClaw용 타입드 워크플로 런타임."
-description: 승인 게이트를 포함한 조합형 파이프라인을 위한 OpenClaw용 타입드 워크플로 런타임.
+description: 승인 게이트와 재개 토큰을 갖춘 결정론적 멀티스텝 워크플로를 OpenClaw에서 실행하는 Lobster 가이드
+summary: "재개 가능한 승인 게이트를 갖춘 OpenClaw용 typed workflow runtime"
 read_when:
   - 명시적 승인을 포함한 결정론적 멀티스텝 워크플로가 필요할 때
   - 앞선 단계를 다시 실행하지 않고 워크플로를 재개해야 할 때
+x-i18n:
+  source_path: "tools/lobster.md"
 ---
 
 # Lobster

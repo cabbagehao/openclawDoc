@@ -1,16 +1,19 @@
 ---
+description: OpenClaw를 안전하게 업데이트하고 채널 전환, doctor 점검, 롤백과 버전 고정을 수행하는 가이드
 summary: "OpenClaw를 안전하게 업데이트하기(전역 설치 또는 소스 설치), 그리고 롤백 전략"
 read_when:
   - OpenClaw를 업데이트하고 있습니다
   - 업데이트 후 무언가가 깨졌습니다
 title: "업데이트"
+x-i18n:
+  source_path: "install/updating.md"
 ---
 
 # 업데이트
 
 OpenClaw는 매우 빠르게 변하고 있습니다(아직 "1.0" 이전). 업데이트는 인프라를 배포하듯 다루세요: 업데이트 → 점검 실행 → 재시작(또는 재시작을 포함한 `openclaw update` 사용) → 검증.
 
-## 권장: 웹사이트 설치 프로그램을 다시 실행하기(제자리 업그레이드)
+## 권장: 웹사이트 설치 프로그램 다시 실행하기(제자리 업그레이드)
 
 가장 **권장되는** 업데이트 경로는 웹사이트 설치 프로그램을 다시 실행하는 것입니다. 기존 설치를 감지해 제자리에서 업그레이드하고, 필요하면 `openclaw doctor`를 실행합니다.
 
@@ -63,7 +66,7 @@ openclaw update --channel dev
 openclaw update --channel stable
 ```
 
-일회성 설치 태그/버전은 `--tag <dist-tag|version>`을 사용하세요.
+일회성 설치 tag/version은 `--tag <dist-tag|version>`을 사용하세요.
 
 채널 의미와 릴리스 노트는 [개발 채널](/install/development-channels)을 참고하세요.
 
@@ -71,7 +74,7 @@ openclaw update --channel stable
 
 ### 코어 자동 업데이터(선택 사항)
 
-자동 업데이터는 기본적으로 **꺼져 있으며**, 플러그인이 아닌 Gateway 코어 기능입니다.
+자동 업데이터는 기본적으로 **꺼져 있으며**, plugin이 아닌 Gateway 코어 기능입니다.
 
 ```json
 {
@@ -116,13 +119,13 @@ openclaw health
 openclaw update
 ```
 
-이 명령은 비교적 안전한 업데이트 흐름을 실행합니다:
+이 명령은 비교적 안전한 업데이트 흐름을 실행합니다.
 
-- 깨끗한 워크트리가 필요함
-- 선택한 채널(태그 또는 브랜치)로 전환
-- 설정된 upstream 기준으로 fetch + rebase(dev 채널)
+- 깨끗한 worktree가 필요함
+- 선택한 채널(tag 또는 branch)로 전환
+- 설정된 upstream을 기준으로 fetch + rebase(dev 채널)
 - 의존성 설치, 빌드, Control UI 빌드, `openclaw doctor` 실행
-- 기본적으로 게이트웨이 재시작(`--no-restart`로 생략 가능)
+- 기본적으로 Gateway 재시작(`--no-restart`로 생략 가능)
 
 **npm/pnpm**으로 설치했고(git 메타데이터 없음) `openclaw update`가 설치를 감지하지 못하면, 대신 "업데이트(전역 설치)"를 사용하세요.
 
@@ -130,11 +133,11 @@ openclaw update
 
 Control UI에는 **Update & Restart**(RPC: `update.run`)가 있습니다. 이 동작은:
 
-1. `openclaw update`와 같은 소스 업데이트 흐름을 실행합니다(git 체크아웃만 해당).
-2. 구조화된 보고서(stdout/stderr tail)가 담긴 재시작 sentinel을 기록합니다.
-3. 게이트웨이를 재시작하고 마지막 활성 세션에 보고서를 ping합니다.
+1. `openclaw update`와 같은 소스 업데이트 흐름을 실행합니다(git checkout만 해당).
+2. 구조화된 보고서(stdout/stderr tail)가 담긴 restart sentinel을 기록합니다.
+3. Gateway를 재시작하고 마지막 활성 세션에 보고서를 ping합니다.
 
-rebase가 실패하면, 게이트웨이는 업데이트를 적용하지 않은 채 중단 후 재시작합니다.
+rebase가 실패하면 Gateway는 업데이트를 적용하지 않고 중단 후 재시작합니다.
 
 ## 업데이트(소스에서)
 

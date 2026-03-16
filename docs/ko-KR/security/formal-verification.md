@@ -1,6 +1,7 @@
 ---
 title: 정형 검증 (보안 모델)
-summary: OpenClaw의 최고위험 경로를 위한 기계 검증 보안 모델.
+description: TLA+/TLC 기반 OpenClaw 보안 모델의 보장 범위, 한계, 재현 방법과 주요 검증 대상 경로를 정리한 문서입니다.
+summary: OpenClaw의 최고위험 경로를 위한 기계 검증 보안 모델
 read_when:
   - 정형 보안 모델의 보장 범위나 한계를 검토할 때
   - TLA+/TLC 보안 모델 검사를 재현하거나 업데이트할 때

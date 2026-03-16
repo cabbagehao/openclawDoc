@@ -1,15 +1,16 @@
 ---
+description: SSH 터널, Tailnet, macOS 앱 원격 모드로 OpenClaw Gateway에 안전하게 접속하는 방법
 summary: "SSH 터널링 및 Tailnet을 활용한 Gateway 원격 접속 및 운영 가이드"
 read_when:
   - 원격 Gateway 환경을 구축하거나 관련 문제를 해결하고자 할 때
-title: "원격 액세스"
+title: "Remote Access"
 x-i18n:
   source_path: "gateway/remote.md"
 ---
 
-# 원격 액세스 (SSH, 터널링 및 Tailnet)
+# 원격 액세스
 
-OpenClaw는 전용 호스트(데스크톱 또는 서버)에서 실행 중인 단일 Gateway(Master)에 다양한 클라이언트를 연결하는 "원격 접속" 구성을 지원함.
+이 저장소는 전용 호스트(데스크톱 또는 서버)에서 단일 Gateway를 실행하고, 여러 클라이언트가 원격으로 여기에 연결하는 구성을 지원합니다.
 
 - **운영자 (사용자 / macOS 앱)**: SSH 터널링이 범용적인 접속 및 폴백(Fallback) 수단임.
 - **노드 기기 (iOS/Android 등)**: LAN, Tailnet 또는 SSH 터널을 통해 Gateway **WebSocket**에 직접 연결함.

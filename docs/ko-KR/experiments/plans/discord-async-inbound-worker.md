@@ -1,9 +1,12 @@
 ---
+description: "Discord listener timeout을 없애기 위한 비동기 inbound worker 아키텍처의 현재 상태와 다음 단계를 정리합니다"
 summary: "Discord 전용 inbound worker를 통해 Discord gateway listener와 장시간 실행되는 agent turn을 분리하기 위한 현재 상태와 다음 단계"
 owner: "openclaw"
 status: "in_progress"
 last_updated: "2026-03-05"
 title: "Discord Async Inbound Worker Plan"
+x-i18n:
+  source_path: "experiments/plans/discord-async-inbound-worker.md"
 ---
 
 # Discord Async Inbound Worker Plan

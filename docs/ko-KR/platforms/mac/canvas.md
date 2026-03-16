@@ -1,10 +1,13 @@
 ---
+description: "macOS 앱의 WKWebView 기반 Canvas 패널 저장 구조, 동작, node API 표면을 설명합니다"
 summary: "WKWebView + 사용자 정의 URL 스킴으로 임베드된 에이전트 제어 Canvas 패널"
 read_when:
   - macOS Canvas 패널을 구현할 때
   - 시각적 워크스페이스용 에이전트 컨트롤을 추가할 때
   - WKWebView Canvas 로드를 디버깅할 때
 title: "Canvas"
+x-i18n:
+  source_path: "platforms/mac/canvas.md"
 ---
 
 # Canvas (macOS 앱)

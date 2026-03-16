@@ -1,10 +1,13 @@
 ---
+description: "Oracle Cloud Always Free ARM 인스턴스에 OpenClaw Gateway를 배포하는 단계별 가이드입니다"
 summary: "Oracle Cloud Always Free ARM에서 OpenClaw 실행"
 read_when:
   - Oracle Cloud에서 OpenClaw를 설정할 때
   - OpenClaw용 저비용 VPS 호스팅을 찾을 때
   - 소형 서버에서 OpenClaw를 24/7로 운영하고 싶을 때
 title: "Oracle Cloud"
+x-i18n:
+  source_path: "platforms/oracle.md"
 ---
 
 # Oracle Cloud(OCI)에서 OpenClaw 실행

@@ -1,10 +1,13 @@
 ---
+title: "Sub-Agents"
+description: "Sub-agent 생성, thread 바인딩, nested sub-agent, announce 흐름과 도구 정책을 설명합니다."
 summary: "Sub-agent: 요청자 chat에 결과를 다시 알리는 격리된 agent run 생성"
 read_when:
   - agent를 통해 background/parallel 작업을 하고 싶을 때
   - sessions_spawn 또는 sub-agent tool policy를 변경할 때
   - thread-bound subagent session을 구현하거나 문제를 해결할 때
-title: "Sub-Agents"
+x-i18n:
+  source_path: "tools/subagents.md"
 ---
 
 # Sub-agents

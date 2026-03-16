@@ -1,10 +1,13 @@
 ---
+description: "세션 store, transcript JSONL, compaction, 유지관리와 디스크 제어까지 OpenClaw 세션 내부 동작을 설명합니다"
 summary: "심층 분석: session store + transcript, lifecycle, 그리고 (auto)compaction 내부 동작"
 read_when:
   - session id, transcript JSONL, 또는 sessions.json 필드를 디버깅해야 할 때
   - auto-compaction 동작을 변경하거나 “pre-compaction” housekeeping을 추가할 때
   - memory flush 또는 silent system turn을 구현하고 싶을 때
 title: "세션 관리 심층 분석"
+x-i18n:
+  source_path: "reference/session-management-compaction.md"
 ---
 
 # Session Management & Compaction (Deep Dive)

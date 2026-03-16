@@ -1,10 +1,13 @@
 ---
+description: SecretRef가 공식 지원하는 credential 경로와 지원되지 않는 자격 증명 범위를 정리한 기준 문서입니다.
 summary: "정식으로 지원되는 vs 미지원 SecretRef credential 표면"
 read_when:
   - SecretRef credential coverage 를 검증할 때
   - 특정 credential 이 `secrets configure` 또는 `secrets apply` 대상인지 감사할 때
   - 어떤 credential 이 지원 표면 밖에 있는지 이유를 확인할 때
 title: "SecretRef Credential Surface"
+x-i18n:
+  source_path: "reference/secretref-credential-surface.md"
 ---
 
 # SecretRef credential surface

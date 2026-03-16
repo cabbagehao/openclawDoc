@@ -1,16 +1,17 @@
 ---
-summary: "Doctor 명령어: 시스템 헬스 체크, 설정 마기그레이션 및 자동 복구 절차 안내"
+description: openclaw doctor 명령으로 설정 마이그레이션, 상태 점검, 인증 확인, 서비스 복구를 수행하는 방법
+summary: "Doctor 명령어: 시스템 헬스 체크, 설정 마이그레이션 및 자동 복구 절차 안내"
 read_when:
   - Doctor 마이그레이션 로직을 추가하거나 수정할 때
   - 하위 호환성을 깨트리는 설정 변경(Breaking changes)을 도입할 때
-title: "Doctor (진단 및 복구)"
+title: "Doctor"
 x-i18n:
   source_path: "gateway/doctor.md"
 ---
 
 # Doctor
 
-`openclaw doctor`는 OpenClaw의 통합 진단, 복구 및 마이그레이션 도구임. 오래된 설정 및 상태 값을 최신 규격에 맞게 수정하고, 시스템 헬스 체크를 통해 즉시 실행 가능한 복구 단계를 제시함.
+`openclaw doctor`는 OpenClaw의 복구 및 마이그레이션 도구입니다. 오래된 config와 state를 정리하고, health를 점검하며, 실행 가능한 복구 단계를 제시합니다.
 
 ## 빠른 시작
 
@@ -24,33 +25,33 @@ openclaw doctor
 openclaw doctor --yes
 ```
 
-사용자 프롬프트 없이 모든 기본값을 수락함 (해당하는 경우 재시작, 서비스 복구, 샌드박스 수정 단계 포함).
+해당하는 경우 재시작, 서비스 복구, 샌드박스 수정 단계를 포함해 사용자 프롬프트 없이 기본값을 수락합니다.
 
 ```bash
 openclaw doctor --repair
 ```
 
-사용자 확인 없이 권장 복구 조치를 적용함 (안전한 범위 내의 복구 및 재시작 포함).
+사용자 확인 없이 권장 복구 조치를 적용합니다. 안전한 범위의 복구와 재시작이 포함됩니다.
 
 ```bash
 openclaw doctor --repair --force
 ```
 
-커스텀 서비스 설정(Supervisor config)을 덮어쓰는 등 보다 공격적인 복구 조치를 강제로 적용함.
+커스텀 supervisor config를 덮어쓰는 등 더 공격적인 복구 조치까지 적용합니다.
 
 ```bash
 openclaw doctor --non-interactive
 ```
 
-사용자 상호작용 없이 실행하며, 안전한 마이그레이션(설정 정규화 및 디스크 상태 이동)만 적용함. 사용자 확인이 필수적인 재시작, 서비스 관리, 샌드박스 관련 조치는 건너뜀. 레거시 상태 마이그레이션은 감지 시 자동으로 수행됨.
+사용자 상호작용 없이 실행하며, 안전한 마이그레이션(설정 정규화, 디스크 state 이동)만 적용합니다. 사용자 확인이 필요한 재시작, 서비스 관리, 샌드박스 조치는 건너뜁니다. 레거시 state 마이그레이션은 감지 시 자동으로 수행됩니다.
 
 ```bash
 openclaw doctor --deep
 ```
 
-시스템 서비스(launchd, systemd, schtasks)를 전체 스캔하여 추가적인 Gateway 설치 여부를 확인함.
+시스템 서비스(launchd, systemd, schtasks)를 스캔해 추가 Gateway 설치 흔적이 있는지 확인합니다.
 
-변경 사항을 적용하기 전 내용을 검토하려면 설정 파일을 먼저 확인하기 바람:
+변경 사항을 쓰기 전에 내용을 검토하려면 먼저 config 파일을 확인하세요.
 
 ```bash
 cat ~/.openclaw/openclaw.json
@@ -58,23 +59,23 @@ cat ~/.openclaw/openclaw.json
 
 ## 주요 기능 요약
 
-- **업데이트 확인**: Git 설치본의 경우 실행 전 선택적 업데이트 수행 (대화형 모드 전용).
-- **프로토콜 무결성**: UI 프로토콜 스키마가 변경된 경우 Control UI를 자동으로 재빌드함.
-- **헬스 체크**: 시스템 상태 진단 및 필요 시 재시작 프롬프트 표시.
-- **스킬 상태 요약**: 현재 워크스페이스에서 사용 가능한 스킬 및 누락/차단된 스킬 상태 보고.
-- **설정 정규화**: 레거시 설정 값을 현재 스키마에 맞게 정규화함.
-- **공급자 경고**: `models.providers.opencode` 등 수동 오버라이드로 인한 잠재적 오류 경고.
-- **상태 마이그레이션**: 세션, 에이전트 디렉터리, WhatsApp 인증 정보 등 레거시 디스크 경로 이동.
-- **크론 마이그레이션**: `jobId`, 스케줄 표현식, 페이로드 필드 등 오래된 크론 설정 변환.
-- **권한 검사**: 세션, 트랜스크립트, 상태 디렉터리 등의 무결성 및 파일 권한(chmod 600 등) 점검.
-- **인증 상태 점검**: OAuth 토큰 만료 확인 및 갱신, 인증 프로필의 쿨다운/비활성화 상태 보고.
-- **워크스페이스 감지**: 중복되거나 잘못된 워크스페이스 경로 확인.
-- **샌드박스 복구**: 샌드박스 활성화 시 관련 Docker 이미지 상태 점검 및 복구.
-- **서비스 관리**: 레거시 서비스 마이그레이션 및 포트 충돌(기본값 `18789`) 진단.
-- **런타임 최적화**: Node.js 버전 관리 도구 경로 및 런타임(Node vs Bun) 관련 권장 사항 제시.
-- **보안 경고**: 개방된 DM 정책 등 보안상 취약한 설정에 대한 경고.
-- **링거링(Linger) 체크**: Linux 환경에서 사용자 로그아웃 후에도 서비스가 유지되도록 설정 확인.
-- **설정 및 메타데이터 기록**: 업데이트된 설정과 마법사(Wizard) 실행 이력을 저장함.
+- 선택적 사전 업데이트(Git 설치본, 대화형 모드 전용)
+- UI protocol 최신성 점검 및 필요 시 Control UI 재빌드
+- health check 및 재시작 프롬프트
+- skills 상태 요약(사용 가능/누락/차단)
+- 레거시 config 정규화
+- `models.providers.opencode` 등 OpenCode provider override 경고
+- 세션, agent 디렉터리, WhatsApp auth 등 레거시 디스크 state 마이그레이션
+- `jobId`, `schedule.cron`, payload/delivery 필드 등 레거시 cron store 정리
+- 세션, transcript, state 디렉터리 무결성 및 권한 점검
+- OAuth 만료, 토큰 갱신, auth-profile cooldown/disabled 상태 점검
+- 중복 workspace 디렉터리 감지
+- sandbox 이미지 복구
+- 레거시 서비스 마이그레이션과 gateway 포트 충돌(`18789`) 진단
+- Node vs Bun, version-manager 경로 등 gateway runtime 모범 사례 점검
+- 개방형 DM 정책 등 보안 경고
+- Linux systemd linger 확인
+- 업데이트된 config와 wizard metadata 기록
 
 ## 상세 동작 원리 및 근거
 

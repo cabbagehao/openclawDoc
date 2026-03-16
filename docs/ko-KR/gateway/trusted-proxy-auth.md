@@ -1,5 +1,6 @@
 ---
-summary: "Gateway 인증 권한을 신뢰할 수 있는 역방향 프록시(Pomerium, Caddy, Nginx + OAuth 등)에 위임하는 방법 안내"
+description: "Pomerium, Caddy, nginx 같은 신뢰 가능한 역방향 프록시에 OpenClaw Gateway 인증을 위임하는 가이드"
+summary: "Gateway 인증을 신뢰할 수 있는 역방향 프록시(Pomerium, Caddy, nginx + OAuth 등)에 위임하는 방법 안내"
 read_when:
   - 신원 인식 프록시(Identity-aware proxy) 뒤에서 OpenClaw를 운영하고자 할 때
   - Pomerium, Caddy, Nginx 등을 활용한 OAuth 인증 레이어를 구축할 때
@@ -52,22 +53,22 @@ x-i18n:
 ```json5
 {
   gateway: {
-    // 프록시가 동일 호스트에 있으면 loopback, 원격지에 있으면 lan/custom 사용
+    // Use loopback for same-host proxy setups; use lan/custom for remote proxy hosts
     bind: "loopback",
 
-    // 중요: 실제 프록시 서버의 IP 주소만 정확히 입력함
+    // CRITICAL: Only add your proxy's IP(s) here
     trustedProxies: ["10.0.0.1", "172.17.0.1"],
 
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
-        // 인증된 사용자 신원 정보가 담긴 헤더 이름 (필수)
+        // Header containing authenticated user identity (required)
         userHeader: "x-forwarded-user",
 
-        // 선택 사항: 프록시 검증을 위해 반드시 존재해야 하는 헤더 목록
+        // Optional: headers that MUST be present (proxy verification)
         requiredHeaders: ["x-forwarded-proto", "x-forwarded-host"],
 
-        // 선택 사항: 접근을 허용할 특정 사용자 목록 (비워두면 인증된 모든 사용자 허용)
+        // Optional: restrict to specific users (empty = allow all)
         allowUsers: ["nick@example.com", "admin@company.org"],
       },
     },

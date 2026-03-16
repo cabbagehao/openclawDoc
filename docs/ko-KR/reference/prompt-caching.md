@@ -1,10 +1,13 @@
 ---
 title: "Prompt Caching"
+description: prompt cache 재사용을 높이기 위한 cacheRetention, cache-ttl pruning, heartbeat, provider별 동작을 정리한 레퍼런스입니다.
 summary: "프롬프트 캐싱 관련 설정, 병합 순서, provider 동작, 튜닝 패턴"
 read_when:
   - cache retention으로 프롬프트 토큰 비용을 줄이고 싶을 때
   - multi-agent 구성에서 agent별 cache 동작이 필요할 때
   - heartbeat와 cache-ttl pruning을 함께 조정할 때
+x-i18n:
+  source_path: "reference/prompt-caching.md"
 ---
 
 # Prompt caching

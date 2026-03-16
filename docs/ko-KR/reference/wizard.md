@@ -1,4 +1,5 @@
 ---
+description: "openclaw onboard CLI wizard의 단계, 인증 선택지, non-interactive 플래그와 기록되는 설정을 정리한 전체 참조"
 summary: "CLI onboarding wizard의 모든 단계, flag, config 필드에 대한 전체 참조"
 read_when:
   - 특정 wizard 단계나 flag를 찾아볼 때
@@ -6,6 +7,8 @@ read_when:
   - wizard 동작을 디버깅할 때
 title: "Onboarding Wizard Reference"
 sidebarTitle: "Wizard Reference"
+x-i18n:
+  source_path: "reference/wizard.md"
 ---
 
 # Onboarding Wizard Reference
@@ -38,7 +41,7 @@ sidebarTitle: "Wizard Reference"
       - Model이 설정되지 않았거나 `openai/*`일 때 `agents.defaults.model`을 `openai-codex/gpt-5.2`로 설정합니다.
     - **OpenAI API key**: `OPENAI_API_KEY`가 있으면 이를 사용하고, 없으면 key를 요청한 뒤 auth profile에 저장합니다.
     - **xAI (Grok) API key**: `XAI_API_KEY`를 요청하고 xAI를 model provider로 구성합니다.
-    - **OpenCode Zen (multi-model proxy)**: `OPENCODE_API_KEY`(또는 `OPENCODE_ZEN_API_KEY`, https://opencode.ai/auth 에서 발급)를 요청합니다.
+    - **OpenCode**: `OPENCODE_API_KEY`(또는 `OPENCODE_ZEN_API_KEY`, https://opencode.ai/auth 에서 발급)를 요청하고 Zen 또는 Go catalog를 고를 수 있게 합니다.
     - **API key**: key를 대신 저장해 줍니다.
     - **Vercel AI Gateway (multi-model proxy)**: `AI_GATEWAY_API_KEY`를 요청합니다.
     - 자세한 내용: [Vercel AI Gateway](/providers/vercel-ai-gateway)
@@ -228,7 +231,7 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="OpenCode Zen example">
+  <Accordion title="OpenCode example">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \

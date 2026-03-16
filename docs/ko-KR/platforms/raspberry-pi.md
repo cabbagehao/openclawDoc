@@ -1,10 +1,13 @@
 ---
+description: "Raspberry Pi에서 OpenClaw Gateway를 상시 구동하기 위한 하드웨어, 설치, 운영 팁을 정리합니다"
 summary: "Raspberry Pi에서 OpenClaw 실행(저예산 셀프 호스팅 구성)"
 read_when:
   - Raspberry Pi에 OpenClaw를 설정할 때
   - ARM 장치에서 OpenClaw를 실행할 때
   - 저렴한 상시 구동 개인 AI를 구축할 때
 title: "Raspberry Pi"
+x-i18n:
+  source_path: "platforms/raspberry-pi.md"
 ---
 
 # Raspberry Pi에서 OpenClaw 실행

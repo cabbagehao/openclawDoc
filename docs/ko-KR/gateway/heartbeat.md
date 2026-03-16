@@ -1,29 +1,30 @@
 ---
+description: OpenClaw Gateway의 heartbeat 주기, delivery 정책, HEARTBEAT.md 활용, activeHours 설정을 설명합니다
 summary: "하트비트 폴링 메시지 동작 원리 및 알림 정책 안내"
 read_when:
   - 하트비트 실행 주기나 메시지 내용을 조정하고자 할 때
   - 예약 작업 구현 시 하트비트와 크론(Cron) 중 적절한 방식을 선택해야 할 때
-title: "하트비트 (자율 점검)"
+title: "Heartbeat"
 x-i18n:
   source_path: "gateway/heartbeat.md"
 ---
 
-# 하트비트 (Gateway Heartbeat)
+# Heartbeat
 
-> **하트비트 vs 크론?** 각 기능의 용도와 차이점은 [크론 vs 하트비트 비교 가이드](/automation/cron-vs-heartbeat)를 참조함.
+> **하트비트 vs 크론?** 각 기능의 용도와 차이는 [크론 vs 하트비트](/automation/cron-vs-heartbeat)를 참고하세요.
 
-하트비트(Heartbeat)는 메인 세션에서 **주기적으로 에이전트 턴(Turn)을 실행**하는 기능임. 이를 통해 모델은 사용자에게 불필요한 스팸을 보내지 않으면서도 주의가 필요한 사항을 스스로 판단하여 보고할 수 있음.
+Heartbeat는 메인 세션에서 **주기적으로 agent turn을 실행**하는 기능입니다. 이를 통해 모델은 사용자에게 스팸을 보내지 않으면서도 주의가 필요한 사항을 스스로 판단해 보고할 수 있습니다.
 
 문제 해결 가이드: [/automation/troubleshooting](/automation/troubleshooting)
 
 ## 빠른 시작 (초보자용)
 
-1. 하트비트 기능을 활성화 상태로 유지함 (기본값 `30m`, Anthropic OAuth/설정 토큰 사용 시 `1h`). 필요에 따라 주기를 변경할 수 있음.
-2. 에이전트 워크스페이스에 간단한 `HEARTBEAT.md` 체크리스트 파일을 생성함 (권장 사항).
-3. 메시지 전달 대상을 설정함 (기본값 `target: "none"`, 마지막 대화 상대에게 보내려면 `target: "last"`).
-4. (선택 사항) 투명성을 위해 하트비트 사고 과정(Reasoning) 전달 기능을 활성화함.
-5. (선택 사항) 하트비트 실행 시 `HEARTBEAT.md` 내용만 참조하도록 경량 부트스트랩 컨텍스트를 사용함.
-6. (선택 사항) 하트비트 실행 시간을 특정 활동 시간대(로컬 시간 기준)로 제한함.
+1. Heartbeat를 켜 둡니다. 기본값은 `30m`이며 Anthropic OAuth/setup-token을 쓰면 `1h`입니다.
+2. agent workspace에 간단한 `HEARTBEAT.md` 체크리스트를 둡니다. 선택 사항이지만 권장됩니다.
+3. 메시지를 어디로 보낼지 정합니다. 기본값은 `target: "none"`이고, 마지막 대화 상대에게 보내려면 `target: "last"`를 사용합니다.
+4. 선택 사항으로 heartbeat reasoning delivery를 켭니다.
+5. heartbeat 실행에 `HEARTBEAT.md`만 필요하다면 경량 bootstrap context를 사용합니다.
+6. 필요하면 로컬 시간 기준 active hours로 heartbeat를 제한합니다.
 
 **설정 예시:**
 
@@ -33,11 +34,11 @@ x-i18n:
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last", // 마지막 대화 상대에게 명시적 전달 (기본값 "none")
-        directPolicy: "allow", // 기본값: DM 전달 허용, 억제하려면 "block" 설정
-        lightContext: true, // 선택: 부트스트랩 파일 중 HEARTBEAT.md만 주입
+        target: "last", // explicit delivery to last contact (default is "none")
+        directPolicy: "allow", // default: allow direct/DM targets; set "block" to suppress
+        lightContext: true, // optional: only inject HEARTBEAT.md from bootstrap files
         // activeHours: { start: "08:00", end: "24:00" },
-        // includeReasoning: true, // 선택: 별도의 `Reasoning:` 메시지도 함께 전송
+        // includeReasoning: true, // optional: send separate `Reasoning:` message too
       },
     },
   },
@@ -77,15 +78,15 @@ x-i18n:
   agents: {
     defaults: {
       heartbeat: {
-        every: "30m", // 기본 간격 (0m은 비활성화)
+        every: "30m", // default: 30m (0m disables)
         model: "anthropic/claude-opus-4-6",
-        includeReasoning: false, // 별도의 Reasoning: 메시지 전달 여부
-        lightContext: false, // true 설정 시 HEARTBEAT.md만 컨텍스트에 포함
-        target: "last", // 기본값 none | 옵션: last, none, <채널ID>
-        to: "+82101234567", // 채널별 수신자 오버라이드
-        accountId: "ops-bot", // 다중 계정 채널 사용 시 계정 ID
+        includeReasoning: false, // deliver separate Reasoning: message when available
+        lightContext: false, // true keeps only HEARTBEAT.md in bootstrap context
+        target: "last", // default: none | options: last | none | <channel id>
+        to: "+82101234567", // optional channel-specific recipient override
+        accountId: "ops-bot", // optional multi-account channel id
         prompt: "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
-        ackMaxChars: 300, // HEARTBEAT_OK 제외 응답 허용 최대 길이
+        ackMaxChars: 300, // max chars allowed after HEARTBEAT_OK
       },
     },
   },
@@ -114,7 +115,7 @@ x-i18n:
         activeHours: {
           start: "09:00",
           end: "22:00",
-          timezone: "Asia/Seoul", // 미설정 시 userTimezone 또는 호스트 타임존 사용
+          timezone: "Asia/Seoul", // optional; otherwise uses userTimezone or host timezone
         },
       },
     },
@@ -161,9 +162,9 @@ x-i18n:
 channels:
   defaults:
     heartbeat:
-      showOk: false # HEARTBEAT_OK 숨김 (기본값)
-      showAlerts: true # 알림 메시지 표시 (기본값)
-      useIndicator: true # UI 상태 표시기 이벤트 발생 (기본값)
+      showOk: false # hide HEARTBEAT_OK (default)
+      showAlerts: true # show alert content (default)
+      useIndicator: true # emit UI indicator events (default)
 ```
 
 **플래그별 역할:**
@@ -189,7 +190,7 @@ channels:
 필요할 때 즉시 하트비트를 트리거할 수 있음:
 
 ```bash
-openclaw system event --text "긴급 업무 확인 요청" --mode now
+openclaw system event --text "Check urgent tasks now" --mode now
 ```
 
 `--mode next-heartbeat` 플래그를 사용하면 즉시 실행 대신 다음 스케줄 시점에 실행되도록 대기열에 추가함.

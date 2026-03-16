@@ -1,10 +1,13 @@
 ---
+title: "WSL2 + Windows + remote Chrome CDP troubleshooting"
+description: "WSL2 Gateway와 Windows Chrome 사이에서 remote CDP와 extension relay를 계층별로 진단하는 가이드입니다."
 summary: "WSL2 Gateway + Windows Chrome remote CDP 및 extension-relay 구성을 계층별로 문제 해결"
 read_when:
   - OpenClaw Gateway는 WSL2에서 돌고 Chrome은 Windows에 있을 때
   - WSL2와 Windows에 걸친 browser/control-ui 오류가 겹쳐 보일 때
   - split-host 구성에서 raw remote CDP와 Chrome extension relay 중 무엇을 쓸지 결정할 때
-title: "WSL2 + Windows + remote Chrome CDP troubleshooting"
+x-i18n:
+  source_path: "tools/browser-wsl2-windows-remote-cdp-troubleshooting.md"
 ---
 
 # WSL2 + Windows + remote Chrome CDP troubleshooting

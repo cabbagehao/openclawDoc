@@ -1,4 +1,5 @@
 ---
+description: sandbox, gateway, node 사이의 exec.host 라우팅과 승인 저장소, runner, IPC를 정리한 리팩터링 계획
 summary: "리팩터링 계획: exec host 라우팅, node 승인, headless runner"
 read_when:
   - exec host 라우팅이나 exec 승인을 설계할 때

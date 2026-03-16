@@ -1,4 +1,5 @@
 ---
+description: "browser act:evaluate를 CDP로 분리해 queue blocking, timeout, ref resolution을 개선하는 리팩터링 계획입니다"
 summary: "브라우저 act:evaluate를 Playwright queue에서 CDP로 분리하는 계획. end-to-end deadline과 더 안전한 ref resolution 포함"
 read_when:
   - browser `act:evaluate` timeout, abort, queue blocking 문제를 다룰 때
@@ -7,6 +8,8 @@ owner: "openclaw"
 status: "draft"
 last_updated: "2026-02-10"
 title: "Browser Evaluate CDP Refactor"
+x-i18n:
+  source_path: "experiments/plans/browser-evaluate-cdp-refactor.md"
 ---
 
 # Browser Evaluate CDP Refactor Plan

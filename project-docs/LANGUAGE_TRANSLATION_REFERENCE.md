@@ -97,6 +97,25 @@ Do not translate:
 Keep Markdown structure, YAML structure, HTML tags, and attributes intact.
 Do not remove, reorder, or summarize content.
 
+### Code comment policy inside examples
+
+Code examples should preserve executable and copy-paste-safe literals in English,
+including commands, flags, env vars, config keys, paths, URLs, and model IDs.
+
+Purely explanatory comments inside fenced code blocks may be localized when that
+better matches the locale’s documentation style. For example, inline comments
+that only explain what a field does, what a default means, or what a command is
+for can be translated.
+
+Do not localize comments when doing so would change or obscure:
+
+- executable command text
+- literal config values
+- route or file paths
+- placeholder syntax
+- provider/model identifiers
+- any string users are expected to copy exactly
+
 ### Glossary expectations
 
 Before large translation batches, prepare a locale glossary for:

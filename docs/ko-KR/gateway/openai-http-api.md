@@ -1,4 +1,5 @@
 ---
+description: "OpenClaw Gateway에서 OpenAI 호환 /v1/chat/completions HTTP 엔드포인트를 활성화하고 안전하게 사용하는 가이드"
 summary: "Gateway를 통해 OpenAI 규격의 /v1/chat/completions HTTP 엔드포인트를 노출하는 방법 안내"
 read_when:
   - OpenAI Chat Completions 형식을 요구하는 외부 도구와 통합하고자 할 때
@@ -112,7 +113,7 @@ curl -sS http://127.0.0.1:18789/v1/chat/completions \
   -H 'x-openclaw-agent-id: main' \
   -d '{
     "model": "openclaw",
-    "messages": [{"role":"user","content":"안녕"}]
+    "messages": [{"role":"user","content":"hi"}]
   }'
 ```
 
@@ -126,6 +127,6 @@ curl -N http://127.0.0.1:18789/v1/chat/completions \
   -d '{
     "model": "openclaw",
     "stream": true,
-    "messages": [{"role":"user","content":"오늘 날씨 알려줘"}]
+    "messages": [{"role":"user","content":"hi"}]
   }'
 ```

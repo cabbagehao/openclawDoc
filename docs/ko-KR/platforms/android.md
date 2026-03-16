@@ -1,10 +1,13 @@
 ---
+description: "Android 노드 앱의 Gateway 연결, pairing, command 표면과 디버깅 runbook을 설명합니다"
 summary: "Android 앱(node): 연결 런북 + Connect/Chat/Voice/Canvas 명령 표면"
 read_when:
   - Android node를 페어링하거나 다시 연결할 때
   - Android gateway discovery 또는 auth 문제를 디버깅할 때
   - 클라이언트 간 chat history 동등성을 확인할 때
 title: "Android App"
+x-i18n:
+  source_path: "platforms/android.md"
 ---
 
 # Android App (Node)

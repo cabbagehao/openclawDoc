@@ -150,103 +150,103 @@ Completion rule for each file:
 
 ## experiments
 - [x] experiments/onboarding-config-protocol.md
-- [ ] experiments/plans/acp-persistent-bindings-discord-channels-telegram-topics.md
-- [ ] experiments/plans/acp-thread-bound-agents.md
+- [x] experiments/plans/acp-persistent-bindings-discord-channels-telegram-topics.md
+- [x] experiments/plans/acp-thread-bound-agents.md
 - [x] experiments/plans/acp-unified-streaming-refactor.md
-- [ ] experiments/plans/browser-evaluate-cdp-refactor.md
-- [ ] experiments/plans/discord-async-inbound-worker.md
-- [ ] experiments/plans/openresponses-gateway.md
-- [ ] experiments/plans/pty-process-supervision.md
-- [ ] experiments/plans/session-binding-channel-agnostic.md
+- [x] experiments/plans/browser-evaluate-cdp-refactor.md
+- [x] experiments/plans/discord-async-inbound-worker.md
+- [x] experiments/plans/openresponses-gateway.md
+- [x] experiments/plans/pty-process-supervision.md
+- [x] experiments/plans/session-binding-channel-agnostic.md
 - [x] experiments/proposals/acp-bound-command-auth.md
 - [x] experiments/proposals/model-config.md
-- [ ] experiments/research/memory.md
+- [x] experiments/research/memory.md
 
 ## gateway
-- [ ] gateway/authentication.md
+- [x] gateway/authentication.md
 - [x] gateway/background-process.md
-- [ ] gateway/bonjour.md
+- [x] gateway/bonjour.md
 - [x] gateway/bridge-protocol.md
-- [ ] gateway/cli-backends.md
-- [ ] gateway/configuration-examples.md
-- [ ] gateway/configuration-reference.md
-- [ ] gateway/configuration.md
-- [ ] gateway/discovery.md
-- [ ] gateway/doctor.md
+- [x] gateway/cli-backends.md
+- [x] gateway/configuration-examples.md
+- [x] gateway/configuration-reference.md
+- [x] gateway/configuration.md
+- [x] gateway/discovery.md
+- [x] gateway/doctor.md
 - [x] gateway/gateway-lock.md
 - [x] gateway/health.md
-- [ ] gateway/heartbeat.md
+- [x] gateway/heartbeat.md
 - [x] gateway/index.md
-- [ ] gateway/local-models.md
+- [x] gateway/local-models.md
 - [x] gateway/logging.md
-- [ ] gateway/multiple-gateways.md
+- [x] gateway/multiple-gateways.md
 - [x] gateway/network-model.md
-- [ ] gateway/openai-http-api.md
-- [ ] gateway/openresponses-http-api.md
+- [x] gateway/openai-http-api.md
+- [x] gateway/openresponses-http-api.md
 - [x] gateway/pairing.md
-- [ ] gateway/protocol.md
-- [ ] gateway/remote-gateway-readme.md
-- [ ] gateway/remote.md
-- [ ] gateway/sandbox-vs-tool-policy-vs-elevated.md
-- [ ] gateway/sandboxing.md
+- [x] gateway/protocol.md
+- [x] gateway/remote-gateway-readme.md
+- [x] gateway/remote.md
+- [x] gateway/sandbox-vs-tool-policy-vs-elevated.md
+- [x] gateway/sandboxing.md
 - [x] gateway/secrets-plan-contract.md
-- [ ] gateway/secrets.md
-- [ ] gateway/security/index.md
+- [x] gateway/secrets.md
+- [x] gateway/security/index.md
 - [x] gateway/tailscale.md
 - [x] gateway/tools-invoke-http-api.md
-- [ ] gateway/troubleshooting.md
-- [ ] gateway/trusted-proxy-auth.md
+- [x] gateway/troubleshooting.md
+- [x] gateway/trusted-proxy-auth.md
 
 ## help
 - [x] help/debugging.md
 - [x] help/environment.md
-- [ ] help/faq.md
+- [x] help/faq.md
 - [x] help/index.md
 - [x] help/scripts.md
 - [x] help/testing.md
 - [x] help/troubleshooting.md
 
 ## install
-- [ ] install/ansible.md
+- [x] install/ansible.md
 - [x] install/bun.md
 - [x] install/development-channels.md
-- [ ] install/docker.md
-- [ ] install/exe-dev.md
-- [ ] install/fly.md
-- [ ] install/gcp.md
-- [ ] install/hetzner.md
-- [ ] install/index.md
-- [ ] install/installer.md
-- [ ] install/macos-vm.md
-- [ ] install/migrating.md
+- [x] install/docker.md
+- [x] install/exe-dev.md
+- [x] install/fly.md
+- [x] install/gcp.md
+- [x] install/hetzner.md
+- [x] install/index.md
+- [x] install/installer.md
+- [x] install/macos-vm.md
+- [x] install/migrating.md
 - [x] install/nix.md
 - [x] install/node.md
 - [x] install/northflank.mdx
-- [ ] install/podman.md
+- [x] install/podman.md
 - [x] install/railway.mdx
-- [ ] install/render.mdx
-- [ ] install/uninstall.md
-- [ ] install/updating.md
+- [x] install/render.mdx
+- [x] install/uninstall.md
+- [x] install/updating.md
 
 ## nodes
 - [x] nodes/audio.md
-- [ ] nodes/camera.md
+- [x] nodes/camera.md
 - [x] nodes/images.md
 - [x] nodes/index.md
 - [x] nodes/location-command.md
-- [ ] nodes/media-understanding.md
+- [x] nodes/media-understanding.md
 - [x] nodes/talk.md
 - [x] nodes/troubleshooting.md
 - [x] nodes/voicewake.md
 
 ## platforms
-- [ ] platforms/android.md
-- [ ] platforms/digitalocean.md
+- [x] platforms/android.md
+- [x] platforms/digitalocean.md
 - [x] platforms/index.md
 - [x] platforms/ios.md
 - [x] platforms/linux.md
 - [x] platforms/mac/bundled-gateway.md
-- [ ] platforms/mac/canvas.md
+- [x] platforms/mac/canvas.md
 - [x] platforms/mac/child-process.md
 - [x] platforms/mac/dev-setup.md
 - [x] platforms/mac/health.md
@@ -263,16 +263,16 @@ Completion rule for each file:
 - [x] platforms/mac/voicewake.md
 - [x] platforms/mac/webchat.md
 - [x] platforms/mac/xpc.md
-- [ ] platforms/macos.md
-- [ ] platforms/oracle.md
-- [ ] platforms/raspberry-pi.md
-- [ ] platforms/windows.md
+- [x] platforms/macos.md
+- [x] platforms/oracle.md
+- [x] platforms/raspberry-pi.md
+- [x] platforms/windows.md
 
 ## plugins
 - [x] plugins/agent-tools.md
 - [x] plugins/community.md
 - [x] plugins/manifest.md
-- [ ] plugins/voice-call.md
+- [x] plugins/voice-call.md
 - [x] plugins/zalouser.md
 
 ## providers
@@ -308,25 +308,25 @@ Completion rule for each file:
 - [x] providers/zai.md
 
 ## refactor
-- [ ] refactor/clawnet.md
-- [ ] refactor/cluster.md
-- [ ] refactor/exec-host.md
+- [x] refactor/clawnet.md
+- [x] refactor/cluster.md
+- [x] refactor/exec-host.md
 - [x] refactor/outbound-session-mirroring.md
-- [ ] refactor/plugin-sdk.md
+- [x] refactor/plugin-sdk.md
 - [x] refactor/strict-config.md
 
 ## reference
-- [ ] reference/AGENTS.default.md
-- [ ] reference/RELEASING.md
-- [ ] reference/api-usage-costs.md
+- [x] reference/AGENTS.default.md
+- [x] reference/RELEASING.md
+- [x] reference/api-usage-costs.md
 - [x] reference/credits.md
 - [x] reference/device-models.md
-- [ ] reference/prompt-caching.md
+- [x] reference/prompt-caching.md
 - [x] reference/rpc.md
-- [ ] reference/secretref-credential-surface.md
-- [ ] reference/session-management-compaction.md
+- [x] reference/secretref-credential-surface.md
+- [x] reference/session-management-compaction.md
 - [x] reference/templates/AGENTS.dev.md
-- [ ] reference/templates/AGENTS.md
+- [x] reference/templates/AGENTS.md
 - [x] reference/templates/BOOT.md
 - [x] reference/templates/BOOTSTRAP.md
 - [x] reference/templates/HEARTBEAT.md
@@ -337,60 +337,60 @@ Completion rule for each file:
 - [x] reference/templates/TOOLS.md
 - [x] reference/templates/USER.dev.md
 - [x] reference/test.md
-- [ ] reference/token-use.md
-- [ ] reference/transcript-hygiene.md
-- [ ] reference/wizard.md
+- [x] reference/token-use.md
+- [x] reference/transcript-hygiene.md
+- [x] reference/wizard.md
 
 ## security
 - [x] security/CONTRIBUTING-THREAT-MODEL.md
 - [x] security/README.md
-- [ ] security/THREAT-MODEL-ATLAS.md
-- [ ] security/formal-verification.md
+- [x] security/THREAT-MODEL-ATLAS.md
+- [x] security/formal-verification.md
 
 ## start
 - [x] start/bootstrapping.md
 - [x] start/docs-directory.md
-- [ ] start/getting-started.md
+- [x] start/getting-started.md
 - [x] start/hubs.md
-- [ ] start/lore.md
+- [x] start/lore.md
 - [x] start/onboarding-overview.md
 - [x] start/onboarding.md
-- [ ] start/openclaw.md
+- [x] start/openclaw.md
 - [x] start/quickstart.md
 - [x] start/setup.md
-- [ ] start/showcase.md
-- [ ] start/wizard-cli-automation.md
-- [ ] start/wizard-cli-reference.md
+- [x] start/showcase.md
+- [x] start/wizard-cli-automation.md
+- [x] start/wizard-cli-reference.md
 - [x] start/wizard.md
 
 ## tools
-- [ ] tools/acp-agents.md
+- [x] tools/acp-agents.md
 - [x] tools/agent-send.md
 - [x] tools/apply-patch.md
-- [ ] tools/browser-linux-troubleshooting.md
+- [x] tools/browser-linux-troubleshooting.md
 - [x] tools/browser-login.md
-- [ ] tools/browser-wsl2-windows-remote-cdp-troubleshooting.md
-- [ ] tools/browser.md
-- [ ] tools/chrome-extension.md
-- [ ] tools/clawhub.md
+- [x] tools/browser-wsl2-windows-remote-cdp-troubleshooting.md
+- [x] tools/browser.md
+- [x] tools/chrome-extension.md
+- [x] tools/clawhub.md
 - [x] tools/creating-skills.md
 - [x] tools/diffs.md
 - [x] tools/elevated.md
-- [ ] tools/exec-approvals.md
+- [x] tools/exec-approvals.md
 - [x] tools/exec.md
 - [x] tools/firecrawl.md
 - [x] tools/index.md
 - [x] tools/llm-task.md
-- [ ] tools/lobster.md
+- [x] tools/lobster.md
 - [x] tools/loop-detection.md
-- [ ] tools/multi-agent-sandbox-tools.md
+- [x] tools/multi-agent-sandbox-tools.md
 - [x] tools/pdf.md
-- [ ] tools/plugin.md
+- [x] tools/plugin.md
 - [x] tools/reactions.md
 - [x] tools/skills-config.md
-- [ ] tools/skills.md
-- [ ] tools/slash-commands.md
-- [ ] tools/subagents.md
+- [x] tools/skills.md
+- [x] tools/slash-commands.md
+- [x] tools/subagents.md
 - [x] tools/thinking.md
 - [x] tools/web.md
 

@@ -1,9 +1,12 @@
 ---
+description: "OpenClaw가 프롬프트 컨텍스트를 구성하고 토큰 사용량과 추정 비용을 표시하는 방식을 설명합니다"
 summary: "OpenClaw가 프롬프트 컨텍스트를 구성하고 token usage와 costs를 보고하는 방식"
 read_when:
   - token usage, costs, context window를 설명할 때
   - context 증가나 compaction 동작을 디버깅할 때
 title: "Token Use and Costs"
+x-i18n:
+  source_path: "reference/token-use.md"
 ---
 
 # Token use & costs

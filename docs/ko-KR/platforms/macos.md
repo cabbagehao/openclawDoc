@@ -1,9 +1,12 @@
 ---
+description: "OpenClaw macOS companion 앱의 역할, launchd 제어, node 기능과 local/remote 모드를 설명합니다"
 summary: "OpenClaw macOS companion app (menu bar + gateway broker)"
 read_when:
   - macOS 앱 기능을 구현할 때
   - macOS에서 gateway 라이프사이클 또는 node bridging을 변경할 때
 title: "macOS App"
+x-i18n:
+  source_path: "platforms/macos.md"
 ---
 
 # OpenClaw macOS Companion (menu bar + gateway broker)

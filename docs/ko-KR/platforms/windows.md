@@ -1,9 +1,12 @@
 ---
+description: "WSL2 기반 Windows 설치, Gateway 서비스 운영, companion app 현황을 정리한 안내입니다"
 summary: "Windows (WSL2) 지원 + companion app 상태"
 read_when:
   - Windows에 OpenClaw를 설치할 때
   - Windows companion app 상태를 확인하려고 할 때
 title: "Windows (WSL2)"
+x-i18n:
+  source_path: "platforms/windows.md"
 ---
 
 # Windows (WSL2)

@@ -1,4 +1,5 @@
 ---
+description: LOC 감소 효과와 리스크를 기준으로 다음 dedupe, extraction, config 공통화 대상을 정리한 리팩터링 백로그
 summary: "LOC 감소 잠재력이 가장 큰 리팩터링 클러스터"
 read_when:
   - 동작을 바꾸지 않고 전체 LOC를 줄이고 싶을 때

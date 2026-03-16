@@ -1,15 +1,16 @@
 ---
+description: macOS용 OpenClaw.app이 SSH 터널을 통해 원격 Gateway에 연결되도록 설정하는 방법
 summary: "macOS용 OpenClaw 앱을 원격 Gateway에 연결하기 위한 SSH 터널링 설정 가이드"
 read_when:
   - macOS 앱을 원격지에 있는 Gateway 서버에 SSH를 통해 연결하고자 할 때
-title: "원격 Gateway 설정"
+title: "Remote Gateway Setup"
 x-i18n:
   source_path: "gateway/remote-gateway-readme.md"
 ---
 
-# 원격 Gateway와 OpenClaw.app 연동 가이드
+# 원격 Gateway와 OpenClaw.app 연결
 
-OpenClaw macOS 앱은 SSH 터널링(Tunneling) 기술을 사용하여 원격지에 실행 중인 Gateway 서버에 안전하게 연결함. 본 가이드는 이를 위한 설정 과정을 단계별로 안내함.
+OpenClaw.app은 SSH 터널링을 사용해 원격 Gateway에 연결합니다. 이 문서는 필요한 설정 절차를 단계별로 설명합니다.
 
 ## 연결 구조 개요
 

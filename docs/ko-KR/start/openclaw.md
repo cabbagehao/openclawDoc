@@ -4,7 +4,7 @@ read_when:
   - 새로운 비서 인스턴스를 온보딩할 때
   - 보안 및 권한 영향도를 검토할 때
 title: "개인 비서 설정"
-description: "안전 주의사항을 포함한 OpenClaw 개인 비서 운영 종합 가이드"
+description: "WhatsApp 전용 번호로 OpenClaw 개인 비서를 안전하게 구성하고 heartbeat, workspace, 세션을 운영하는 가이드"
 x-i18n:
   source_path: "start/openclaw.md"
 ---

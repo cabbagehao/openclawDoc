@@ -1,4 +1,5 @@
 ---
+description: "OpenClaw Gateway에서 OpenResponses 호환 /v1/responses HTTP 엔드포인트와 SSE, 파일 입력을 설정하는 가이드"
 summary: "Gateway를 통해 OpenResponses 규격의 /v1/responses HTTP 엔드포인트를 노출하는 방법 안내"
 read_when:
   - OpenResponses API를 사용하는 클라이언트와 통합하고자 할 때
@@ -155,9 +156,9 @@ Base64 데이터 또는 공개 URL 소스를 지원함:
   "type": "input_file",
   "source": {
     "type": "base64",
-    "media_type": "application/pdf",
-    "data": "...",
-    "filename": "report.pdf"
+    "media_type": "text/plain",
+    "data": "SGVsbG8gV29ybGQh",
+    "filename": "hello.txt"
   }
 }
 ```
@@ -178,21 +179,21 @@ Base64 데이터 또는 공개 URL 소스를 지원함:
       endpoints: {
         responses: {
           enabled: true,
-          maxBodyBytes: 20000000, // 요청 전체 최대 크기 (20MB)
-          maxUrlParts: 8, // URL 기반 입력 최대 개수
+          maxBodyBytes: 20000000,
+          maxUrlParts: 8,
           files: {
             allowUrl: true,
-            maxBytes: 5242880, // 파일당 최대 크기 (5MB)
-            maxChars: 200000, // 텍스트 추출 최대 글자 수
+            maxBytes: 5242880,
+            maxChars: 200000,
             timeoutMs: 10000,
             pdf: {
-              maxPages: 4, // PDF 최대 처리 페이지 수
+              maxPages: 4,
               minTextChars: 200,
             },
           },
           images: {
             allowUrl: true,
-            maxBytes: 10485760, // 이미지당 최대 크기 (10MB)
+            maxBytes: 10485760,
             timeoutMs: 10000,
           },
         },
@@ -224,7 +225,7 @@ Base64 데이터 또는 공개 URL 소스를 지원함:
 오류 발생 시 다음과 같은 JSON 구조를 반환함:
 
 ```json
-{ "error": { "message": "오류 메시지", "type": "invalid_request_error" } }
+{ "error": { "message": "Invalid request", "type": "invalid_request_error" } }
 ```
 
 - **401**: 인증 정보 누락 또는 유효하지 않음.
@@ -242,7 +243,7 @@ curl -sS http://127.0.0.1:18789/v1/responses \
   -H 'x-openclaw-agent-id: main' \
   -d '{
     "model": "openclaw",
-    "input": "반가워"
+    "input": "hello"
   }'
 ```
 
@@ -256,6 +257,6 @@ curl -N http://127.0.0.1:18789/v1/responses \
   -d '{
     "model": "openclaw",
     "stream": true,
-    "input": "오늘의 주요 뉴스 요약해줘"
+    "input": "Summarize today's top headlines"
   }'
 ```

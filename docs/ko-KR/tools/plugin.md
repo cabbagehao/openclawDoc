@@ -1,9 +1,12 @@
 ---
+title: "플러그인"
+description: "OpenClaw 플러그인의 설치, discovery, SDK import 경로, HTTP route, 보안 규칙을 설명합니다."
 summary: "OpenClaw 플러그인/확장: discovery, config, safety"
 read_when:
   - 플러그인/확장을 추가하거나 수정할 때
   - 플러그인 설치 또는 로드 규칙을 문서화할 때
-title: "플러그인"
+x-i18n:
+  source_path: "tools/plugin.md"
 ---
 
 # 플러그인(확장)

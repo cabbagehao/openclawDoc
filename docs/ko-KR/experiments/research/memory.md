@@ -1,10 +1,13 @@
 ---
+description: "Markdown 정본과 파생 인덱스를 결합한 오프라인 워크스페이스 메모리 아키텍처 리서치입니다"
 summary: "리서치 메모: Clawd 워크스페이스용 오프라인 메모리 시스템(Markdown 원본 + 파생 인덱스)"
 read_when:
   - 일일 Markdown 로그를 넘어서는 워크스페이스 메모리(`~/.openclaw/workspace`)를 설계할 때
   - 독립 CLI 와 OpenClaw 깊은 통합 중 어떤 방향을 택할지 결정할 때
   - 오프라인 회상 + 반성(retain/recall/reflect)을 추가할 때
 title: "워크스페이스 메모리 리서치"
+x-i18n:
+  source_path: "experiments/research/memory.md"
 ---
 
 # Workspace Memory v2 (오프라인): 리서치 메모

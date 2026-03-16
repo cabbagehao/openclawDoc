@@ -1,3 +1,10 @@
+---
+title: "Discord 채널 및 Telegram 토픽용 ACP 영구 바인딩"
+description: "Discord 채널과 Telegram 포럼 토픽을 장기 ACP 세션에 영구 바인딩하는 구성, 명령, 런타임 모델을 정리합니다"
+x-i18n:
+  source_path: "experiments/plans/acp-persistent-bindings-discord-channels-telegram-topics.md"
+---
+
 # Discord 채널 및 Telegram 토픽용 ACP 영구 바인딩
 
 Status: Draft

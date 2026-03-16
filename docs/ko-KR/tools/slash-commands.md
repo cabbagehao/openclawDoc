@@ -1,9 +1,12 @@
 ---
+title: "Slash Commands"
+description: "텍스트·네이티브 슬래시 명령, directive, 권한 설정, 모델·세션 제어 명령 목록을 정리한 가이드입니다."
 summary: "Slash command: text vs native, config, 지원 명령"
 read_when:
   - chat command를 사용하거나 설정할 때
   - command routing 또는 permission을 디버깅할 때
-title: "Slash Commands"
+x-i18n:
+  source_path: "tools/slash-commands.md"
 ---
 
 # Slash commands

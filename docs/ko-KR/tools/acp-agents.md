@@ -1,4 +1,5 @@
 ---
+description: ACP backend plugin으로 Codex, Claude Code, Gemini CLI 같은 외부 coding harness 세션을 바인딩하고 운용하는 가이드
 summary: "Pi, Claude Code, Codex, OpenCode, Gemini CLI 및 기타 harness agent에 ACP 런타임 세션 사용"
 read_when:
   - ACP를 통해 coding harness를 실행할 때
@@ -7,6 +8,8 @@ read_when:
   - ACP backend 및 plugin 연결을 troubleshooting할 때
   - 채팅에서 /acp 명령을 운용할 때
 title: "ACP Agents"
+x-i18n:
+  source_path: "tools/acp-agents.md"
 ---
 
 # ACP agents
@@ -245,6 +248,10 @@ agent turn 또는 tool call에서 ACP 세션을 시작하려면 `runtime: "acp"`
 - `label` (선택 사항): session/banner 텍스트에 사용되는 운영자 표시용 label.
 - `streamTo` (선택 사항): `"parent"`는 초기 ACP run 진행 요약을 system event로 요청자 session에 다시 스트리밍합니다.
   - 사용 가능한 경우, 허용된 응답에는 전체 relay 이력을 tail할 수 있는 session-scoped JSONL log(`<sessionId>.acp-stream.jsonl`)를 가리키는 `streamLogPath`가 포함됩니다.
+
+### 기존 세션 재개
+
+`resumeSessionId`를 사용하면 새 ACP 세션을 시작하는 대신 이전 세션을 이어서 사용할 수 있습니다. agent는 `session/load`를 통해 이전 대화 이력을 다시 불러오므로, 기존 컨텍스트를 유지한 채 계속 진행할 수 있습니다.
 
 ### 운영자 smoke test
 

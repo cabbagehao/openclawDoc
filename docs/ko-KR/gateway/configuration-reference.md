@@ -1,17 +1,19 @@
 ---
 title: "구성 참조"
-description: "~/.openclaw/openclaw.json의 전체 필드별 참조"
-summary: "모든 OpenClaw 구성 키, 기본값, 채널 설정에 대한 전체 참조"
+description: "OpenClaw의 ~/.openclaw/openclaw.json 모든 필드, 기본값, 채널 설정을 확인하는 레퍼런스"
+summary: "모든 OpenClaw 구성 키, 기본값, 채널 설정을 한곳에서 확인하는 상세 레퍼런스"
 read_when:
   - 정확한 필드 수준의 구성 의미론이나 기본값이 필요할 때
   - 채널, 모델, gateway, 또는 도구 구성 블록을 검증할 때
+x-i18n:
+  source_path: "gateway/configuration-reference.md"
 ---
 
 # 구성 참조
 
-`~/.openclaw/openclaw.json`에서 사용할 수 있는 모든 필드입니다. 작업 중심 개요는 [Configuration](/gateway/configuration)을 참고하세요.
+`~/.openclaw/openclaw.json`에서 사용할 수 있는 모든 필드별 레퍼런스입니다. 작업 중심 개요는 [Configuration](/gateway/configuration)을 참고하세요.
 
-구성 형식은 **JSON5**입니다(주석 + trailing comma 허용). 모든 필드는 선택 사항이며, 생략하면 OpenClaw가 안전한 기본값을 사용합니다.
+구성 형식은 **JSON5**입니다. 주석과 trailing comma를 사용할 수 있으며, 모든 필드는 선택 사항입니다. 생략하면 OpenClaw가 안전한 기본값을 사용합니다.
 
 ---
 

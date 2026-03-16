@@ -1,17 +1,19 @@
 ---
+title: "Browser (OpenClaw-managed)"
+description: "OpenClaw가 관리하는 격리 브라우저, Chrome extension relay, remote CDP 설정과 제어 방식을 설명합니다."
 summary: "통합 브라우저 제어 서비스 + action 명령"
 read_when:
   - agent가 제어하는 브라우저 자동화를 추가할 때
   - openclaw가 내 Chrome 사용을 방해하는 이유를 디버깅할 때
   - macOS 앱에서 browser 설정 + lifecycle을 구현할 때
-title: "Browser (OpenClaw-managed)"
+x-i18n:
+  source_path: "tools/browser.md"
 ---
 
 # Browser (openclaw-managed)
 
 OpenClaw는 agent가 제어하는 **전용 Chrome/Brave/Edge/Chromium profile**을 실행할 수 있습니다.
-이 profile은 개인 브라우저와 분리되어 있으며, Gateway 내부의 작은 로컬
-control service를 통해 관리됩니다(loopback only).
+이 profile은 개인 브라우저와 분리되어 있으며, Gateway 내부의 작은 로컬 control service를 통해 관리됩니다. (loopback only)
 
 입문자 관점:
 
@@ -45,11 +47,11 @@ openclaw browser --browser-profile openclaw snapshot
 - `openclaw`: managed, isolated browser(extension 필요 없음).
 - `chrome`: **시스템 브라우저**에 연결하는 extension relay(OpenClaw extension이 탭에 attach되어 있어야 함).
 
-managed mode를 기본으로 쓰려면 `browser.defaultProfile: "openclaw"` 를 설정하세요.
+managed mode를 기본값으로 쓰려면 `browser.defaultProfile: "openclaw"`를 설정하세요.
 
 ## Configuration
 
-Browser 설정은 `~/.openclaw/openclaw.json` 에 있습니다.
+Browser 설정은 `~/.openclaw/openclaw.json`에 있습니다.
 
 ```json5
 {

@@ -1,9 +1,12 @@
 ---
+description: OpenClaw CLI, Gateway 서비스, 상태 디렉터리, 워크스페이스를 완전히 제거하는 방법
 summary: "OpenClaw를 완전히 제거하기(CLI, 서비스, 상태, 워크스페이스)"
 read_when:
   - 머신에서 OpenClaw를 제거하려고 합니다
   - 제거 후에도 게이트웨이 서비스가 계속 실행 중입니다
 title: "제거"
+x-i18n:
+  source_path: "install/uninstall.md"
 ---
 
 # 제거
@@ -73,11 +76,11 @@ rm -rf /Applications/OpenClaw.app
 참고:
 
 - profile(`--profile` / `OPENCLAW_PROFILE`)를 사용했다면 각 상태 디렉터리(기본값 `~/.openclaw-<profile>`)마다 3단계를 반복하세요.
-- 원격 모드에서는 상태 디렉터리가 **게이트웨이 호스트**에 있으므로 1-4단계도 այնտեղ서 실행해야 합니다.
+- 원격 모드에서는 상태 디렉터리가 **gateway host**에 있으므로 1-4단계도 그쪽에서 실행해야 합니다.
 
 ## 수동 서비스 제거(CLI가 설치되지 않음)
 
-게이트웨이 서비스는 계속 실행 중인데 `openclaw` 명령이 없을 때 사용합니다.
+Gateway 서비스는 계속 실행 중인데 `openclaw` 명령이 없을 때 사용합니다.
 
 ### macOS (launchd)
 

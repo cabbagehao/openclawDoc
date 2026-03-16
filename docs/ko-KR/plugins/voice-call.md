@@ -1,4 +1,5 @@
 ---
+description: "Twilio, Telnyx, Plivo 기반 Voice Call 플러그인의 설치, 설정, CLI와 웹훅 흐름을 설명합니다"
 summary: "Voice Call 플러그인: Twilio/Telnyx/Plivo를 통한 outbound + inbound 통화(플러그인 설치 + config + CLI)"
 read_when:
   - OpenClaw에서 outbound 음성 통화를 걸고 싶을 때
@@ -64,7 +65,7 @@ config는 `plugins.entries.voice-call.config` 아래에 둡니다.
       "voice-call": {
         enabled: true,
         config: {
-          provider: "twilio", // 또는 "telnyx" | "plivo" | "mock"
+          provider: "twilio", // or "telnyx" | "plivo" | "mock"
           fromNumber: "+15550001234",
           toNumber: "+15550005678",
 
@@ -76,8 +77,8 @@ config는 `plugins.entries.voice-call.config` 아래에 둡니다.
           telnyx: {
             apiKey: "...",
             connectionId: "...",
-            // Telnyx Mission Control Portal에서 발급한
-            // Telnyx webhook 공개 키(Base64 문자열, TELNYX_PUBLIC_KEY로도 설정 가능).
+            // Telnyx webhook public key from Mission Control Portal
+            // (Base64 string; can also be set via TELNYX_PUBLIC_KEY).
             publicKey: "...",
           },
 
@@ -86,19 +87,19 @@ config는 `plugins.entries.voice-call.config` 아래에 둡니다.
             authToken: "...",
           },
 
-          // Webhook 서버
+          // Webhook server
           serve: {
             port: 3334,
             path: "/voice/webhook",
           },
 
-          // Webhook 보안(터널/프록시 사용 시 권장)
+          // Webhook security (recommended when using a tunnel/proxy)
           webhookSecurity: {
             allowedHosts: ["voice.example.com"],
             trustedProxyIPs: ["100.64.0.1"],
           },
 
-          // 공개 노출 방식(하나만 선택)
+          // Public exposure method (pick one)
           // publicUrl: "https://example.ngrok.app/voice/webhook",
           // tunnel: { provider: "ngrok" },
           // tailscale: { mode: "funnel", path: "/voice/webhook" }

@@ -1,10 +1,13 @@
 ---
+description: provider별 transcript 정리, tool-call 복구, 이미지 sanitization, inter-session provenance 규칙을 정리한 레퍼런스입니다.
 summary: "참고: provider별 transcript 정리 및 복구 규칙"
 read_when:
   - transcript 형태 때문에 provider 요청이 거부되는 문제를 디버깅할 때
   - transcript 정리나 tool-call 복구 로직을 변경할 때
   - provider 간 tool-call id 불일치를 조사할 때
 title: "Transcript Hygiene"
+x-i18n:
+  source_path: "reference/transcript-hygiene.md"
 ---
 
 # Transcript Hygiene (Provider Fixups)

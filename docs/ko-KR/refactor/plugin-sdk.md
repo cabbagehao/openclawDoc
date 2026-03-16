@@ -1,4 +1,5 @@
 ---
+description: 모든 메시징 커넥터를 하나의 SDK와 주입형 runtime으로 통합하기 위한 plugin 아키텍처 리팩터링 계획
 summary: "계획: 모든 메시징 커넥터를 위한 하나의 깔끔한 plugin SDK + runtime"
 read_when:
   - plugin 아키텍처를 정의하거나 리팩터링할 때

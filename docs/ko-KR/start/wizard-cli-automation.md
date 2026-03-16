@@ -1,21 +1,21 @@
 ---
-summary: "OpenClaw CLI용 스크립트 기반 온보딩 및 에이전트 설정"
+title: "CLI Automation"
+description: "`openclaw onboard`를 스크립트와 CI에서 non-interactive로 자동화하고 provider별 예제를 정리한 가이드입니다."
+summary: "OpenClaw CLI용 스크립트 기반 온보딩과 agent 설정"
 read_when:
   - 스크립트나 CI에서 온보딩을 자동화할 때
-  - 특정 공급자용 non-interactive 예제가 필요할 때
-title: "CLI 자동화"
-description: "OpenClaw CLI용 스크립트 기반 온보딩 및 에이전트 설정"
-sidebarTitle: "CLI 자동화"
+  - 특정 provider용 non-interactive 예제가 필요할 때
+sidebarTitle: "CLI automation"
 x-i18n:
   source_path: "start/wizard-cli-automation.md"
 ---
 
-# CLI 자동화
+# CLI Automation
 
 `--non-interactive`를 사용하면 `openclaw onboard`를 자동화할 수 있습니다.
 
 <Note>
-`--json`은 non-interactive mode를 의미하지 않습니다. 스크립트에서는 `--non-interactive`(그리고 `--workspace`)를 사용하세요.
+`--json`만으로는 non-interactive mode가 되지 않습니다. 스크립트에서는 `--non-interactive`(그리고 필요하면 `--workspace`)를 함께 사용하세요.
 </Note>
 
 ## 기본 non-interactive 예제
@@ -35,11 +35,11 @@ openclaw onboard --non-interactive \
 
 machine-readable summary가 필요하면 `--json`을 추가하세요.
 
-`--secret-input-mode ref`를 사용하면 auth profiles에 plaintext 값 대신 env-backed refs를 저장할 수 있습니다.
-env refs와 구성된 provider refs(`file` 또는 `exec`) 사이의 interactive 선택은 onboarding wizard 흐름에서 지원됩니다.
+`--secret-input-mode ref`를 사용하면 plaintext 값 대신 env-backed ref를 auth profile에 저장할 수 있습니다.
+env ref와 미리 구성된 provider ref(`file` 또는 `exec`) 중 선택하는 interactive 흐름은 onboarding wizard에서 지원됩니다.
 
-non-interactive `ref` mode에서는 provider env vars가 process environment에 설정되어 있어야 합니다.
-일치하는 env var 없이 inline key flags를 넘기면 즉시 실패합니다.
+non-interactive `ref` mode에서는 provider env var가 process environment에 설정되어 있어야 합니다.
+대응 env var 없이 inline key flag를 넘기면 onboarding이 즉시 실패합니다.
 
 예시:
 
@@ -51,7 +51,7 @@ openclaw onboard --non-interactive \
   --accept-risk
 ```
 
-## 공급자별 예제
+## Provider별 예제
 
 <AccordionGroup>
   <Accordion title="Gemini example">
@@ -135,7 +135,7 @@ openclaw onboard --non-interactive \
       --gateway-port 18789 \
       --gateway-bind loopback
     ```
-    Go catalog을 쓰려면 `--auth-choice opencode-go --opencode-go-api-key "$OPENCODE_API_KEY"`로 바꾸세요.
+    Go catalog를 사용하려면 `--auth-choice opencode-go --opencode-go-api-key "$OPENCODE_API_KEY"`로 바꾸세요.
   </Accordion>
   <Accordion title="Custom provider example">
     ```bash
@@ -153,7 +153,7 @@ openclaw onboard --non-interactive \
 
     `--custom-api-key`는 선택 사항입니다. 생략하면 onboarding이 `CUSTOM_API_KEY`를 확인합니다.
 
-    Ref-mode variant:
+    ref mode variant:
 
     ```bash
     export CUSTOM_API_KEY="your-key"
@@ -176,7 +176,8 @@ openclaw onboard --non-interactive \
 
 ## 다른 agent 추가
 
-`openclaw agents add <name>`을 사용하면 별도의 workspace, sessions, auth profiles를 가진 agent를 만들 수 있습니다. `--workspace` 없이 실행하면 마법사가 시작됩니다.
+`openclaw agents add <name>`을 사용하면 별도의 workspace, sessions, auth profile을 가진 agent를 만들 수 있습니다.
+`--workspace` 없이 실행하면 마법사가 열립니다.
 
 ```bash
 openclaw agents add work \
@@ -196,11 +197,11 @@ openclaw agents add work \
 참고:
 
 - 기본 workspace는 `~/.openclaw/workspace-<agentId>` 형식을 따릅니다.
-- 들어오는 메시지를 라우팅하려면 `bindings`를 추가하세요(마법사에서도 가능).
-- non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`
+- inbound message를 라우팅하려면 `bindings`를 추가하세요. 마법사에서도 설정할 수 있습니다.
+- non-interactive flag: `--model`, `--agent-dir`, `--bind`, `--non-interactive`
 
 ## 관련 문서
 
-- 온보딩 허브: [Onboarding Wizard (CLI)](/start/wizard)
-- 전체 레퍼런스: [CLI Onboarding Reference](/start/wizard-cli-reference)
-- 명령어 레퍼런스: [`openclaw onboard`](/cli/onboard)
+- Onboarding hub: [Onboarding Wizard (CLI)](/start/wizard)
+- Full reference: [CLI Onboarding Reference](/start/wizard-cli-reference)
+- Command reference: [`openclaw onboard`](/cli/onboard)

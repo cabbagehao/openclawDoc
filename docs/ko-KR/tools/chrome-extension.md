@@ -1,10 +1,13 @@
 ---
+title: "Chrome Extension"
+description: "기존 Chrome 탭을 OpenClaw browser relay에 연결하고 local·remote 환경에서 안전하게 제어하는 방법을 설명합니다."
 summary: "Chrome 확장: 기존 Chrome 탭을 OpenClaw가 제어하도록 연결"
 read_when:
   - agent가 기존 Chrome 탭을 제어하게 하고 싶을 때(toolbar button)
   - Tailscale을 통해 remote Gateway + local browser automation이 필요할 때
   - browser takeover의 보안 영향을 이해하고 싶을 때
-title: "Chrome Extension"
+x-i18n:
+  source_path: "tools/chrome-extension.md"
 ---
 
 # Chrome extension (browser relay)

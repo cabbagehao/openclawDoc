@@ -1,9 +1,12 @@
 ---
+description: "DigitalOcean Droplet에 OpenClaw Gateway를 배포하고 보안, 업데이트, 연결까지 설정하는 가이드입니다"
 summary: "DigitalOcean에서 OpenClaw 실행하기 (간단한 유료 VPS 옵션)"
 read_when:
   - DigitalOcean에서 OpenClaw를 설정할 때
   - OpenClaw용 저렴한 VPS 호스팅을 찾을 때
 title: "DigitalOcean"
+x-i18n:
+  source_path: "platforms/digitalocean.md"
 ---
 
 # OpenClaw on DigitalOcean

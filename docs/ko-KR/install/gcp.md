@@ -1,99 +1,127 @@
 ---
-summary: "GCP Compute Engine VM(Docker) 환경에서 상시 가동되는 OpenClaw Gateway 구축 및 운영 가이드"
+title: GCP
+description: GCP Compute Engine VM에서 Docker로 OpenClaw Gateway를 24시간 운영하고 영구 상태와 SSH 터널 접근을 구성하는 가이드
+summary: GCP Compute Engine VM(Docker)에서 OpenClaw Gateway를 상시 운영하고 상태를 영구 보존하는 가이드
 read_when:
-  - GCP 클라우드 환경에서 에이전트를 24시간 상시 가동하고자 할 때
-  - 자신만의 VM에서 운영급(Production-grade) Gateway를 운영하고 싶을 때
-  - 데이터 영속성, 바이너리 관리 및 재시작 동작을 직접 제어하고자 할 때
-title: "GCP 설치"
+  - GCP에서 OpenClaw를 24시간 운영하고 싶을 때
+  - 직접 관리하는 VM에서 운영용 Gateway를 실행하고 싶을 때
+  - 영속성, 바이너리, 재시작 동작을 직접 통제하고 싶을 때
 x-i18n:
-  source_path: "install/gcp.md"
+  source_path: install/gcp.md
 ---
 
-# GCP Compute Engine 설치 가이드 (Docker 기반)
+# GCP Compute Engine에서 OpenClaw 실행하기
 
 ## 목표
 
-GCP Compute Engine VM에서 Docker를 사용하여 OpenClaw Gateway를 실행함. 영구적인 상태 저장소 구축, 필수 바이너리 내장 및 안전한 자동 재시작 환경 구성을 목표로 함.
+Docker를 사용해 GCP Compute Engine VM에서 OpenClaw Gateway를 지속적으로 실행합니다. 상태는 영구 보존되고, 필요한 바이너리는 이미지에 포함되며, 재시작 동작도 안전하게 유지하는 구성을 목표로 합니다.
 
-월 약 **$5~$12** 수준의 비용으로 24시간 상시 가동되는 에이전트를 구축할 수 있음. 가격은 머신 유형 및 리전에 따라 상이하므로, 초기에는 소형 VM으로 시작한 후 필요에 따라 사양을 상향 조정할 것을 권장함.
+월 약 `$5-12` 수준으로 OpenClaw를 24시간 운영하고 싶다면 Google Cloud에서 충분히 실용적인 선택입니다. 비용은 머신 타입과 리전에 따라 달라지므로, 먼저 가장 작은 VM부터 시작하고 OOM이 발생하면 사양을 올리세요.
 
-## 구축 절차 요약
+## 무엇을 하게 되나요?
 
-- GCP 프로젝트 생성 및 결제 계정 연결.
-- Compute Engine VM(인스턴스) 생성.
-- Docker 설치 (격리된 에이전트 실행 환경).
-- Docker를 통한 OpenClaw Gateway 실행.
-- 호스트의 `~/.openclaw` 및 `workspace` 경로 영속화 (컨테이너 재빌드 시 데이터 보존).
-- SSH 터널링을 통한 안전한 제어 UI 접속.
+- GCP 프로젝트를 만들고 billing을 활성화합니다.
+- Compute Engine VM을 생성합니다.
+- Docker를 설치합니다.
+- Docker 안에서 OpenClaw Gateway를 실행합니다.
+- 호스트의 `~/.openclaw`와 `~/.openclaw/workspace`를 영구 보존합니다.
+- SSH 터널을 통해 노트북에서 Control UI에 접속합니다.
 
-본 가이드는 GCP의 **Debian 12** 환경을 기준으로 설명함. Ubuntu 등 다른 배포판 사용 시 패키지 관리자 명령어를 해당 환경에 맞게 수정하여 적용하기 바람.
+Gateway 접근 방식은 두 가지입니다.
 
----
+- 노트북에서 SSH port forwarding 사용
+- firewall과 token을 직접 관리하면서 포트를 외부에 노출
 
-## 숙련자용 요약 경로
-
-1. GCP 프로젝트 생성 및 Compute Engine API 활성화.
-2. VM 생성 (`e2-small`, Debian 12, 20GB 부팅 디스크).
-3. VM 접속 (SSH).
-4. Docker 및 Docker Compose 설치.
-5. OpenClaw 저장소 클론.
-6. 호스트 영구 저장 디렉터리 생성.
-7. `.env` 및 `docker-compose.yml` 설정 구성.
-8. 필수 바이너리 포함 이미지 빌드 및 컨테이너 실행.
+이 가이드는 GCP Compute Engine의 Debian을 기준으로 설명합니다. Ubuntu도 가능하지만 패키지 이름과 명령은 환경에 맞게 바꿔야 합니다. 일반적인 Docker 흐름은 [Docker](/install/docker) 문서를 참고하세요.
 
 ---
 
-## 사전 준비 사항
+## 빠른 경로(숙련자용)
 
-- GCP 계정 (무료 티어 사용 시 `e2-micro` 가능).
-- gcloud CLI 설치 또는 GCP 콘솔 접근 권한.
-- 로컬 기기에서의 SSH 접속 환경.
-- Docker 및 Docker Compose 지식.
-- 모델 공급자 API 키 및 채널 자격 증명.
+1. GCP 프로젝트를 만들고 Compute Engine API를 활성화합니다.
+2. Compute Engine VM을 생성합니다(`e2-small`, Debian 12, 20GB).
+3. VM에 SSH로 접속합니다.
+4. Docker를 설치합니다.
+5. OpenClaw 저장소를 클론합니다.
+6. 호스트 영구 디렉터리를 만듭니다.
+7. `.env`와 `docker-compose.yml`을 구성합니다.
+8. 필요한 바이너리를 이미지에 bake하고 빌드 및 실행합니다.
 
 ---
 
-## 1) gcloud CLI 설치 및 인증
+## 준비 사항
 
-**방법 A: gcloud CLI (권장)**
-[Google Cloud SDK 설치 가이드](https://cloud.google.com/sdk/docs/install)를 따름.
+- GCP 계정(`e2-micro`는 free tier 대상일 수 있음)
+- `gcloud` CLI 설치 또는 Cloud Console 사용
+- 노트북에서 SSH 접속 가능
+- SSH와 복사/붙여넣기에 대한 기본 이해
+- 20~30분 정도의 작업 시간
+- Docker와 Docker Compose
+- 모델 인증 정보
+- 선택적 provider 자격 증명
+  - WhatsApp QR
+  - Telegram bot token
+  - Gmail OAuth
 
-초기화 및 로그인:
+---
+
+## 1) `gcloud` CLI 설치(또는 Console 사용)
+
+**옵션 A: `gcloud` CLI**(자동화에 권장)
+
+[https://cloud.google.com/sdk/docs/install](https://cloud.google.com/sdk/docs/install)에서 설치합니다.
+
+초기화와 인증:
+
 ```bash
 gcloud init
 gcloud auth login
 ```
 
-**방법 B: GCP 콘솔 (웹 UI)**
-[GCP 콘솔](https://console.cloud.google.com)에서 모든 작업을 시각적으로 진행할 수 있음.
+**옵션 B: Cloud Console**
+
+모든 작업은 [https://console.cloud.google.com](https://console.cloud.google.com) 웹 UI에서도 할 수 있습니다.
 
 ---
 
-## 2) GCP 프로젝트 설정
+## 2) GCP 프로젝트 만들기
 
-**CLI 기준:**
+**CLI:**
+
 ```bash
 gcloud projects create my-openclaw-project --name="OpenClaw Gateway"
 gcloud config set project my-openclaw-project
 ```
-[결제 페이지](https://console.cloud.google.com/billing)에서 프로젝트에 결제 수단을 연결하고, Compute Engine API를 활성화함:
+
+Compute Engine을 쓰려면 [https://console.cloud.google.com/billing](https://console.cloud.google.com/billing)에서 billing을 연결해야 합니다.
+
+이후 Compute Engine API를 활성화합니다.
+
 ```bash
 gcloud services enable compute.googleapis.com
 ```
 
+**Console:**
+
+1. IAM & Admin > Create Project로 이동합니다.
+2. 프로젝트 이름을 정하고 생성합니다.
+3. 해당 프로젝트에 billing을 연결합니다.
+4. APIs & Services > Enable APIs에서 "Compute Engine API"를 검색해 활성화합니다.
+
 ---
 
-## 3) VM 인스턴스 생성
+## 3) VM 만들기
 
-**머신 유형 권장 사항:**
+**머신 타입**
 
-| 유형 | 사양 | 예상 비용 | 비고 |
-| :--- | :--- | :--- | :--- |
-| **e2-medium** | 2 vCPU, 4GB RAM | 약 $25/월 | 로컬 빌드 시 가장 안정적임 |
-| **e2-small** | 2 vCPU, 2GB RAM | 약 $12/월 | **최소 권장 사양** |
-| **e2-micro** | 2 vCPU, 1GB RAM | 무료 티어 대상 | 빌드 중 메모리 부족(OOM) 위험 높음 |
+| Type | Specs | Cost | Notes |
+| --- | --- | --- | --- |
+| e2-medium | 2 vCPU, 4GB RAM | ~$25/mo | 로컬 Docker 빌드에 가장 안정적 |
+| e2-small | 2 vCPU, 2GB RAM | ~$12/mo | Docker build 최소 권장 사양 |
+| e2-micro | 2 vCPU (shared), 1GB RAM | Free tier eligible | Docker build 중 OOM(exit 137)이 자주 발생 |
 
-**생성 명령어:**
+**CLI:**
+
 ```bash
 gcloud compute instances create openclaw-gateway \
   --zone=us-central1-a \
@@ -103,18 +131,34 @@ gcloud compute instances create openclaw-gateway \
   --image-project=debian-cloud
 ```
 
+**Console:**
+
+1. Compute Engine > VM instances > Create instance로 이동합니다.
+2. 이름은 `openclaw-gateway`로 지정합니다.
+3. Region은 `us-central1`, Zone은 `us-central1-a`를 선택합니다.
+4. Machine type은 `e2-small`을 선택합니다.
+5. Boot disk는 Debian 12, 20GB로 설정합니다.
+6. 생성합니다.
+
 ---
 
-## 4) VM 접속 (SSH)
+## 4) VM에 SSH 접속
+
+**CLI:**
 
 ```bash
 gcloud compute ssh openclaw-gateway --zone=us-central1-a
 ```
-*참고: 인스턴스 생성 직후에는 SSH 키 전파를 위해 약 1~2분 정도 대기가 필요할 수 있음.*
+
+**Console:**
+
+Compute Engine 대시보드에서 VM 옆의 **SSH** 버튼을 클릭합니다.
+
+참고로 VM 생성 직후에는 SSH key 전파에 1~2분 정도 걸릴 수 있습니다. 연결이 거부되면 잠시 기다렸다가 다시 시도하세요.
 
 ---
 
-## 5) Docker 설치 (VM 내부)
+## 5) Docker 설치(VM 내부)
 
 ```bash
 sudo apt-get update
@@ -122,7 +166,25 @@ sudo apt-get install -y git curl ca-certificates
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker $USER
 ```
-설정 적용을 위해 로그아웃 후 다시 접속함 (`exit` 후 재접속).
+
+group 변경을 적용하려면 로그아웃 후 다시 로그인합니다.
+
+```bash
+exit
+```
+
+그다음 다시 SSH 접속:
+
+```bash
+gcloud compute ssh openclaw-gateway --zone=us-central1-a
+```
+
+확인:
+
+```bash
+docker --version
+docker compose version
+```
 
 ---
 
@@ -133,11 +195,14 @@ git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 ```
 
+이 가이드는 바이너리를 확실히 유지하기 위해 custom image를 직접 빌드하는 흐름을 전제로 합니다.
+
 ---
 
-## 7) 영구 저장 디렉터리 생성
+## 7) 영구 호스트 디렉터리 만들기
 
-컨테이너가 삭제되어도 데이터가 유지되도록 호스트 시스템에 디렉터리를 생성함:
+Docker 컨테이너는 일시적입니다. 오래 유지해야 하는 상태는 모두 호스트에 있어야 합니다.
+
 ```bash
 mkdir -p ~/.openclaw
 mkdir -p ~/.openclaw/workspace
@@ -145,83 +210,237 @@ mkdir -p ~/.openclaw/workspace
 
 ---
 
-## 8) 환경 변수 설정 (.env)
+## 8) 환경 변수 구성
 
-저장소 루트에 `.env` 파일을 생성하고 보안 정보를 입력함:
+저장소 루트에 `.env`를 만듭니다.
+
 ```bash
 OPENCLAW_IMAGE=openclaw:latest
-OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
+OPENCLAW_GATEWAY_TOKEN=change-me-now
 OPENCLAW_GATEWAY_BIND=lan
 OPENCLAW_GATEWAY_PORT=18789
 
 OPENCLAW_CONFIG_DIR=/home/$USER/.openclaw
 OPENCLAW_WORKSPACE_DIR=/home/$USER/.openclaw/workspace
 
-GOG_KEYRING_PASSWORD=사용자_비밀번호
+GOG_KEYRING_PASSWORD=change-me-now
 XDG_CONFIG_HOME=/home/node/.openclaw
 ```
+
+강한 시크릿은 다음처럼 생성합니다.
+
+```bash
+openssl rand -hex 32
+```
+
+**이 파일은 commit하지 마세요.**
 
 ---
 
 ## 9) Docker Compose 구성
 
-`docker-compose.yml` 파일을 작성하여 서비스 정의를 구성함. 보안을 위해 Gateway 포트는 **루프백(`127.0.0.1`)**에만 바인딩하고 SSH 터널링으로 접속할 것을 권장함.
+`docker-compose.yml`을 만들거나 갱신합니다.
 
----
-
-## 10) 필수 바이너리 내장 (중요)
-
-에이전트가 사용할 외부 도구(바이너리)는 반드시 **이미지 빌드 시점에 포함**되어야 함. 런타임에 설치한 파일은 컨테이너 재시작 시 삭제됨.
-
-**Dockerfile 예시:**
-```dockerfile
-FROM node:22-bookworm
-# 필수 시스템 패키지 설치
-RUN apt-get update && apt-get install -y socat && rm -rf /var/lib/apt/lists/*
-
-# 외부 바이너리 추가 (예: gog, wacli 등)
-RUN curl -L <다운로드_URL> | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/<도구명>
-
-WORKDIR /app
-# ... 의존성 설치 및 빌드 단계 생략 ...
-CMD ["node", "dist/index.js"]
+```yaml
+services:
+  openclaw-gateway:
+    image: ${OPENCLAW_IMAGE}
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - HOME=/home/node
+      - NODE_ENV=production
+      - TERM=xterm-256color
+      - OPENCLAW_GATEWAY_BIND=${OPENCLAW_GATEWAY_BIND}
+      - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - GOG_KEYRING_PASSWORD=${GOG_KEYRING_PASSWORD}
+      - XDG_CONFIG_HOME=${XDG_CONFIG_HOME}
+      - PATH=/home/linuxbrew/.linuxbrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    volumes:
+      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
+      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+    ports:
+      # Recommended: keep the Gateway loopback-only on the VM; access via SSH tunnel.
+      # To expose it publicly, remove the `127.0.0.1:` prefix and firewall accordingly.
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:18789"
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "${OPENCLAW_GATEWAY_BIND}",
+        "--port",
+        "${OPENCLAW_GATEWAY_PORT}",
+      ]
 ```
 
 ---
 
-## 11) 빌드 및 컨테이너 실행
+## 10) 필요한 바이너리를 이미지에 bake하기(중요)
+
+실행 중인 컨테이너 안에 바이너리를 설치하는 방식은 함정입니다. 런타임에 설치한 내용은 재시작하면 사라집니다.
+
+skill이 필요로 하는 외부 바이너리는 모두 이미지 빌드 시점에 설치해야 합니다.
+
+아래 예시는 대표적인 세 가지 바이너리만 보여줍니다.
+
+- Gmail 접근용 `gog`
+- Google Places용 `goplaces`
+- WhatsApp용 `wacli`
+
+예시일 뿐이며 전체 목록은 아닙니다. 같은 패턴으로 필요한 바이너리를 얼마든지 추가할 수 있습니다.
+
+나중에 새 skill이 추가 바이너리를 요구하면 반드시 다음 순서를 따르세요.
+
+1. Dockerfile을 수정합니다.
+2. 이미지를 다시 빌드합니다.
+3. 컨테이너를 재시작합니다.
+
+**Dockerfile 예시**
+
+```dockerfile
+FROM node:22-bookworm
+
+RUN apt-get update && apt-get install -y socat && rm -rf /var/lib/apt/lists/*
+
+# Example binary 1: Gmail CLI
+RUN curl -L https://github.com/steipete/gog/releases/latest/download/gog_Linux_x86_64.tar.gz \
+  | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/gog
+
+# Example binary 2: Google Places CLI
+RUN curl -L https://github.com/steipete/goplaces/releases/latest/download/goplaces_Linux_x86_64.tar.gz \
+  | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/goplaces
+
+# Example binary 3: WhatsApp CLI
+RUN curl -L https://github.com/steipete/wacli/releases/latest/download/wacli_Linux_x86_64.tar.gz \
+  | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/wacli
+
+# Add more binaries below using the same pattern
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY ui/package.json ./ui/package.json
+COPY scripts ./scripts
+
+RUN corepack enable
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm build
+RUN pnpm ui:install
+RUN pnpm ui:build
+
+ENV NODE_ENV=production
+
+CMD ["node","dist/index.js"]
+```
+
+---
+
+## 11) 빌드 및 실행
 
 ```bash
 docker compose build
 docker compose up -d openclaw-gateway
 ```
-*빌드 중 `exit code 137` 발생 시 메모리 부족이 원인이므로 VM 사양을 상향 조정해야 함.*
+
+`pnpm install --frozen-lockfile` 중 `Killed` 또는 `exit code 137`이 나면 VM 메모리가 부족한 것입니다. 최소 `e2-small`, 가능하면 첫 빌드는 `e2-medium`이 더 안정적입니다.
+
+`OPENCLAW_GATEWAY_BIND=lan`으로 LAN 바인딩하는 경우, 다음 단계로 가기 전에 trusted browser origin을 설정해야 합니다.
+
+```bash
+docker compose run --rm openclaw-cli config set gateway.controlUi.allowedOrigins '["http://127.0.0.1:18789"]' --strict-json
+```
+
+gateway port를 바꿨다면 `18789`를 그 포트로 바꾸세요.
+
+바이너리 확인:
+
+```bash
+docker compose exec openclaw-gateway which gog
+docker compose exec openclaw-gateway which goplaces
+docker compose exec openclaw-gateway which wacli
+```
+
+예상 출력:
+
+```text
+/usr/local/bin/gog
+/usr/local/bin/goplaces
+/usr/local/bin/wacli
+```
 
 ---
 
-## 12) 제어 UI 접속 (로컬 기기에서 실행)
+## 12) Gateway 확인
 
-로컬 포트(`18789`)를 VM의 루프백 포트로 포워딩함:
+```bash
+docker compose logs -f openclaw-gateway
+```
+
+성공 예시:
+
+```text
+[gateway] listening on ws://0.0.0.0:18789
+```
+
+---
+
+## 13) 노트북에서 접근
+
+Gateway 포트를 전달하는 SSH 터널을 만듭니다.
+
 ```bash
 gcloud compute ssh openclaw-gateway --zone=us-central1-a -- -L 18789:127.0.0.1:18789
 ```
-이후 로컬 브라우저에서 `http://127.0.0.1:18789/` 주소로 접속함. 인증 토큰은 VM의 `.env` 파일에 생성된 `OPENCLAW_GATEWAY_TOKEN` 값을 사용함.
+
+브라우저에서 다음 주소를 엽니다.
+
+`http://127.0.0.1:18789/`
+
+새 tokenized dashboard link를 가져옵니다.
+
+```bash
+docker compose run --rm openclaw-cli dashboard --no-open
+```
+
+그 URL의 token을 붙여 넣으세요.
+
+Control UI에 `unauthorized` 또는 `disconnected (1008): pairing required`가 보이면 브라우저 디바이스를 승인합니다.
+
+```bash
+docker compose run --rm openclaw-cli devices list
+docker compose run --rm openclaw-cli devices approve <requestId>
+```
 
 ---
 
-## 데이터 영속성 기준 (SSOT)
+## 무엇이 어디에 보존되나(source of truth)
 
-| 구성 요소 | 저장 위치 | 보존 메커니즘 | 비고 |
-| :--- | :--- | :--- | :--- |
-| **에이전트 설정** | `/home/node/.openclaw/` | 호스트 볼륨 마운트 | `openclaw.json` 등 |
-| **인증 프로필** | `/home/node/.openclaw/` | 호스트 볼륨 마운트 | OAuth 토큰 등 |
-| **워크스페이스** | `/home/node/.openclaw/workspace/` | 호스트 볼륨 마운트 | 코드 및 결과물 |
-| **통신 세션** | `/home/node/.openclaw/` | 호스트 볼륨 마운트 | QR 로그인 정보 포함 |
-| **시스템 도구** | `/usr/local/bin/` | Docker 이미지 내장 | 빌드 시 고정됨 |
+OpenClaw는 Docker 안에서 실행되지만, Docker 자체가 source of truth는 아닙니다. 모든 장기 상태는 재시작, 재빌드, 재부팅 후에도 남아야 합니다.
+
+| Component | Location | Persistence mechanism | Notes |
+| --- | --- | --- | --- |
+| Gateway config | `/home/node/.openclaw/` | Host volume mount | `openclaw.json`, token 포함 |
+| Model auth profiles | `/home/node/.openclaw/` | Host volume mount | OAuth token, API key |
+| Skill configs | `/home/node/.openclaw/skills/` | Host volume mount | Skill 수준 상태 |
+| Agent workspace | `/home/node/.openclaw/workspace/` | Host volume mount | 코드와 agent 산출물 |
+| WhatsApp session | `/home/node/.openclaw/` | Host volume mount | QR 로그인 유지 |
+| Gmail keyring | `/home/node/.openclaw/` | Host volume + password | `GOG_KEYRING_PASSWORD` 필요 |
+| External binaries | `/usr/local/bin/` | Docker image | 빌드 시점에 bake 필요 |
+| Node runtime | Container filesystem | Docker image | 이미지 재빌드 때마다 교체 |
+| OS packages | Container filesystem | Docker image | 런타임 설치 금지 |
+| Docker container | Ephemeral | Restartable | 삭제해도 무방 |
 
 ---
 
-## 업데이트 절차
+## 업데이트
+
+VM에서 OpenClaw를 업데이트하려면:
 
 ```bash
 cd ~/openclaw
@@ -232,6 +451,70 @@ docker compose up -d
 
 ---
 
-## 서비스 계정 보안 (권장 사항)
+## 문제 해결
 
-개인용이 아닌 팀 또는 자동화 파이프라인에서 운영하는 경우, 최소 권한 원칙에 따라 전용 **서비스 계정(Service Account)**을 생성하여 운영할 것을 강력히 권장함. 상세 내용은 [GCP IAM 역할 가이드](https://cloud.google.com/iam/docs/understanding-roles)를 참조함.
+**SSH connection refused**
+
+VM 생성 직후에는 SSH key 전파에 1~2분 걸릴 수 있습니다. 잠시 기다렸다가 다시 시도하세요.
+
+**OS Login issues**
+
+OS Login profile을 확인합니다.
+
+```bash
+gcloud compute os-login describe-profile
+```
+
+계정에 필요한 IAM 권한(Compute OS Login 또는 Compute OS Admin Login)이 있는지도 확인하세요.
+
+**Out of memory (OOM)**
+
+Docker build가 `Killed`와 `exit code 137`로 실패하면 VM이 OOM-kill된 것입니다. `e2-small` 이상으로 올리거나, 첫 빌드 안정성을 원하면 `e2-medium`을 권장합니다.
+
+```bash
+# Stop the VM first
+gcloud compute instances stop openclaw-gateway --zone=us-central1-a
+
+# Change machine type
+gcloud compute instances set-machine-type openclaw-gateway \
+  --zone=us-central1-a \
+  --machine-type=e2-small
+
+# Start the VM
+gcloud compute instances start openclaw-gateway --zone=us-central1-a
+```
+
+---
+
+## Service account(보안 모범 사례)
+
+개인 용도라면 기본 사용자 계정으로도 충분합니다.
+
+자동화나 CI/CD 파이프라인에서 운영한다면 최소 권한만 가진 전용 service account를 만드세요.
+
+1. service account 생성:
+
+   ```bash
+   gcloud iam service-accounts create openclaw-deploy \
+     --display-name="OpenClaw Deployment"
+   ```
+
+2. Compute Instance Admin 역할(또는 더 좁은 custom role) 부여:
+
+   ```bash
+   gcloud projects add-iam-policy-binding my-openclaw-project \
+     --member="serviceAccount:openclaw-deploy@my-openclaw-project.iam.gserviceaccount.com" \
+     --role="roles/compute.instanceAdmin.v1"
+   ```
+
+자동화에는 Owner 역할을 사용하지 마세요. 최소 권한 원칙을 따르는 편이 안전합니다.
+
+IAM 역할은 [https://cloud.google.com/iam/docs/understanding-roles](https://cloud.google.com/iam/docs/understanding-roles)를 참고하세요.
+
+---
+
+## 다음 단계
+
+- 메시징 채널 설정: [Channels](/channels)
+- 로컬 디바이스를 node로 페어링: [Nodes](/nodes)
+- Gateway 구성: [Gateway configuration](/gateway/configuration)

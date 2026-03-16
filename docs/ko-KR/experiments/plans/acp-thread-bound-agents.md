@@ -1,9 +1,12 @@
 ---
+description: "Discord 우선 ACP 스레드 바운드 에이전트를 OpenClaw 제어 평면과 플러그형 런타임으로 통합하는 계획입니다"
 summary: "core의 1급 ACP 제어 평면과 플러그인 기반 런타임(acpx 우선)을 통해 ACP 코딩 에이전트를 통합한다"
 owner: "onutc"
 status: "draft"
 last_updated: "2026-02-25"
 title: "ACP 스레드 바운드 에이전트"
+x-i18n:
+  source_path: "experiments/plans/acp-thread-bound-agents.md"
 ---
 
 # ACP 스레드 바운드 에이전트

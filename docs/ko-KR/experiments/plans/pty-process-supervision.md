@@ -1,4 +1,5 @@
 ---
+description: "PTY와 non-PTY 장기 프로세스의 소유권, timeout, cleanup을 일관되게 관리하는 supervision 계획입니다"
 summary: "명시적 소유권, 통합 lifecycle, 결정적 cleanup을 갖춘 안정적인 interactive process supervision(PTY + non-PTY)용 운영 계획"
 read_when:
   - exec/process lifecycle ownership과 cleanup을 다룰 때
@@ -7,6 +8,8 @@ owner: "openclaw"
 status: "in-progress"
 last_updated: "2026-02-15"
 title: "PTY and Process Supervision Plan"
+x-i18n:
+  source_path: "experiments/plans/pty-process-supervision.md"
 ---
 
 # PTY and Process Supervision Plan

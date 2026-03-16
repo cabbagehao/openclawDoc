@@ -1,10 +1,13 @@
 ---
+title: "ClawHub"
+description: "ClawHub에서 OpenClaw skill을 검색, 설치, publish, sync하는 CLI와 공개 registry 동작을 설명합니다."
 summary: "ClawHub 가이드: public skill registry + CLI workflow"
 read_when:
   - 새 사용자에게 ClawHub를 소개할 때
   - skill을 설치, 검색, publish할 때
   - ClawHub CLI flag와 sync 동작을 설명할 때
-title: "ClawHub"
+x-i18n:
+  source_path: "tools/clawhub.md"
 ---
 
 # ClawHub

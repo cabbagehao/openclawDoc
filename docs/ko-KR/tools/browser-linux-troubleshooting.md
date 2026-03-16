@@ -1,7 +1,10 @@
 ---
+title: "Browser Troubleshooting"
+description: "Linux에서 Chrome·Brave·Edge·Chromium CDP 시작 실패와 extension relay 연결 문제를 해결하는 가이드입니다."
 summary: "Linux에서 OpenClaw browser control용 Chrome/Brave/Edge/Chromium CDP 시작 문제를 해결합니다"
 read_when: "Linux에서 browser control이 실패할 때, 특히 snap Chromium을 쓰는 경우"
-title: "Browser Troubleshooting"
+x-i18n:
+  source_path: "tools/browser-linux-troubleshooting.md"
 ---
 
 # Browser Troubleshooting (Linux)

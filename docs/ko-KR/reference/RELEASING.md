@@ -1,108 +1,141 @@
 ---
 title: "Release Checklist"
-summary: "npm + macOS 앱을 위한 단계별 릴리스 체크리스트"
+description: "Release checklist for OpenClaw npm and macOS app builds, validation, publishing, and GitHub release steps."
+summary: "Step-by-step release checklist for npm + macOS app"
 read_when:
-  - 새 npm 릴리스를 배포할 때
-  - 새 macOS 앱 릴리스를 배포할 때
-  - 게시 전에 메타데이터를 검증할 때
+  - Cutting a new npm release
+  - Cutting a new macOS app release
+  - Verifying metadata before publishing
+x-i18n:
+  source_path: "reference/RELEASING.md"
 ---
 
-# 릴리스 체크리스트 (npm + macOS)
+# Release Checklist (npm + macOS)
 
-리포지토리 루트에서 `pnpm` (Node 22+)을 사용하세요. 태그를 만들거나 게시하기 전에 작업 트리를 깨끗하게 유지하세요.
+Use `pnpm` (Node 22+) from the repo root. Keep the working tree clean before tagging/publishing.
 
-## 운영자 트리거
+## Operator trigger
 
-운영자가 “release”라고 말하면, 즉시 다음 사전 점검을 수행하세요(막히지 않는 한 추가 질문은 하지 마세요):
+When the operator says “release”, immediately do this preflight (no extra questions unless blocked):
 
-- 이 문서와 `docs/platforms/mac/release.md`를 읽습니다.
-- `~/.profile`에서 env를 로드하고 `SPARKLE_PRIVATE_KEY_FILE`과 App Store Connect 변수가 설정되어 있는지 확인합니다 (`SPARKLE_PRIVATE_KEY_FILE`은 `~/.profile`에 있어야 합니다).
-- 필요하면 `~/Library/CloudStorage/Dropbox/Backup/Sparkle`의 Sparkle 키를 사용합니다.
+- Read this doc and `docs/platforms/mac/release.md`.
+- Load env from `~/.profile` and confirm `SPARKLE_PRIVATE_KEY_FILE` + App Store Connect vars are set (SPARKLE_PRIVATE_KEY_FILE should live in `~/.profile`).
+- Use Sparkle keys from `~/Library/CloudStorage/Dropbox/Backup/Sparkle` if needed.
 
-1. **버전 및 메타데이터**
+## Versioning
 
-- [ ] `package.json` 버전을 올립니다(예: `2026.1.29`).
-- [ ] 확장 패키지 버전과 changelog를 맞추기 위해 `pnpm plugins:sync`를 실행합니다.
-- [ ] [`src/version.ts`](https://github.com/openclaw/openclaw/blob/main/src/version.ts)의 CLI/버전 문자열과 [`src/web/session.ts`](https://github.com/openclaw/openclaw/blob/main/src/web/session.ts)의 Baileys user agent를 업데이트합니다.
-- [ ] 패키지 메타데이터(name, description, repository, keywords, license)를 확인하고, `bin` 맵이 `openclaw`에 대해 [`openclaw.mjs`](https://github.com/openclaw/openclaw/blob/main/openclaw.mjs)를 가리키는지 확인합니다.
-- [ ] 의존성이 변경되었다면 `pnpm install`을 실행해 `pnpm-lock.yaml`을 최신 상태로 유지합니다.
+Current OpenClaw releases use date-based versioning.
 
-2. **빌드 및 아티팩트**
+- Stable release version: `YYYY.M.D`
+  - Git tag: `vYYYY.M.D`
+  - Examples from repo history: `v2026.2.26`, `v2026.3.8`
+- Beta prerelease version: `YYYY.M.D-beta.N`
+  - Git tag: `vYYYY.M.D-beta.N`
+  - Examples from repo history: `v2026.2.15-beta.1`, `v2026.3.8-beta.1`
+- Use the same version string everywhere, minus the leading `v` where Git tags are not used:
+  - `package.json`: `2026.3.8`
+  - Git tag: `v2026.3.8`
+  - GitHub release title: `openclaw 2026.3.8`
+- Do not zero-pad month or day. Use `2026.3.8`, not `2026.03.08`.
+- Stable and beta are npm dist-tags, not separate release lines:
+  - `latest` = stable
+  - `beta` = prerelease/testing
+- Dev is the moving head of `main`, not a normal git-tagged release.
+- The release workflow enforces the current stable/beta tag formats and rejects versions whose CalVer date is more than 2 UTC calendar days away from the release date.
 
-- [ ] A2UI 입력이 변경되었다면 `pnpm canvas:a2ui:bundle`을 실행하고, 업데이트된 [`src/canvas-host/a2ui/a2ui.bundle.js`](https://github.com/openclaw/openclaw/blob/main/src/canvas-host/a2ui/a2ui.bundle.js)가 있으면 커밋합니다.
-- [ ] `pnpm run build` (`dist/`를 다시 생성합니다).
-- [ ] npm 패키지의 `files`에 필요한 모든 `dist/*` 폴더가 포함되어 있는지 확인합니다(특히 헤드리스 node + ACP CLI용 `dist/node-host/**`와 `dist/acp/**`).
-- [ ] `dist/build-info.json`이 존재하고 예상한 `commit` 해시를 포함하는지 확인합니다(CLI 배너는 npm 설치 시 이를 사용합니다).
-- [ ] 선택 사항: 빌드 후 `npm pack --pack-destination /tmp`를 실행하고 tarball 내용을 검사한 다음 GitHub 릴리스에 첨부할 수 있도록 보관합니다(커밋하지는 마세요).
+Historical note:
 
-3. **Changelog 및 문서**
+- Older tags such as `v2026.1.11-1`, `v2026.2.6-3`, and `v2.0.0-beta2` exist in repo history.
+- Treat those as legacy tag patterns. New releases should use `vYYYY.M.D` for stable and `vYYYY.M.D-beta.N` for beta.
 
-- [ ] 사용자 대상 하이라이트를 담아 `CHANGELOG.md`를 업데이트합니다(없다면 파일을 만듭니다). 항목은 버전 기준 엄격한 내림차순으로 유지합니다.
-- [ ] README 예제/플래그가 현재 CLI 동작과 일치하는지 확인합니다(특히 새 명령이나 옵션).
+1. **Version & metadata**
 
-4. **검증**
+- [ ] Bump `package.json` version (e.g., `2026.1.29`).
+- [ ] Run `pnpm plugins:sync` to align extension package versions + changelogs.
+- [ ] Update CLI/version strings in [`src/version.ts`](https://github.com/openclaw/openclaw/blob/main/src/version.ts) and the Baileys user agent in [`src/web/session.ts`](https://github.com/openclaw/openclaw/blob/main/src/web/session.ts).
+- [ ] Confirm package metadata (name, description, repository, keywords, license) and `bin` map points to [`openclaw.mjs`](https://github.com/openclaw/openclaw/blob/main/openclaw.mjs) for `openclaw`.
+- [ ] If dependencies changed, run `pnpm install` so `pnpm-lock.yaml` is current.
+
+2. **Build & artifacts**
+
+- [ ] If A2UI inputs changed, run `pnpm canvas:a2ui:bundle` and commit any updated [`src/canvas-host/a2ui/a2ui.bundle.js`](https://github.com/openclaw/openclaw/blob/main/src/canvas-host/a2ui/a2ui.bundle.js).
+- [ ] `pnpm run build` (regenerates `dist/`).
+- [ ] Verify npm package `files` includes all required `dist/*` folders (notably `dist/node-host/**` and `dist/acp/**` for headless node + ACP CLI).
+- [ ] Confirm `dist/build-info.json` exists and includes the expected `commit` hash (CLI banner uses this for npm installs).
+- [ ] Optional: `npm pack --pack-destination /tmp` after the build; inspect the tarball contents and keep it handy for the GitHub release (do **not** commit it).
+
+3. **Changelog & docs**
+
+- [ ] Update `CHANGELOG.md` with user-facing highlights (create the file if missing); keep entries strictly descending by version.
+- [ ] Ensure README examples/flags match current CLI behavior (notably new commands or options).
+
+4. **Validation**
 
 - [ ] `pnpm build`
 - [ ] `pnpm check`
-- [ ] `pnpm test` (`coverage` 출력이 필요하면 `pnpm test:coverage`)
-- [ ] `pnpm release:check` (npm pack 내용을 검증합니다)
-- [ ] `OPENCLAW_INSTALL_SMOKE_SKIP_NONROOT=1 pnpm test:install:smoke` (Docker 설치 스모크 테스트, 빠른 경로, 릴리스 전에 필수)
-  - 직전 npm 릴리스가 깨진 것으로 알려져 있다면 preinstall 단계에 `OPENCLAW_INSTALL_SMOKE_PREVIOUS=<last-good-version>` 또는 `OPENCLAW_INSTALL_SMOKE_SKIP_PREVIOUS=1`을 설정합니다.
-- [ ] (선택 사항) 전체 설치기 스모크(비루트 + CLI 커버리지 추가): `pnpm test:install:smoke`
-- [ ] (선택 사항) 설치기 E2E(Docker에서 `curl -fsSL https://openclaw.ai/install.sh | bash`를 실행하고, 온보딩 후 실제 도구 호출까지 수행):
-  - `pnpm test:install:e2e:openai` (`OPENAI_API_KEY` 필요)
-  - `pnpm test:install:e2e:anthropic` (`ANTHROPIC_API_KEY` 필요)
-  - `pnpm test:install:e2e` (두 키 모두 필요, 두 provider를 모두 실행)
-- [ ] (선택 사항) 변경 사항이 send/receive 경로에 영향을 주는 경우 web gateway를 스팟 체크합니다.
+- [ ] `pnpm test` (or `pnpm test:coverage` if you need coverage output)
+- [ ] `pnpm release:check` (verifies npm pack contents)
+- [ ] `OPENCLAW_INSTALL_SMOKE_SKIP_NONROOT=1 pnpm test:install:smoke` (Docker install smoke test, fast path; required before release)
+  - If the immediate previous npm release is known broken, set `OPENCLAW_INSTALL_SMOKE_PREVIOUS=<last-good-version>` or `OPENCLAW_INSTALL_SMOKE_SKIP_PREVIOUS=1` for the preinstall step.
+- [ ] (Optional) Full installer smoke (adds non-root + CLI coverage): `pnpm test:install:smoke`
+- [ ] (Optional) Installer E2E (Docker, runs `curl -fsSL https://openclaw.ai/install.sh | bash`, onboards, then runs real tool calls):
+  - `pnpm test:install:e2e:openai` (requires `OPENAI_API_KEY`)
+  - `pnpm test:install:e2e:anthropic` (requires `ANTHROPIC_API_KEY`)
+  - `pnpm test:install:e2e` (requires both keys; runs both providers)
+- [ ] (Optional) Spot-check the web gateway if your changes affect send/receive paths.
 
-5. **macOS 앱 (Sparkle)**
+5. **macOS app (Sparkle)**
 
-- [ ] macOS 앱을 빌드하고 서명한 다음 배포용으로 zip으로 묶습니다.
-- [ ] Sparkle appcast를 생성하고(HTML 노트는 [`scripts/make_appcast.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/make_appcast.sh) 사용) `appcast.xml`을 업데이트합니다.
-- [ ] GitHub 릴리스에 첨부할 앱 zip(및 선택 사항인 dSYM zip)을 준비해 둡니다.
-- [ ] 정확한 명령과 필요한 env 변수는 [macOS release](/platforms/mac/release)를 따릅니다.
-  - Sparkle이 버전을 올바르게 비교할 수 있도록 `APP_BUILD`는 숫자이며 단조 증가해야 합니다(`-beta` 금지).
-  - 공증하는 경우 App Store Connect API env 변수로 생성한 `openclaw-notary` 키체인 프로필을 사용합니다([macOS release](/platforms/mac/release) 참고).
+- [ ] Build + sign the macOS app, then zip it for distribution.
+- [ ] Generate the Sparkle appcast (HTML notes via [`scripts/make_appcast.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/make_appcast.sh)) and update `appcast.xml`.
+- [ ] Keep the app zip (and optional dSYM zip) ready to attach to the GitHub release.
+- [ ] Follow [macOS release](/platforms/mac/release) for the exact commands and required env vars.
+  - `APP_BUILD` must be numeric + monotonic (no `-beta`) so Sparkle compares versions correctly.
+  - If notarizing, use the `openclaw-notary` keychain profile created from App Store Connect API env vars (see [macOS release](/platforms/mac/release)).
 
-6. **게시 (npm)**
+6. **Publish (npm)**
 
-- [ ] git status가 깨끗한지 확인하고, 필요하면 커밋하고 푸시합니다.
-- [ ] 필요하면 `npm login`을 실행합니다(2FA 확인).
-- [ ] `npm publish --access public` (`프리릴리스`에는 `--tag beta` 사용).
-- [ ] 레지스트리를 확인합니다: `npm view openclaw version`, `npm view openclaw dist-tags`, `npx -y openclaw@X.Y.Z --version` (또는 `--help`).
+- [ ] Confirm git status is clean; commit and push as needed.
+- [ ] Confirm npm trusted publishing is configured for the `openclaw` package.
+- [ ] Push the matching git tag to trigger `.github/workflows/openclaw-npm-release.yml`.
+  - Stable tags publish to npm `latest`.
+  - Beta tags publish to npm `beta`.
+  - The workflow rejects tags that do not match `package.json`, are not on `main`, or whose CalVer date is more than 2 UTC calendar days away from the release date.
+- [ ] Verify the registry: `npm view openclaw version`, `npm view openclaw dist-tags`, and `npx -y openclaw@X.Y.Z --version` (or `--help`).
 
-### 문제 해결 (2.0.0-beta2 릴리스 메모)
+### Troubleshooting (notes from 2.0.0-beta2 release)
 
-- **npm pack/publish가 멈추거나 tarball이 지나치게 커짐**: `dist/OpenClaw.app`의 macOS 앱 번들(및 릴리스 zip)이 패키지에 함께 들어갑니다. `package.json`의 `files`로 게시 내용을 화이트리스트 처리해 수정하세요(`dist` 하위 디렉터리, docs, skills는 포함하고 앱 번들은 제외). `npm pack --dry-run`으로 `dist/OpenClaw.app`이 목록에 없는지 확인합니다.
-- **dist-tags에서 npm auth 웹 루프 발생**: OTP 프롬프트를 띄우기 위해 레거시 인증을 사용합니다.
+- **npm pack/publish hangs or produces huge tarball**: the macOS app bundle in `dist/OpenClaw.app` (and release zips) get swept into the package. Fix by whitelisting publish contents via `package.json` `files` (include dist subdirs, docs, skills; exclude app bundles). Confirm with `npm pack --dry-run` that `dist/OpenClaw.app` is not listed.
+- **npm auth web loop for dist-tags**: use legacy auth to get an OTP prompt:
   - `NPM_CONFIG_AUTH_TYPE=legacy npm dist-tag add openclaw@X.Y.Z latest`
-- **`npx` 검증이 `ECOMPROMISED: Lock compromised`로 실패**: 새 캐시로 다시 시도합니다.
+- **`npx` verification fails with `ECOMPROMISED: Lock compromised`**: retry with a fresh cache:
   - `NPM_CONFIG_CACHE=/tmp/npm-cache-$(date +%s) npx -y openclaw@X.Y.Z --version`
-- **늦은 수정 이후 태그를 다시 가리켜야 함**: 태그를 강제로 업데이트하고 푸시한 뒤 GitHub 릴리스 아티팩트가 여전히 일치하는지 확인합니다.
+- **Tag needs repointing after a late fix**: force-update and push the tag, then ensure the GitHub release assets still match:
   - `git tag -f vX.Y.Z && git push -f origin vX.Y.Z`
 
-7. **GitHub 릴리스 + appcast**
+7. **GitHub release + appcast**
 
-- [ ] 태그를 만들고 푸시합니다: `git tag vX.Y.Z && git push origin vX.Y.Z` (또는 `git push --tags`).
-- [ ] `vX.Y.Z`용 GitHub 릴리스를 만들거나 갱신하며, **제목은 `openclaw X.Y.Z`**로 합니다(태그만 쓰지 않음). 본문에는 해당 버전의 **전체** changelog 섹션(Highlights + Changes + Fixes)을 인라인으로 포함해야 하며(링크만 단독으로 두지 않음), **본문 안에서 제목을 다시 반복해서는 안 됩니다**.
-- [ ] 아티팩트를 첨부합니다: `npm pack` tarball(선택 사항), `OpenClaw-X.Y.Z.zip`, `OpenClaw-X.Y.Z.dSYM.zip`(생성된 경우).
-- [ ] 업데이트된 `appcast.xml`을 커밋하고 푸시합니다(Sparkle 피드는 main에서 가져옵니다).
-- [ ] 깨끗한 임시 디렉터리(`package.json` 없음)에서 `npx -y openclaw@X.Y.Z send --help`를 실행해 설치/CLI 진입점이 동작하는지 확인합니다.
-- [ ] 릴리스 노트를 공지/공유합니다.
+- [ ] Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z` (or `git push --tags`).
+  - Pushing the tag also triggers the npm release workflow.
+- [ ] Create/refresh the GitHub release for `vX.Y.Z` with **title `openclaw X.Y.Z`** (not just the tag); body should include the **full** changelog section for that version (Highlights + Changes + Fixes), inline (no bare links), and **must not repeat the title inside the body**.
+- [ ] Attach artifacts: `npm pack` tarball (optional), `OpenClaw-X.Y.Z.zip`, and `OpenClaw-X.Y.Z.dSYM.zip` (if generated).
+- [ ] Commit the updated `appcast.xml` and push it (Sparkle feeds from main).
+- [ ] From a clean temp directory (no `package.json`), run `npx -y openclaw@X.Y.Z send --help` to confirm install/CLI entrypoints work.
+- [ ] Announce/share release notes.
 
-## 플러그인 게시 범위 (npm)
+## Plugin publish scope (npm)
 
-우리는 `@openclaw/*` 스코프 아래의 **기존 npm 플러그인만** 게시합니다. npm에
-없는 번들 플러그인은 **디스크 트리 전용**으로 유지합니다(그래도
-`extensions/**`에는 계속 포함됩니다).
+We only publish **existing npm plugins** under the `@openclaw/*` scope. Bundled
+plugins that are not on npm stay **disk-tree only** (still shipped in
+`extensions/**`).
 
-목록을 도출하는 절차:
+Process to derive the list:
 
-1. `npm search @openclaw --json`을 실행하고 패키지 이름을 수집합니다.
-2. 이를 `extensions/*/package.json`의 이름과 비교합니다.
-3. **교집합만** 게시합니다(이미 npm에 있는 것).
+1. `npm search @openclaw --json` and capture the package names.
+2. Compare with `extensions/*/package.json` names.
+3. Publish only the **intersection** (already on npm).
 
-현재 npm 플러그인 목록(필요시 업데이트):
+Current npm plugin list (update as needed):
 
 - @openclaw/bluebubbles
 - @openclaw/diagnostics-otel
@@ -117,5 +150,5 @@ read_when:
 - @openclaw/zalo
 - @openclaw/zalouser
 
-릴리스 노트에는 기본값으로 켜져 있지 않은 **새 선택형 번들 플러그인**도 반드시
-명시해야 합니다(예: `tlon`).
+Release notes must also call out **new optional bundled plugins** that are **not
+on by default** (example: `tlon`).

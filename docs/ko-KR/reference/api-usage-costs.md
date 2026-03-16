@@ -1,10 +1,13 @@
 ---
+description: 어떤 OpenClaw 기능이 유료 API 호출과 사용량을 발생시키는지, 비용이 어디에 표시되는지 정리한 가이드입니다.
 summary: "어떤 기능이 비용을 발생시킬 수 있는지, 어떤 키가 사용되는지, 사용량을 어디서 볼 수 있는지 점검합니다"
 read_when:
   - 어떤 기능이 유료 API를 호출할 수 있는지 이해하고 싶을 때
   - 키, 비용, 사용량 가시성을 점검해야 할 때
   - /status 또는 /usage 비용 표시를 설명할 때
 title: "API Usage and Costs"
+x-i18n:
+  source_path: "reference/api-usage-costs.md"
 ---
 
 # API usage & costs

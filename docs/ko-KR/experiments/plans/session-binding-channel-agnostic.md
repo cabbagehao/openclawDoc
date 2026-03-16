@@ -1,4 +1,5 @@
 ---
+description: "채널 비종속 세션 바인딩, 라우팅, 전달 불변식의 다음 구현 범위를 정리한 계획입니다"
 summary: "채널 비종속 session binding 아키텍처와 iteration 1 전달 범위"
 read_when:
   - channel-agnostic session routing과 binding을 리팩터링할 때
@@ -7,6 +8,8 @@ owner: "onutc"
 status: "in-progress"
 last_updated: "2026-02-21"
 title: "Session Binding Channel Agnostic Plan"
+x-i18n:
+  source_path: "experiments/plans/session-binding-channel-agnostic.md"
 ---
 
 # Session Binding Channel Agnostic Plan

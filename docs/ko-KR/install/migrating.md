@@ -1,9 +1,12 @@
 ---
+description: OpenClaw를 새 노트북이나 서버로 옮길 때 상태 디렉터리, 워크스페이스, 세션을 안전하게 이전하는 가이드
 summary: "OpenClaw 설치를 한 머신에서 다른 머신으로 옮기기(마이그레이션)"
 read_when:
   - OpenClaw를 새 노트북/서버로 옮기고 있습니다
   - 세션, 인증, 채널 로그인(WhatsApp 등)을 유지하고 싶습니다
 title: "마이그레이션 가이드"
+x-i18n:
+  source_path: "install/migrating.md"
 ---
 
 # OpenClaw를 새 머신으로 마이그레이션하기

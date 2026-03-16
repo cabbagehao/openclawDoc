@@ -4,14 +4,9 @@ read_when:
   - 처음부터 설정을 시작할 때
   - 작동하는 채팅까지 가장 빠르게 가고 싶을 때
 title: "시작하기"
-description: "OpenClaw를 설치하고 최소한의 설정으로 첫 채팅까지 빠르게 시작하는 절차를 안내합니다."
+description: "OpenClaw를 설치하고 온보딩, Gateway 확인, Control UI 접속까지 가장 빠르게 완료하는 시작 가이드"
 x-i18n:
   source_path: "start/getting-started.md"
-  source_hash: "4ec86bd0345cc7a70236e566da2ccb9ff17764cc5a7c3b23eab8d5d558251520"
-  provider: "anthropic"
-  model: "claude-opus-4-6"
-  workflow: 1
-  generated_at: "2026-03-10T08:14:56.929Z"
 ---
 
 

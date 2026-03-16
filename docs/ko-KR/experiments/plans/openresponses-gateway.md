@@ -1,4 +1,5 @@
 ---
+description: "OpenResponses /v1/responses 엔드포인트 추가와 Chat Completions 폐기 경로를 정리한 게이트웨이 계획입니다"
 summary: "계획: OpenResponses /v1/responses 엔드포인트를 추가하고 chat completions 를 깔끔하게 폐기"
 read_when:
   - "`/v1/responses` gateway 지원을 설계하거나 구현할 때"
@@ -7,6 +8,8 @@ owner: "openclaw"
 status: "draft"
 last_updated: "2026-01-19"
 title: "OpenResponses Gateway 계획"
+x-i18n:
+  source_path: "experiments/plans/openresponses-gateway.md"
 ---
 
 # OpenResponses Gateway 통합 계획

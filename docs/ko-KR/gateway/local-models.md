@@ -1,21 +1,24 @@
 ---
+description: LM Studio, vLLM, LiteLLM 등 OpenAI 호환 로컬 모델 서버를 OpenClaw Gateway에 연결하는 방법
 summary: "로컬 LLM(LM Studio, vLLM, LiteLLM, 커스텀 OpenAI 엔드포인트) 연동 및 운영 가이드"
 read_when:
   - 자체 GPU 인프라를 활용하여 모델을 서빙하고자 할 때
   - LM Studio 또는 OpenAI 호환 프록시(Proxy)를 연결할 때
   - 로컬 모델 운영 시 보안 및 성능 관련 지침이 필요할 때
-title: "로컬 모델 (Local Models)"
+title: "Local Models"
 x-i18n:
   source_path: "gateway/local-models.md"
 ---
 
-# 로컬 모델 (Local Models)
+# Local Models
 
-OpenClaw는 로컬 모델 구동을 지원하지만, 원활한 작동을 위해 방대한 컨텍스트 창(Context window)과 강력한 프롬프트 인젝션 방어 능력을 요구함. 사양이 낮은 GPU에서는 컨텍스트 유실이나 보안 취약점이 발생할 수 있으므로, **풀옵션 Mac Studio 2대 이상 또는 이에 상응하는 고사양 GPU 리그(약 3만 달러 규모 이상)** 구축을 권장함. 단일 **24GB** GPU 환경은 가벼운 프롬프트 위주의 작업이나 높은 지연 시간을 감수할 수 있는 경우에만 제한적으로 사용 가능함. 실행 가능한 범위 내에서 **가장 크고 완전한 모델 변형(Full-size variant)**을 선택해야 하며, 과도하게 양자화되었거나 크기가 작은 체크포인트는 프롬프트 인젝션 공격에 매우 취약함 ([보안 가이드](/gateway/security) 참조).
+로컬 모델도 가능하지만, OpenClaw는 큰 context와 강한 prompt injection 방어를 전제로 설계되어 있습니다. 사양이 낮은 GPU에서는 context가 잘리거나 안전성이 약해질 수 있으므로, **풀옵션 Mac Studio 2대 이상 또는 이에 준하는 GPU 리그(약 3만 달러 이상)**를 권장합니다. 단일 **24GB** GPU는 더 가벼운 prompt와 더 높은 지연 시간을 감수할 수 있을 때만 실용적입니다. 가능하면 **가장 크고 완전한 모델 변형**을 사용하세요. 과도하게 양자화된 "small" 계열 checkpoint는 prompt injection 위험을 키웁니다([Security](/gateway/security) 참고).
 
-## 권장 조합: LM Studio + MiniMax M2.5 (Responses API 활용)
+가장 마찰이 적은 로컬 구성이 필요하다면 [Ollama](/providers/ollama)와 `openclaw onboard`부터 시작하세요. 이 페이지는 더 고급 로컬 스택과 custom OpenAI-compatible local server를 위한 가이드입니다.
 
-현재 가장 안정적인 로컬 스택 조합임. LM Studio에서 MiniMax M2.5를 로드하고 로컬 서버(기본값 `http://127.0.0.1:1234`)를 활성화한 뒤, Responses API를 사용하여 사고 과정(Reasoning)과 최종 텍스트를 분리하여 처리함.
+## 권장 조합: LM Studio + MiniMax M2.5 (Responses API)
+
+현재 기준으로 가장 추천하는 로컬 스택입니다. LM Studio에서 MiniMax M2.5를 로드하고 로컬 서버(기본값 `http://127.0.0.1:1234`)를 활성화한 뒤, Responses API를 사용해 reasoning과 최종 텍스트를 분리하세요.
 
 ```json5
 {
@@ -59,7 +62,7 @@ OpenClaw는 로컬 모델 구동을 지원하지만, 원활한 작동을 위해 
 - 사용 중인 LM Studio 빌드 사양에 따라 `contextWindow` 및 `maxTokens` 값을 조정함.
 - WhatsApp 채널 사용 시, 최종 텍스트만 전송되도록 반드시 Responses API 방식을 유지함.
 
-로컬 모델을 사용하더라도 클라우드 호스팅 모델 설정을 유지하고 `models.mode: "merge"` 옵션을 사용하여 장애 조치(Failover)용 폴백(Fallback) 수단을 확보할 것을 권장함.
+로컬 모델을 사용하더라도 hosted model 설정은 유지하고 `models.mode: "merge"`를 사용해 fallback을 남겨 두는 편이 좋습니다.
 
 ### 하이브리드 구성: 클라우드 주 모델, 로컬 폴백
 
