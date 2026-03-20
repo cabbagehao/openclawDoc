@@ -53,6 +53,18 @@
   },
   "redirects": [
     {
+      "source": "/ja-JP",
+      "destination": "/"
+    },
+    {
+      "source": "/ja-JP/index",
+      "destination": "/"
+    },
+    {
+      "source": "/ja-JP/:slug*",
+      "destination": "/:slug*"
+    },
+    {
       "source": "/0d26611851fe418ce69a7c7a89bb6428.txt",
       "destination": "/0d26611851fe418ce69a7c7a89bb6428"
     },
