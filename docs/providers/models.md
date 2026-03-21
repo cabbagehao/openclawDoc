@@ -3,7 +3,7 @@ summary: "OpenClaw でサポートされるモデルプロバイダー (LLM) の
 read_when:
   - モデルプロバイダーを選びたいとき
   - LLM 認証とモデル選択の最短手順を確認したいとき
-title: "モデルプロバイダー クイックスタート"
+title: "Model Provider Quickstart"
 seoTitle: "OpenClawのモデルプロバイダー認証と初期設定クイックスタート"
 description: "OpenClaw でモデルプロバイダーを選んで認証する最短手順をまとめたページです。LLM の選定、ログイン、既定モデル設定までを素早く確認できます。"
 x-i18n:

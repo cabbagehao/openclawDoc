@@ -4,7 +4,7 @@ read_when:
   - DM 접근 제어를 설정할 때
   - 새 iOS/Android node를 페어링할 때
   - OpenClaw 보안 구성을 검토할 때
-title: "페어링"
+title: "Pairing"
 description: "DM 발신자 승인과 node device 승인을 포함한 OpenClaw의 pairing 절차, 저장 위치, 승인 명령을 설명합니다."
 x-i18n:
   source_path: "channels/pairing.md"

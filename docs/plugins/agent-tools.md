@@ -3,7 +3,7 @@ summary: "プラグインで agent tool を作成する方法（schema、optiona
 read_when:
   - プラグインに新しい agent tool を追加したいとき
   - allowlist 経由でツールを opt-in にしたいとき
-title: "プラグイン エージェント ツール"
+title: "Plugin Agent Tools"
 seoTitle: "OpenClawのエージェントツール用プラグインの設定方法と利用ガイド"
 description: "OpenClaw のプラグインは、エージェント実行時に LLM へ公開される agent tool（JSON Schema ベースの関数）を登録できます。ツールは required（常に利用可能）にも optional（opt-in）にもできます。"
 x-i18n:

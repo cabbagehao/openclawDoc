@@ -3,7 +3,7 @@ summary: "OpenClaw で Mistral モデルと Voxtral 転写を使用する"
 read_when:
   - OpenClaw で Mistral モデルを使用したい
   - Mistral API キーのオンボーディングとモデル参照が必要です
-title: "ミストラル"
+title: "Mistral"
 seoTitle: "OpenClawでMistralモデルとVoxtral転写を使う設定ガイド"
 description: "Mistral モデルと Voxtral 音声転写を OpenClaw で使う設定ガイドです。API キー認証、モデル指定、転写や埋め込みでの活用方法を確認できます。"
 x-i18n:

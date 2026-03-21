@@ -2,7 +2,7 @@
 summary: "「openclaw docs」の CLI リファレンス (ライブ ドキュメント インデックスを検索)"
 read_when:
   - ターミナルからライブ OpenClaw ドキュメントを検索したい
-title: "ドキュメント"
+title: "docs"
 seoTitle: "OpenClaw CLI: openclaw docs コマンドの使い方と主要オプション・実行例"
 description: "ライブ ドキュメント インデックスを検索します。"
 x-i18n:

@@ -3,7 +3,7 @@ summary: "「openclaw プラグイン」の CLI リファレンス (リスト、
 read_when:
   - インプロセス ゲートウェイ プラグインをインストールまたは管理したい
   - プラグインの読み込みエラーをデバッグしたい
-title: "プラグイン"
+title: "plugins"
 seoTitle: "OpenClaw CLI: openclaw plugins コマンドの使い方と主要オプション・実行例"
 description: "ゲートウェイのプラグイン/拡張機能を管理します (プロセス中にロードされます)。コマンド、インストール、アンインストールを確認できます。"
 x-i18n:

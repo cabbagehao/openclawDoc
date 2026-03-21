@@ -2,7 +2,7 @@
 summary: "채널별 라우팅 규칙(WhatsApp, Telegram, Discord, Slack)과 공유 컨텍스트"
 read_when:
   - 채널 라우팅이나 받은편지함 동작을 변경할 때
-title: "채널 라우팅"
+title: "Channel Routing"
 description: "OpenClaw가 채널별 메시지를 어떤 에이전트와 세션으로 라우팅하는지, DM·그룹·스레드의 컨텍스트가 어떻게 분리되는지 설명합니다."
 x-i18n:
   source_path: "channels/channel-routing.md"

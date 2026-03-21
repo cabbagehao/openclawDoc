@@ -1,6 +1,6 @@
 ---
 summary: "Urbit 上で動作する Tlon プラグインのセットアップ、機能、制約"
-title: "Tlon (プラグイン)"
+title: "Tlon"
 seoTitle: "OpenClawのTlonプラグイン連携の設定方法と利用フローガイド"
 description: "Urbit 上の Tlon プラグインを OpenClaw に接続する設定ガイドです。DM・グループ対応、導入手順、現在の制約を確認できます。"
 ---

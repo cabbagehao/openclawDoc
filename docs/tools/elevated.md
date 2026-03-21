@@ -2,7 +2,7 @@
 summary: "昇格された実行モードと /elevated ディレクティブ"
 read_when:
   - 昇格モードのデフォルト、許可リスト、またはスラッシュ コマンドの動作を調整する
-title: "昇格モード"
+title: "Elevated Mode"
 seoTitle: "OpenClaw昇格モードの使い方と実行権限の考え方ガイド"
 description: "セッションごとの状態: /elevated on|off|ask|full は、現在のセッション キーの昇格レベルを設定します。インライン ディレクティブ: メッセージ内の /elevated on|ask|full は、そのメッセージにのみ適用されます。"
 x-i18n:

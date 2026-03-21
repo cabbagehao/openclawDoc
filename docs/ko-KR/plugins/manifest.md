@@ -4,7 +4,7 @@ description: "OpenClaw plugin이 `openclaw.plugin.json`에 어떤 필드와 conf
 read_when:
   - OpenClaw plugin을 만들고 있을 때
   - plugin config schema를 배포하거나 검증 오류를 디버깅할 때
-title: "플러그인 Manifest"
+title: "Plugin Manifest"
 x-i18n:
   source_path: "plugins/manifest.md"
 ---

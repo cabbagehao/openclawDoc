@@ -3,7 +3,7 @@ summary: "ワークフロー用の JSON のみの LLM タスク (オプション
 read_when:
   - ワークフロー内に JSON のみの LLM ステップが必要な場合
   - 自動化にはスキーマ検証された LLM 出力が必要です
-title: "LLM タスク"
+title: "LLM Task"
 seoTitle: "OpenClaw LLMタスク機能の使い方と活用シーンを整理するガイド"
 description: "llm-task は、JSON のみの LLM タスクを実行する オプションのプラグイン ツール です。構造化された出力を返します (オプションで JSON スキーマに対して検証されます)。"
 x-i18n:

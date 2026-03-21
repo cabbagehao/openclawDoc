@@ -4,7 +4,7 @@ description: "`skills` 설정 스키마, bundled allowlist, install/load 동작,
 read_when:
   - "스킬 설정을 추가하거나 수정할 때"
   - "bundled allowlist 또는 설치 동작을 조정할 때"
-title: "스킬 설정"
+title: "Skills Config"
 x-i18n:
   source_path: "tools/skills-config.md"
 ---

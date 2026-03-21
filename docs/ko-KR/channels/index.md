@@ -4,7 +4,7 @@ description: "OpenClaw에서 사용할 수 있는 채팅 채널과 각 채널의
 read_when:
   - OpenClaw용 채팅 채널을 선택하려고 할 때
   - 지원되는 메시징 플랫폼을 빠르게 개요 수준에서 확인해야 할 때
-title: "채팅 채널"
+title: "Chat Channels"
 x-i18n:
   source_path: "channels/index.md"
 ---

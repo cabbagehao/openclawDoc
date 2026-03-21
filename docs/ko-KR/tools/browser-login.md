@@ -4,7 +4,7 @@ description: "OpenClaw browser automation에서 수동 로그인, host browser p
 read_when:
   - browser automation을 위해 사이트에 로그인해야 할 때
   - X/Twitter에 update를 게시하고 싶을 때
-title: "브라우저 로그인"
+title: "Browser Login"
 x-i18n:
   source_path: "tools/browser-login.md"
 ---

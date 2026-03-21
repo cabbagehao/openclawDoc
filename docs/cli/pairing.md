@@ -2,7 +2,7 @@
 summary: "「openclaw ペアリング」の CLI リファレンス (ペアリング要求の承認/リスト)"
 read_when:
   - ペアリングモードの DM を使用しているため、送信者を承認する必要があります
-title: "ペアリング"
+title: "pairing"
 seoTitle: "OpenClaw CLI: openclaw pairing コマンドの使い方と主要オプション・実行例"
 description: "DM ペアリング リクエストを承認または検査します (ペアリングをサポートするチャネルの場合)。コマンド、注意事項を確認できます。"
 x-i18n:

@@ -1,5 +1,5 @@
 ---
-title: "PDFツール"
+title: "PDF Tool"
 seoTitle: "OpenClaw PDFツールの使い方と抽出フロー・制約ガイド"
 summary: "ネイティブプロバイダーのサポートと抽出フォールバックを使用して 1 つ以上の PDF ドキュメントを分析します"
 read_when:

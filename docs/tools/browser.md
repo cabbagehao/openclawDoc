@@ -4,7 +4,7 @@ read_when:
   - エージェント制御のブラウザ自動化の追加
   - openclaw が自分の Chrome に干渉する理由をデバッグする
   - macOS アプリにブラウザ設定とライフサイクルを実装する
-title: "ブラウザ (OpenClaw 管理)"
+title: "Browser (OpenClaw-managed)"
 seoTitle: "OpenClawブラウザツールの使い方と制約・活用ポイント解説"
 description: "OpenClaw は、エージェントが制御する 専用の Chrome/Brave/Edge/Chromium プロファイルを実行できます。個人のブラウザから分離されており、小さなローカル ブラウザを通じて管理されます。ゲートウェイ内のサービスを制御します (ループバックのみ)。"
 x-i18n:

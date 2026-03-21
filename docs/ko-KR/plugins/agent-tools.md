@@ -4,7 +4,7 @@ description: "plugin에서 agent tools를 등록하고 `optional: true`, allowli
 read_when:
   - "plugin에 새 agent tool을 추가할 때"
   - "tool을 allowlist로 opt-in되게 만들 때"
-title: "플러그인 에이전트 도구"
+title: "Plugin Agent Tools"
 x-i18n:
   source_path: "plugins/agent-tools.md"
 ---

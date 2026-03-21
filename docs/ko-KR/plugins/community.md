@@ -4,7 +4,7 @@ description: "OpenClaw community plugin을 docs 목록에 추가하려면 어떤
 read_when:
   - 서드파티 OpenClaw plugin을 공개하고 싶을 때
   - 문서 목록에 실을 plugin을 제안하고 싶을 때
-title: "커뮤니티 플러그인"
+title: "Community plugins"
 x-i18n:
   source_path: "plugins/community.md"
 ---

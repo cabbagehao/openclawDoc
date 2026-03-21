@@ -1,7 +1,7 @@
 ---
 summary: "Linux 上の OpenClaw ブラウザ制御に関する Chrome/Brave/Edge/Chromium CDP 起動の問題を修正"
 read_when: "Browser control fails on Linux, especially with snap Chromium"
-title: "ブラウザのトラブルシューティング"
+title: "Browser Troubleshooting"
 seoTitle: "OpenClawブラウザ機能のLinuxトラブル対処ガイド"
 description: "OpenClaw のブラウザ コントロール サーバーは、次のエラーで Chrome/Brave/Edge/Chromium の起動に失敗します。問題: 「ポート 18800 で Chrome CDP を起動できませんでした」、根本原因、解決策 1: Google Chrome。"
 x-i18n:

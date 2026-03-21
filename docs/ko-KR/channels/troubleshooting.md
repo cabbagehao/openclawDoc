@@ -3,7 +3,7 @@ summary: "채널별 고장 징후와 빠른 해결 방법을 모은 troubleshoot
 read_when:
   - 채널 transport는 연결되지만 reply가 실패할 때
   - 더 깊은 provider 문서를 보기 전 채널별 점검이 필요할 때
-title: "채널 문제 해결"
+title: "Channel Troubleshooting"
 description: "WhatsApp, Telegram, Discord, Slack, iMessage, Signal, Matrix에서 자주 보이는 실패 징후와 가장 빠른 점검 항목, 즉각적인 대응 방법을 정리합니다."
 x-i18n:
   source_path: "channels/troubleshooting.md"

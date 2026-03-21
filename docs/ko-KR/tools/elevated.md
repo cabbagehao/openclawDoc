@@ -3,7 +3,7 @@ summary: "elevated exec mode와 `/elevated` directive 동작을 설명합니다.
 description: "OpenClaw에서 `/elevated on|off|ask|full`이 host exec, approval, allowlist, session state에 어떤 영향을 주는지 정리합니다."
 read_when:
   - elevated mode 기본값, allowlist, 또는 slash command 동작을 조정할 때
-title: "Elevated 모드"
+title: "Elevated Mode"
 x-i18n:
   source_path: "tools/elevated.md"
 ---

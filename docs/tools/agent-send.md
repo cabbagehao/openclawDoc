@@ -2,7 +2,7 @@
 summary: "直接の「openclaw エージェント」 CLI の実行 (オプションの配信あり)"
 read_when:
   - エージェント CLI エントリポイントの追加または変更
-title: "エージェント送信"
+title: "Agent Send"
 seoTitle: "OpenClaw向け openclaw agent の実行方法と配信オプションガイド"
 description: "受信メッセージを待たずに単一のエージェントターンを実行する方法を説明します。ゲートウェイ経由と `--local` 埋め込み実行の違い、配信オプションを確認できます。"
 x-i18n:

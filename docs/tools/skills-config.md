@@ -3,7 +3,7 @@ summary: "スキル構成スキーマと例"
 read_when:
   - スキル構成の追加または変更
   - バンドルされたホワイトリストまたはインストール動作の調整
-title: "スキル構成"
+title: "Skills Config"
 seoTitle: "OpenClawスキル構成ファイルの書き方と設定項目ガイド"
 description: "すべてのスキル関連の構成は、~/.openclaw/openclaw.json の skills の下に存在します。フィールド、注意事項- entries の下のキーは、デフォルトでスキル名にマップされます。スキルが定義する場合、サンドボックス化されたスキル +。"
 x-i18n:

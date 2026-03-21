@@ -2,7 +2,7 @@
 summary: "WhatsApp 그룹 메시지 처리 동작과 설정(mentionPatterns는 여러 채널에서 공유)"
 read_when:
   - 그룹 메시지 규칙이나 멘션 동작을 변경할 때
-title: "그룹 메시지"
+title: "Group Messages"
 description: "WhatsApp 그룹에서 OpenClaw를 멘션 기반으로 깨우는 방법, 그룹 세션 분리, activation 모드, 컨텍스트 주입과 검증 절차를 설명합니다."
 x-i18n:
   source_path: "channels/group-messages.md"

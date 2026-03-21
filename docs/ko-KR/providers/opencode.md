@@ -4,7 +4,7 @@ description: "OpenClaw에서 OpenCode Zen(엄선된 모델) 사용하기"
 read_when:
   - 모델 액세스를 위해 OpenCode Zen을 사용하고 싶을 때
   - 코딩 친화적인 모델의 엄선된 목록이 필요할 때
-title: "OpenCode Zen"
+title: "OpenCode"
 x-i18n:
   source_path: "providers/opencode.md"
 ---

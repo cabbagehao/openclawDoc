@@ -1,5 +1,5 @@
 ---
-title: "ロブスター"
+title: "Lobster"
 seoTitle: "OpenClaw Lobsterツールの役割と利用フローを整理するガイド"
 summary: "再開可能な承認ゲートを備えた OpenClaw 用の型付きワークフロー ランタイム。"
 description: "Lobster は、OpenClaw が明示的な承認チェックポイントを備えた単一の決定論的な操作としてマルチステップ ツール シーケンスを実行できるようにするワークフロー シェルです。"

@@ -3,7 +3,7 @@ summary: "OpenClaw で MiniMax M2.5 を使用する"
 read_when:
   - OpenClaw で MiniMax モデルが必要な場合
   - MiniMax セットアップ ガイドが必要です
-title: "ミニマックス"
+title: "MiniMax"
 seoTitle: "OpenClawでMiniMax M2.5モデルを使う認証・設定ガイド"
 description: "MiniMax M2.5 系モデルを OpenClaw で使うための設定ガイドです。利用前提、API キー認証、対応モデルの指定方法を確認できます。"
 x-i18n:

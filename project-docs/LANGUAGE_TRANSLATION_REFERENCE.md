@@ -88,14 +88,35 @@ Do not translate:
 - code spans and code blocks
 - config keys
 - CLI flags
+- CLI command names
 - environment variables
 - URLs and anchors
 - placeholders such as `__OC_I18N_####__`
 - route paths
 - literal identifiers such as `provider/model`
+- frontmatter `title` values when the page title is an interface identifier or
+  product/tool/provider/channel name
 
 Keep Markdown structure, YAML structure, HTML tags, and attributes intact.
 Do not remove, reorder, or summarize content.
+
+### Page title policy for navigation labels
+
+Mintlify uses frontmatter titles as navigation/sidebar labels. For pages whose
+title is effectively a stable interface label, keep the English source title so
+the sidebar matches the actual product surface.
+
+Do not localize frontmatter `title` for pages such as:
+
+- CLI commands and CLI reference labels, for example `reset`, `gateway`,
+  `plugins`, `Sandbox CLI`, `CLI Reference`
+- tool names, for example `Slash Commands`, `Browser Login`, `ACP Agents`
+- provider names, for example `OpenAI`, `MiniMax`, `Moonshot AI`
+- channel and plugin names, for example `WhatsApp`, `Tlon`, `Pairing`
+
+Localized prose in `summary`, `description`, and the document body is still
+allowed. The restriction applies specifically to identifier-like titles that
+drive sidebar labels and page headings.
 
 ### Code comment policy inside examples
 
@@ -157,6 +178,8 @@ Each localized file is only complete when it has been reviewed against
 - meaning matches the English source
 - terminology follows the locale glossary
 - required English literals are preserved
+- identifier-like frontmatter titles still match the English source where
+  required
 - frontmatter remains valid
 - any locale-specific `description` or metadata policy is satisfied
 - the page renders in local Mintlify preview

@@ -4,7 +4,7 @@ description: "워크플로 안에서 JSON-only LLM step을 실행하고 schema-v
 read_when:
   - "워크플로 안에 JSON-only LLM step을 두고 싶을 때"
   - "automation을 위해 schema-validated LLM output이 필요할 때"
-title: "LLM 작업"
+title: "LLM Task"
 x-i18n:
   source_path: "tools/llm-task.md"
 ---

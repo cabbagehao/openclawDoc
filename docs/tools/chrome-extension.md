@@ -4,7 +4,7 @@ read_when:
   - エージェントが既存の Chrome タブ (ツールバー ボタン) を操作できるようにしたい
   - リモート ゲートウェイ + Tailscale によるローカル ブラウザ自動化が必要です
   - ブラウザ乗っ取りによるセキュリティへの影響を理解したい
-title: "Chrome拡張機能"
+title: "Chrome Extension"
 seoTitle: "OpenClaw Chrome拡張機能の導入方法と連携フローガイド"
 description: "OpenClaw Chrome 拡張機能を使用すると、エージェントは、openclaw で管理される個別の Chrome プロファイルを起動する代わりに、既存の Chrome タブ (通常の Chrome ウィンドウ) を制御できるようになります。"
 x-i18n:

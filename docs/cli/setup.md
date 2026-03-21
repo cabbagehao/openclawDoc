@@ -3,7 +3,7 @@ summary: "「openclaw セットアップ」の CLI リファレンス (設定 + 
 read_when:
   - 完全なオンボーディング ウィザードを使用せずに初回実行セットアップを実行している
   - デフォルトのワークスペースパスを設定したい
-title: "設定"
+title: "setup"
 seoTitle: "OpenClaw CLI: openclaw setup コマンドの使い方と主要オプション・実行例"
 description: "~/.openclaw/openclaw.json とエージェント ワークスペースを初期化します。例を確認できます。"
 x-i18n:

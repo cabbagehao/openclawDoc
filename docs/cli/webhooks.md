@@ -3,7 +3,7 @@ summary: "「openclaw Webhook」の CLI リファレンス (Webhook ヘルパー
 read_when:
   - Gmail Pub/Sub イベントを OpenClaw に接続したい
   - Webhook ヘルパー コマンドが必要な場合
-title: "Webhook"
+title: "webhooks"
 seoTitle: "OpenClaw CLI: openclaw webhooks コマンドの使い方と主要オプション・実行例"
 description: "Webhook ヘルパーと統合 (Gmail Pub/Sub、Webhook ヘルパー)。"
 x-i18n:

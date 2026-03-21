@@ -4,7 +4,7 @@ description: "OpenClaw가 지원하는 모델 제공업체(LLM)"
 read_when:
   - 모델 제공업체를 선택하고 싶을 때
   - LLM 인증과 모델 선택 예시를 빠르게 보고 싶을 때
-title: "모델 제공업체 빠른 시작"
+title: "Model Provider Quickstart"
 x-i18n:
   source_path: "providers/models.md"
 ---

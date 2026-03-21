@@ -3,7 +3,7 @@ summary: "OpenClaw でサポートされるモデル プロバイダー (LLM)"
 read_when:
   - モデル プロバイダーを選びたいとき
   - サポートされている LLM backend を手早く確認したいとき
-title: "モデル プロバイダー"
+title: "Model Providers"
 seoTitle: "OpenClaw対応LLMプロバイダー一覧と認証・接続比較ガイド"
 description: "OpenClaw で使える LLM プロバイダーの一覧ページです。各 provider の特徴と認証方式を比較し、用途に合った接続先を選ぶ手がかりを得られます。"
 x-i18n:

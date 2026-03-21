@@ -2,7 +2,7 @@
 summary: "WhatsApp チャネルのサポート、アクセス制御、配信動作、および操作"
 read_when:
   - WhatsApp/Web チャネルの動作または受信トレイのルーティングに関する作業
-title: "ワッツアップ"
+title: "WhatsApp"
 seoTitle: "OpenClawのWhatsApp連携の設定方法と配信運用・注意点ガイド"
 description: "WhatsApp Web を OpenClaw に接続する設定と運用ガイドです。Baileys 構成、アクセス制御、配信動作、主要機能を確認できます。"
 x-i18n:

@@ -1,5 +1,5 @@
 ---
-title: "サンドボックス CLI"
+title: "Sandbox CLI"
 seoTitle: "OpenClaw CLI: openclaw sandbox コマンドの使い方と主要オプション・実行例"
 summary: "サンドボックスコンテナの管理と現在のポリシーの確認"
 read_when:

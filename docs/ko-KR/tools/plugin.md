@@ -1,5 +1,5 @@
 ---
-title: "플러그인"
+title: "Plugins"
 description: "OpenClaw 플러그인의 설치, discovery, SDK import 경로, HTTP route, 보안 규칙을 설명합니다."
 summary: "OpenClaw 플러그인/확장: discovery, config, safety"
 read_when:

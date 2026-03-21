@@ -1,5 +1,5 @@
 ---
-title: "스킬"
+title: "Skills"
 description: "OpenClaw 스킬의 로드 위치, 우선순위, 게이팅, 환경 주입, ClawHub 연동 방식을 설명합니다."
 summary: "스킬: 관리형 vs 워크스페이스, 게이팅 규칙, config/env 연결 방식"
 read_when:

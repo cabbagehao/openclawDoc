@@ -1,5 +1,5 @@
 ---
-title: "스킬 만들기"
+title: "Creating Skills"
 summary: "SKILL.md로 custom workspace skill을 만들고 테스트하는 방법을 설명합니다."
 description: "OpenClaw workspace에서 새 skill 디렉터리를 만들고 `SKILL.md`를 작성해 custom skill을 등록하고 테스트하는 빠른 흐름을 안내합니다."
 read_when:

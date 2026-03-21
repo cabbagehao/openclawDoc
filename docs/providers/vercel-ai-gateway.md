@@ -1,5 +1,5 @@
 ---
-title: "Vercel AI ゲートウェイ"
+title: "Vercel AI Gateway"
 seoTitle: "OpenClawでVercel AI Gatewayを使う認証・モデル設定ガイド"
 description: "Vercel AI Gateway を OpenClaw に接続する設定ガイドです。API キー認証、統合 endpoint、モデル選択の基本を確認できます。"
 summary: "Vercel AI Gateway のセットアップ (認証 + モデルの選択)"

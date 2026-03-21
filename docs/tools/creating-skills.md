@@ -1,5 +1,5 @@
 ---
-title: "スキルの作成"
+title: "Creating Skills"
 seoTitle: "OpenClawスキル作成フローと設計ルールを整理するガイド"
 summary: "SKILL.md を使用してカスタム ワークスペース スキルを構築してテストする"
 read_when:

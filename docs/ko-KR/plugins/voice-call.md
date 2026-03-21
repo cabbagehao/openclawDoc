@@ -4,7 +4,7 @@ summary: "Voice Call 플러그인: Twilio/Telnyx/Plivo를 통한 outbound + inbo
 read_when:
   - OpenClaw에서 outbound 음성 통화를 걸고 싶을 때
   - voice-call 플러그인을 설정하거나 개발할 때
-title: "Voice Call 플러그인"
+title: "Voice Call Plugin"
 x-i18n:
   source_path: "plugins/voice-call.md"
 ---

@@ -4,7 +4,7 @@ read_when:
   - Chrome が Windows 上で動作している間に WSL2 で OpenClaw Gateway を実行する
   - WSL2 と Windows 間でブラウザ/コントロール UI エラーが重複して表示される
   - 分割ホスト設定で生のリモート CDP と Chrome 拡張機能リレーのどちらを使用するかを決定する
-title: "WSL2 + Windows + リモート Chrome CDP のトラブルシューティング"
+title: "WSL2 + Windows + remote Chrome CDP troubleshooting"
 seoTitle: "OpenClawのWSL2・Windows間リモートChrome CDP接続トラブル対処ガイド"
 description: "このガイドでは、次のような一般的な分割ホスト設定について説明します。また、問題 #39369 の階層化された障害パターンについても説明しています。複数の独立した問題が一度に発生する可能性があり、間違ったレイヤーが最初に壊れているように見えます。"
 x-i18n:
