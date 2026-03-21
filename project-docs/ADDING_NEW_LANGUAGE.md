@@ -12,6 +12,9 @@ implementation details.
 - Add the locale-specific package scripts needed for translation, navigation
   sync, and coverage checks.
 - Create the localized docs tree under `docs/<locale>/`.
+- Do not add explicit Mintlify redirects from `/<locale>/.../index` to
+  `/<locale>/...`. Mintlify already resolves index routes, and explicit
+  redirects can create self-redirect loops on the base path.
 - Treat [`origin_docs/`](../origin_docs) as the only source of truth for
   translation meaning, structure, and scope.
 - Preserve all required English literals and technical identifiers during
