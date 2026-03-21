@@ -12,6 +12,9 @@ implementation details.
 - Add the locale-specific package scripts needed for translation, navigation
   sync, and coverage checks.
 - Create the localized docs tree under `docs/<locale>/`.
+- Add explicit redirects for localized `index` routes so every published
+  `/<locale>/.../index` URL permanently redirects to `/<locale>/...` when both
+  URLs would otherwise resolve to the same page.
 - Treat [`origin_docs/`](../origin_docs) as the only source of truth for
   translation meaning, structure, and scope.
 - Preserve all required English literals and technical identifiers during
