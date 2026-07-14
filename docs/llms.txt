@@ -1,0 +1,44 @@
+# OpenClaw
+
+> OpenClaw is a Japanese documentation portal for a self-hosted, multi-channel AI agent gateway that connects messaging apps such as WhatsApp, Telegram, Discord, and iMessage to agent workflows. It serves developers and power users who want to install, configure, operate, troubleshoot, and extend OpenClaw while keeping control of their own gateway.
+
+This file highlights the highest-value canonical documentation pages for understanding OpenClaw. The docs cover self-hosted gateway setup, guided onboarding, multi-channel messaging integrations, CLI usage, node pairing, web Control UI, model providers, plugins, skills, tools, automation, and troubleshooting. It intentionally excludes redirected legacy paths, exhaustive CLI subcommand pages, individual provider pages, narrow troubleshooting leaf pages, and repeated localized or upstream-source files.
+
+## Core Tools
+
+* [OpenClaw Home](https://openclawdoc.org/): Japanese OpenClaw overview explaining the self-hosted gateway, supported channels, agent-native workflow, and core setup path.
+* [Getting Started](https://openclawdoc.org/start/getting-started): Fast installation guide for setting up OpenClaw, authenticating channels, and sending the first agent message.
+* [Onboarding Wizard](https://openclawdoc.org/start/wizard): CLI onboarding guide for configuring the gateway, workspace, channels, and skills through a guided setup flow.
+* [Control UI](https://openclawdoc.org/web/control-ui): Browser-based Control UI documentation for chat, nodes, configuration, sessions, pairing, and gateway WebSocket interaction.
+
+## Main Content
+
+* [Documentation Hub](https://openclawdoc.org/start/hubs): Hub page organizing OpenClaw documentation by installation, core concepts, providers, channels, gateway operations, tools, and troubleshooting.
+* [Install](https://openclawdoc.org/install): Installation hub covering installer scripts, npm and pnpm options, source builds, Docker, system requirements, and maintenance paths.
+* [Gateway](https://openclawdoc.org/gateway): Gateway runbook for starting, managing, connecting to, and operating the OpenClaw gateway service.
+* [Chat Channels](https://openclawdoc.org/channels): Channel overview comparing the messaging platforms OpenClaw can connect to the gateway.
+* [Telegram](https://openclawdoc.org/channels/telegram): Telegram channel guide for connecting OpenClaw to Telegram-based agent messaging.
+* [WhatsApp](https://openclawdoc.org/channels/whatsapp): WhatsApp channel guide for pairing and using WhatsApp with the OpenClaw gateway.
+* [Discord](https://openclawdoc.org/channels/discord): Discord channel guide for using OpenClaw with Discord messages and channel workflows.
+* [Model Providers](https://openclawdoc.org/providers): Provider hub comparing supported LLM providers, authentication styles, transcription providers, and community tooling links.
+* [Platforms](https://openclawdoc.org/platforms): Platform support overview for gateway runtime choices, companion app surfaces, operating systems, VPS hosting, and service installation.
+* [Features](https://openclawdoc.org/concepts/features): Feature overview covering channels, routing, media handling, UX surfaces, and OpenClaw's main capability set.
+* [Nodes](https://openclawdoc.org/nodes): Node documentation for pairing iOS, Android, and other device surfaces with OpenClaw.
+
+## Documentation
+
+* [Gateway Configuration](https://openclawdoc.org/gateway/configuration): Core `openclaw.json` configuration guide covering minimal setup, editing, validation, environment variables, and common tasks.
+* [Remote Access](https://openclawdoc.org/gateway/remote): Remote-access guide for using OpenClaw through SSH, tailnet, or other gateway access patterns.
+* [CLI Reference](https://openclawdoc.org/cli): Main CLI reference for the `openclaw` command, subcommand pages, global flags, output style, and command navigation.
+* [Agent Runtime](https://openclawdoc.org/concepts/agent): Concept guide explaining the bundled agent runtime, workspaces, bootstrap files, built-in tools, skills, sessions, and streaming steering.
+* [Multi-Agent Routing](https://openclawdoc.org/concepts/multi-agent): Architecture guide for isolated agents, channel accounts, workspaces, bindings, and multi-agent routing.
+* [Tools](https://openclawdoc.org/tools): Tools overview for OpenClaw's first-class browser, canvas, node, message, cron, and agent tool surfaces.
+* [Browser Tool](https://openclawdoc.org/tools/browser): Managed browser documentation for running isolated Chrome, Brave, Edge, or Chromium profiles under OpenClaw control.
+* [Exec Tool](https://openclawdoc.org/tools/exec): Execution tool reference for running shell commands in a workspace, including process behavior, standard input, TTY support, and configuration.
+* [Plugins](https://openclawdoc.org/tools/plugin): Plugin documentation for extending OpenClaw with commands, tools, gateway RPC behavior, configuration, and safety boundaries.
+* [Sub-Agents](https://openclawdoc.org/tools/subagents): Sub-agent guide explaining background agent runs, spawned sessions, slash commands, and result notifications.
+* [ACP Agents](https://openclawdoc.org/tools/acp-agents): ACP agent runtime guide for connecting external coding harnesses such as Pi, Claude Code, Codex, OpenCode, and Gemini CLI.
+* [Skills](https://openclawdoc.org/tools/skills): Skills documentation covering managed and workspace skills, plugin integration, gating rules, ClawHub installation, and security considerations.
+* [ClawHub](https://openclawdoc.org/tools/clawhub): ClawHub guide for discovering, installing, syncing, and sharing public OpenClaw skills.
+* [Help](https://openclawdoc.org/help): Help hub for common fixes, installation health checks, gateway issues, logs, tests, and troubleshooting entry points.
+* [Troubleshooting](https://openclawdoc.org/help/troubleshooting): Symptom-based troubleshooting hub for startup failures, 429 errors, plugin installation issues, and first-minute diagnostic steps.
